@@ -24,8 +24,8 @@ typedef enum {
   IDENTIFY_CMD, // Gate asks a module to identify itself
   INTRODUCTION_CMD, // Module sends its alias and type to the gate
 
-  ASK_PUB_CMD, // Gate asks a sensor module to publish its data in json
-  PUBLISH_CMD, // Module publishes its data in json to the gate. I don't know if we gonna keep that
+  ASK_PUB_CMD, // Gate asks a sensor module to publish its data
+  //PUBLISH_CMD, // Module publishes its data in json to the gate. I don't know if we gonna keep that
 
   // Generic data register
   COLOR, // char[3] (R, G, B)
