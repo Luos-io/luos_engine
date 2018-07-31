@@ -1,5 +1,6 @@
  #ifndef __MODULE_STRUCT_H
 #define __MODULE_STRUCT_H
+#include "main.h"
 
 // This file contain struct of messages exchanged between gate and modules
 
