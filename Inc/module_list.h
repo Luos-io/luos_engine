@@ -25,14 +25,13 @@ typedef enum {
   INTRODUCTION_CMD, // Module sends its alias and type to the gate
 
   ASK_PUB_CMD, // Gate asks a sensor module to publish its data
-  //PUBLISH_CMD, // Module publishes its data in json to the gate. I don't know if we gonna keep that
 
   // Generic data register
   COLOR, // char[3] (R, G, B)
   ROTATION_POSITION, // float (°)
   ROTATION_SPEED, // float (°/s)
   COMPLIANT, // char (True/False)
-  IO_ENABLE, // char (True/False)
+  IO_STATE, // char (True/False)
   LINEAR_POSITION, // Float (mm)
   LINEAR_SPEED, // Float (mm/s)
   REINIT, // char (True/False)
