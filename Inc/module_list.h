@@ -25,6 +25,7 @@ typedef enum {
   INTRODUCTION_CMD, // Module sends its alias and type to the gate
 
   ASK_PUB_CMD, // Gate asks a sensor module to publish its data
+  REVISION, // Module sends its firmware revision
 
   // Generic data register
   COLOR, // char[3] (R, G, B)
