@@ -16,7 +16,8 @@ typedef enum {
   DYNAMIXEL,
   STEPPER,
   DCMOTOR,
-  GPIO
+  GPIO,
+  HANDY
 } module_type_t;
 
 typedef enum {
@@ -46,6 +47,7 @@ typedef enum {
   DXL_WHEELMODE, // char (True/False)
   GPIO_GET_STATE, // gpio_t
   GPIO_SET_STATE, // char[3] (p2, p3, p4)
+  HANDY_SET_POSITION, // handy_t
 
   LUOS_PROTOCOL_NB,
 } module_register_t;

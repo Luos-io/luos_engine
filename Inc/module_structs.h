@@ -19,4 +19,18 @@ typedef struct __attribute__((__packed__)){
      };
  }gpio_t;
 
+ // Handy struct
+ typedef struct __attribute__((__packed__)){
+      union {
+          struct __attribute__((__packed__)){
+        	  uint8_t index;
+        	  uint8_t middle;
+        	  uint8_t ring;
+        	  uint8_t pinky;
+        	  uint8_t thumb;
+          };
+          uint8_t unmap[(5 * sizeof(uint8_t))];                /*!< Uncmaped form. */
+      };
+  }handy_t;
+
 #endif /*__ __L0_H */
