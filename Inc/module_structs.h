@@ -116,7 +116,7 @@ typedef struct __attribute__((__packed__)){
 
     //configs
     float motor_reduction;
-    float encoder_res;
+    float resolution;
     float wheel_diameter_mm;
 }motor_config_t;
 
