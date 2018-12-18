@@ -1,4 +1,5 @@
 #include "luos.h"
+#include "l0.h"
 
 int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
     if (input->header.cmd == IDENTIFY_CMD) {
@@ -22,6 +23,18 @@ int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         output->header.size = strlen(output->data);
         output->header.target = input->header.source;
         return REVISION;
+    }
+    if (input->header.cmd == UUID) {
+        output->header.cmd = UUID;
+        output->header.target_mode = ID;
+        output->header.size = sizeof(luos_uuid_t);
+        output->header.target = input->header.source;
+        luos_uuid_t uuid;
+        uuid.uuid[0] = LUOS_UUID[0];
+        uuid.uuid[1] = LUOS_UUID[1];
+        uuid.uuid[2] = LUOS_UUID[2];
+        memcpy(output->data, &uuid.unmap, sizeof(luos_uuid_t));
+        return UUID;
     }
     return LUOS_PROTOCOL_NB;
 }

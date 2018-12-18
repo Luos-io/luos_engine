@@ -6,6 +6,7 @@
 #define TEMP110_CAL_VALUE                                           ((uint16_t*)((uint32_t)0x1FFFF7C2))
 #define TEMP30_CAL_VALUE                                            ((uint16_t*)((uint32_t)0x1FFFF7B8))
 #define VOLTAGEFACTOR                                               (10.0f + 68.0f) / 10.0f
+#define LUOS_UUID                                                   ((uint32_t *)0x1FFFF7AC)
  // This structure need to list all ADC configured in the good order determined by the
  // ADC_CHANEL number in increasing order
 typedef struct __attribute__((__packed__)){

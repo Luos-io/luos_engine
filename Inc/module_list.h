@@ -52,6 +52,7 @@ typedef enum {
     L0_TEMPERATURE, // float (°c)
     L0_VOLTAGE, // float (V)
     L0_LED, // char (True/False)
+    UUID, // luos_uuid_t
 
     // Space positioning
     ROTATION_POSITION, // float (°)
