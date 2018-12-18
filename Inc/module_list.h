@@ -73,9 +73,7 @@ typedef enum {
     GPIO_GET_STATE, // gpio_t
     GPIO_SET_STATE, // char[3] (p2, p3, p4)
     HANDY_SET_POSITION, // handy_t
-    IMU_REPORT, // imu_report_t (enable and disable IMU value type reporting)
-    MOTOR_REPORT, // motor_mode_t (enable and disable motor value type reporting and target mode)
-
+    PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
     LUOS_PROTOCOL_NB,
 } module_register_t;
 
