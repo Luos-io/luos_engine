@@ -64,6 +64,18 @@ typedef struct __attribute__((__packed__)){
     };
 }asserv_pid_t;
 
+// Servo
+typedef struct {
+    union {
+        struct __attribute__((__packed__)){
+        float max_angle;
+        float min_pulse_time;
+        float max_pulse_time;
+        };
+        unsigned char unmap[3 * sizeof(float)];
+    };
+}servo_parameters_t;
+
 // Motor
 typedef struct __attribute__((__packed__)){
     union {
