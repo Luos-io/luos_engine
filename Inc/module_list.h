@@ -20,7 +20,8 @@ typedef enum {
     HANDY,
     IMU,
     LIGHT,
-    CONTROLLED_MOTOR
+    CONTROLLED_MOTOR,
+    VOID
 } module_type_t;
 
 typedef enum {
