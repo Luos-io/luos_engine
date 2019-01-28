@@ -3,7 +3,7 @@
 int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
     if (input->header.cmd == L0_LED) {
         if (input->data[0] < 2) {
-            HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin, (input->data[0] == 0));
+            status_led(input->data[0]);
             return LUOS_PROTOCOL_NB;
         }
     }
@@ -33,4 +33,8 @@ int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         return L0_VOLTAGE;
     }
     return LUOS_PROTOCOL_NB;
+}
+
+void status_led(char state) {
+    HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin, (state == 0));
 }
