@@ -40,8 +40,10 @@ typedef enum {
     PEDOMETER, // long[2] (step number and step time millisecond)
     LUX, // float (Lux)
     CURRENT, // float (Ampere)
+    TEMPERATURE, // float (°C)
 
     // Configuration commands
+    REGISTER, // a register data [reg_add, data[]]
     REINIT, // char (True/False)
     STOP, // char (True/False)
     PID, // pid_t float[3] = {p, i, d}

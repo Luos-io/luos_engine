@@ -7,7 +7,7 @@ int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
             return LUOS_PROTOCOL_NB;
         }
     }
-    if (input->header.cmd == L0_TEMPERATURE) {
+    if (input->header.cmd == L0_TEMPERATURE & input->header.size == 0) {
         output->header.cmd = L0_TEMPERATURE;
         output->header.target_mode = ID;
         output->header.size = sizeof(float);
