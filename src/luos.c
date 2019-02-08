@@ -13,7 +13,7 @@ int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         output->data[MAX_ALIAS_SIZE] = vm->type;
         return IDENTIFY_CMD;
     }
-    if (input->header.cmd == REVISION) {
+    if (input->header.cmd == REVISION & input->header.size == 0) {
         output->header.cmd = REVISION;
         output->header.target_mode = ID;
 #ifndef FIRM_REV
@@ -24,7 +24,7 @@ int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         output->header.target = input->header.source;
         return REVISION;
     }
-    if (input->header.cmd == UUID) {
+    if (input->header.cmd == UUID & input->header.size == 0) {
         output->header.cmd = UUID;
         output->header.target_mode = ID;
         output->header.size = sizeof(luos_uuid_t);
