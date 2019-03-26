@@ -79,6 +79,9 @@ typedef enum {
     HANDY_SET_POSITION, // handy_t
     PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
     LUOS_PROTOCOL_NB,
+
+    // To be moved
+    SETID, // Set Dynamixel ID
 } module_register_t;
 
 
