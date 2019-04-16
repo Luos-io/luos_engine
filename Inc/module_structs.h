@@ -120,5 +120,4 @@ typedef struct __attribute__((__packed__)){
     float wheel_diameter_mm;
 }motor_config_t;
 
-
 #endif /*__ __L0_H */

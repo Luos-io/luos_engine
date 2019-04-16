@@ -32,7 +32,7 @@ typedef enum {
     ASK_PUB_CMD, // Gate asks a sensor module to publish its data
     REVISION, // Module sends its firmware revision
 
-    // Generic data register
+    // Generic data
     COLOR, // char[3] (R, G, B)
     COMPLIANT, // char (True/False)
     IO_STATE, // char (True/False)
@@ -41,6 +41,7 @@ typedef enum {
     LUX, // float (Lux)
     CURRENT, // float (Ampere)
     TEMPERATURE, // float (°C)
+    TIME, // time Second (float)
 
     // Configuration commands
     REGISTER, // a register data [reg_add, data[]]
@@ -73,7 +74,7 @@ typedef enum {
     HEADING, // long (360 degrees from North with Y+ axis as the pointer)
 
     // Specific register
-    DXL_WHEELMODE, // char (True/False) TODO => should be managed by MOTOR_REPORT
+    DXL_WHEELMODE, // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
     GPIO_GET_STATE, // gpio_t
     GPIO_SET_STATE, // char[3] (p2, p3, p4)
     HANDY_SET_POSITION, // handy_t
