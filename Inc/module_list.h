@@ -21,7 +21,8 @@ typedef enum {
     IMU,
     LIGHT,
     CONTROLLED_MOTOR,
-    VOID
+    VOID,
+    LOAD
 } module_type_t;
 
 typedef enum {
@@ -42,6 +43,7 @@ typedef enum {
     CURRENT, // float (Ampere)
     TEMPERATURE, // float (°C)
     TIME, // time Second (float)
+    FORCE, // force or moment (float)
 
     // Configuration commands
     REGISTER, // a register data [reg_add, data[]]
@@ -51,6 +53,8 @@ typedef enum {
     RESOLUTION, // resolution parameter for a sensor float
     REDUCTION, // reduction factor (mechanical for example) float
     DIMENSION, // dimention of an element mm float
+    OFFSET, // decay float
+    SETID, // Set Dynamixel ID
 
     // L0 things
     L0_TEMPERATURE, // float (°c)
@@ -80,9 +84,6 @@ typedef enum {
     HANDY_SET_POSITION, // handy_t
     PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
     LUOS_PROTOCOL_NB,
-
-    // To be moved
-    SETID, // Set Dynamixel ID
 } module_register_t;
 
 
