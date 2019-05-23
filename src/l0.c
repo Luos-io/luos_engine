@@ -1,4 +1,5 @@
 #include "l0.h"
+#include <string.h>
 
 int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
     if (input->header.cmd == L0_LED) {
@@ -7,7 +8,7 @@ int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
             return LUOS_PROTOCOL_NB;
         }
     }
-    if (input->header.cmd == L0_TEMPERATURE & input->header.size == 0) {
+    if ((input->header.cmd == L0_TEMPERATURE) & (input->header.size == 0)) {
         output->header.cmd = L0_TEMPERATURE;
         output->header.target_mode = ID;
         output->header.size = sizeof(float);
@@ -23,7 +24,7 @@ int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         memcpy(output->data, &temp, sizeof(float));
         return L0_TEMPERATURE;
     }
-    if (input->header.cmd == L0_VOLTAGE & input->header.size == 0) {
+    if ((input->header.cmd == L0_VOLTAGE) & (input->header.size == 0)) {
         output->header.cmd = L0_VOLTAGE;
         output->header.target_mode = ID;
         output->header.size = sizeof(float);
