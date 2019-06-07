@@ -4,6 +4,14 @@
 
 // This file contain struct of messages exchanged between gate and modules
 
+// Luos unic ID => ARM serial number
+typedef struct __attribute__((__packed__)){
+    union {
+        uint32_t uuid[3];
+        uint8_t unmap[3 * sizeof(uint32_t)];                /*!< Uncmaped form. */
+    };
+}luos_uuid_t;
+
 // GPIO struct
 typedef struct __attribute__((__packed__)){
     union {
