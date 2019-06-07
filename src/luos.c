@@ -7,15 +7,7 @@ static vm_t *luos_vm_pointer;
 static volatile msg_t luos_pub_msg;
 static volatile int luos_pub = LUOS_PROTOCOL_NB;
 
-// Luos unic ID => ARM serial number
-typedef struct __attribute__((__packed__)){
-    union {
-        uint32_t uuid[3];
-        uint8_t unmap[3 * sizeof(uint32_t)];                /*!< Uncmaped form. */
-    };
-}luos_uuid_t;
-
-int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
+static int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
     if (input->header.cmd == IDENTIFY_CMD) {
         output->header.cmd = INTRODUCTION_CMD;
         output->header.target_mode = ID;
