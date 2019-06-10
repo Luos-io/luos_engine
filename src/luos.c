@@ -18,7 +18,9 @@ static int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
             output->data[i] = vm->alias[i];
         }
         output->data[MAX_ALIAS_SIZE] = vm->type;
-        return IDENTIFY_CMD;
+        luos_pub = IDENTIFY_CMD;
+        return 1;
+    }
     }
     if ((input->header.cmd == REVISION) & (input->header.size == 0)) {
         output->header.cmd = REVISION;
@@ -29,7 +31,8 @@ static int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         memcpy(output->data, FIRM_REV, sizeof("unknown"));
         output->header.size = strlen((char*)output->data);
         output->header.target = input->header.source;
-        return REVISION;
+        luos_pub = REVISION;
+        return 1;
     }
     if ((input->header.cmd == UUID) & (input->header.size == 0)) {
         output->header.cmd = UUID;
@@ -41,22 +44,21 @@ static int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         uuid.uuid[1] = LUOS_UUID[1];
         uuid.uuid[2] = LUOS_UUID[2];
         memcpy(output->data, &uuid.unmap, sizeof(luos_uuid_t));
-        return UUID;
+        luos_pub = UUID;
+        return 1;
     }
-    return LUOS_PROTOCOL_NB;
+    return 0;
 }
 
 
 void luos_cb(vm_t *vm, msg_t *msg) {
     // Luos message management
-    int pub_type = luos_msg_handler(vm, msg, &luos_pub_msg);
-    if (pub_type != LUOS_PROTOCOL_NB) {
+    if (luos_msg_handler(vm, msg, &luos_pub_msg)) {
         luos_vm_pointer = vm;
-        luos_pub = pub_type;
         return;
     }
     // L0 message management
-    pub_type = l0_msg_handler(vm, msg, &luos_pub_msg);
+    int pub_type = l0_msg_handler(vm, msg, &luos_pub_msg);
     if (pub_type == L0_LED) {
         return;
     }
