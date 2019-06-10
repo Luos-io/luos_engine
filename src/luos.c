@@ -1,6 +1,7 @@
 #include "luos.h"
 #include "l0.h"
 #include "robus.h"
+#include "sys_msg.h"
 #include <string.h>
 
 static vm_t *luos_vm_pointer;
@@ -90,6 +91,11 @@ vm_t* luos_module_create(RX_CB mod_cb, unsigned char type, const char *alias) {
     return robus_module_create(mod_cb, type, alias);
 }
 
-unsigned char luos_send(vm_t* vm, msg_t *msg){
+unsigned char luos_send(vm_t* vm, msg_t *msg) {
     return robus_send(vm, msg);
+}
+
+unsigned char luos_send_alias(vm_t* vm, msg_t *msg) {
+    msg->header.cmd = WRITE_ALIAS;
+    return robus_send_sys(vm, msg);
 }

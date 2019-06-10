@@ -50,5 +50,15 @@ vm_t* luos_module_create(RX_CB mod_cb, unsigned char type, const char *alias);
  */
 unsigned char luos_send(vm_t* vm, msg_t *msg);
 
+/**
+ * \fn unsigned char luos_send_alias(vm_t* vm, msg_t *msg)
+ * \brief  Send alias function.
+ *
+ * \param virtual module who send.
+ * \param msg Message to send to the slave. (don't need any header.cmd)
+ *
+ * \return send or not
+ */
+unsigned char luos_send_alias(vm_t* vm, msg_t *msg);
 
 #endif /* LUOS_H */
