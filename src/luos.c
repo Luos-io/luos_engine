@@ -21,6 +21,9 @@ static int luos_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
         luos_pub = IDENTIFY_CMD;
         return 1;
     }
+    if (input->header.cmd == INTRODUCTION_CMD) {
+        insert_on_route_table(input->header.source, deser_introduction(input));
+        return 1;
     }
     if ((input->header.cmd == REVISION) & (input->header.size == 0)) {
         output->header.cmd = REVISION;
