@@ -19,55 +19,53 @@ int id_from_alias(char* alias) {
 // Create a string from a module type
 char* string_from_type(module_type_t type) {
     switch (type) {
-        case BUTTON:
-            return "Button";
+        case STATE_MOD:
+            return "State";
         break;
-        case RGB_LED:
-            return "RgbLed";
+        case COLOR_MOD:
+            return "Color";
         break;
-        case SERVO:
+        case SERVO_MOD:
             return "Servo";
         break;
-        case POTENTIOMETER:
-            return "Potentiometer";
+        case ANGLE_MOD:
+            return "Angle";
         break;
-        case DISTANCE:
+        case DISTANCE_MOD:
             return "DistanceSensor";
         break;
-        case RELAY:
-            return "PowerSwitch";
-        break;
-        case GATE:
+        case GATE_MOD:
             return "Gate";
         break;
-        case DYNAMIXEL:
+        case DYNAMIXEL_MOD:
             return "DynamixelMotor";
         break;
-        case STEPPER:
+        case STEPPER_MOD:
             return "Stepper";
         break;
-        case DCMOTOR:
+        case DCMOTOR_MOD:
             return "DCMotor";
         break;
-        case GPIO:
-            return "GPIO";
         break;
-        case HANDY:
+        case HANDY_MOD:
             return "Handy";
         break;
-        case IMU:
+        case IMU_MOD:
             return "Imu";
         break;
-        case LIGHT:
+        case LIGHT_MOD:
             return "LightSensor";
         break;
-        case CONTROLLED_MOTOR:
+        case CONTROLLED_MOTOR_MOD:
             return "ControlledMotor";
-        case VOID:
+        case VOID_MOD:
             return "Void";
         break;
-        case LOAD:
+        case LOAD_MOD:
             return "Load";
+        break;
+        case VOLTAGE_MOD:
+            return "Voltage";
         break;
         default:
             return "unknown";
@@ -77,15 +75,15 @@ char* string_from_type(module_type_t type) {
 
 // check if the module is a sensor or not
 uint8_t is_sensor(module_type_t type) {
-    if((type == POTENTIOMETER) ||
-       (type == BUTTON) ||
-       (type == DYNAMIXEL) ||
-       (type == DISTANCE) ||
-       (type == GPIO) ||
-       (type == IMU) ||
-       (type == LOAD) ||
-       (type == CONTROLLED_MOTOR) ||
-       (type == LIGHT)) {
+    if((type == ANGLE_MOD) ||
+       (type == STATE_MOD) ||
+       (type == DYNAMIXEL_MOD) ||
+       (type == DISTANCE_MOD) ||
+       (type == IMU_MOD) ||
+       (type == LOAD_MOD) ||
+       (type == CONTROLLED_MOTOR_MOD) ||
+       (type == VOLTAGE_MOD) ||
+       (type == LIGHT_MOD)) {
         return 1;
     }
     return 0;
@@ -224,7 +222,7 @@ void insert_on_route_table (int id, route_table_t entry) {
 // remove a module from route_table
 void remove_on_route_table (int id) {
     route_table[id].alias[0] = '\0';
-    route_table[id].type = VOID;
+    route_table[id].type = VOID_MOD;
 }
 
 // erase route_table

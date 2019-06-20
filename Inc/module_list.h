@@ -6,23 +6,23 @@
 #define GATE_ID 1
 
 typedef enum {
-    GATE,
-    SERVO,
-    RGB_LED,
-    POTENTIOMETER,
-    BUTTON,
-    DISTANCE,
-    RELAY,
-    DYNAMIXEL,
-    STEPPER,
-    DCMOTOR,
-    GPIO,
-    HANDY,
-    IMU,
-    LIGHT,
-    CONTROLLED_MOTOR,
-    VOID,
-    LOAD
+    GATE_MOD,
+    SERVO_MOD,
+    COLOR_MOD,
+    ANGLE_MOD,
+    STATE_MOD,
+    DISTANCE_MOD,
+    VOLTAGE_MOD,
+    DYNAMIXEL_MOD,
+    STEPPER_MOD,
+    DCMOTOR_MOD,
+    Compatibility_line,
+    HANDY_MOD,
+    IMU_MOD,
+    LIGHT_MOD,
+    CONTROLLED_MOTOR_MOD,
+    VOID_MOD,
+    LOAD_MOD
 } module_type_t;
 
 typedef enum {
@@ -79,8 +79,8 @@ typedef enum {
 
     // Specific register
     DXL_WHEELMODE, // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
-    GPIO_GET_STATE, // gpio_t
-    GPIO_SET_STATE, // char[3] (p2, p3, p4)
+    VOLT, // float (Volt) TODO : move it in the right place for rev 6
+    REFRESH_PUB, // Ask to send a sensor value at a given max frequency TODO : move it in the right place for rev 6
     HANDY_SET_POSITION, // handy_t
     PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
     LUOS_PROTOCOL_NB,
