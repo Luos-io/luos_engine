@@ -165,6 +165,7 @@ void detect_modules(vm_t* vm) {
 
     // Next, starts the topology detection.
     int nb_mod = topology_detection(vm);
+    if (nb_mod > MAX_MODULES_NUMBER-1) nb_mod = MAX_MODULES_NUMBER-1;
 
     // Then, asks for introduction for every found modules.
     intro_msg.header.cmd = IDENTIFY_CMD;
