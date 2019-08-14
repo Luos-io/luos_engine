@@ -83,6 +83,14 @@ typedef enum {
     REFRESH_PUB, // Ask to send a sensor value at a given max frequency TODO : move it in the right place for rev 6
     HANDY_SET_POSITION, // handy_t
     PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
+
+    // compatibility area
+    // Space positioning limits
+    ROTATION_POSITION_LIMIT, // min float (°), max float (°)
+    TRANSLATION_POSITION_LIMIT, // min float (mm), max float (mm)
+    POWER_LIMIT, // float(%)
+    CURRENT_LIMIT, // float(A)
+
     LUOS_PROTOCOL_NB,
 } module_register_t;
 
