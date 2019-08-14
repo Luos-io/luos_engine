@@ -2,6 +2,9 @@
 #define __MODULE_STRUCT_H
 #include "main.h"
 
+#define MIN 0
+#define MAX 1
+
 // This file contain struct of messages exchanged between gate and modules
 
 // Luos unic ID => ARM serial number
@@ -109,18 +112,24 @@ typedef struct __attribute__((__packed__)){
 } motor_mode_t;
 
 typedef struct __attribute__((__packed__)){
-    float power;
 
     // targets
     motor_mode_t mode;
     float target_rot_position;
     float target_rot_speed;
+    float target_power;
+
+    // limits
+    float limit_rot_position[2];
+    float limit_power;
+    float limit_current;
 
     // measures
     float rot_position;
     float rot_speed;
     float trans_distance;
     float trans_speed;
+    float current;
 
     //configs
     float motor_reduction;
