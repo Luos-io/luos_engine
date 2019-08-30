@@ -136,9 +136,9 @@ route_table_t deser_introduction(msg_t *msg) {
     return entry;
 }
 
-int wait_route_table(vm_t* vm, msg_t* intro_msg) {
+int wait_route_table(module_t* module, msg_t* intro_msg) {
     const int timeout = 15; // timeout in ms
-    luos_send(vm, intro_msg);
+    luos_send(module, intro_msg);
     uint32_t timestamp = HAL_GetTick();
     while ((HAL_GetTick() - timestamp) < timeout) {
         if (route_table[intro_msg->header.target].type != 0) {
@@ -151,7 +151,7 @@ int wait_route_table(vm_t* vm, msg_t* intro_msg) {
 // Detect all modules and create a route table with it.
 // If multiple modules have the same name it will be changed with a number in it automatically.
 // At the end this function create a list of sensors id
-void detect_modules(vm_t* vm) {
+void detect_modules(module_t* module) {
     msg_t intro_msg, auto_name;
     route_table_t* route_table = get_route_table();
     unsigned char i = 0;
@@ -160,11 +160,11 @@ void detect_modules(vm_t* vm) {
 
     // now add local module to the route_table
     char hostString[25];
-    sprintf(hostString, "%s", vm->alias);
-    add_on_route_table (1, vm->type, hostString);
+    sprintf(hostString, "%s", module->vm->alias);
+    add_on_route_table (1, module->vm->type, hostString);
 
     // Next, starts the topology detection.
-    int nb_mod = topology_detection(vm);
+    int nb_mod = topology_detection(module->vm);
     if (nb_mod > MAX_MODULES_NUMBER-1) nb_mod = MAX_MODULES_NUMBER-1;
 
     // Then, asks for introduction for every found modules.
@@ -175,7 +175,7 @@ void detect_modules(vm_t* vm) {
     for (int id=2; id<nb_mod+1; id++) {
         intro_msg.header.target = id;
         // Ask to introduce and wait for a reply
-        if (wait_route_table(vm, &intro_msg)) {
+        if (wait_route_table(module, &intro_msg)) {
             // We get the answer
             if (id_from_alias(route_table[id].alias) != id ) {
                 int annotation = 1;
@@ -198,7 +198,7 @@ void detect_modules(vm_t* vm) {
                 }
                 auto_name.data[auto_name.header.size] = '\0';
                 // Send the message using the WRITE_ALIAS system command
-                robus_send_sys(vm, &auto_name);
+                robus_send_sys(module->vm, &auto_name);
             }
         }
     }
