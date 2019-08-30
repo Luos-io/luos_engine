@@ -27,7 +27,7 @@ uint8_t is_sensor(module_type_t type);
 module_type_t type_from_alias(char* alias);
 
 // ********************* route_table management tools ************************
-void detect_modules(vm_t* vm);
+void detect_modules(module_t* module);
 void add_on_route_table (int id, char type, char* alias);
 void insert_on_route_table (int id, route_table_t entry);
 void remove_on_route_table (int id);

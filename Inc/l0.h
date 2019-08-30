@@ -21,7 +21,7 @@ typedef struct __attribute__((__packed__)){
 
  volatile l0_analog_t L0_analog;
 
- int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output);
+ int l0_msg_handler(module_t* module, msg_t* input, msg_t* output);
  void status_led(char state);
 
 #endif /*__ __L0_H */

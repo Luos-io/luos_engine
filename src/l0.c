@@ -1,7 +1,7 @@
 #include "l0.h"
 #include <string.h>
 
-int l0_msg_handler(vm_t* vm, msg_t* input, msg_t* output) {
+int l0_msg_handler(module_t* module, msg_t* input, msg_t* output) {
     if (input->header.cmd == L0_LED) {
         if (input->data[0] < 2) {
             status_led(input->data[0]);

@@ -1,9 +1,29 @@
- #ifndef __MODULE_STRUCT_H
+#ifndef __MODULE_STRUCT_H
 #define __MODULE_STRUCT_H
 #include "main.h"
 
 #define MIN 0
 #define MAX 1
+
+/**
+ * \struct module_t
+ * \brief Module Structure
+ *
+ * This structure is used to manage modules
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__)) module_t{
+    vm_t* vm;
+    // Callback
+    void (*mod_cb) (struct module_t* module, msg_t *msg);
+    // Variables
+    unsigned char message_available;                             /*!< signal a new message available */
+    msg_t* msg_stack[MSG_BUFFER_SIZE];                            /*!< msg ready to be read */
+    unsigned char rt;                                            /*!< is this module a real time one? */
+}module_t;
+
+typedef void (*MOD_CB) (module_t* module, msg_t *msg);
+
 
 // This file contain struct of messages exchanged between gate and modules
 
