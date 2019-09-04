@@ -169,7 +169,7 @@ void detect_modules(module_t* module) {
 
     // Then, asks for introduction for every found modules.
     intro_msg.header.cmd = IDENTIFY_CMD;
-    intro_msg.header.target_mode = ID;
+    intro_msg.header.target_mode = IDACK;
     intro_msg.header.size = 0;
 
     for (int id=2; id<nb_mod+1; id++) {
