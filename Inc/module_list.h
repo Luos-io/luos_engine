@@ -29,7 +29,7 @@ typedef enum {
     // Common register for all modules and gate
     IDENTIFY_CMD, // Gate asks a module to identify itself
     INTRODUCTION_CMD, // Module sends its alias and type to the gate
-
+    WRITE_ALIAS, // Get and save a new given alias.
     ASK_PUB_CMD, // Gate asks a sensor module to publish its data
     REVISION, // Module sends its firmware revision
 
@@ -77,6 +77,12 @@ typedef enum {
     GRAVITY_VECTOR, // float[3] (Which access gravity effects)
     HEADING, // long (360 degrees from North with Y+ axis as the pointer)
 
+    // Space positioning limits
+    ROTATION_POSITION_LIMIT, // min float (°), max float (°)
+    TRANSLATION_POSITION_LIMIT, // min float (mm), max float (mm)
+    POWER_LIMIT, // float(%)
+    CURRENT_LIMIT, // float(A)
+
     // Specific register
     DXL_WHEELMODE, // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
     VOLT, // float (Volt) TODO : move it in the right place for rev 6
@@ -85,12 +91,6 @@ typedef enum {
     PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
     // compatibility area
-    // Space positioning limits
-    ROTATION_POSITION_LIMIT, // min float (°), max float (°)
-    TRANSLATION_POSITION_LIMIT, // min float (mm), max float (mm)
-    POWER_LIMIT, // float(%)
-    CURRENT_LIMIT, // float(A)
-    WRITE_ALIAS, // Get and save a new given alias.
 
     LUOS_PROTOCOL_NB,
 } module_register_t;
