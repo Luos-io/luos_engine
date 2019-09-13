@@ -17,9 +17,11 @@ typedef struct __attribute__((__packed__)) module_t{
     // Callback
     void (*mod_cb) (struct module_t* module, msg_t *msg);
     // Variables
-    unsigned char message_available;                             /*!< signal a new message available */
-    msg_t* msg_stack[MSG_BUFFER_SIZE];                            /*!< msg ready to be read */
-    unsigned char rt;                                            /*!< is this module a real time one? */
+    unsigned char message_available;    /*!< signal a new message available */
+    msg_t* msg_stack[MSG_BUFFER_SIZE];  /*!< msg ready to be read */
+    unsigned char rt;                   /*!< is this module a real time one? */
+    char default_alias[MAX_ALIAS_SIZE]; /*!< Module default alias. */
+    char alias[MAX_ALIAS_SIZE];         /*!< Module alias. */
 }module_t;
 
 typedef void (*MOD_CB) (module_t* module, msg_t *msg);
