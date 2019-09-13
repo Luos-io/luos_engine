@@ -1,5 +1,8 @@
 #include "l0.h"
 #include <string.h>
+#include "eeprom.h"
+
+uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
 int l0_msg_handler(module_t* module, msg_t* input, msg_t* output) {
     if (input->header.cmd == L0_LED) {
@@ -38,4 +41,42 @@ int l0_msg_handler(module_t* module, msg_t* input, msg_t* output) {
 
 void status_led(char state) {
     HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin, (state == 0));
+}
+
+void board_init(void) {
+    // Unlock the Flash Program Erase controller
+    HAL_FLASH_Unlock();
+    // EEPROM Init
+    for (uint16_t i = 0; i < NB_OF_VAR; i++) {
+        VirtAddVarTab[i] = i;
+    }
+    EE_Init();
+}
+
+// ******** Alias management ****************
+void write_alias(unsigned short id, char* alias) {
+    const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
+    for (uint8_t i=0; i<MAX_ALIAS_SIZE; i++) {
+        // here we save an uint8_t on an uint16_t
+        EE_WriteVariable(addr + i, (uint16_t)alias[i]);
+    }
+}
+
+char read_alias(unsigned short id, char* alias) {
+     const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
+     uint16_t data;
+     EE_ReadVariable(addr, &data);
+     // Check name integrity
+     if (((((char)data < 'A') | ((char)data > 'Z'))
+             & (((char)data < 'a') | ((char)data > 'z')))
+             | ((char)data == '\0')) {
+         return 0;
+     } else {
+         alias[0] = (char)data;
+     }
+     for (uint8_t i=1; i<MAX_ALIAS_SIZE; i++) {
+        EE_ReadVariable(addr + i, &data);
+        alias[i] = (char)data;
+     }
+     return 1;
 }

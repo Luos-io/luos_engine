@@ -90,6 +90,7 @@ typedef enum {
     TRANSLATION_POSITION_LIMIT, // min float (mm), max float (mm)
     POWER_LIMIT, // float(%)
     CURRENT_LIMIT, // float(A)
+    WRITE_ALIAS, // Get and save a new given alias.
 
     LUOS_PROTOCOL_NB,
 } module_register_t;

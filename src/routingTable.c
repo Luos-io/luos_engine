@@ -160,7 +160,7 @@ void detect_modules(module_t* module) {
 
     // now add local module to the route_table
     char hostString[25];
-    sprintf(hostString, "%s", module->vm->alias);
+    sprintf(hostString, "%s", module->alias);
     add_on_route_table (1, module->vm->type, hostString);
 
     // Next, starts the topology detection.

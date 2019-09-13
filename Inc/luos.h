@@ -90,14 +90,13 @@ msg_t* luos_read_from(module_t* module, short id);
 char luos_message_available(void);
 
 /**
- * \fn unsigned char luos_send_alias(module_t* module, msg_t *msg)
- * \brief  Send alias function.
+ * \fn void luos_save_alias(module_t* module, char* alias)
+ * \brief  Save Alias in EEprom.
  *
- * \param virtual module who send.
- * \param msg Message to send to the slave. (don't need any header.cmd)
+ * \param concerned virtual module.
+ * \param name string.
  *
- * \return send or not
  */
-unsigned char luos_send_alias(module_t* module, msg_t *msg);
+void luos_save_alias(module_t* module, char* alias);
 
 #endif /* LUOS_H */

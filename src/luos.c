@@ -34,7 +34,7 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         output->header.size = MAX_ALIAS_SIZE+1;
         output->header.target = input->header.source;
         for (int i=0; i<MAX_ALIAS_SIZE; i++) {
-            output->data[i] = module->vm->alias[i];
+            output->data[i] = module->alias[i];
         }
         output->data[MAX_ALIAS_SIZE] = module->vm->type;
         luos_pub = IDENTIFY_CMD;
@@ -69,6 +69,22 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         luos_pub = UUID;
         return 1;
     }
+
+    if ((input->header.cmd == WRITE_ALIAS)) {
+        // Make a clean copy with full \0 at the end.
+        memset(module->alias, '\0', sizeof(module->alias));
+        if (input->header.size > 16) input->header.size = 16;
+        if ((((input->data[0] > 'A') & (input->data[0] < 'Z')) | ((input->data[0] > 'a') & (input->data[0] < 'z')) | (input->data[0] == '\0')) & (input->header.size != 0)) {
+            memcpy(module->alias, input->data, input->header.size);
+            luos_save_alias(module, module->alias);
+        } else {
+            // This is an alias erase instruction, get back to default one
+            luos_save_alias(module, '\0');
+            memcpy(module->alias, module->default_alias, MAX_ALIAS_SIZE);
+        }
+        return 1;
+    }
+
     return 0;
 }
 
@@ -79,6 +95,15 @@ module_t* get_module(vm_t* vm){
         }
     }
     return 0;
+}
+
+int get_module_index(module_t* module){
+    for (int i=0; i < module_number; i++) {
+        if (module == &module_table[i]) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void fifo_set(module_t* module, msg_t* msg) {
@@ -180,8 +205,10 @@ void luos_cb(vm_t *vm, msg_t *msg) {
 
 void luos_init(void){
     module_number = 0;
+    board_init();
     robus_init(luos_cb);
 }
+
 
 void luos_loop(void) {
     fifo_t chunk;
@@ -202,24 +229,48 @@ void luos_modules_clear(void) {
     robus_modules_clear();
 }
 
+
 module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias) {
-    module_t* module = &module_table[module_number++];
-    module->vm = robus_module_create(type, alias);
+    unsigned char i = 0;
+    module_t* module = &module_table[module_number];
+    module->vm = robus_module_create(type);
     module->rt = 0;
     module->message_available = 0;
 
     // Link the module to his callback
     module->mod_cb = mod_cb;
+    // Save default alias
+    for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
+        module->default_alias[i] = alias[i];
+        if (module->default_alias[i] == '\0')
+            break;
+    }
+    module->default_alias[i] = '\0';
+    // Initialise the module alias to 0
+    memset((void *)module->alias, 0, sizeof(module->alias));
+    if (!read_alias(module_number, (char *)module->alias)) {
+        // if no alias saved keep the default one
+        for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
+            module->alias[i] = alias[i];
+            if (module->alias[i] == '\0')
+                break;
+        }
+        module->alias[i] = '\0';
+    }
+    module_number++;
     return module;
 }
+
 
 void luos_module_enable_rt(module_t*module) {
     module->rt = 1;
 }
 
+
 unsigned char luos_send(module_t* module, msg_t *msg) {
     return robus_send(module->vm, msg);
 }
+
 
 msg_t* luos_read(module_t* module) {
     if (module->message_available > MSG_BUFFER_SIZE) {
@@ -260,7 +311,10 @@ char luos_message_available(void) {
     return module_msg_available;
 }
 
-unsigned char luos_send_alias(module_t* module, msg_t *msg) {
-    msg->header.cmd = WRITE_ALIAS;
-    return robus_send_sys(module->vm, msg);
+void luos_save_alias(module_t* module, char* alias) {
+    // Get module index
+    int i = get_module_index(module);
+    if (i >= 0) {
+        write_alias(i, alias);
+    }
 }

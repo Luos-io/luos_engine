@@ -23,5 +23,8 @@ typedef struct __attribute__((__packed__)){
 
  int l0_msg_handler(module_t* module, msg_t* input, msg_t* output);
  void status_led(char state);
+ void board_init(void);
+ void write_alias(unsigned short id, char* alias);
+ char read_alias(unsigned short id, char* alias);
 
 #endif /*__ __L0_H */
