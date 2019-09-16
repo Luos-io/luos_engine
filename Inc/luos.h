@@ -49,6 +49,7 @@ module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alia
  *
  */
 void luos_module_enable_rt(module_t*module);
+
 /**
  * \fn unsigned char luos_send(module_t* module, msg_t *msg)
  * \brief  Send message function.
@@ -59,6 +60,32 @@ void luos_module_enable_rt(module_t*module);
  * \return send or not
  */
 unsigned char luos_send(module_t* module, msg_t *msg);
+
+/**
+ * \fn unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned int size)
+ * \brief  Send message with big datas into multiple chunk.
+ *
+ * \param module who send.
+ * \param msg Message to send to the slave with basic informations.
+ * \param bin_data Pointer to the message data table
+ * \param size Size of the data to transmit
+ *
+ * \return send or not
+ */
+unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size);
+
+/**
+ * \fn unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
+ * \brief  Retrieve a multi chunk data
+ *
+ * \param module who receive.
+ * \param msg Message chunk received by the slave.
+ * \param bin_data Pointer to the data table
+ * \param size Size of the received data
+ *
+ * \return reception finish or not
+ */
+unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned short* size);
 
 /**
  * \fn msg_t* luos_read(module_t* module)
