@@ -271,6 +271,56 @@ unsigned char luos_send(module_t* module, msg_t *msg) {
     return robus_send(module->vm, msg);
 }
 
+unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size) {
+    int msg_number = 1;
+    int data_length = size;
+    if (size > MAX_DATA_MSG_SIZE) {
+        msg_number = (size / MAX_DATA_MSG_SIZE);
+        msg_number += (msg_number*MAX_DATA_MSG_SIZE < size);
+    }
+    for (volatile int chunk = 0; chunk < msg_number; chunk++) {
+        if (size > MAX_DATA_MSG_SIZE) {
+            data_length = MAX_DATA_MSG_SIZE;
+        } else {
+            data_length = size;
+        }
+        memcpy(msg->data, &bin_data[chunk * MAX_DATA_MSG_SIZE], data_length);
+        msg->header.size = size;
+        luos_send(module, msg);
+        if (size > MAX_DATA_MSG_SIZE) {
+            size -= MAX_DATA_MSG_SIZE;
+        }
+    }
+    return 0;
+}
+
+unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned short* size) {
+    // image management
+    unsigned short chunk_size = 0;
+    static unsigned short data_size[MAX_VM_NUMBER] = {0};
+    const int id = get_module_index(module);
+
+    // compute data size and number of data to copy
+    if (data_size[id] < msg->header.size) {
+        // New data start
+        data_size[id] = msg->header.size;
+    }
+    *size = &data_size[id];
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+        chunk_size = MAX_DATA_MSG_SIZE;
+    else
+        chunk_size = msg->header.size;
+
+    memcpy(&bin_data[data_size[id] - msg->header.size], msg->data, chunk_size);
+
+    if (!(msg->header.size > MAX_DATA_MSG_SIZE)) {
+        // data collection finished
+        data_size[id] = 0;
+        return 1;
+    }
+    return 0;
+}
+
 
 msg_t* luos_read(module_t* module) {
     if (module->message_available > MSG_BUFFER_SIZE) {
