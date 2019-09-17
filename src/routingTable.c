@@ -150,6 +150,8 @@ int wait_route_table(module_t* module, msg_t* intro_msg) {
     luos_send(module, intro_msg);
     uint32_t timestamp = HAL_GetTick();
     while ((HAL_GetTick() - timestamp) < timeout) {
+        // If this request is for a module in this board allow him to respond.
+        luos_loop();
         if (route_table[intro_msg->header.target].type != 0) {
             return 1;
         }
@@ -167,21 +169,15 @@ void detect_modules(module_t* module) {
     // clear network detection state and all previous info.
     flush_route_table();
 
-    // now add local module to the route_table
-    char hostString[25];
-    sprintf(hostString, "%s", module->alias);
-    add_on_route_table (1, module->vm->type, hostString);
-
-    // Next, starts the topology detection.
+    // Starts the topology detection.
     int nb_mod = topology_detection(module->vm);
     if (nb_mod > MAX_MODULES_NUMBER-1) nb_mod = MAX_MODULES_NUMBER-1;
 
     // Then, asks for introduction for every found modules.
-    intro_msg.header.cmd = IDENTIFY_CMD;
-    intro_msg.header.target_mode = IDACK;
-    intro_msg.header.size = 0;
-
-    for (int id=2; id<nb_mod+1; id++) {
+    for (int id = 1; id<nb_mod+1; id++) {
+        intro_msg.header.cmd = IDENTIFY_CMD;
+        intro_msg.header.target_mode = IDACK;
+        intro_msg.header.size = 0;
         intro_msg.header.target = id;
         // Ask to introduce and wait for a reply
         if (wait_route_table(module, &intro_msg)) {
