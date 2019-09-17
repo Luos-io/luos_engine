@@ -21,6 +21,7 @@ typedef struct __attribute__((__packed__)){
 
 // ********************* route_table search tools ************************
 int id_from_alias(char* alias);
+int id_from_type(module_type_t type);
 char* string_from_type(module_type_t type);
 module_type_t type_from_id(uint16_t id);
 uint8_t is_sensor(module_type_t type);

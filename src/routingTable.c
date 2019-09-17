@@ -16,6 +16,15 @@ int id_from_alias(char* alias) {
     return -1;
 }
 
+int id_from_type(module_type_t type) {
+    for(int i = 0; i<=last_module; i++) {
+        if (type == route_table[i].type) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 // Create a string from a module type
 char* string_from_type(module_type_t type) {
     switch (type) {
