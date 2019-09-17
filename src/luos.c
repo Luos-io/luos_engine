@@ -12,7 +12,7 @@ unsigned char module_number;
 
 // no real time callback management
 volatile int module_msg_available = 0;
-volatile module_t* module_msg_fifo[MSG_BUFFER_SIZE];
+volatile module_t* module_msg_mngr[MSG_BUFFER_SIZE];
 
 /**
  * \struct module_t
@@ -21,10 +21,80 @@ volatile module_t* module_msg_fifo[MSG_BUFFER_SIZE];
  * This structure is used to manage modules
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) fifo_t{
+typedef struct __attribute__((__packed__)) mngr_t{
     module_t* module;
     msg_t* msg;                            /*!< msg ready to be read */
-}fifo_t;
+}mngr_t;
+
+//**************** mngr things*********************
+void mngr_set(module_t* module, msg_t* msg) {
+    if ((module_msg_available+1 > MSG_BUFFER_SIZE) || (module->message_available+1 > MSG_BUFFER_SIZE)) {
+        // This new message doesn't fit into buffer, don't save it
+        return;
+    }
+    module_msg_mngr[module_msg_available++] = module;
+    module->msg_stack[module->message_available++] = msg;
+}
+
+void mngr_get_msg(int module_index,int msg_index, mngr_t* chunk){
+    if ((module_index < 0) | (msg_index < 0)){
+        return;
+    }
+    // get module
+    chunk->module = module_msg_mngr[module_index];
+    __disable_irq();
+    for (int i = module_index; i < module_msg_available; i++) {
+        module_msg_mngr[i] = module_msg_mngr[i+1];
+    }
+    module_msg_available--;
+    __enable_irq();
+
+    // get msg
+    chunk->msg = chunk->module->msg_stack[msg_index];
+    __disable_irq();
+    for (int i = msg_index; i < chunk->module->message_available; i++) {
+        chunk->module->msg_stack[i] = chunk->module->msg_stack[i+1];
+    }
+    chunk->module->message_available--;
+    __enable_irq();
+}
+
+void mngr_get(int module_index, mngr_t* chunk){
+    mngr_get_msg(module_index, 0, chunk);
+}
+
+// find the next message for a module with a callback
+int get_next_cb_id() {
+    for (int i = 0; i < module_msg_available; i++) {
+        if (module_msg_mngr[i]->mod_cb){
+            //there is a callback in this module return this id
+            return i;
+        }
+    }
+    return -1;
+}
+
+// find the next message for a specific module
+int get_next_module_id(module_t* module) {
+    for (int i = 0; i < module_msg_available; i++) {
+        if (module_msg_mngr[i] == module){
+            //there is the module we are looking for
+            return i;
+        }
+    }
+    return -1;
+}
+
+// find the next message from a specific id for a specific module
+int get_next_msg_id(int mngr_id, short msg_from) {
+    // find the next message from the specified id
+    for (int i=0; i<module_msg_mngr[mngr_id]->message_available; i++) {
+        if (module_msg_mngr[mngr_id]->msg_stack[i]->header.source == msg_from) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 //**************** Private functions*********************
 static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
@@ -106,75 +176,6 @@ int get_module_index(module_t* module){
     return -1;
 }
 
-void fifo_set(module_t* module, msg_t* msg) {
-    if ((module_msg_available+1 > MSG_BUFFER_SIZE) || (module->message_available+1 > MSG_BUFFER_SIZE)) {
-        // This new message doesn't fit into buffer, don't save it
-        return;
-    }
-    module_msg_fifo[module_msg_available++] = module;
-    module->msg_stack[module->message_available++] = msg;
-}
-
-void fifo_get_msg(int module_index,int msg_index, fifo_t* chunk){
-    if ((module_index < 0) | (msg_index < 0)){
-        return;
-    }
-    // get module
-    chunk->module = module_msg_fifo[module_index];
-    __disable_irq();
-    for (int i = module_index; i < module_msg_available; i++) {
-        module_msg_fifo[i] = module_msg_fifo[i+1];
-    }
-    module_msg_available--;
-    __enable_irq();
-
-    // get msg
-    chunk->msg = chunk->module->msg_stack[msg_index];
-    __disable_irq();
-    for (int i = msg_index; i < chunk->module->message_available; i++) {
-        chunk->module->msg_stack[i] = chunk->module->msg_stack[i+1];
-    }
-    chunk->module->message_available--;
-    __enable_irq();
-}
-
-void fifo_get(int module_index, fifo_t* chunk){
-    fifo_get_msg(module_index, 0, chunk);
-}
-
-// find the next message for a module with a callback
-int get_next_cb_id() {
-    for (int i = 0; i < module_msg_available; i++) {
-        if (module_msg_fifo[i]->mod_cb){
-            //there is a callback in this module return this id
-            return i;
-        }
-    }
-    return -1;
-}
-
-// find the next message for a specific module
-int get_next_module_id(module_t* module) {
-    for (int i = 0; i < module_msg_available; i++) {
-        if (module_msg_fifo[i] == module){
-            //there is the module we are looking for
-            return i;
-        }
-    }
-    return -1;
-}
-
-// find the next message from a specific id for a specific module
-int get_next_msg_id(int fifo_id, short msg_from) {
-    // find the next message from the specified id
-    for (int i=0; i<module_msg_fifo[fifo_id]->message_available; i++) {
-        if (module_msg_fifo[fifo_id]->msg_stack[i]->header.source == msg_from) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 void luos_cb(vm_t *vm, msg_t *msg) {
     // Luos message management
     volatile module_t* module = get_module(vm);
@@ -197,7 +198,7 @@ void luos_cb(vm_t *vm, msg_t *msg) {
     }
     else {
         //store module and msg pointer
-        fifo_set(module, msg);
+        mngr_set(module, msg);
     }
 }
 
@@ -211,7 +212,7 @@ void luos_init(void){
 
 
 void luos_loop(void) {
-    fifo_t chunk;
+    mngr_t chunk;
     if (luos_pub != LUOS_PROTOCOL_NB) {
       luos_send(luos_module_pointer, (msg_t*)&luos_pub_msg);
       luos_pub = LUOS_PROTOCOL_NB;
@@ -219,7 +220,7 @@ void luos_loop(void) {
     // filter stacked module with callback
     int i = get_next_cb_id();
     while( i >= 0){
-        fifo_get(i, &chunk);
+        mngr_get(i, &chunk);
         chunk.module->mod_cb(chunk.module, chunk.msg);
         i = get_next_cb_id();
     }
@@ -332,8 +333,8 @@ msg_t* luos_read(module_t* module) {
         int i = get_next_module_id(module);
         if (i >= 0) {
             // this module have a message, get it
-            fifo_t chunk;
-            fifo_get(i, &chunk);
+            mngr_t chunk;
+            mngr_get(i, &chunk);
             return chunk.msg;
         }
     }
@@ -342,14 +343,14 @@ msg_t* luos_read(module_t* module) {
 
 msg_t* luos_read_from(module_t* module, short id) {
     if (module->message_available) {
-        // Get the next fifo id containing something for this module
-        int fifo_module_id = get_next_module_id(module);
-        if (fifo_module_id >= 0) {
+        // Get the next message manager id containing something for this module
+        int mngr_module_id = get_next_module_id(module);
+        if (mngr_module_id >= 0) {
             // check if there is a message from this id in this module
-            int fifo_msg_id = get_next_msg_id(fifo_module_id, id);
-            if (fifo_msg_id >= 0) {
-                fifo_t chunk;
-                fifo_get_msg(fifo_module_id, fifo_msg_id, &chunk);
+            int mngr_msg_id = get_next_msg_id(mngr_module_id, id);
+            if (mngr_msg_id >= 0) {
+                mngr_t chunk;
+                mngr_get_msg(mngr_module_id, mngr_msg_id, &chunk);
                 return chunk.msg;
             }
         }
