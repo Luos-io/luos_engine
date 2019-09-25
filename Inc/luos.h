@@ -74,6 +74,23 @@ unsigned char luos_send(module_t* module, msg_t *msg);
  */
 unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size);
 
+
+/**
+ * \fn unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer, int* data_size, int start_index, int stop_index)
+ * \brief  Send message with big datas into multiple chunk.
+ *
+ * \param module who transmit.
+ * \param msg Message chunk used to transmit.
+ * \param ring_buffer Pointer to the begin of data ring table
+ * \param data_size Size of the transmitted data
+ * \param start_index index of the begin of the ring table
+ * \param stop_index complete size of the ring buffer
+ *
+ * \return send or not
+ */
+unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
+                                   int* data_size, int* start_index, int stop_index);
+
 /**
  * \fn unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
  * \brief  Retrieve a multi chunk data
@@ -85,7 +102,23 @@ unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsign
  *
  * \return reception finish or not
  */
-unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned short* size);
+unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data);
+
+/**
+ * \fn unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
+ * \brief  Retrieve a multi chunk data
+ *
+ * \param module who receive.
+ * \param msg Message chunk received by the slave.
+ * \param ring_buffer Pointer to the begin of data ring table
+ * \param data_size Size of the received data to manage
+ * \param start_index index of the begin of the ring table
+ * \param stop_index complete size of the ring buffer
+ *
+ * \return reception finish or not
+ */
+unsigned char luos_get_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
+                                   int* data_size, int *start_index, int stop_index);
 
 /**
  * \fn msg_t* luos_read(module_t* module)
