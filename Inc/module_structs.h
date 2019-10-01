@@ -133,6 +133,24 @@ typedef struct __attribute__((__packed__)){
     };
 } motor_mode_t;
 
+// Control modes
+typedef enum {
+    PLAY,
+    PAUSE,
+    STOP
+} control_type_t;
+
+typedef struct __attribute__((__packed__)){
+    union {
+        struct __attribute__((__packed__)){
+            // control modes
+            uint8_t mode_control : 2;
+            uint8_t mode_rec : 1;
+        };
+        uint8_t unmap;
+    };
+} control_mode_t;
+
 typedef struct __attribute__((__packed__)){
 
     // targets
