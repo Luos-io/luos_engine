@@ -45,11 +45,11 @@ typedef enum {
     TEMPERATURE, // float (°C)
     TIME, // time Second (float)
     FORCE, // force or moment (float)
+    CONTROL, // control_mode (control_mode_t)
 
     // Configuration commands
     REGISTER, // a register data [reg_add, data[]]
     REINIT, // char (True/False)
-    STOP, // char (True/False)
     PID, // pid_t float[3] = {p, i, d}
     RESOLUTION, // resolution parameter for a sensor float
     REDUCTION, // reduction factor (mechanical for example) float

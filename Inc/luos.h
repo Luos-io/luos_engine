@@ -89,7 +89,7 @@ unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsign
  * \return send or not
  */
 unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
-                                   int data_size, int start_index, int stop_index);
+                                   int* data_size, int* start_index, int stop_index);
 
 /**
  * \fn unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)

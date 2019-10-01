@@ -186,42 +186,46 @@ unsigned char luos_send(module_t* module, msg_t *msg) {
 }
 
 unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size) {
-    return luos_send_ring_buffer(module, msg, bin_data, size, 0, size);
+    int start_index = 0;
+    int data_size = size;
+    return luos_send_ring_buffer(module, msg, bin_data, &data_size, &start_index, size);
 }
 
 unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
-                                   int data_size, int start_index, int stop_index) {
+                                   int *data_size, int *start_index, int stop_index) {
 
     int msg_number = 1;
     int chunk_size;
     // compute number of message needed to send this data
-    if (data_size > MAX_DATA_MSG_SIZE) {
-        msg_number = (data_size / MAX_DATA_MSG_SIZE);
-        msg_number += (msg_number*MAX_DATA_MSG_SIZE < data_size);
+    if (*data_size > MAX_DATA_MSG_SIZE) {
+        msg_number = (*data_size / MAX_DATA_MSG_SIZE);
+        msg_number += (msg_number*MAX_DATA_MSG_SIZE < *data_size);
     }
     for (volatile int chunk = 0; chunk < msg_number; chunk++) {
-        if (data_size > MAX_DATA_MSG_SIZE) {
+        if (*data_size > MAX_DATA_MSG_SIZE) {
             chunk_size = MAX_DATA_MSG_SIZE;
         } else {
-            chunk_size = data_size;
+            chunk_size = *data_size;
         }
 
         volatile int msg_data_index = 0;
-        if ((stop_index - start_index) < chunk_size) {
+        if ((stop_index - *start_index) <= chunk_size) {
             // save the first part of the data
-            int remaining_space = (stop_index - start_index - 1);
-            memcpy(&msg->data[msg_data_index], &ring_buffer[start_index], remaining_space);
-            start_index = 0;
+            int remaining_space = (stop_index - *start_index - 1);
+            memcpy(&msg->data[msg_data_index], &ring_buffer[*start_index], remaining_space);
+            *start_index = 0;
             msg_data_index = remaining_space;
             chunk_size = chunk_size - remaining_space;
         }
 
-        memcpy(&msg->data[msg_data_index], &ring_buffer[start_index], chunk_size);
-        start_index = start_index + chunk_size;
-        msg->header.size = data_size;
+        memcpy(&msg->data[msg_data_index], &ring_buffer[*start_index], chunk_size);
+        *start_index = *start_index + chunk_size;
+        msg->header.size = *data_size;
         luos_send(module, msg);
-        if (data_size > MAX_DATA_MSG_SIZE) {
-            data_size -= MAX_DATA_MSG_SIZE;
+        if (*data_size > MAX_DATA_MSG_SIZE) {
+            *data_size -= MAX_DATA_MSG_SIZE;
+        } else {
+            *data_size = 0;
         }
     }
     return 0;
