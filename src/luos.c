@@ -326,3 +326,13 @@ void luos_save_alias(module_t* module, char* alias) {
         write_alias(i, alias);
     }
 }
+
+void luos_set_baudrate(module_t* module, uint32_t baudrate) {
+    msg_t msg;
+    memcpy(msg.data, &baudrate, sizeof(uint32_t));
+    msg.header.target_mode = BROADCAST;
+    msg.header.target = BROADCAST_VAL;
+    msg.header.cmd = SET_BAUDRATE;
+    msg.header.size = sizeof(uint32_t);
+    robus_send_sys(module, &msg);
+}
