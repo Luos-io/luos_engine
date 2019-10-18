@@ -159,4 +159,15 @@ char luos_message_available(void);
  */
 void luos_save_alias(module_t* module, char* alias);
 
+/**
+ * \fn void luos_set_baudrate(module_t* module, uint32_t baudrate)
+ * \brief  Setup the entire luos network baudrate .
+ *
+ * \param module sending this command.
+ * \param new baudrate.
+ *
+ */
+void luos_set_baudrate(module_t* module, uint32_t baudrate);
+
+
 #endif /* LUOS_H */
