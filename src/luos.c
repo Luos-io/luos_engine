@@ -209,9 +209,9 @@ unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buf
         }
 
         volatile int msg_data_index = 0;
-        if ((stop_index - *start_index) <= chunk_size) {
+        if ((stop_index - *start_index) < chunk_size) {
             // save the first part of the data
-            int remaining_space = (stop_index - *start_index - 1);
+            int remaining_space = (stop_index - *start_index);
             memcpy(&msg->data[msg_data_index], &ring_buffer[*start_index], remaining_space);
             *start_index = 0;
             msg_data_index = remaining_space;
