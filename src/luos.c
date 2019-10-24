@@ -221,7 +221,10 @@ unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buf
         memcpy(&msg->data[msg_data_index], &ring_buffer[*start_index], chunk_size);
         *start_index = *start_index + chunk_size;
         msg->header.size = *data_size;
-        luos_send(module, msg);
+        if (luos_send(module, msg)){
+            // this message fail stop transmission and return an error
+            return 1;
+        }
         if (*data_size > MAX_DATA_MSG_SIZE) {
             *data_size -= MAX_DATA_MSG_SIZE;
         } else {
