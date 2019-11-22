@@ -10,23 +10,25 @@ static volatile msg_t luos_pub_msg;
 static volatile int luos_pub = LUOS_PROTOCOL_NB;
 module_t module_table[MAX_VM_NUMBER];
 unsigned char module_number;
+volatile route_table_t* route_table_pt;
 
 //**************** Private functions*********************
 static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
     if (input->header.cmd == IDENTIFY_CMD) {
+        // someone request a local route table
+        // Just create an empty message, it will be filled in luos_loop.
         output->header.cmd = INTRODUCTION_CMD;
-        output->header.target_mode = ID;
-        output->header.size = MAX_ALIAS_SIZE+1;
+        output->header.target_mode = IDACK;
         output->header.target = input->header.source;
-        for (int i=0; i<MAX_ALIAS_SIZE; i++) {
-            output->data[i] = module->alias[i];
-        }
-        output->data[MAX_ALIAS_SIZE] = module->vm->type;
         luos_pub = IDENTIFY_CMD;
         return 1;
     }
     if (input->header.cmd == INTRODUCTION_CMD) {
-        insert_on_route_table(input->header.source, deser_introduction(input));
+        volatile route_table_t* route_tab = &get_route_table()[get_last_entry()];
+        if(luos_get_data(module, input, route_tab)) {
+            // route table of this board is finish
+            compute_route_table_entry_nb();
+        }
         return 1;
     }
     if ((input->header.cmd == REVISION) & (input->header.size == 0)) {
@@ -54,7 +56,6 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         luos_pub = UUID;
         return 1;
     }
-
     if ((input->header.cmd == WRITE_ALIAS)) {
         // Make a clean copy with full \0 at the end.
         memset(module->alias, '\0', sizeof(module->alias));
@@ -125,12 +126,35 @@ void luos_init(void){
     robus_init(luos_cb);
 }
 
+void transmit_local_route_table(void) {
+    // We receive this command because someone creating a new route table
+    // Reset the actual route table
+    flush_route_table();
+    volatile int entry_nb = 0;
+    volatile route_table_t local_route_table[module_number+1];
+    //start by saving board entry
+    luos_uuid_t uuid;
+    uuid.uuid[0] = LUOS_UUID[0];
+    uuid.uuid[1] = LUOS_UUID[1];
+    uuid.uuid[2] = LUOS_UUID[2];
+    convert_board_to_route_table(&local_route_table[entry_nb++], uuid, ctx.detection.branches, NO_BRANCH); //TODO replace ctx.detection.branches with a Robus function
+    // save modules entry
+    for (int i = 0; i < module_number; i++){
+        convert_module_to_route_table(&local_route_table[entry_nb++], &module_table[i]);
+    }
+    luos_send_data(luos_module_pointer, (msg_t*)&luos_pub_msg, local_route_table, (entry_nb * sizeof(route_table_t)));
+}
+
 
 void luos_loop(void) {
     mngr_t chunk;
     if (luos_pub != LUOS_PROTOCOL_NB) {
-      luos_send(luos_module_pointer, (msg_t*)&luos_pub_msg);
-      luos_pub = LUOS_PROTOCOL_NB;
+        if (luos_pub == IDENTIFY_CMD) {
+            transmit_local_route_table();
+        } else {
+            luos_send(luos_module_pointer, (msg_t*)&luos_pub_msg);
+        }
+        luos_pub = LUOS_PROTOCOL_NB;
     }
     // filter stacked module with callback
     int i = get_next_cb_id();
