@@ -4,22 +4,27 @@
 
 route_table_t route_table[MAX_MODULES_NUMBER];
 volatile int last_module = 0;
+volatile int last_route_table_entry = 0;
 
 // ********************* route_table search tools ************************
 // Return an id from an alias (return 0 if no alias match)
 int id_from_alias(char* alias) {
-    for(int i = 0; i<=last_module; i++) {
-        if (strcmp(route_table[i].alias, alias) == 0) {
-            return i;
+    for(int i = 0; i<=last_route_table_entry; i++) {
+        if (route_table[i].mode == MODULE){
+            if (strcmp(route_table[i].alias, alias) == 0) {
+                return route_table[i].id;
+            }
         }
     }
     return -1;
 }
 
 int id_from_type(module_type_t type) {
-    for(int i = 0; i<=last_module; i++) {
-        if (type == route_table[i].type) {
-            return i;
+    for(int i = 0; i<=last_route_table_entry; i++) {
+        if (route_table[i].mode == MODULE){
+            if (type == route_table[i].type) {
+                return route_table[i].id;
+            }
         }
     }
     return -1;
@@ -82,6 +87,17 @@ char* string_from_type(module_type_t type) {
     }
 }
 
+char* alias_from_id(uint16_t id){
+    for(int i = 0; i<=last_route_table_entry; i++) {
+        if (route_table[i].mode == MODULE){
+            if (id == route_table[i].id) {
+                return route_table[i].alias;
+            }
+        }
+    }
+    return -1;
+}
+
 // check if the module is a sensor or not
 uint8_t is_sensor(module_type_t type) {
     if((type == ANGLE_MOD) ||
@@ -100,7 +116,14 @@ uint8_t is_sensor(module_type_t type) {
 
 // Return a module_type from an id
 module_type_t type_from_id(uint16_t id) {
-    return route_table[id].type;
+    for(int i = 0; i<=last_route_table_entry; i++) {
+        if (route_table[i].mode == MODULE){
+            if ( route_table[i].id == id) {
+                return route_table[i].type;
+            }
+        }
+    }
+    return -1;
 }
 
 // Return a module type from alias
@@ -110,6 +133,19 @@ module_type_t type_from_alias(char* alias) {
 }
 
 // ********************* route_table management tools ************************
+
+// compute entry number
+void compute_route_table_entry_nb(void) {
+    for (int i = 0; i < MAX_MODULES_NUMBER; i++) {
+        if (route_table[i].mode == MODULE) {
+            last_module = route_table[i].id;
+        }
+        if (route_table[i].mode == CLEAR) {
+            last_route_table_entry = i;
+            return;
+        }
+    }
+}
 
 // manage module name increment
 void add_num_to_alias(char* alias, int num) {
@@ -134,25 +170,15 @@ void add_num_to_alias(char* alias, int num) {
     sprintf(alias, "%s%d", alias, num);
 }
 
-// Manage introduction messages from modules
-route_table_t deser_introduction(msg_t *msg) {
-    route_table_t entry;
-    const unsigned char type_pos = msg->header.size - 1;
-    entry.type = msg->data[type_pos];
-    for (int i=0; i<type_pos; i++) {
-        entry.alias[i] = msg->data[i];
-    }
-    return entry;
-}
-
 int wait_route_table(module_t* module, msg_t* intro_msg) {
     const int timeout = 15; // timeout in ms
+    const int entry_bkp = last_route_table_entry;
     luos_send(module, intro_msg);
     uint32_t timestamp = HAL_GetTick();
     while ((HAL_GetTick() - timestamp) < timeout) {
         // If this request is for a module in this board allow him to respond.
         luos_loop();
-        if (route_table[intro_msg->header.target].type != 0) {
+        if (entry_bkp != last_route_table_entry) {
             return 1;
         }
     }
@@ -164,85 +190,113 @@ int wait_route_table(module_t* module, msg_t* intro_msg) {
 // At the end this function create a list of sensors id
 void detect_modules(module_t* module) {
     msg_t intro_msg, auto_name;
-    route_table_t* route_table = get_route_table();
     unsigned char i = 0;
     // clear network detection state and all previous info.
     flush_route_table();
-
     // Starts the topology detection.
     int nb_mod = topology_detection(module->vm);
     if (nb_mod > MAX_MODULES_NUMBER-1) nb_mod = MAX_MODULES_NUMBER-1;
 
     // Then, asks for introduction for every found modules.
-    for (int id = 1; id<nb_mod+1; id++) {
+    int try = 0;
+    while ((last_module < nb_mod) && (try < nb_mod)){
         intro_msg.header.cmd = IDENTIFY_CMD;
         intro_msg.header.target_mode = IDACK;
         intro_msg.header.size = 0;
-        intro_msg.header.target = id;
+        // Target next unknown module (the first one of the next node)
+        intro_msg.header.target = last_module+1;
+        try++;
         // Ask to introduce and wait for a reply
-        if (wait_route_table(module, &intro_msg)) {
-            // We get the answer
-            if (id_from_alias(route_table[id].alias) != id ) {
-                int annotation = 1;
-                // this name already exist in the network change it and send it back.
-                // find the new alias to give him
-                char aliasbis[15] = {0};
-                memcpy(aliasbis, route_table[id].alias, 15);
-                add_num_to_alias(route_table[id].alias, annotation++);
-                while (id_from_alias(route_table[id].alias) != id ) {
-                      memcpy(route_table[id].alias, aliasbis, 15);
-                      add_num_to_alias(route_table[id].alias, annotation++);
-                }
-                auto_name.header.target_mode = ID;
-                auto_name.header.target = id;
-                auto_name.header.cmd = WRITE_ALIAS;
-                auto_name.header.size = strlen(route_table[id].alias);
-                // Copy the alias into the data field of the message
-                for (i=0; i < auto_name.header.size; i++) {
-                    auto_name.data[i] = route_table[id].alias[i];
-                }
-                auto_name.data[auto_name.header.size] = '\0';
-                // Send the message using the WRITE_ALIAS system command
-                robus_send_sys(module->vm, &auto_name);
+        if (!wait_route_table(module, &intro_msg)) {
+            // We don't get the answer
+            nb_mod = last_module;
+            break;
+        }
+    }
+    for (int id = 1; id<=nb_mod; id++) {
+        if (id_from_alias(alias_from_id(id)) != id ) {
+            int annotation = 1;
+            // this name already exist in the network change it and send it back.
+            // find the new alias to give him
+            char aliasbis[15] = {0};
+            memcpy(aliasbis, alias_from_id(id), 15);
+            add_num_to_alias(alias_from_id(id), annotation++);
+            while (id_from_alias(alias_from_id(id)) != id ) {
+                  memcpy(alias_from_id(id), aliasbis, 15);
+                  add_num_to_alias(alias_from_id(id), annotation++);
             }
+            auto_name.header.target_mode = ID;
+            auto_name.header.target = id;
+            auto_name.header.cmd = WRITE_ALIAS;
+            auto_name.header.size = strlen(alias_from_id(id));
+            // Copy the alias into the data field of the message
+            for (i=0; i < auto_name.header.size; i++) {
+                auto_name.data[i] = alias_from_id(id)[i];
+            }
+            auto_name.data[auto_name.header.size] = '\0';
+            // Send the message using the WRITE_ALIAS system command
+            robus_send_sys(module->vm, &auto_name);
+            //TODO update name into route_table
         }
     }
 }
 
-// add a new module on the route_table
-void add_on_route_table (int id, char type, char* alias) {
-    route_table_t entry;
-    entry.type = type;
-    for (int i=0; i<MAX_ALIAS_SIZE; i++) {
-            entry.alias[i] = alias[i];
+void convert_board_to_route_table(route_table_t* entry, luos_uuid_t uuid, unsigned short* port_table, int branch_nb){
+    entry->uuid = uuid;
+    for (int i = 0; i < 4; i++) {
+        if (i < branch_nb) {
+            entry->port_table[i] = port_table[i];
+        } else {
+            entry->port_table[i] = 0;
+        }
     }
-    insert_on_route_table (id, entry);
+    entry->mode = NODE;
+}
+
+// convert a module on the route_table
+void convert_module_to_route_table (route_table_t* entry, module_t* module) {
+    entry->type = module->vm->type;
+    entry->id = module->vm->id;
+    entry->mode = MODULE;
+    for (int i=0; i<MAX_ALIAS_SIZE; i++) {
+            entry->alias[i] = module->alias[i];
+    }
 }
 
 // add a new module on the route_table
-void insert_on_route_table (int id, route_table_t entry) {
-    route_table[id] = entry;
-    last_module = id;
+void insert_on_route_table (route_table_t* entry) {
+    memcpy(&route_table[last_route_table_entry++], entry, sizeof(route_table_t));
+    if (entry->mode == MODULE){
+        last_module = entry->id;
+    }
 }
 
-// remove a module from route_table
-void remove_on_route_table (int id) {
-    route_table[id].alias[0] = '\0';
-    route_table[id].type = VOID_MOD;
+// remove an entry from route_table
+void remove_on_route_table (int index) {
+    route_table[index].alias[0] = '\0';
+    route_table[index].type = VOID_MOD;
+    route_table[index].id = 0;
+    route_table[index].mode = CLEAR;
 }
 
 // erase route_table
 void flush_route_table() {
     memset(route_table, 0, sizeof(route_table));
     last_module = 0;
+    last_route_table_entry = 0;
 }
 
-//return a route_table pointer
+//return the route_table
 route_table_t* get_route_table(void) {
     return route_table;
 }
 
 //return the last ID registered into the route_table
-volatile int get_last_module(void) {
+int get_last_module(void) {
     return last_module;
+}
+
+//return the last ID registered into the route_table
+int get_last_entry(void) {
+    return last_route_table_entry;
 }
