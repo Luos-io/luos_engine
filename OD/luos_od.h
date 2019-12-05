@@ -8,6 +8,6 @@
 #ifndef OD_LUOS_OD_H_
 #define OD_LUOS_OD_H_
 
-#include "od_distance.h"
+#include "od_linear.h"
 
 #endif /* OD_LUOS_OD_H_ */
