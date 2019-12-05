@@ -53,7 +53,7 @@ typedef enum {
     PID, // pid_t float[3] = {p, i, d}
     RESOLUTION, // resolution parameter for a sensor float
     REDUCTION, // reduction factor (mechanical for example) float
-    DIMENSION, // dimention of an element mm float
+    DIMENSION, // dimention of an element m linear_position_t
     OFFSET, // decay float
     SETID, // Set Dynamixel ID
 
@@ -66,8 +66,8 @@ typedef enum {
     // Space positioning
     ROTATION_POSITION, // float (°)
     ROTATION_SPEED, // float (°/s)
-    TRANSLATION_POSITION, // Float (mm)
-    TRANSLATION_SPEED, // Float (mm/s)
+    LINEAR_POSITION, // linear_position_t (m)
+    LINEAR_SPEED, // linear_speed_t (m/s)
     ACCEL_3D, // long[3](X, Y, Z axis linear acceleration data in Gees)
     GYRO_3D, // long[3](X, Y, Z axis rotational acceleration data in degrees per second)
     QUATERNION, // long[4] (sensor fused w, x, y, z rotational angles)
@@ -80,7 +80,7 @@ typedef enum {
 
     // Space positioning limits
     ROTATION_POSITION_LIMIT, // min float (°), max float (°)
-    TRANSLATION_POSITION_LIMIT, // min float (mm), max float (mm)
+    LINEAR_POSITION_LIMIT, // min linear_position_t (m), max linear_position_t (m)
     POWER_LIMIT, // float(%)
     CURRENT_LIMIT, // float(A)
 

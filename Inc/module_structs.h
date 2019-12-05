@@ -1,6 +1,9 @@
 #ifndef __MODULE_STRUCT_H
 #define __MODULE_STRUCT_H
-#include "main.h"
+
+#include <stdint.h>
+#include "luos.h"
+#include "luos_od.h"
 
 #define MIN 0
 #define MAX 1
@@ -119,14 +122,14 @@ typedef struct __attribute__((__packed__)){
             uint16_t mode_torque : 1;
             uint16_t mode_rot_speed : 1;
             uint16_t mode_rot_position : 1;
-            uint16_t mode_trans_speed : 1;
-            uint16_t mode_trans_position : 1;
+            uint16_t mode_linear_speed : 1;
+            uint16_t mode_linear_position : 1;
 
             // report modes
             uint16_t rot_position : 1;
             uint16_t rot_speed : 1;
-            uint16_t trans_distance : 1;
-            uint16_t trans_speed : 1;
+            uint16_t linear_position : 1;
+            uint16_t linear_speed : 1;
             uint16_t current : 1;
         };
         uint8_t unmap[2];
@@ -167,14 +170,14 @@ typedef struct __attribute__((__packed__)){
     // measures
     float rot_position;
     float rot_speed;
-    float trans_distance;
-    float trans_speed;
+    linear_position_t linear_position;
+    linear_speed_t linear_speed;
     float current;
 
     //configs
     float motor_reduction;
     float resolution;
-    float wheel_diameter_mm;
+    linear_position_t wheel_diameter;
 }motor_config_t;
 
 #endif /*__ __L0_H */
