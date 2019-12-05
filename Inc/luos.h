@@ -5,6 +5,7 @@
 #include "module_structs.h"
 #include "robus_struct.h"
 #include "routingTable.h"
+#include "luos_od.h"
 
 /**
  * \fn void luos_init(void)
