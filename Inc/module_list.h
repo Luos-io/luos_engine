@@ -64,8 +64,8 @@ typedef enum {
     UUID, // luos_uuid_t
 
     // Space positioning
-    ROTATION_POSITION, // float (°)
-    ROTATION_SPEED, // float (°/s)
+    ANGULAR_POSITION, // angular_position_t (deg)
+    ANGULAR_SPEED, // angular_speed_t (deg/s)
     LINEAR_POSITION, // linear_position_t (m)
     LINEAR_SPEED, // linear_speed_t (m/s)
     ACCEL_3D, // long[3](X, Y, Z axis linear acceleration data in Gees)
@@ -79,7 +79,7 @@ typedef enum {
     HEADING, // long (360 degrees from North with Y+ axis as the pointer)
 
     // Space positioning limits
-    ROTATION_POSITION_LIMIT, // min float (°), max float (°)
+    ANGULAR_POSITION_LIMIT, // min angular_position_t (deg), max angular_position_t (deg)
     LINEAR_POSITION_LIMIT, // min linear_position_t (m), max linear_position_t (m)
     POWER_LIMIT, // float(%)
     CURRENT_LIMIT, // float(A)

@@ -104,7 +104,7 @@ typedef struct __attribute__((__packed__)){
 typedef struct {
     union {
         struct __attribute__((__packed__)){
-        float max_angle;
+        angular_position_t max_angle;
         float min_pulse_time;
         float max_pulse_time;
         };
@@ -120,14 +120,14 @@ typedef struct __attribute__((__packed__)){
             uint16_t mode_compliant : 1;
             uint16_t mode_power : 1;
             uint16_t mode_torque : 1;
-            uint16_t mode_rot_speed : 1;
-            uint16_t mode_rot_position : 1;
+            uint16_t mode_angular_speed : 1;
+            uint16_t mode_angular_position : 1;
             uint16_t mode_linear_speed : 1;
             uint16_t mode_linear_position : 1;
 
             // report modes
-            uint16_t rot_position : 1;
-            uint16_t rot_speed : 1;
+            uint16_t angular_position : 1;
+            uint16_t angular_speed : 1;
             uint16_t linear_position : 1;
             uint16_t linear_speed : 1;
             uint16_t current : 1;
@@ -158,18 +158,18 @@ typedef struct __attribute__((__packed__)){
 
     // targets
     motor_mode_t mode;
-    float target_rot_position;
-    float target_rot_speed;
+    angular_position_t target_angular_position;
+    angular_speed_t target_angular_speed;
     float target_power;
 
     // limits
-    float limit_rot_position[2];
+    angular_position_t limit_angular_position[2];
     float limit_power;
     float limit_current;
 
     // measures
-    float rot_position;
-    float rot_speed;
+    angular_position_t angular_position;
+    angular_speed_t angular_speed;
     linear_position_t linear_position;
     linear_speed_t linear_speed;
     float current;

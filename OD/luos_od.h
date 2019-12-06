@@ -9,5 +9,6 @@
 #define OD_LUOS_OD_H_
 
 #include "od_linear.h"
+#include "od_angular.h"
 
 #endif /* OD_LUOS_OD_H_ */
