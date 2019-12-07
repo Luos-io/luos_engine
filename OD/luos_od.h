@@ -13,5 +13,6 @@
 #include "od_force.h"
 #include "od_electric.h"
 #include "od_ratio.h"
+#include "od_temperature.h"
 
 #endif /* OD_LUOS_OD_H_ */
