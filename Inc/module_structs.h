@@ -118,7 +118,7 @@ typedef struct __attribute__((__packed__)){
         struct __attribute__((__packed__)){
             // target modes
             uint16_t mode_compliant : 1;
-            uint16_t mode_power : 1;
+            uint16_t mode_ratio : 1;
             uint16_t mode_torque : 1;
             uint16_t mode_angular_speed : 1;
             uint16_t mode_angular_position : 1;
@@ -164,15 +164,15 @@ typedef struct __attribute__((__packed__)){
 
     // limits
     angular_position_t limit_angular_position[2];
-    float limit_power;
-    float limit_current;
+    float limit_ratio;
+    current_t limit_current;
 
     // measures
     angular_position_t angular_position;
     angular_speed_t angular_speed;
     linear_position_t linear_position;
     linear_speed_t linear_speed;
-    float current;
+    current_t current;
 
     //configs
     float motor_reduction;

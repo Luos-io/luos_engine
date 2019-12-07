@@ -11,5 +11,6 @@
 #include "od_linear.h"
 #include "od_angular.h"
 #include "od_force.h"
+#include "od_electric.h"
 
 #endif /* OD_LUOS_OD_H_ */

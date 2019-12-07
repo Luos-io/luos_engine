@@ -29,12 +29,12 @@ int l0_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         return L0_TEMPERATURE;
     }
     if ((input->header.cmd == L0_VOLTAGE) & (input->header.size == 0)) {
-        output->header.cmd = L0_VOLTAGE;
         output->header.target_mode = ID;
-        output->header.size = sizeof(float);
         output->header.target = input->header.source;
-        float volt = (((float)L0_analog.voltage_sensor * 3.3f) / 4096.0f) * VOLTAGEFACTOR;
-        memcpy(output->data, &volt, sizeof(float));
+        voltage_t volt = (((float)L0_analog.voltage_sensor * 3.3f) / 4096.0f) * VOLTAGEFACTOR;
+        voltage_to_msg(&volt, output);
+        // overlap default VOLTAGE type
+        output->header.cmd = L0_VOLTAGE;
         return L0_VOLTAGE;
     }
     return LUOS_PROTOCOL_NB;

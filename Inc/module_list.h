@@ -41,7 +41,9 @@ typedef enum {
     POWER_RATIO, // float (-100.0% <-> 100.0%)
     PEDOMETER, // long[2] (step number and step time millisecond)
     LUX, // float (Lux)
-    CURRENT, // float (Ampere)
+    VOLTAGE, // voltage_t (Volt)
+    CURRENT, // current_t (Ampere)
+    POWER, // power_t (Watt)
     TEMPERATURE, // float (°C)
     TIME, // time Second (float)
     FORCE, // force_t (Newton N)
@@ -87,7 +89,6 @@ typedef enum {
 
     // Specific register
     DXL_WHEELMODE, // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
-    VOLT, // float (Volt) TODO : move it in the right place for rev 6
     REFRESH_PUB, // Ask to send a sensor value at a given max frequency TODO : move it in the right place for rev 6
     HANDY_SET_POSITION, // handy_t
     PARAMETERS, // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
