@@ -40,21 +40,6 @@ typedef struct __attribute__((__packed__)){
     };
 }luos_uuid_t;
 
-// GPIO struct
-typedef struct __attribute__((__packed__)){
-    union {
-        struct __attribute__((__packed__)){
-            float p1;
-            uint8_t p5;
-            uint8_t p6;
-            float p7;
-            float p8;
-            float p9;
-        };
-        uint8_t unmap[(4 * sizeof(float)) + 2];                /*!< Uncmaped form. */
-    };
- }gpio_t;
-
  // Handy struct
  typedef struct __attribute__((__packed__)){
     union {
