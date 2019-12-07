@@ -44,7 +44,7 @@ typedef enum {
     VOLTAGE, // voltage_t (Volt)
     CURRENT, // current_t (Ampere)
     POWER, // power_t (Watt)
-    TEMPERATURE, // float (°C)
+    TEMPERATURE, // temperature_t (°C)
     TIME, // time Second (float)
     FORCE, // force_t (Newton N)
     MOMENT, // moment_t (Newton meter N.m)
@@ -61,7 +61,7 @@ typedef enum {
     SETID, // Set Dynamixel ID
 
     // Node things
-    NODE_TEMPERATURE, // float (°c)
+    NODE_TEMPERATURE, // temperature_t (°c)
     NODE_VOLTAGE, // voltage_t (V)
     NODE_LED, // char (True/False)
     NODE_UUID, // luos_uuid_t
