@@ -44,7 +44,8 @@ typedef enum {
     CURRENT, // float (Ampere)
     TEMPERATURE, // float (°C)
     TIME, // time Second (float)
-    FORCE, // force or moment (float)
+    FORCE, // force_t (Newton N)
+    MOMENT, // moment_t (Newton meter N.m)
     CONTROL, // control_mode (control_mode_t)
 
     // Configuration commands
@@ -81,7 +82,7 @@ typedef enum {
     // Space positioning limits
     ANGULAR_POSITION_LIMIT, // min angular_position_t (deg), max angular_position_t (deg)
     LINEAR_POSITION_LIMIT, // min linear_position_t (m), max linear_position_t (m)
-    POWER_LIMIT, // float(%)
+    RATIO_LIMIT, // float(%)
     CURRENT_LIMIT, // float(A)
 
     // Specific register
