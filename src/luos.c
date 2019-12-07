@@ -43,8 +43,8 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         luos_pub = REVISION;
         return 1;
     }
-    if ((input->header.cmd == UUID) & (input->header.size == 0)) {
-        output->header.cmd = UUID;
+    if ((input->header.cmd == NODE_UUID) & (input->header.size == 0)) {
+        output->header.cmd = NODE_UUID;
         output->header.target_mode = ID;
         output->header.size = sizeof(luos_uuid_t);
         output->header.target = input->header.source;
@@ -53,7 +53,7 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         uuid.uuid[1] = LUOS_UUID[1];
         uuid.uuid[2] = LUOS_UUID[2];
         memcpy(output->data, &uuid.unmap, sizeof(luos_uuid_t));
-        luos_pub = UUID;
+        luos_pub = NODE_UUID;
         return 1;
     }
     if ((input->header.cmd == WRITE_ALIAS)) {
@@ -101,7 +101,7 @@ void luos_cb(vm_t *vm, msg_t *msg) {
     }
     // L0 message management
     int pub_type = l0_msg_handler(module, msg, (msg_t*)&luos_pub_msg);
-    if (pub_type == L0_LED) {
+    if (pub_type == NODE_LED) {
         return;
     }
     if (pub_type != LUOS_PROTOCOL_NB) {

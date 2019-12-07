@@ -60,11 +60,11 @@ typedef enum {
     OFFSET, // decay float
     SETID, // Set Dynamixel ID
 
-    // L0 things
-    L0_TEMPERATURE, // float (°c)
-    L0_VOLTAGE, // float (V)
-    L0_LED, // char (True/False)
-    UUID, // luos_uuid_t
+    // Node things
+    NODE_TEMPERATURE, // float (°c)
+    NODE_VOLTAGE, // voltage_t (V)
+    NODE_LED, // char (True/False)
+    NODE_UUID, // luos_uuid_t
 
     // Space positioning
     ANGULAR_POSITION, // angular_position_t (deg)
