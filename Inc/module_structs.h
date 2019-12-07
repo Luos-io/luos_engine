@@ -160,11 +160,11 @@ typedef struct __attribute__((__packed__)){
     motor_mode_t mode;
     angular_position_t target_angular_position;
     angular_speed_t target_angular_speed;
-    float target_power;
+    ratio_t target_ratio;
 
     // limits
     angular_position_t limit_angular_position[2];
-    float limit_ratio;
+    ratio_t limit_ratio;
     current_t limit_current;
 
     // measures

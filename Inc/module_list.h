@@ -38,7 +38,7 @@ typedef enum {
     COLOR, // char[3] (R, G, B)
     COMPLIANT, // char (True/False)
     IO_STATE, // char (True/False)
-    POWER_RATIO, // float (-100.0% <-> 100.0%)
+    RATIO, // ratio_t (percentage %)
     PEDOMETER, // long[2] (step number and step time millisecond)
     LUX, // float (Lux)
     VOLTAGE, // voltage_t (Volt)
