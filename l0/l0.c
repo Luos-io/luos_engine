@@ -6,36 +6,33 @@
 uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
 int l0_msg_handler(module_t* module, msg_t* input, msg_t* output) {
-    if (input->header.cmd == L0_LED) {
+    if (input->header.cmd == NODE_LED) {
         if (input->data[0] < 2) {
             status_led(input->data[0]);
             return LUOS_PROTOCOL_NB;
         }
     }
-    if ((input->header.cmd == L0_TEMPERATURE) & (input->header.size == 0)) {
-        output->header.cmd = L0_TEMPERATURE;
+    if ((input->header.cmd == NODE_TEMPERATURE) & (input->header.size == 0)) {
         output->header.target_mode = ID;
-        output->header.size = sizeof(float);
         output->header.target = input->header.source;
-        //float temp = ((110.0f - 30.0f) / ((float)(*TEMP110_CAL_VALUE) - (float)(*TEMP30_CAL_VALUE)) * ((float)L0_analog.temperature_sensor - (float)(*TEMP30_CAL_VALUE)) + 30.0f);
-
-        float temp;
+        temperature_t temp;
         temp = (((float)L0_analog.temperature_sensor * 300.0f / 330.0f) - (float)(*TEMP30_CAL_VALUE) );
         temp = temp * (110.0f - 30.0f);
         temp = temp /(float)(*TEMP110_CAL_VALUE - *TEMP30_CAL_VALUE);
         temp = temp + 30.0f;
-
-        memcpy(output->data, &temp, sizeof(float));
-        return L0_TEMPERATURE;
+        temperature_to_msg(&temp, output);
+        // overlap default TEPERATURE type
+        output->header.cmd = NODE_TEMPERATURE;
+        return NODE_TEMPERATURE;
     }
-    if ((input->header.cmd == L0_VOLTAGE) & (input->header.size == 0)) {
+    if ((input->header.cmd == NODE_VOLTAGE) & (input->header.size == 0)) {
         output->header.target_mode = ID;
         output->header.target = input->header.source;
         voltage_t volt = (((float)L0_analog.voltage_sensor * 3.3f) / 4096.0f) * VOLTAGEFACTOR;
         voltage_to_msg(&volt, output);
         // overlap default VOLTAGE type
-        output->header.cmd = L0_VOLTAGE;
-        return L0_VOLTAGE;
+        output->header.cmd = NODE_VOLTAGE;
+        return NODE_VOLTAGE;
     }
     return LUOS_PROTOCOL_NB;
 }
