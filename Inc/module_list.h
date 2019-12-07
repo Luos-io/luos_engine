@@ -35,12 +35,12 @@ typedef enum {
     REVISION, // Module sends its firmware revision
 
     // Generic data
-    COLOR, // char[3] (R, G, B)
+    COLOR, // color_t (R, G, B)
     COMPLIANT, // char (True/False)
     IO_STATE, // char (True/False)
     RATIO, // ratio_t (percentage %)
     PEDOMETER, // long[2] (step number and step time millisecond)
-    LUX, // float (Lux)
+    ILLUMINANCE, // illuminance_t (lx)
     VOLTAGE, // voltage_t (Volt)
     CURRENT, // current_t (Ampere)
     POWER, // power_t (Watt)
