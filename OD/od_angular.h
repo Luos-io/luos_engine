@@ -22,13 +22,13 @@ static inline angular_position_t angular_position_from_deg(float deg) {
     return deg;
 }
 
-// tr
-static inline float angular_position_to_tr(angular_position_t self) {
+// rev
+static inline float angular_position_to_rev(angular_position_t self) {
     return self / 360.0f ;
 }
 
-static inline angular_position_t angular_position_from_tr(float tr) {
-    return tr * 360.0f;
+static inline angular_position_t angular_position_from_rev(float rev) {
+    return rev * 360.0f;
 }
 
 // rad
@@ -65,22 +65,22 @@ static inline angular_speed_t angular_speed_from_deg_s(float deg) {
     return deg;
 }
 
-// tr_s
-static inline float angular_speed_to_tr_s(angular_speed_t self) {
+// rev_s
+static inline float angular_speed_to_rev_s(angular_speed_t self) {
     return self / 360.0f ;
 }
 
-static inline angular_speed_t angular_speed_from_tr_s(float tr_s) {
-    return tr_s * 360.0f;
+static inline angular_speed_t angular_speed_from_rev_s(float rev_s) {
+    return rev_s * 360.0f;
 }
 
-// tr_min
-static inline float angular_speed_to_tr_min(angular_speed_t self) {
+// rev_min
+static inline float angular_speed_to_rev_min(angular_speed_t self) {
     return self * 60.0f / 360.0f ;
 }
 
-static inline angular_speed_t angular_speed_from_tr_min(float tr_min) {
-    return tr_min * 360.0f / 60.0f;
+static inline angular_speed_t angular_speed_from_rev_min(float rev_min) {
+    return rev_min * 360.0f / 60.0f;
 }
 
 // rad_s
