@@ -13,22 +13,40 @@ typedef float moment_t;
 // moment are stored in Newton meter (Nm)
 //******** Conversions ***********
 
-// Ncm
-static inline float moment_to_ncm(moment_t self) {
+// N.mm
+static inline float moment_to_n_mm(moment_t self) {
+    return self * 1000.0f;
+}
+
+static inline moment_t moment_from_n_mm(float n_mm) {
+    return n_mm / 1000.0f;
+}
+
+// N.cm
+static inline float moment_to_n_cm(moment_t self) {
     return self * 100.0f;
 }
 
-static inline moment_t moment_from_ncm(float ncm) {
-    return ncm / 100.0f;
+static inline moment_t moment_from_n_cm(float n_cm) {
+    return n_cm / 100.0f;
 }
 
-// Nm
-static inline float moment_to_nm(moment_t self) {
+// N.m
+static inline float moment_to_n_m(moment_t self) {
     return self;
 }
 
-static inline moment_t moment_from_nm(float nm) {
-    return nm;
+static inline moment_t moment_from_n_m(float n_m) {
+    return n_m;
+}
+
+// kgf.mm
+static inline float moment_to_kgf_mm(moment_t self) {
+    return self * 101.97f;
+}
+
+static inline moment_t moment_from_kgf_mm(float kgf_mm) {
+    return kgf_mm / 101.97f;
 }
 
 // kgf.cm
@@ -47,6 +65,24 @@ static inline float moment_to_kgf_m(moment_t self) {
 
 static inline moment_t moment_from_kgf_m(float kgf_m) {
     return kgf_m / 0.102f;
+}
+
+// ozf.in
+static inline float moment_to_ozf_in(moment_t self) {
+    return self * 141.612f;
+}
+
+static inline moment_t moment_from_ozf_in(float ozf_in) {
+    return ozf_in / 141.612f;
+}
+
+// lbf.in
+static inline float moment_to_lbf_in(moment_t self) {
+    return self * 8.851f;
+}
+
+static inline moment_t moment_from_lbf_in(float lbf_in) {
+    return lbf_in / 8.851f;
 }
 
 //******** Messages management ***********
@@ -81,6 +117,24 @@ static inline float force_to_kgf(force_t self) {
 
 static inline force_t force_from_kgf(float kgf) {
     return kgf / 0.102f;
+}
+
+// ozf
+static inline float force_to_ozf(force_t self) {
+    return self * 141.612f;
+}
+
+static inline force_t force_from_ozf(float ozf) {
+    return ozf / 141.612f;
+}
+
+// lbf
+static inline float force_to_lbf(force_t self) {
+    return self * 8.851f;
+}
+
+static inline force_t force_from_lbf(float lbf) {
+    return lbf / 8.851f;
 }
 
 //******** Messages management ***********
