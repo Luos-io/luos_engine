@@ -132,6 +132,31 @@ module_type_t type_from_alias(char* alias) {
     return type_from_id(id);
 }
 
+int get_node_nb(void) {
+    int node_nb = 0;
+    for(int i = 0; i<=last_route_table_entry; i++) {
+        if (route_table[i].mode == NODE){
+            node_nb++;
+        }
+    }
+    return node_nb-1;
+
+}
+
+void get_node_list(unsigned short* list) {
+    int node_nb = 0;
+    for(int i = 0; i<=last_route_table_entry; i++) {
+        if (route_table[i].mode == NODE){
+            list[node_nb] = i;
+            node_nb++;
+        }
+    }
+}
+
+int get_node_id(unsigned short index) {
+    return route_table[index + 1].id;
+}
+
 // ********************* route_table management tools ************************
 
 // compute entry number
@@ -238,6 +263,19 @@ void detect_modules(module_t* module) {
             robus_send_sys(module->vm, &auto_name);
             //TODO update name into route_table
         }
+    }
+
+    // send route table to each nodes. Route tables are commonly usable for each modules of a node.
+    int nb_node = get_node_nb();
+    unsigned short node_index_list[MAX_MODULES_NUMBER];
+    get_node_list(node_index_list);
+
+    intro_msg.header.cmd = INTRODUCTION_CMD;
+    intro_msg.header.target_mode = IDACK;
+
+    for (int i = 1; i<=nb_node; i++) {
+        intro_msg.header.target = get_node_id(node_index_list[i]);
+        luos_send_data(module, &intro_msg, route_table, (last_route_table_entry * sizeof(route_table_t)));
     }
 }
 

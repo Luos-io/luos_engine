@@ -43,6 +43,9 @@ char* alias_from_id(uint16_t id);
 module_type_t type_from_id(uint16_t id);
 uint8_t is_sensor(module_type_t type);
 module_type_t type_from_alias(char* alias);
+int get_node_nb(void);
+void get_node_list(unsigned short* list);
+int get_node_id(unsigned short index);
 
 // ********************* route_table management tools ************************
 void compute_route_table_entry_nb(void);
