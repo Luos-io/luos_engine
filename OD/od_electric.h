@@ -58,11 +58,11 @@ static inline current_t current_from_ma(float ma) {
 }
 
 // A
-static inline float voltage_to_a(current_t self) {
+static inline float current_to_a(current_t self) {
     return self;
 }
 
-static inline current_t voltage_from_a(float a) {
+static inline current_t current_from_a(float a) {
     return a;
 }
 
