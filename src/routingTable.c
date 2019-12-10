@@ -9,10 +9,12 @@ volatile int last_route_table_entry = 0;
 // ********************* route_table search tools ************************
 // Return an id from an alias (return 0 if no alias match)
 int id_from_alias(char* alias) {
-    for(int i = 0; i<=last_route_table_entry; i++) {
-        if (route_table[i].mode == MODULE){
-            if (strcmp(route_table[i].alias, alias) == 0) {
-                return route_table[i].id;
+    if (*alias != -1){
+        for(int i = 0; i<=last_route_table_entry; i++) {
+            if (route_table[i].mode == MODULE){
+                if (strcmp(route_table[i].alias, alias) == 0) {
+                    return route_table[i].id;
+                }
             }
         }
     }
@@ -239,7 +241,8 @@ void detect_modules(module_t* module) {
         }
     }
     for (int id = 1; id<=nb_mod; id++) {
-        if (id_from_alias(alias_from_id(id)) != id ) {
+        int computed_id = id_from_alias(alias_from_id(id));
+        if ((computed_id != id ) & (computed_id != -1)) {
             int annotation = 1;
             // this name already exist in the network change it and send it back.
             // find the new alias to give him
