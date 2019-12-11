@@ -13,7 +13,7 @@ typedef float temperature_t;
 // temperature are stored in degree celcius (°C)
 //******** Conversions ***********
 
-// °c
+// °C
 static inline float temperature_to_deg_c(temperature_t self) {
     return self;
 }
@@ -22,13 +22,22 @@ static inline temperature_t temperature_from_deg_c(float deg_c) {
     return deg_c;
 }
 
-// °f
+// °F
 static inline float temperature_to_deg_f(temperature_t self) {
-    return self * 33.8f;
+    return self * 1.8f + 32.0f;
 }
 
 static inline temperature_t temperature_from_deg_f(float deg_f) {
-    return deg_f / 33.8f;
+    return (deg_f - 32.0f) / 1.8f;
+}
+
+// °K
+static inline float temperature_to_deg_k(temperature_t self) {
+    return self + 273.15f;
+}
+
+static inline temperature_t temperature_from_deg_k(float deg_k) {
+    return deg_k - 273.15f;
 }
 
 //******** Messages management ***********
