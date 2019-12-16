@@ -100,6 +100,18 @@ char* alias_from_id(uint16_t id){
     return -1;
 }
 
+int bigest_id(){
+    int max_id = 0;
+    for(int i = 0; i<last_route_table_entry; i++) {
+        if (route_table[i].mode == MODULE){
+            if (route_table[i].id > max_id) {
+                max_id = route_table[i].id;
+            }
+        }
+    }
+    return max_id;
+}
+
 // check if the module is a sensor or not
 uint8_t is_sensor(module_type_t type) {
     if((type == ANGLE_MOD) ||
@@ -226,19 +238,21 @@ void detect_modules(module_t* module) {
 
     // Then, asks for introduction for every found modules.
     int try = 0;
-    while ((last_module < nb_mod) && (try < nb_mod)){
+    int last_id = bigest_id();
+    while ((last_id < nb_mod) && (try < nb_mod)){
         intro_msg.header.cmd = IDENTIFY_CMD;
         intro_msg.header.target_mode = IDACK;
         intro_msg.header.size = 0;
         // Target next unknown module (the first one of the next node)
-        intro_msg.header.target = last_module+1;
+        intro_msg.header.target = last_id+1;
         try++;
         // Ask to introduce and wait for a reply
         if (!wait_route_table(module, &intro_msg)) {
             // We don't get the answer
-            nb_mod = last_module;
+            nb_mod = last_id;
             break;
         }
+        last_id = bigest_id();
     }
     for (int id = 1; id<=nb_mod; id++) {
         int computed_id = id_from_alias(alias_from_id(id));
