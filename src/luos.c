@@ -60,7 +60,7 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         // Make a clean copy with full \0 at the end.
         memset(module->alias, '\0', sizeof(module->alias));
         if (input->header.size > 16) input->header.size = 16;
-        if ((((input->data[0] > 'A') & (input->data[0] < 'Z')) | ((input->data[0] > 'a') & (input->data[0] < 'z')) | (input->data[0] == '\0')) & (input->header.size != 0)) {
+        if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z')) | (input->data[0] == '\0')) & (input->header.size != 0)) {
             memcpy(module->alias, input->data, input->header.size);
             luos_save_alias(module, module->alias);
         } else {
