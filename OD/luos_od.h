@@ -15,5 +15,6 @@
 #include "od_ratio.h"
 #include "od_temperature.h"
 #include "od_illuminance.h"
+#include "od_time.h"
 
 #endif /* OD_LUOS_OD_H_ */
