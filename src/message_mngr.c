@@ -19,12 +19,16 @@ char mngr_message_available(void) {
 }
 
 void mngr_set(module_t* module, msg_t* msg) {
-    if ((module_msg_available+1 > MSG_BUFFER_SIZE) || (module->message_available+1 > MSG_BUFFER_SIZE)) {
-        // This new message doesn't fit into buffer, don't save it
-        return;
+    if ((module_msg_available+1 < MSG_BUFFER_SIZE) || (module->message_available+1 < MSG_BUFFER_SIZE)) {
+        module_msg_mngr[module_msg_available++] = module;
+        module->msg_stack[module->message_available++] = msg;
+    } else {
+        // out of buffer. remove the oldest message and add this new one.
+        mngr_t trash;
+        mngr_get_msg(0, 0, &trash);
+        module_msg_mngr[module_msg_available++] = module;
+        module->msg_stack[module->message_available++] = msg;
     }
-    module_msg_mngr[module_msg_available++] = module;
-    module->msg_stack[module->message_available++] = msg;
 }
 
 void mngr_get_msg(int module_index,int msg_index, mngr_t* chunk) {
