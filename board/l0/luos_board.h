@@ -1,5 +1,5 @@
- #ifndef __L0_H
-#define __L0_H
+ #ifndef __LUOS_BOARD_H
+#define __LUOS_BOARD_H
 
 #include "luos.h"
 
@@ -17,14 +17,14 @@ typedef struct __attribute__((__packed__)){
         };
         uint32_t unmap[2];                /*!< Uncmaped form. */
     };
- }l0_analog_t;
+ }node_analog_t;
 
- volatile l0_analog_t L0_analog;
+ volatile node_analog_t node_analog;
 
- int l0_msg_handler(module_t* module, msg_t* input, msg_t* output);
+ int node_msg_handler(module_t* module, msg_t* input, msg_t* output);
  void status_led(char state);
- void board_init(void);
+ void node_init(void);
  void write_alias(unsigned short id, char* alias);
  char read_alias(unsigned short id, char* alias);
 
-#endif /*__ __L0_H */
+#endif /*__ __LUOS_BOARD_H */

@@ -1,5 +1,5 @@
 #include "luos.h"
-#include "l0.h"
+#include "luos_board.h"
 #include "robus.h"
 #include "sys_msg.h"
 #include <string.h>
@@ -100,7 +100,7 @@ void luos_cb(vm_t *vm, msg_t *msg) {
         return;
     }
     // L0 message management
-    int pub_type = l0_msg_handler(module, msg, (msg_t*)&luos_pub_msg);
+    int pub_type = node_msg_handler(module, msg, (msg_t*)&luos_pub_msg);
     if (pub_type == NODE_LED) {
         return;
     }
@@ -122,7 +122,7 @@ void luos_cb(vm_t *vm, msg_t *msg) {
 
 void luos_init(void){
     module_number = 0;
-    board_init();
+    node_init();
     robus_init(luos_cb);
 }
 
