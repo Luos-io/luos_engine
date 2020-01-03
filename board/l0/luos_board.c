@@ -78,3 +78,23 @@ char read_alias(unsigned short local_id, char* alias) {
      }
      return 1;
 }
+
+/**
+ * \fn void board_disable_irq(void)
+ * \brief disable IRQ
+ *
+ * \return error
+ */
+void node_disable_irq(void) {
+    __disable_irq();
+}
+
+/**
+ * \fn void board_enable_irq(void)
+ * \brief enable IRQ
+ *
+ * \return error
+ */
+void node_enable_irq(void) {
+    __enable_irq();
+}

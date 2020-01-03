@@ -27,4 +27,19 @@ typedef struct __attribute__((__packed__)){
  void write_alias(unsigned short local_id, char* alias);
  char read_alias(unsigned short local_id, char* alias);
 
+ /**
+  * \fn void board_disable_irq(void)
+  * \brief disable IRQ
+  *
+  * \return error
+  */
+ void node_disable_irq(void);
+
+ /**
+  * \fn void board_enable_irq(void)
+  * \brief enable IRQ
+  *
+  * \return error
+  */
+ void node_enable_irq(void);
 #endif /*__ __LUOS_BOARD_H */

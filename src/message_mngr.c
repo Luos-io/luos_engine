@@ -6,7 +6,7 @@
  */
 
 #include "message_mngr.h"
-#include "hal.h"
+#include "luos_board.h"
 
 // no real time callback management
 volatile int module_msg_available = 0;
@@ -41,23 +41,23 @@ void mngr_get_msg(int module_index,int msg_index, mngr_t* chunk) {
     }
     // get module
     chunk->module = module_msg_mngr[module_index];
-    hal_disable_irq();
+    node_disable_irq();
     for (i = module_index; i < module_msg_available; i++) {
         module_msg_mngr[i] = module_msg_mngr[i+1];
     }
     module_msg_mngr[i] = 0;
     module_msg_available--;
-    hal_enable_irq();
+    node_enable_irq();
 
     // get msg
     chunk->msg = chunk->module->msg_stack[msg_index];
-    hal_disable_irq();
+    node_disable_irq();
     for (int i = msg_index; i < chunk->module->message_available; i++) {
         chunk->module->msg_stack[i] = chunk->module->msg_stack[i+1];
     }
     chunk->module->msg_stack[i] = 0;
     chunk->module->message_available--;
-    hal_enable_irq();
+    node_enable_irq();
 }
 
 void mngr_get(int module_index, mngr_t* chunk) {

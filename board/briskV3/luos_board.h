@@ -27,4 +27,20 @@ void node_init(void);
 void write_alias(unsigned short id, char* alias);
 char read_alias(unsigned short id, char* alias);
 
+/**
+ * \fn void node_disable_irq(void)
+ * \brief disable IRQ
+ *
+ * \return error
+ */
+void node_disable_irq(void);
+
+/**
+ * \fn void node_enable_irq(void)
+ * \brief enable IRQ
+ *
+ * \return error
+ */
+void node_enable_irq(void);
+
 #endif /*__ __LUOS_BOARD_H */
