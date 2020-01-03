@@ -1,7 +1,5 @@
 #include "luos.h"
 #include "luos_board.h"
-#include "robus.h"
-#include "sys_msg.h"
 #include <string.h>
 #include "message_mngr.h"
 
@@ -137,14 +135,15 @@ void transmit_local_route_table(void) {
     uuid.uuid[0] = LUOS_UUID[0];
     uuid.uuid[1] = LUOS_UUID[1];
     uuid.uuid[2] = LUOS_UUID[2];
-    convert_board_to_route_table(&local_route_table[entry_nb++], uuid, ctx.detection.branches, NO_BRANCH); //TODO replace ctx.detection.branches with a Robus function
+    unsigned char table_size;
+    unsigned short* detection_branches = robus_get_node_branches(&table_size);
+    convert_board_to_route_table(&local_route_table[entry_nb++], uuid, detection_branches, table_size);
     // save modules entry
     for (int i = 0; i < module_number; i++){
         convert_module_to_route_table(&local_route_table[entry_nb++], &module_table[i]);
     }
     luos_send_data(luos_module_pointer, (msg_t*)&luos_pub_msg, local_route_table, (entry_nb * sizeof(route_table_t)));
 }
-
 
 void luos_loop(void) {
     mngr_t chunk;
@@ -168,7 +167,6 @@ void luos_loop(void) {
 void luos_modules_clear(void) {
     robus_modules_clear();
 }
-
 
 module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias) {
     unsigned char i = 0;
@@ -310,7 +308,6 @@ unsigned char luos_get_ring_buffer(module_t* module, msg_t* msg, void* ring_buff
 msg_t* luos_read(module_t* module) {
     if (module->message_available > MSG_BUFFER_SIZE) {
         // msg read too slow
-        ctx.status.rx_error = TRUE;
     }
     if (module->message_available) {
         // check if there is a message for this module
@@ -355,11 +352,5 @@ void luos_save_alias(module_t* module, char* alias) {
 }
 
 void luos_set_baudrate(module_t* module, uint32_t baudrate) {
-    msg_t msg;
-    memcpy(msg.data, &baudrate, sizeof(uint32_t));
-    msg.header.target_mode = BROADCAST;
-    msg.header.target = BROADCAST_VAL;
-    msg.header.cmd = SET_BAUDRATE;
-    msg.header.size = sizeof(uint32_t);
-    robus_send_sys(module, &msg);
+    robus_set_baudrate(module->vm, baudrate);
 }

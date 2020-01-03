@@ -1,6 +1,5 @@
 #include <routingTable.h>
 #include <string.h>
-#include <sys_msg.h>
 
 route_table_t route_table[MAX_MODULES_NUMBER];
 volatile int last_module = 0;
@@ -97,7 +96,7 @@ char* alias_from_id(uint16_t id){
             }
         }
     }
-    return -1;
+    return (char*)0;
 }
 
 int bigest_id(){
@@ -213,7 +212,7 @@ int wait_route_table(module_t* module, msg_t* intro_msg) {
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_route_table_entry;
     luos_send(module, intro_msg);
-    uint32_t timestamp = HAL_GetTick();
+    uint32_t timestamp = HAL_GetTick(); // TODO : create a function for it into board
     while ((HAL_GetTick() - timestamp) < timeout) {
         // If this request is for a module in this board allow him to respond.
         luos_loop();
@@ -233,7 +232,7 @@ void detect_modules(module_t* module) {
     // clear network detection state and all previous info.
     flush_route_table();
     // Starts the topology detection.
-    int nb_mod = topology_detection(module->vm);
+    int nb_mod = robus_topology_detection(module->vm);
     if (nb_mod > MAX_MODULES_NUMBER-1) nb_mod = MAX_MODULES_NUMBER-1;
 
     // Then, asks for introduction for every found modules.
@@ -277,7 +276,7 @@ void detect_modules(module_t* module) {
             }
             auto_name.data[auto_name.header.size] = '\0';
             // Send the message using the WRITE_ALIAS system command
-            robus_send_sys(module->vm, &auto_name);
+            robus_send(module->vm, &auto_name);
             //TODO update name into route_table
         }
     }

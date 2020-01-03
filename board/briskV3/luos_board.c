@@ -78,3 +78,11 @@ char read_alias(unsigned short id, char* alias) {
      }
      return 1;
 }
+
+void node_disable_irq(void) {
+    __disable_irq();
+}
+
+void node_enable_irq(void) {
+    __enable_irq();
+}
