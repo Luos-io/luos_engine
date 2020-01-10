@@ -83,7 +83,7 @@ char* string_from_type(module_type_t type) {
             return "Voltage";
         break;
         default:
-            return "unknown";
+            return "Unknown";
         break;
     }
 }
