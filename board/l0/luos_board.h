@@ -24,7 +24,7 @@ typedef struct __attribute__((__packed__)){
  int node_msg_handler(module_t* module, msg_t* input, msg_t* output);
  void status_led(char state);
  void node_init(void);
- void write_alias(unsigned short id, char* alias);
- char read_alias(unsigned short id, char* alias);
+ void write_alias(unsigned short local_id, char* alias);
+ char read_alias(unsigned short local_id, char* alias);
 
 #endif /*__ __LUOS_BOARD_H */
