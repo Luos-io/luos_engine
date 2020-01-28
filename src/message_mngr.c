@@ -22,7 +22,7 @@ void mngr_set(module_t* module, msg_t* msg) {
     // Todo check if this message address is already used in the Luos stack.
     // Todo Watch out the next one on Robus could be corrupted because it is used to receive the next message...
     // Todo perhaps we could track the currently used message slot on robus : https://community.luos-robotics.com/t/buffering-overflow-resuling-on-strange-message-reception/233
-    if ((module_msg_available+1 < MSG_BUFFER_SIZE) || (module->message_available+1 < MSG_BUFFER_SIZE)) {
+    if ((module_msg_available+1 < MSG_BUFFER_SIZE) && (module->message_available+1 < MSG_BUFFER_SIZE)) {
         module_msg_mngr[module_msg_available++] = module;
         module->msg_stack[module->message_available++] = msg;
     } else {

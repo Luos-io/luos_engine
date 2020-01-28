@@ -93,6 +93,10 @@ int get_module_index(module_t* module){
 void luos_cb(vm_t *vm, msg_t *msg) {
     // Luos message management
     volatile module_t* module = get_module(vm);
+    if (module == 0){
+        // module overwrited, it seem to be possible if ring_buffer overflow.
+        while(1);
+    }
     if (luos_msg_handler(module, msg, (msg_t*)&luos_pub_msg)) {
         luos_module_pointer = module;
         return;
@@ -108,7 +112,7 @@ void luos_cb(vm_t *vm, msg_t *msg) {
         return;
     }
     if ((module->rt >= 1) & (module->mod_cb!=0)){
-            module->mod_cb(module, msg);
+        module->mod_cb(module, msg);
     }
     else {
         //store module and msg pointer
@@ -291,7 +295,7 @@ unsigned char luos_get_ring_buffer(module_t* module, msg_t* msg, void* ring_buff
     // check if chunk size fit into the ring buffer
     if ((stop_index - copy_index) < chunk_size) {
         // save the first part of the data
-        int remaining_space = (stop_index - copy_index - 1);
+        int remaining_space = (stop_index - copy_index);
         memcpy(&ring_buffer[copy_index], msg->data, remaining_space);
         copy_index = 0;
         chunk_size = chunk_size - remaining_space;
