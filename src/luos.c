@@ -169,6 +169,7 @@ void luos_loop(void) {
 }
 
 void luos_modules_clear(void) {
+    module_number = 0;
     robus_modules_clear();
 }
 
