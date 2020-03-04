@@ -1,0 +1,26 @@
+{
+    "name": "Luos",
+    "keywords": "robus,network",
+    "description": "distributing operating system",
+    "version": "0.6.0",
+    "frameworks": "stm32cube",
+    "platforms": "ststm32",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "licence": "MIT",
+    "build" : {
+        "flags": [
+            "-I Inc",
+            "-I OD"
+        ],
+        "extraScript": "select_board_script.py"
+    },
+    "dependencies":
+    [
+        {
+        "name": "Robus"
+        }
+    ]
+}
