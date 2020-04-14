@@ -304,7 +304,18 @@ unsigned char luos_receive_data(module_t *module, msg_t *msg, void *bin_data)
 {
     // Manage buffer session (one per module)
     static uint32_t data_size[MAX_VM_NUMBER] = {0};
+    static int last_msg_size = 0;
     int id = get_module_index(module);
+
+    // check message integrity
+    if ((last_msg_size > 0) && (last_msg_size-MAX_DATA_MSG_SIZE > msg->header.size))
+    {
+        // we miss a message (a part of the data),
+        // reset session and return an error.
+        data_size[id] = 0;
+        last_msg_size = 0;
+        return 2;
+    }
 
     // Get chunk size
     unsigned short chunk_size = 0;
@@ -318,12 +329,14 @@ unsigned char luos_receive_data(module_t *module, msg_t *msg, void *bin_data)
 
     // Save buffer session
     data_size[id] = data_size[id] + chunk_size;
+    last_msg_size = msg->header.size;
 
     // Check end of data
     if (!(msg->header.size > MAX_DATA_MSG_SIZE))
     {
         // Data collection finished, reset buffer session state
         data_size[id] = 0;
+        last_msg_size = 0;
         return 1;
     }
     return 0;
