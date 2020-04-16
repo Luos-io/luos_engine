@@ -2,6 +2,7 @@
 #include <string.h>
 #include "eeprom.h"
 #include "main.h"
+#include "node_config.h"
 
 uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
