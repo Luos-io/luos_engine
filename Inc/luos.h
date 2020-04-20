@@ -5,6 +5,7 @@
 #include "module_structs.h"
 #include "routingTable.h"
 #include "luos_od.h"
+#include "streaming.h"
 
 /**
  * \fn void luos_init(void)
@@ -74,25 +75,20 @@ unsigned char luos_send(module_t* module, msg_t *msg);
  */
 unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size);
 
-
 /**
- * \fn unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer, int* data_size, int start_index, int stop_index)
- * \brief  Send message with big datas into multiple chunk.
+ * \fn unsigned char luos_send_streaming(module_t *module, msg_t *msg, streaming_channel_t *streaming)
+ * \brief  Send datas of a streaming channel.
  *
- * \param module who transmit.
- * \param msg Message chunk used to transmit.
- * \param ring_buffer Pointer to the begin of data ring table
- * \param data_size Size of the transmitted data
- * \param start_index index of the begin of the ring table
- * \param stop_index complete size of the ring buffer
+ * \param module who send.
+ * \param msg Message to send to the slave with basic informations.
+ * \param streaming streaming channel pointer
  *
  * \return send or not
  */
-unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
-                                   int* data_size, int* start_index, int stop_index);
+unsigned char luos_send_streaming(module_t *module, msg_t *msg, streaming_channel_t *stream);
 
 /**
- * \fn unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
+ * \fn unsigned char luos_receive_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
  * \brief  Retrieve a multi chunk data
  *
  * \param module who receive.
@@ -102,23 +98,19 @@ unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buf
  *
  * \return reception finish or not
  */
-unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data);
+unsigned char luos_receive_data(module_t *module, msg_t *msg, void *bin_data);
 
 /**
- * \fn unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
- * \brief  Retrieve a multi chunk data
+ * \fn nsigned char luos_receive_streaming(module_t *module, msg_t *msg, streaming_channel_t streaming)
+ * \brief  Receive a streaming channel datas
  *
  * \param module who receive.
- * \param msg Message chunk received by the slave.
- * \param ring_buffer Pointer to the begin of data ring table
- * \param data_size Size of the received data to manage
- * \param start_index index of the begin of the ring table
- * \param stop_index complete size of the ring buffer
+ * \param msg Message received by the slave.
+ * \param streaming streaming channel pointer
  *
  * \return reception finish or not
  */
-unsigned char luos_get_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
-                                   int* data_size, int *start_index, int stop_index);
+unsigned char luos_receive_streaming(module_t *module, msg_t *msg, streaming_channel_t *stream);
 
 /**
  * \fn msg_t* luos_read(module_t* module)
@@ -128,7 +120,7 @@ unsigned char luos_get_ring_buffer(module_t* module, msg_t* msg, void* ring_buff
  *
  * \return the received message pointer
  */
-msg_t* luos_read(module_t* module);
+msg_t *luos_read(module_t *module);
 
 /**
  * \fn msg_t* luos_read_from(module_t* module, short id)

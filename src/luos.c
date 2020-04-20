@@ -23,7 +23,7 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
     }
     if (input->header.cmd == INTRODUCTION_CMD) {
         volatile route_table_t* route_tab = &get_route_table()[get_last_entry()];
-        if(luos_get_data(module, input, route_tab)) {
+        if(luos_receive_data(module, input, route_tab)) {
             // route table of this board is finish
             compute_route_table_entry_nb();
         }
@@ -212,105 +212,159 @@ unsigned char luos_send(module_t* module, msg_t *msg) {
     return robus_send(module->vm, msg);
 }
 
-unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size) {
-    int start_index = 0;
-    int data_size = size;
-    return luos_send_ring_buffer(module, msg, bin_data, &data_size, &start_index, size);
-}
-
-unsigned char luos_send_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
-                                   int *data_size, int *start_index, int stop_index) {
-
+unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size)
+{
+    // Compute number of message needed to send this data
     int msg_number = 1;
-    int chunk_size;
-    // compute number of message needed to send this data
-    if (*data_size > MAX_DATA_MSG_SIZE) {
-        msg_number = (*data_size / MAX_DATA_MSG_SIZE);
-        msg_number += (msg_number*MAX_DATA_MSG_SIZE < *data_size);
+    int sent_size = 0;
+    if (size > MAX_DATA_MSG_SIZE)
+    {
+        msg_number = (size / MAX_DATA_MSG_SIZE);
+        msg_number += (msg_number * MAX_DATA_MSG_SIZE < size);
     }
-    for (volatile int chunk = 0; chunk < msg_number; chunk++) {
-        if (*data_size > MAX_DATA_MSG_SIZE) {
+
+    // Send messages one by one
+    for (volatile int chunk = 0; chunk < msg_number; chunk++)
+    {
+        // Compute chunk size
+        int chunk_size = 0;
+        if ((size - sent_size) > MAX_DATA_MSG_SIZE)
             chunk_size = MAX_DATA_MSG_SIZE;
-        } else {
-            chunk_size = *data_size;
-        }
+        else
+            chunk_size = size - sent_size;
 
-        volatile int msg_data_index = 0;
-        if ((stop_index - *start_index) < chunk_size) {
-            // save the first part of the data
-            int remaining_space = (stop_index - *start_index);
-            memcpy(&msg->data[msg_data_index], &ring_buffer[*start_index], remaining_space);
-            *start_index = 0;
-            msg_data_index = remaining_space;
-            chunk_size = chunk_size - remaining_space;
-        }
+        // Copy data into message
+        memcpy(msg->data, &bin_data[sent_size], chunk_size);
+        msg->header.size = size - sent_size;
 
-        memcpy(&msg->data[msg_data_index], &ring_buffer[*start_index], chunk_size);
-        *start_index = *start_index + chunk_size;
-        msg->header.size = *data_size;
-        if (luos_send(module, msg)){
-            // this message fail stop transmission and return an error
+        // Send message
+        if (luos_send(module, msg))
+        {
+            // This message fail stop transmission and return an error
             return 1;
         }
-        if (*data_size > MAX_DATA_MSG_SIZE) {
-            *data_size -= MAX_DATA_MSG_SIZE;
-        } else {
-            *data_size = 0;
+
+        // Save current state
+        sent_size = sent_size + chunk_size;
+    }
+    return 0;
+}
+
+unsigned char luos_send_streaming(module_t *module, msg_t *msg, streaming_channel_t *stream)
+{
+    // Compute number of message needed to send available datas on ring buffer
+    int msg_number = 1;
+    int data_size = get_nb_available_samples(stream);
+    const int max_data_msg_size = (MAX_DATA_MSG_SIZE / stream->data_size);
+    if (data_size > max_data_msg_size)
+    {
+        msg_number = (data_size / max_data_msg_size);
+        msg_number += ((msg_number * max_data_msg_size) < data_size);
+    }
+
+    // Send messages one by one
+    for (volatile int chunk = 0; chunk < msg_number; chunk++)
+    {
+        // compute chunk size
+        int chunk_size = 0;
+        if (data_size > max_data_msg_size)
+            chunk_size = max_data_msg_size;
+        else
+            chunk_size = data_size;
+
+        // Copy data into message
+        get_samples(stream, msg->data, chunk_size);
+
+        // Send message
+        if (luos_send(module, msg))
+        {
+            // this message fail stop transmission, retrieve datas and return an error
+            stream->sample_ptr = stream->sample_ptr - (chunk_size * stream->data_size);
+            if (stream->sample_ptr < stream->ring_buffer)
+            {
+                stream->sample_ptr = stream->end_ring_buffer - (stream->ring_buffer - stream->sample_ptr);
+            }
+            return 1;
+        }
+
+        // check end of data
+        if (data_size > max_data_msg_size)
+        {
+            data_size -= max_data_msg_size;
+        }
+        else
+        {
+            data_size = 0;
         }
     }
     return 0;
 }
 
-unsigned char luos_get_data(module_t* module, msg_t* msg, void* bin_data) {
+unsigned char luos_receive_data(module_t *module, msg_t *msg, void *bin_data)
+{
+    // Manage buffer session (one per module)
     static uint32_t data_size[MAX_VM_NUMBER] = {0};
-    volatile int id = get_module_index(module);
-    int start_index = 0;
-    if (luos_get_ring_buffer(module, msg, bin_data, &data_size[id], &start_index, data_size[id] + msg->header.size)) {
-        // data collection finished
+    static int last_msg_size = 0;
+    int id = get_module_index(module);
+
+    // check message integrity
+    if ((last_msg_size > 0) && (last_msg_size-MAX_DATA_MSG_SIZE > msg->header.size))
+    {
+        // we miss a message (a part of the data),
+        // reset session and return an error.
         data_size[id] = 0;
-        return 1;
+        last_msg_size = 0;
+        return 2;
     }
-    return 0;
-}
 
-unsigned char luos_get_ring_buffer(module_t* module, msg_t* msg, void* ring_buffer,
-                                   int* data_size, int *start_index, int stop_index) {
+    // Get chunk size
     unsigned short chunk_size = 0;
-
-    // check parameters coherency
-    if (*start_index > stop_index){
-        while(1);
-    }
-
-    //compute the real start_index depending on current data size
-    int copy_index = *data_size  + *start_index;
-    if (copy_index > stop_index) {
-        copy_index = stop_index - copy_index;
-    }
-
     if (msg->header.size > MAX_DATA_MSG_SIZE)
         chunk_size = MAX_DATA_MSG_SIZE;
     else
         chunk_size = msg->header.size;
-    *data_size = *data_size + chunk_size;
-    // check if chunk size fit into the ring buffer
-    if ((stop_index - copy_index) < chunk_size) {
-        // save the first part of the data
-        int remaining_space = (stop_index - copy_index);
-        memcpy(&ring_buffer[copy_index], msg->data, remaining_space);
-        copy_index = 0;
-        chunk_size = chunk_size - remaining_space;
-    }
-    memcpy(&ring_buffer[copy_index], msg->data, chunk_size);
 
-    if (!(msg->header.size > MAX_DATA_MSG_SIZE)) {
-        // data collection finished
+    // Copy data into buffer
+    memcpy(&bin_data[data_size[id]], msg->data, chunk_size);
+
+    // Save buffer session
+    data_size[id] = data_size[id] + chunk_size;
+    last_msg_size = msg->header.size;
+
+    // Check end of data
+    if (!(msg->header.size > MAX_DATA_MSG_SIZE))
+    {
+        // Data collection finished, reset buffer session state
+        data_size[id] = 0;
+        last_msg_size = 0;
         return 1;
     }
     return 0;
 }
 
-msg_t* luos_read(module_t* module) {
+unsigned char luos_receive_streaming(module_t *module, msg_t *msg, streaming_channel_t *stream)
+{
+    // Get chunk size
+    unsigned short chunk_size = 0;
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+        chunk_size = MAX_DATA_MSG_SIZE;
+    else
+        chunk_size = msg->header.size;
+
+    // Copy data into buffer
+    set_samples(stream, msg->data, (chunk_size / stream->data_size));
+
+    // Check end of data
+    if ((msg->header.size <= MAX_DATA_MSG_SIZE))
+    {
+        // Chunk collection finished
+        return 1;
+    }
+    return 0;
+}
+
+msg_t *luos_read(module_t *module)
+{
     if (module->message_available > MSG_BUFFER_SIZE) {
         // msg read too slow
     }
