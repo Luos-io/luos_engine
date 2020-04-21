@@ -1,0 +1,23 @@
+{
+    "name": "Gate",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,module,ST,cJSON",
+    "description": "Luos turn your embedded system as modules like microservice do it in software.",
+    "version": "0.6.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://www.luos.io/us/"
+    },
+    "licence": "MIT",
+    "build" : {
+        "flags": [
+            "-I cJSON",
+            "-D MAX_VM_NUMBER=2",
+            "-D MSG_BUFFER_SIZE=25",
+            "-Wl,-u,_printf_float",
+            "-D USE_SERIAL"
+        ],
+        "src_filter" : [
+        	"+<cJSON>"
+        ]
+    }
+}
