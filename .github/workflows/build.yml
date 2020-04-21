@@ -19,4 +19,21 @@ jobs:
         pip install platformio
     - name: Run PlatformIO
       run: |
-        platformio run
+        platformio run -d examples/drivers/Mod_button/
+        platformio run -d examples/drivers/Mod_controlled_motor/ 
+        platformio run -d examples/drivers/Mod_dc_motor/
+        platformio run -d examples/drivers/Mod_distance/ 
+        platformio run -d examples/drivers/Mod_dxl/  
+        platformio run -d examples/drivers/Mod_gpio/  
+        platformio run -d examples/drivers/Mod_handy/ 
+        platformio run -d examples/drivers/Mod_imu/ 
+        platformio run -d examples/drivers/Mod_led/ 
+        platformio run -d examples/drivers/Mod_led_strip/ 
+        platformio run -d examples/drivers/Mod_light_sensor/
+        platformio run -d examples/drivers/Mod_load/
+        platformio run -d examples/drivers/Mod_potentiometer/
+        platformio run -d examples/drivers/Mod_power_switch/
+        platformio run -d examples/drivers/Mod_servo/
+        platformio run -d examples/drivers/Mod_stepper/
+        platformio run -d examples/apps/projects
+    
