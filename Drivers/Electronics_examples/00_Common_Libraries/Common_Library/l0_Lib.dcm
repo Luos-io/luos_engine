@@ -1,0 +1,126 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DF11-8DP-2DS(24)
+D Header Robus Hirose DF11 8p - Right Angle
+F Documentation/Connecteur/Hirose_DF11/DF11_05430535724_spec.pdf
+$ENDCMP
+#
+$CMP FT230X
+D FT230X - SSOP16
+K USB SERIAL CONVERTER
+$ENDCMP
+#
+$CMP Header5Contacts
+D Straight Header 2.54mm pitch 6-way 1-row
+F Documentations/Connecteurs/Embase_5_Contacts_p2.54_826926-5.pdf
+$ENDCMP
+#
+$CMP Header6Contacts
+D Straight Header 2.54mm pitch 6-way 1-row
+F Documentations/Connecteurs/Embase_5_Contacts_p2.54_826926-5.pdf
+$ENDCMP
+#
+$CMP ISL83078E
+D ±15kV ESD Protected, 3.3V, Full Fail-safe, Low Power, High Speed or Slew Rate Limited, RS-485/RS-422 Transceivers
+K RS-485 RS-422 Transceivers
+F Documentations/TransceiverRS485/isl83078e.pdf
+$ENDCMP
+#
+$CMP KPTB-1615ESGC
+D KPTB-1615ESGC
+K LED RED GREEN DUAL
+$ENDCMP
+#
+$CMP LM53600
+D LM53600/01-Q1, 0.65A/1A, 36V Synchronous, 2.1MHz Automotive Step Down DC-DC Converter
+F Documentations/Alimentation/lm53600-q1.pdf
+$ENDCMP
+#
+$CMP LMV301
+D Low Bias Current 1.8V to 5V Single-Supply Rail-to-Rail Operational Amplifier
+K Operational Amplifier
+F Documentations/AOP/LMV301SQ3T2G.pdf
+$ENDCMP
+#
+$CMP SN74AHC1G08
+D Single 2-Input Positive-AND Gate
+K AND Gate Logic
+$ENDCMP
+#
+$CMP SN74AHC1G86DBVR
+D SN74AHC1G86 Single 2-Input Exclusive-OR Gate
+K Logic Gate XOR
+F Documentations/Porte_Logique/SN74AHC1G86DBVR.pdf
+$ENDCMP
+#
+$CMP SN74AHC1G86DCKR
+D SN74AHC1G86 Single 2-Input Exclusive-OR Gate
+K Logic Gate XOR
+F Documentations/Porte_Logique/SN74AHC1G86DBVR.pdf
+$ENDCMP
+#
+$CMP SN74LVC1G125DBVR
+D Single Bus Buffer Gate With 3-State Output
+K Buffer
+F Documentations/Drivers_Ligne/SN74LVC1G125DBVR.pdf
+$ENDCMP
+#
+$CMP SN74LVC2G241DCUR
+D Dual Buffer and Driver With 3-State Outputs
+K Buffer
+F Documentations/Drivers_Ligne/SN74LVC2G241DCUR.pdf
+$ENDCMP
+#
+$CMP ST3485ECDR
+D ±15kV ESD Protected, 3.3V, Full Fail-safe, Low Power, High Speed or Slew Rate Limited, RS-485/RS-422 Transceivers
+K RS-485 RS-422 Transceivers
+F Documentations/TransceiverRS485/isl83078e.pdf
+$ENDCMP
+#
+$CMP STM32F072CBU
+D 	Microcontrôleur ARM, USB Line, STM32 F0 ARM Cortex-M0 Microcontrollers, 32 bits, 48 MHz, 128 KB
+F Documentations/Microcontroleur/STM32F072RB_Datasheet.pdf
+$ENDCMP
+#
+$CMP TPS5401
+D TPS5401 0.5-A, 42-V Input, Step-Down Converter
+K Step Down Converter
+$ENDCMP
+#
+$CMP TPS62177
+D TPS62177 28-V, 0.5-A Step-Down Converter With Sleep Mode
+K Step-Down Converter DC/DC
+F Documentations/Alimentation/tps62177.pdf
+$ENDCMP
+#
+$CMP TPS71550DCKR
+D TPS715 50-mA, 24-V, 3.2-μA Supply Current Low-Dropout Linear Regulator
+K LDO
+F Documentations/Alimentation/TPS71550DCKR.pdf
+$ENDCMP
+#
+$CMP VL53L0x
+D Time-of-Flight ranging and gesture detection sensor
+F Documentations/VL53L0X.pdf
+$ENDCMP
+#
+$CMP XL320_MX
+D Dynamixel XL320 MX TTL Connector
+K Dynamixel XL320 MX TTL
+$ENDCMP
+#
+$CMP l0_Shield_Socket
+D l0 Socket
+$ENDCMP
+#
+$CMP l0_Socket
+D l0 Socket
+$ENDCMP
+#
+$CMP microUSB_B
+D Micro USB B Type Receptable
+K Micro USB B
+F Documentations/Connecteurs/Micro_USB_B_1935767_2751674.pdf
+$ENDCMP
+#
+#End Doc Library
