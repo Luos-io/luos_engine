@@ -10,12 +10,11 @@ Coming soon
 
 ## How to compile the code :computer:
 
- 1. Download and install [Platformio](https://platformio.org/platformio-ide)
- 2. Open this folder into Platformio
- 3. Build (Platformio will do the rest)
+Coming soon
 
 ## How to open the electronic design :electric_plug:
-You can open [a working example electronic design](https://github.com/Luos-io/Electronics) with Kicad. This design use Luos_components library for more information to install and use it read [our doc](https://docs.luos.io).
+
+Coming soon
 
 ## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
 
