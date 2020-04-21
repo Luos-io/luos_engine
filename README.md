@@ -5,9 +5,35 @@
 [![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/Luos/blob/master/LICENSE)
 [![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
 
-# Luos :bulb:
+# What and why Luos? :bulb:
 
-Coming soon
+We started designing Luos with the conviction that building electronic systems should be made easier than it is today. Most of the time should be spent on designing the applications and behaviors instead of on complex and time-and-money-eating technicalities. To give a simple example, adding a new sensor —for instance a distance sensor— to an electronic device in conception should not take more than a few minutes. So you can try, test and iterate fast on a project to truly design what users want.
+
+Luos works like [microservices architecture](https://en.wikipedia.org/wiki/Microservices) in the software world, and a [distributed operating systems](https://en.wikipedia.org/wiki/Distributed_operating_system): it encapsulates any software or hardware function to make it communicate and work with any other encapsulated module, however it was developed, either on bare metal or on top of an embedded OS.
+
+Watch this video for additional details:
+
+[![Alt text](https://www.luos.io/wp-content/uploads/2019/11/youtube.jpeg)](https://youtu.be/xQe3z0M_FE8)
+
+## You are not familiar with Luos operations?
+
+→ Start reading the [Basics](https://docs.luos.io/pages/overview/general-basics.html) page.
+
+## You want to make your own board with [Luos modules](https://docs.luos.io/pages/low/modules/create-modules.html)?
+
+→ Start reading how to integrate Luos in you [Development environment](https://docs.luos.io/pages/low/dev-env.html).
+
+→ Then learn how to [Create a luos project](https://docs.luos.io/pages/low/modules/create-project.html).
+
+## You want to shape your device behavior?
+
+→ Luos provides a sets of [Prototyping boards](https://docs.luos.io/pages/prototyping_boards/boards-list.html) you can use as example or to develop your project.
+
+→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/modules/create-modules.html).
+
+→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/modules_list/gate.html) module using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
+
+If you have questions about a specific topic, you can refer or ask it on the [Luos' Forum](https://community.luos.io/). And if you have suggestions about this documentation don't hesitate to create pull requests.
 
 ## How to compile the code :computer:
 
