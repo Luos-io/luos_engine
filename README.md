@@ -3,6 +3,7 @@
 ![](https://github.com/Luos-io/Luos/workflows/Build/badge.svg)
 [![](http://certified.luos.io)](https://luos.io)
 [![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/Luos/blob/master/LICENSE)
+[![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
 
 # Luos :bulb:
 
