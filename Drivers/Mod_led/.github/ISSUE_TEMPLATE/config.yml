@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Luos Community Support
+    url: https://community.luos.io
+    about: Please ask and answer questions about Luos here.
+  - name: Luos Documentation
+    url: https://docs.luos.io/
+    about: Please read Luos documentation here.
