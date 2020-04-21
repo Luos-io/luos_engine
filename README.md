@@ -13,7 +13,7 @@ Luos works like [microservices architecture](https://en.wikipedia.org/wiki/Micro
 
 Watch this video for additional details:
 
-[![Alt text](https://www.luos.io/wp-content/uploads/2019/11/youtube.jpeg)](https://youtu.be/xQe3z0M_FE8)
+<a href="https://youtu.be/xQe3z0M_FE8"><img border="0" alt="Luos video" src="https://www.luos.io/wp-content/uploads/2019/11/youtube.jpeg" width="640" height="360"></a>
 
 ## You are not familiar with Luos operations?
 
