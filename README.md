@@ -35,14 +35,6 @@ Watch this video for additional details:
 
 If you have questions about a specific topic, you can refer or ask it on the [Luos' Forum](https://community.luos.io/). And if you have suggestions about this documentation don't hesitate to create pull requests.
 
-## How to compile the code :computer:
-
-Coming soon
-
-## How to open the electronic design :electric_plug:
-
-Coming soon
-
 ## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
 
 [![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://community.luos.io)
