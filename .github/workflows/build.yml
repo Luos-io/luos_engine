@@ -19,21 +19,21 @@ jobs:
         pip install platformio
     - name: Run PlatformIO
       run: |
-        platformio run -d examples/drivers/Mod_button/
-        platformio run -d examples/drivers/Mod_controlled_motor/ 
-        platformio run -d examples/drivers/Mod_dc_motor/
-        platformio run -d examples/drivers/Mod_distance/ 
-        platformio run -d examples/drivers/Mod_dxl/  
-        platformio run -d examples/drivers/Mod_gpio/  
-        platformio run -d examples/drivers/Mod_handy/ 
-        platformio run -d examples/drivers/Mod_imu/ 
-        platformio run -d examples/drivers/Mod_led/ 
-        platformio run -d examples/drivers/Mod_led_strip/ 
-        platformio run -d examples/drivers/Mod_light_sensor/
-        platformio run -d examples/drivers/Mod_load/
-        platformio run -d examples/drivers/Mod_potentiometer/
-        platformio run -d examples/drivers/Mod_power_switch/
-        platformio run -d examples/drivers/Mod_servo/
-        platformio run -d examples/drivers/Mod_stepper/
-        platformio run -d examples/apps/projects
+        platformio run -d examples/drivers/Button_proj
+        platformio run -d examples/drivers/Controlled_Motor_proj
+        platformio run -d examples/drivers/DC_Motor_proj
+        platformio run -d examples/drivers/Distance_proj
+        platformio run -d examples/drivers/Dxl_proj
+        platformio run -d examples/drivers/Gpio_proj  
+        platformio run -d examples/drivers/Handy_proj 
+        platformio run -d examples/drivers/Imu_proj
+        platformio run -d examples/drivers/Led_proj
+        platformio run -d examples/drivers/Led_Strip_proj
+        platformio run -d examples/drivers/Light_Sensor_proj
+        platformio run -d examples/drivers/Load_proj
+        platformio run -d examples/drivers/Potentiometer_proj
+        platformio run -d examples/drivers/Power_Switch_proj
+        platformio run -d examples/drivers/Servo_proj
+        platformio run -d examples/drivers/Stepper_proj
+        platformio run -d examples/apps/projects/Gate_proj
     

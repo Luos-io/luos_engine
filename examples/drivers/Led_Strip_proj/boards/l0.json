@@ -1,0 +1,35 @@
+{
+  "build": {
+    "cpu": "cortex-m0",
+    "extra_flags": [
+      "-DSTM32F072xB",
+      "-DUSE_FULL_LL_DRIVER",
+      "-DHAL=l0 "
+    ],
+    "f_cpu": "48000000L",
+    "mcu": "stm32f072vbt6"
+  },
+  "connectivity": [
+    "can"
+  ],
+  "debug": {
+    "jlink_device": "STM32F072VB",
+    "openocd_target": "stm32f0x",
+    "svd_path": "STM32F072x.svd"
+  },
+  "frameworks": [
+    "stm32cube"
+  ],
+  "name": "L0",
+  "upload": {
+    "maximum_ram_size": 16384,
+    "maximum_size": 131072,
+    "protocol": "dfu",
+    "protocols": [
+      "stlink",
+      "dfu"
+    ]
+  },
+  "url": "https://luos.io",
+  "vendor": "Luos"
+}
