@@ -1,0 +1,38 @@
+{
+    "name": "Robus", 
+    "repository": {
+        "url": "https://github.com/Luos-io/pre_robus", 
+        "type": "git"
+    }, 
+    "platforms": [], 
+    "frameworks": [], 
+    "version": "1.0.0", 
+    "build": {
+        "flags": [
+            "-I Inc", 
+            "-Llib", 
+            "-l libRobus"
+        ]
+    }, 
+    "authors": [
+        {
+            "url": "https://luos.io", 
+            "maintainer": false, 
+            "email": null, 
+            "name": "Luos"
+        }
+    ], 
+    "keywords": [
+        "luos", 
+        "operating system", 
+        "network", 
+        "embedded", 
+        "robus", 
+        "module", 
+        "communication", 
+        "microservice", 
+        "os"
+    ], 
+    "id": 7111, 
+    "description": "Robus is the Luos's network"
+}

@@ -1,0 +1,44 @@
+{
+    "name": "Luos", 
+    "repository": {
+        "url": "https://github.com/Luos-io/pre_luos", 
+        "type": "git"
+    }, 
+    "platforms": [], 
+    "frameworks": [], 
+    "version": "0.6.4", 
+    "build": {
+        "flags": [
+            "-I Inc", 
+            "-I OD", 
+            "-Llib", 
+            "-l libLuos"
+        ]
+    }, 
+    "dependencies": [
+        {
+            "name": "Robus"
+        }
+    ], 
+    "authors": [
+        {
+            "url": "https://luos.io", 
+            "maintainer": false, 
+            "email": null, 
+            "name": "Luos"
+        }
+    ], 
+    "keywords": [
+        "luos", 
+        "operating system", 
+        "network", 
+        "embedded", 
+        "robus", 
+        "module", 
+        "communication", 
+        "microservice", 
+        "os"
+    ], 
+    "id": 7112, 
+    "description": "Luos turn your embedded system as modules like microservice do it in software."
+}

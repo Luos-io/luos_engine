@@ -1,0 +1,84 @@
+{
+    "configurations": [
+        {
+            "name": "!!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/include",
+                "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/src",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/src",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Robus/src",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Robus/Inc",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Robus/hal/l0",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/Inc",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/OD",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/hal/l0",
+                "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/inc",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/CMSIS/Include",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/CMSIS/Device/ST/STM32F0xx/Include",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/STM32F0xx_HAL_Driver/Inc",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/Common",
+                "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/modules/button",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Boards",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Modules",
+                "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/pyluos",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/hx8347d",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/l3gd20",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/spfd5408",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/st7735",
+                "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/stlm75",
+                "C:/Users/antoi/.platformio/packages/tool-unity",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/include",
+                    "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/src",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/src",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Robus/src",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Robus/Inc",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Robus/hal/l0",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/Inc",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/OD",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/hal/l0",
+                    "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/inc",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/CMSIS/Include",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/CMSIS/Device/ST/STM32F0xx/Include",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/STM32F0xx_HAL_Driver/Inc",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/Common",
+                    "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/modules/button",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Boards",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Modules",
+                    "C:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/pyluos",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/hx8347d",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/l3gd20",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/spfd5408",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/st7735",
+                    "C:/Users/antoi/.platformio/packages/framework-stm32cube/f0/Drivers/BSP/Components/stlm75",
+                    "C:/Users/antoi/.platformio/packages/tool-unity",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=40302",
+                "STM32F072xB",
+                "USE_FULL_LL_DRIVER",
+                "HAL=l0",
+                "USE_HAL_DRIVER",
+                "F_CPU=48000000L",
+                ""
+            ],
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "C:/Users/antoi/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gcc.exe",
+            "compilerArgs": [
+                "-mthumb",
+                "-mcpu=cortex-m0",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}

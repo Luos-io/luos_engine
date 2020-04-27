@@ -1,0 +1,34 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+
+// PIO Unified Debugger
+//
+// Documentation: https://docs.platformio.org/page/plus/debugging.html
+// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug",
+            "executable": "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/.pio/build/l0/firmware.elf",
+            "toolchainBinDir": "C:/Users/antoi/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "svdPath": "C:/Users/antoi/.platformio/platforms/ststm32/misc/svd/STM32F072x.svd",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug"
+            },
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (skip Pre-Debug)",
+            "executable": "c:/Users/antoi/OneDrive/Bureau/LUOS/Luos_Dev/Luos/examples/drivers/Button/.pio/build/l0/firmware.elf",
+            "toolchainBinDir": "C:/Users/antoi/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "svdPath": "C:/Users/antoi/.platformio/platforms/ststm32/misc/svd/STM32F072x.svd",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}
