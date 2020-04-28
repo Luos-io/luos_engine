@@ -1,0 +1,3 @@
+[submodule "examples/Controlled_motor_proj"]
+	path = examples/Controlled_motor_proj
+	url = https://github.com/Luos-io/Mod_controlled_motor.git
