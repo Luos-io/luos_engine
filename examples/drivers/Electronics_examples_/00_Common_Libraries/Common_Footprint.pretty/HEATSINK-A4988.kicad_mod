@@ -1,0 +1,17 @@
+(module HEATSINK-A4988 (layer F.Cu) (tedit 5BF02A84)
+  (fp_text reference REF** (at 0 0.5) (layer F.Fab)
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value HEATSINK-A4988 (at 0 -0.5) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_line (start -4.5 -4.5) (end 4.5 -4.5) (layer F.Fab) (width 0.1))
+  (fp_line (start 4.5 -4.5) (end 4.5 4.5) (layer F.Fab) (width 0.1))
+  (fp_line (start 4.5 4.5) (end -4.5 4.5) (layer F.Fab) (width 0.1))
+  (fp_line (start -4.5 4.5) (end -4.5 -4.5) (layer F.Fab) (width 0.1))
+  (model ${KISYS3DMOD}/HEATSINK-A4988.step
+    (offset (xyz 0 0 0.9))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 0))
+  )
+)

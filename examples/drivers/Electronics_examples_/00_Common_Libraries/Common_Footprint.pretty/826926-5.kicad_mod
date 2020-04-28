@@ -1,0 +1,22 @@
+(module 826926-5 (layer F.Cu) (tedit 5D19D994)
+  (fp_text reference J1 (at 0 0) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value Header5Contacts (at -2.5 -2) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_line (start -6.35 -1.25) (end 6.35 -1.25) (layer F.SilkS) (width 0.15))
+  (fp_line (start -6.35 1.25) (end 6.35 1.25) (layer F.SilkS) (width 0.15))
+  (fp_line (start 6.35 -1.25) (end 6.35 1.25) (layer F.SilkS) (width 0.15))
+  (fp_line (start -6.35 -1.25) (end -6.35 1.25) (layer F.SilkS) (width 0.15))
+  (pad 1 thru_hole circle (at -5.08 0) (size 1.6 1.6) (drill 1) (layers *.Cu *.Mask))
+  (pad 2 thru_hole circle (at -2.54 0) (size 1.6 1.6) (drill 1) (layers *.Cu *.Mask))
+  (pad 3 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 1) (layers *.Cu *.Mask))
+  (pad 4 thru_hole circle (at 2.54 0) (size 1.6 1.6) (drill 1) (layers *.Cu *.Mask))
+  (pad 5 thru_hole circle (at 5.08 0) (size 1.6 1.6) (drill 1) (layers *.Cu *.Mask))
+  (model ${KISYS3DMOD}/Connector_5cts_p2.54-826629-5.stp
+    (offset (xyz 0.04999999924907534 0 2.89999995644637))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 0))
+  )
+)
