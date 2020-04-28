@@ -48,6 +48,8 @@ void status_led(char state)
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, (state == 0));
 }
 
+void node_init(void)
+{
 
     // ********************* led Gpio ****************************
     GPIO_InitTypeDef GPIO_InitStruct = {0};

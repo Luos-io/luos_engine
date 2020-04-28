@@ -26,6 +26,7 @@ volatile node_analog_t node_analog;
 int node_msg_handler(module_t *module, msg_t *input, msg_t *output);
 void status_led(char state);
 void node_init(void);
+void node_loop(void);
 void write_alias(unsigned short id, char *alias);
 char read_alias(unsigned short id, char *alias);
 

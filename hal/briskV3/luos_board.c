@@ -59,6 +59,8 @@ void node_init(void)
     EE_Init();
 }
 
+void node_loop(void) {}
+
 // ******** Alias management ****************
 void write_alias(unsigned short id, char *alias)
 {
