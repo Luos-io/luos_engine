@@ -20,19 +20,19 @@ jobs:
     - name: Run PlatformIO
       run: |
         platformio run -d examples/drivers/Button_proj
-        platformio run -d examples/drivers/Controlled_Motor_proj
-        platformio run -d examples/drivers/DC_Motor_proj
+        platformio run -d examples/drivers/Controlled_motor_proj
+        platformio run -d examples/drivers/DC_motor_proj
         platformio run -d examples/drivers/Distance_proj
         platformio run -d examples/drivers/Dxl_proj
         platformio run -d examples/drivers/Gpio_proj  
         platformio run -d examples/drivers/Handy_proj 
         platformio run -d examples/drivers/Imu_proj
         platformio run -d examples/drivers/Led_proj
-        platformio run -d examples/drivers/Led_Strip_proj
-        platformio run -d examples/drivers/Light_Sensor_proj
+        platformio run -d examples/drivers/Led_strip_proj
+        platformio run -d examples/drivers/Light_sensor_proj
         platformio run -d examples/drivers/Load_proj
         platformio run -d examples/drivers/Potentiometer_proj
-        platformio run -d examples/drivers/Power_Switch_proj
+        platformio run -d examples/drivers/Power_switch_proj
         platformio run -d examples/drivers/Servo_proj
         platformio run -d examples/drivers/Stepper_proj
         platformio run -d examples/apps/projects/Gate_proj
