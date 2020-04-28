@@ -21,7 +21,7 @@ int node_msg_handler(module_t *module, msg_t *input, msg_t *output)
         output->header.target_mode = ID;
         output->header.target = input->header.source;
         temperature_t temp;
-        temp = (((float)node_analog.temperature_sensor * 300.0f / 330.0f) - (float)(*TEMP30_CAL_VALUE) );
+        temp = (((float)node_analog.temperature_sensor * VREF / 3.0f) - (float)(*TEMP30_CAL_VALUE));
         temp = temp * (110.0f - 30.0f);
         temp = temp / (float)(*TEMP110_CAL_VALUE - *TEMP30_CAL_VALUE);
         temp = temp + 30.0f;
@@ -34,7 +34,7 @@ int node_msg_handler(module_t *module, msg_t *input, msg_t *output)
     {
         output->header.target_mode = ID;
         output->header.target = input->header.source;
-        voltage_t volt = (((float)node_analog.voltage_sensor * 3.3f) / 4096.0f) * VOLTAGEFACTOR;
+        voltage_t volt = (((float)node_analog.voltage_sensor * VREF) / 4096.0f) * VOLTAGEFACTOR;
         voltage_to_msg(&volt, output);
         // overlap default VOLTAGE type
         output->header.cmd = NODE_VOLTAGE;
@@ -147,6 +147,23 @@ void node_init(void)
 
 void node_loop(void)
 {
+    static uint32_t last_analog_systick = 0;
+    if (HAL_GetTick() - last_analog_systick > 20)
+    {
+        HAL_ADCEx_InjectedStart(&hadc1);
+        if (HAL_ADCEx_InjectedPollForConversion(&hadc1, 1) == HAL_OK)
+        {
+            node_analog.temperature_sensor = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_REGULAR_RANK_4);
+        }
+        HAL_ADCEx_InjectedStop(&hadc1);
+        HAL_ADCEx_InjectedStart(&hadc3);
+        if (HAL_ADCEx_InjectedPollForConversion(&hadc3, 1) == HAL_OK)
+        {
+            node_analog.voltage_sensor = HAL_ADCEx_InjectedGetValue(&hadc3, ADC_REGULAR_RANK_1);
+        }
+        HAL_ADCEx_InjectedStop(&hadc3);
+        last_analog_systick = HAL_GetTick();
+    }
 }
 
 // ******** Alias management ****************
