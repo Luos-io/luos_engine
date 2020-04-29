@@ -33,6 +33,7 @@ typedef enum {
     WRITE_ALIAS, // Get and save a new given alias.
     ASK_PUB_CMD, // Gate asks a sensor module to publish its data
     REVISION, // Module sends its firmware revision
+    LUOS_REVISION, // Module sends its luos revision
 
     // Generic data
     COLOR, // color_t (R, G, B)

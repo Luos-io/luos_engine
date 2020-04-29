@@ -41,6 +41,18 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
         luos_pub = REVISION;
         return 1;
     }
+    if ((input->header.cmd == LUOS_REVISION) & (input->header.size == 0)) {
+        output->header.cmd = LUOS_REVISION;
+        output->header.target_mode = ID;
+#ifndef LUOS_REV
+#define LUOS_REV "unknown"
+#endif
+        memcpy(output->data, LUOS_REV, sizeof("unknown"));
+        output->header.size = strlen((char*)output->data);
+        output->header.target = input->header.source;
+        luos_pub = LUOS_REVISION;
+        return 1;
+    }
     if ((input->header.cmd == NODE_UUID) & (input->header.size == 0)) {
         output->header.cmd = NODE_UUID;
         output->header.target_mode = ID;
