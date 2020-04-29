@@ -1,10 +1,8 @@
 #include <luos_board.h>
 #include <string.h>
-//#include "eeprom.h"
+#include "luos_flash.h"
 #include "main.h"
 #include "node_config.h"
-
-//uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
 int node_msg_handler(module_t *module, msg_t *input, msg_t *output)
 {
@@ -134,15 +132,6 @@ void node_init(void)
     //TODO:HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
     // Start infinite ADC measurement
     //TODO:HAL_ADC_Start_DMA(&luos_adc, node_analog.unmap, sizeof(node_analog_t) / sizeof(uint32_t));
-
-    // ********************* EEPROM ****************************
-    // Unlock the Flash Program Erase controller
-    HAL_FLASH_Unlock();
-    // EEPROM Init
-    /*TODO:for (uint16_t i = 0; i < NB_OF_VAR; i++) {
-    VirtAddVarTab[i] = i;
-    }
-    EE_Init();*/
 }
 
 void node_loop(void)
@@ -168,33 +157,30 @@ void node_loop(void)
 
 // ******** Alias management ****************
 void write_alias(unsigned short local_id, char *alias)
-{ //TODO
-    /*const uint16_t addr = local_id * (MAX_ALIAS_SIZE +1);
-    for (uint8_t i=0; i<MAX_ALIAS_SIZE; i++) {
-        // here we save an uint8_t on an uint16_t
-        EE_WriteVariable(addr + i, (uint16_t)alias[i]);
-    }*/
+{
+    volatile const uint16_t addr = local_id * MAX_ALIAS_SIZE;
+
+    luos_flash_write(addr, MAX_ALIAS_SIZE, alias);
 }
 
 char read_alias(unsigned short local_id, char *alias)
-{ //TODO
-    /*  const uint16_t addr = local_id * (MAX_ALIAS_SIZE +1);
-     uint16_t data;
-     EE_ReadVariable(addr, &data);
-     // Check name integrity
-     if (((((char)data < 'A') | ((char)data > 'Z'))
-             & (((char)data < 'a') | ((char)data > 'z')))
-             | ((char)data == '\0')) {
-         return 0;
-     } else {
-         alias[0] = (char)data;
-     }
-     for (uint8_t i=1; i<MAX_ALIAS_SIZE; i++) {
-        EE_ReadVariable(addr + i, &data);
-        alias[i] = (char)data;
-     }
-     return 1;*/
-    return 0;
+{
+    const uint16_t addr = local_id * MAX_ALIAS_SIZE;
+    char data[MAX_ALIAS_SIZE];
+    luos_flash_read(addr, MAX_ALIAS_SIZE, data);
+    // Check name integrity
+    if ((((data[0] < 'A') | (data[0] > 'Z')) & ((data[0] < 'a') | (data[0] > 'z'))) | (data[0] == '\0'))
+    {
+        return 0;
+    }
+    else
+    {
+        for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
+        {
+            alias[i] = data[i];
+        }
+    }
+    return 1;
 }
 
 /**
