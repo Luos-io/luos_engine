@@ -11,7 +11,8 @@
     "build" : {
         "flags": [
             "-I Inc",
-            "-I OD"
+            "-I OD",
+            "-D LUOS_REV='v0.6'"
         ],
         "extraScript": "select_board_script.py"
     },

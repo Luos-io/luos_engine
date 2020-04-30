@@ -44,10 +44,8 @@ static int luos_msg_handler(module_t* module, msg_t* input, msg_t* output) {
     if ((input->header.cmd == LUOS_REVISION) & (input->header.size == 0)) {
         output->header.cmd = LUOS_REVISION;
         output->header.target_mode = ID;
-#ifndef LUOS_REV
-#define LUOS_REV "V0.6"
-#endif
-        memcpy(output->data, LUOS_REV, sizeof("V0.6"));
+
+        memcpy(output->data, LUOS_REV, sizeof(LUOS_REV));
         output->header.size = strlen((char*)output->data);
         output->header.target = input->header.source;
         luos_pub = LUOS_REVISION;
