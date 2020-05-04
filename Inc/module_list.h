@@ -91,12 +91,11 @@ typedef enum
 
     // Specific register
     DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
-    REFRESH_PUB,        // Ask to send a sensor value at a given max frequency TODO : move it in the right place for rev 6
+    UPDATE_PUB,         // Ask to update a sensor value each time duration to the sender
     HANDY_SET_POSITION, // handy_t
     PARAMETERS,         // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
     // compatibility area
-
     LUOS_PROTOCOL_NB,
 } module_register_t;
 

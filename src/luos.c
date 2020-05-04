@@ -79,6 +79,16 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         }
         return 1;
     }
+    if (input->header.cmd == UPDATE_PUB)
+    {
+        // this module need to be auto updated
+        time_luos_t time;
+        time_from_msg(&time, input);
+        module->auto_refresh.target = input->header.source;
+        module->auto_refresh.time_ms = (uint16_t)time_to_ms(time);
+        module->auto_refresh.last_update = node_get_systick();
+        return 1;
+    }
 
     return 0;
 }
@@ -168,6 +178,50 @@ void transmit_local_route_table(void)
     luos_send_data(luos_module_pointer, (msg_t *)&luos_pub_msg, local_route_table, (entry_nb * sizeof(route_table_t)));
 }
 
+void auto_update_manager(void)
+{
+    // check all modules timed_update_t contexts
+    for (int i = 0; i < module_number; i++)
+    {
+        // check if modules have an actual ID. If not, we are in detection mode and should reset the auto refresh
+        if (module_table[i].vm->id == DEFAULTID)
+        {
+            // this module have not been detected or is in detection mode. remove auto_refresh parameters
+            module_table[i].auto_refresh.target = 0;
+            module_table[i].auto_refresh.time_ms = 0;
+            module_table[i].auto_refresh.last_update = 0;
+        }
+        else
+        {
+            // check if there is a timed update setted and if it's time to update it.
+            if (module_table[i].auto_refresh.time_ms)
+            {
+                if ((node_get_systick() - module_table[i].auto_refresh.last_update) >= module_table[i].auto_refresh.time_ms)
+                {
+                    // This module need to send an update
+                    // Create a fake message for it from the module asking for update
+                    msg_t updt_msg;
+                    updt_msg.header.target = module_table[i].vm->id;
+                    updt_msg.header.source = module_table[i].auto_refresh.target;
+                    updt_msg.header.target_mode = IDACK;
+                    updt_msg.header.cmd = ASK_PUB_CMD;
+                    updt_msg.header.size = 0;
+                    if ((module_table[i].mod_cb != 0))
+                    {
+                        module_table[i].mod_cb(&module_table[i], &updt_msg);
+                    }
+                    else
+                    {
+                        //store module and msg pointer
+                        // todo this can't work for now because this message is not permanent.
+                        //mngr_set(&module_table[i], &updt_msg);
+                    }
+                    module_table[i].auto_refresh.last_update = node_get_systick();
+                }
+            }
+        }
+    }
+}
 
 //************* Public functions *********************
 
@@ -201,6 +255,8 @@ void luos_loop(void)
         chunk.module->mod_cb(chunk.module, chunk.msg);
         i = get_next_cb_id();
     }
+    // manage timed auto update
+    auto_update_manager();
     node_loop();
 }
 
