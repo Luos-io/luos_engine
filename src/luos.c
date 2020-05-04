@@ -60,7 +60,7 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         luos_pub = NODE_UUID;
         return 1;
     }
-    if ((input->header.cmd == WRITE_ALIAS))
+    if (input->header.cmd == WRITE_ALIAS)
     {
         // Make a clean copy with full \0 at the end.
         memset(module->alias, '\0', sizeof(module->alias));
@@ -145,15 +145,6 @@ void luos_cb(vm_t *vm, msg_t *msg)
     }
 }
 
-//************* Public functions *********************
-
-void luos_init(void)
-{
-    module_number = 0;
-    node_init();
-    robus_init(luos_cb);
-}
-
 void transmit_local_route_table(void)
 {
     // We receive this command because someone creating a new route table
@@ -175,6 +166,16 @@ void transmit_local_route_table(void)
         convert_module_to_route_table(&local_route_table[entry_nb++], &module_table[i]);
     }
     luos_send_data(luos_module_pointer, (msg_t *)&luos_pub_msg, local_route_table, (entry_nb * sizeof(route_table_t)));
+}
+
+
+//************* Public functions *********************
+
+void luos_init(void)
+{
+    module_number = 0;
+    node_init();
+    robus_init(luos_cb);
 }
 
 void luos_loop(void)
