@@ -9,6 +9,20 @@
 #define MAX 1
 
 /**
+ * \struct timed_update_t
+ * \brief timed update informations Structure
+ *
+ * This structure is used to manage modules timed auto update 
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__)) timed_update_t
+{
+    unsigned long last_update;
+    uint16_t time_ms;
+    unsigned short target;
+} timed_update_t;
+
+/**
  * \struct module_t
  * \brief Module Structure
  *
@@ -26,6 +40,7 @@ typedef struct __attribute__((__packed__)) module_t
     unsigned char rt;                   /*!< is this module a real time one? */
     char default_alias[MAX_ALIAS_SIZE]; /*!< Module default alias. */
     char alias[MAX_ALIAS_SIZE];         /*!< Module alias. */
+    timed_update_t auto_refresh;        /*!< Module auto refresh context. */
 } module_t;
 
 typedef void (*MOD_CB)(module_t *module, msg_t *msg);
