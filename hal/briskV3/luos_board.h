@@ -46,4 +46,15 @@ void node_disable_irq(void);
  */
 void node_enable_irq(void);
 
+/**
+ * \fn static inline unsigned long node_get_tick(void)
+ * \brief get MCU systick
+ *
+ * \return systick
+ */
+static inline unsigned long node_get_systick(void)
+{
+    return HAL_GetTick();
+}
+
 #endif /*__ __LUOS_BOARD_H */
