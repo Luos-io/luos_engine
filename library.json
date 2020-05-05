@@ -12,8 +12,9 @@
         "flags": [
             "-I Inc",
             "-I OD",
-            "-D LUOS_REV='v0.6'"
+			"-D MYVERSION=\"1.2.3\""
         ],
+
         "extraScript": "select_board_script.py"
     },
     "dependencies":

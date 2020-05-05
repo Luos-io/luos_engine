@@ -34,6 +34,7 @@ typedef enum {
     ASK_PUB_CMD, // Gate asks a sensor module to publish its data
     REVISION, // Module sends its firmware revision
     LUOS_REVISION, // Module sends its luos revision
+    ROBUS_REVISION, // Module sends its robus revision
 
     // Generic data
     COLOR, // color_t (R, G, B)
