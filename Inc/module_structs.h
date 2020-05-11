@@ -15,49 +15,54 @@
  * This structure is used to manage modules
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) module_t{
-    vm_t* vm;
+typedef struct __attribute__((__packed__)) module_t
+{
+    vm_t *vm;
     // Callback
-    void (*mod_cb) (struct module_t* module, msg_t *msg);
+    void (*mod_cb)(struct module_t *module, msg_t *msg);
     // Variables
     unsigned char message_available;    /*!< signal a new message available */
-    msg_t* msg_stack[MSG_BUFFER_SIZE];  /*!< msg ready to be read */
+    msg_t *msg_stack[MSG_BUFFER_SIZE];  /*!< msg ready to be read */
     unsigned char rt;                   /*!< is this module a real time one? */
     char default_alias[MAX_ALIAS_SIZE]; /*!< Module default alias. */
     char alias[MAX_ALIAS_SIZE];         /*!< Module alias. */
-}module_t;
+} module_t;
 
-typedef void (*MOD_CB) (module_t* module, msg_t *msg);
-
+typedef void (*MOD_CB)(module_t *module, msg_t *msg);
 
 // This file contain struct of messages exchanged between gate and modules
 
 // Luos unic ID => ARM serial number
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
         uint32_t uuid[3];
-        uint8_t unmap[3 * sizeof(uint32_t)];                /*!< Uncmaped form. */
+        uint8_t unmap[3 * sizeof(uint32_t)]; /*!< Uncmaped form. */
     };
-}luos_uuid_t;
+} luos_uuid_t;
 
- // Handy struct
- typedef struct __attribute__((__packed__)){
+// Handy struct
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
+        struct __attribute__((__packed__))
+        {
             uint8_t index;
             uint8_t middle;
             uint8_t ring;
             uint8_t pinky;
             uint8_t thumb;
         };
-        uint8_t unmap[(5 * sizeof(uint8_t))];                /*!< Uncmaped form. */
+        uint8_t unmap[(5 * sizeof(uint8_t))]; /*!< Uncmaped form. */
     };
-}handy_t;
+} handy_t;
 
 // Imu report struct
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
+        struct __attribute__((__packed__))
+        {
             unsigned short accell : 1;
             unsigned short gyro : 1;
             unsigned short quat : 1;
@@ -71,36 +76,42 @@ typedef struct __attribute__((__packed__)){
         };
         unsigned char unmap[2];
     };
-}imu_report_t;
+} imu_report_t;
 
 // Pid
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
+        struct __attribute__((__packed__))
+        {
             float p;
             float i;
             float d;
         };
         unsigned char unmap[3 * sizeof(float)];
     };
-}asserv_pid_t;
+} asserv_pid_t;
 
 // Servo
-typedef struct {
+typedef struct
+{
     union {
-        struct __attribute__((__packed__)){
-        angular_position_t max_angle;
-        float min_pulse_time;
-        float max_pulse_time;
+        struct __attribute__((__packed__))
+        {
+            angular_position_t max_angle;
+            float min_pulse_time;
+            float max_pulse_time;
         };
         unsigned char unmap[3 * sizeof(float)];
     };
-}servo_parameters_t;
+} servo_parameters_t;
 
 // Motor
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
+        struct __attribute__((__packed__))
+        {
             // target modes
             uint16_t mode_compliant : 1;
             uint16_t mode_ratio : 1;
@@ -122,15 +133,18 @@ typedef struct __attribute__((__packed__)){
 } motor_mode_t;
 
 // Control modes
-typedef enum {
+typedef enum
+{
     PLAY,
     PAUSE,
     STOP
 } control_type_t;
 
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
+        struct __attribute__((__packed__))
+        {
             // control modes
             uint8_t mode_control : 2;
             uint8_t mode_rec : 1;
@@ -139,7 +153,8 @@ typedef struct __attribute__((__packed__)){
     };
 } control_mode_t;
 
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
 
     // targets
     motor_mode_t mode;
@@ -163,6 +178,6 @@ typedef struct __attribute__((__packed__)){
     float motor_reduction;
     float resolution;
     linear_position_t wheel_diameter;
-}motor_config_t;
+} motor_config_t;
 
 #endif /*__ __L0_H */

@@ -14,40 +14,48 @@ typedef float temperature_t;
 //******** Conversions ***********
 
 // °C
-static inline float temperature_to_deg_c(temperature_t self) {
+static inline float temperature_to_deg_c(temperature_t self)
+{
     return self;
 }
 
-static inline temperature_t temperature_from_deg_c(float deg_c) {
+static inline temperature_t temperature_from_deg_c(float deg_c)
+{
     return deg_c;
 }
 
 // °F
-static inline float temperature_to_deg_f(temperature_t self) {
+static inline float temperature_to_deg_f(temperature_t self)
+{
     return self * 1.8f + 32.0f;
 }
 
-static inline temperature_t temperature_from_deg_f(float deg_f) {
+static inline temperature_t temperature_from_deg_f(float deg_f)
+{
     return (deg_f - 32.0f) / 1.8f;
 }
 
 // °K
-static inline float temperature_to_deg_k(temperature_t self) {
+static inline float temperature_to_deg_k(temperature_t self)
+{
     return self + 273.15f;
 }
 
-static inline temperature_t temperature_from_deg_k(float deg_k) {
+static inline temperature_t temperature_from_deg_k(float deg_k)
+{
     return deg_k - 273.15f;
 }
 
 //******** Messages management ***********
-static inline void temperature_to_msg(const temperature_t* const self, msg_t* const msg) {
+static inline void temperature_to_msg(const temperature_t *const self, msg_t *const msg)
+{
     msg->header.cmd = TEMPERATURE;
     memcpy(msg->data, self, sizeof(temperature_t));
     msg->header.size = sizeof(temperature_t);
 }
 
-static inline void temperature_from_msg(temperature_t* const self, const msg_t* const msg) {
+static inline void temperature_from_msg(temperature_t *const self, const msg_t *const msg)
+{
     memcpy(self, msg->data, msg->header.size);
 }
 
