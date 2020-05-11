@@ -39,8 +39,7 @@ void luos_modules_clear(void);
  * \return module object pointer.
  *
  */
-module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias);
-
+module_t *luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias);
 
 /**
  * \fn void luos_module_enable_rt(module_t*module)
@@ -49,7 +48,7 @@ module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alia
  * \param module module to enable.
  *
  */
-void luos_module_enable_rt(module_t*module);
+void luos_module_enable_rt(module_t *module);
 
 /**
  * \fn unsigned char luos_send(module_t* module, msg_t *msg)
@@ -60,7 +59,7 @@ void luos_module_enable_rt(module_t*module);
  *
  * \return send or not
  */
-unsigned char luos_send(module_t* module, msg_t *msg);
+unsigned char luos_send(module_t *module, msg_t *msg);
 
 /**
  * \fn unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned int size)
@@ -73,7 +72,7 @@ unsigned char luos_send(module_t* module, msg_t *msg);
  *
  * \return send or not
  */
-unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned short size);
+unsigned char luos_send_data(module_t *module, msg_t *msg, void *bin_data, unsigned short size);
 
 /**
  * \fn unsigned char luos_send_streaming(module_t *module, msg_t *msg, streaming_channel_t *streaming)
@@ -131,7 +130,7 @@ msg_t *luos_read(module_t *module);
  *
  * \return the received message pointer
  */
-msg_t* luos_read_from(module_t* module, short id);
+msg_t *luos_read_from(module_t *module, short id);
 
 /**
  * \fn char luos_message_available(void)
@@ -149,7 +148,7 @@ char luos_message_available(void);
  * \param name string.
  *
  */
-void luos_save_alias(module_t* module, char* alias);
+void luos_save_alias(module_t *module, char *alias);
 
 /**
  * \fn void luos_set_baudrate(module_t* module, uint32_t baudrate)
@@ -159,7 +158,6 @@ void luos_save_alias(module_t* module, char* alias);
  * \param new baudrate.
  *
  */
-void luos_set_baudrate(module_t* module, uint32_t baudrate);
-
+void luos_set_baudrate(module_t *module, uint32_t baudrate);
 
 #endif /* LUOS_H */

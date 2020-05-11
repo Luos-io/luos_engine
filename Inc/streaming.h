@@ -13,10 +13,10 @@
  */
 typedef struct
 {
-    void* ring_buffer;     // Begin ring buffer pointer
-    void* end_ring_buffer; // End of the ring buffer
-    void* sample_ptr;      // Current sample pointer (pointer always point a fresh data)
-    void* data_ptr;        // Current pointer of data
+    void *ring_buffer;     // Begin ring buffer pointer
+    void *end_ring_buffer; // End of the ring buffer
+    void *sample_ptr;      // Current sample pointer (pointer always point a fresh data)
+    void *data_ptr;        // Current pointer of data
     char data_size;        // Size granulariry of the data contained on the ring buffer
 } streaming_channel_t;
 

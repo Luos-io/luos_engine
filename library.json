@@ -7,21 +7,19 @@
         "name": "Luos",
         "url": "https://luos.io"
     },
-    "build" : {
+    "build": {
         "flags": [
             "-I Inc",
             "-I OD"
         ],
         "extraScript": "select_board_script.py"
     },
-    "dependencies":
-    [
+    "dependencies": [
         {
-        "name": "Robus"
+            "name": "Robus"
         }
     ],
-    "repository":
-    {
+    "repository": {
         "type": "git",
         "url": "https://github.com/Luos-io/luos"
     }

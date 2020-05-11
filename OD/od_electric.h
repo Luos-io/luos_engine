@@ -14,34 +14,39 @@ typedef float voltage_t;
 //******** Conversions ***********
 
 // mv
-static inline float voltage_to_mv(voltage_t self) {
+static inline float voltage_to_mv(voltage_t self)
+{
     return self * 1000.0f;
 }
 
-static inline voltage_t voltage_from_mv(float mv) {
+static inline voltage_t voltage_from_mv(float mv)
+{
     return mv / 1000.0f;
 }
 
 // v
-static inline float voltage_to_v(voltage_t self) {
+static inline float voltage_to_v(voltage_t self)
+{
     return self;
 }
 
-static inline voltage_t voltage_from_v(float v) {
+static inline voltage_t voltage_from_v(float v)
+{
     return v;
 }
 
 //******** Messages management ***********
-static inline void voltage_to_msg(const voltage_t* const self, msg_t* const msg) {
+static inline void voltage_to_msg(const voltage_t *const self, msg_t *const msg)
+{
     msg->header.cmd = VOLTAGE;
     memcpy(msg->data, self, sizeof(voltage_t));
     msg->header.size = sizeof(voltage_t);
 }
 
-static inline void voltage_from_msg(voltage_t* const self, const msg_t* const msg) {
+static inline void voltage_from_msg(voltage_t *const self, const msg_t *const msg)
+{
     memcpy(self, msg->data, msg->header.size);
 }
-
 
 typedef float current_t;
 
@@ -49,34 +54,39 @@ typedef float current_t;
 //******** Conversions ***********
 
 // ma
-static inline float current_to_ma(current_t self) {
+static inline float current_to_ma(current_t self)
+{
     return self * 1000.0f;
 }
 
-static inline current_t current_from_ma(float ma) {
+static inline current_t current_from_ma(float ma)
+{
     return ma / 1000.0f;
 }
 
 // A
-static inline float current_to_a(current_t self) {
+static inline float current_to_a(current_t self)
+{
     return self;
 }
 
-static inline current_t current_from_a(float a) {
+static inline current_t current_from_a(float a)
+{
     return a;
 }
 
 //******** Messages management ***********
-static inline void current_to_msg(const current_t* const self, msg_t* const msg) {
+static inline void current_to_msg(const current_t *const self, msg_t *const msg)
+{
     msg->header.cmd = CURRENT;
     memcpy(msg->data, self, sizeof(current_t));
     msg->header.size = sizeof(current_t);
 }
 
-static inline void current_from_msg(current_t* const self, const msg_t* const msg) {
+static inline void current_from_msg(current_t *const self, const msg_t *const msg)
+{
     memcpy(self, msg->data, msg->header.size);
 }
-
 
 typedef float power_t;
 
@@ -84,31 +94,37 @@ typedef float power_t;
 //******** Conversions ***********
 
 // mw
-static inline float power_to_mw(power_t self) {
+static inline float power_to_mw(power_t self)
+{
     return self * 1000.0f;
 }
 
-static inline power_t power_from_mw(float mw) {
+static inline power_t power_from_mw(float mw)
+{
     return mw / 1000.0f;
 }
 
 // A
-static inline float power_to_w(power_t self) {
+static inline float power_to_w(power_t self)
+{
     return self;
 }
 
-static inline power_t power_from_w(float w) {
+static inline power_t power_from_w(float w)
+{
     return w;
 }
 
 //******** Messages management ***********
-static inline void power_to_msg(const power_t* const self, msg_t* const msg) {
+static inline void power_to_msg(const power_t *const self, msg_t *const msg)
+{
     msg->header.cmd = POWER;
     memcpy(msg->data, self, sizeof(power_t));
     msg->header.size = sizeof(power_t);
 }
 
-static inline void power_from_msg(current_t* const self, const msg_t* const msg) {
+static inline void power_from_msg(current_t *const self, const msg_t *const msg)
+{
     memcpy(self, msg->data, msg->header.size);
 }
 
