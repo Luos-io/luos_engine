@@ -32,9 +32,11 @@ typedef enum
     // Common register for all modules and gate
     IDENTIFY_CMD,     // Gate asks a module to identify itself
     INTRODUCTION_CMD, // Module sends its alias and type to the gate
+
     WRITE_ALIAS,      // Get and save a new given alias.
     ASK_PUB_CMD,      // Gate asks a sensor module to publish its data
     REVISION,         // Module sends its firmware revision
+
 
     // Generic data
     COLOR,       // color_t (R, G, B)
