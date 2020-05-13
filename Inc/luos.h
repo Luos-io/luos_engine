@@ -6,12 +6,7 @@
 #include "routingTable.h"
 #include "luos_od.h"
 #include "streaming.h"
-
-#ifdef VERSION_ROBUS
-    #define ROBUS_VERSION STRINGIFY1(VERSION_ROBUS)
-#else 
-    #error PAS DEFINIT
-#endif
+#include <robus.h>
 
 /**
  * \fn void luos_init(void)
