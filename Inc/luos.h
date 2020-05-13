@@ -40,7 +40,7 @@ void luos_modules_clear(void);
  * \return module object pointer.
  *
  */
-module_t *luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias);
+module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias, char *firm_revision);
 
 /**
  * \fn void luos_module_enable_rt(module_t*module)

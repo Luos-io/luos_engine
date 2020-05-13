@@ -8,6 +8,8 @@
 #define MIN 0
 #define MAX 1
 
+
+
 /**
  * \struct timed_update_t
  * \brief timed update informations Structure
@@ -41,6 +43,7 @@ typedef struct __attribute__((__packed__)) module_t
     char default_alias[MAX_ALIAS_SIZE]; /*!< Module default alias. */
     char alias[MAX_ALIAS_SIZE];         /*!< Module alias. */
     timed_update_t auto_refresh;        /*!< Module auto refresh context. */
+    char firm_version[20];        /*!< Module firmware version. */
 } module_t;
 
 typedef void (*MOD_CB)(module_t *module, msg_t *msg);
