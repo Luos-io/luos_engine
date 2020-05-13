@@ -32,7 +32,7 @@ typedef enum
     INTRODUCTION_CMD, // Module sends its alias and type to the gate
     WRITE_ALIAS,      // Get and save a new given alias.
     ASK_PUB_CMD,      // Gate asks a sensor module to publish its data
-    REVISION,         // Module sends its firmware revision
+    UPDATE_PUB,       // Ask to update a sensor value each time duration to the sender
 
     // Generic data
     COLOR,       // color_t (R, G, B)
@@ -92,10 +92,11 @@ typedef enum
 
     // Specific register
     DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
-    UPDATE_PUB,         // Ask to update a sensor value each time duration to the sender
     HANDY_SET_POSITION, // handy_t
     PARAMETERS,         // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
+    // Revision management
+    REVISION,       // Module sends its firmware revision
     // compatibility area
     LUOS_PROTOCOL_NB,
 } module_register_t;
