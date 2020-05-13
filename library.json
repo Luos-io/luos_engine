@@ -12,7 +12,8 @@
         "flags": [
             "-I Inc",
             "-I OD",
-			"-D MYVERSION=\"1.2.3\""
+			"-DLUOS_VERSION=0.6.4"
+			
         ],
 
         "extraScript": "select_board_script.py"
