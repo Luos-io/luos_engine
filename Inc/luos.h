@@ -6,6 +6,7 @@
 #include "routingTable.h"
 #include "luos_od.h"
 #include "streaming.h"
+#include <robus.h>
 
 /**
  * \fn void luos_init(void)
