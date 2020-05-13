@@ -7,3 +7,8 @@ for item in env.get("CPPDEFINES", []):
         env.Append(CPPPATH=[realpath(join("hal", item[1]))])
         env.Replace(SRC_FILTER=["+<../src/*>", "-<../hal>", "+<%s>" % join("../hal", item[1])])
         break
+        
+
+
+        
+        
