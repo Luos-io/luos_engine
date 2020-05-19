@@ -72,27 +72,6 @@ typedef struct __attribute__((__packed__))
     };
 } handy_t;
 
-// Imu report struct
-typedef struct __attribute__((__packed__))
-{
-    union {
-        struct __attribute__((__packed__))
-        {
-            unsigned short accell : 1;
-            unsigned short gyro : 1;
-            unsigned short quat : 1;
-            unsigned short compass : 1;
-            unsigned short euler : 1;
-            unsigned short rot_mat : 1;
-            unsigned short pedo : 1;
-            unsigned short linear_accel : 1;
-            unsigned short gravity_vector : 1;
-            unsigned short heading : 1;
-        };
-        unsigned char unmap[2];
-    };
-} imu_report_t;
-
 // Pid
 typedef struct __attribute__((__packed__))
 {
