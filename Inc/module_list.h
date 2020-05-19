@@ -3,8 +3,6 @@
 
 #include <robus.h>
 
-#define GATE_ID 1
-
 typedef enum
 {
     GATE_MOD,
