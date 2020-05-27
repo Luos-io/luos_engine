@@ -3,6 +3,9 @@
 #include <string.h>
 #include "message_mngr.h"
 
+#define STRINGIFY(s) STRINGIFY1(s)
+#define STRINGIFY1(s) #s
+
 static module_t *luos_module_pointer;
 static volatile msg_t luos_pub_msg;
 static volatile int luos_pub = LUOS_PROTOCOL_NB;
@@ -46,6 +49,19 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         luos_pub = REVISION;
         return 1;
     }
+    if ((input->header.cmd == LUOS_REVISION) & (input->header.size == 0))
+    {
+        output->header.cmd = LUOS_REVISION;
+        output->header.target_mode = ID;
+        const char *luos_version = STRINGIFY(VERSION);
+        sprintf(output->data, "%s", luos_version);
+        memcpy(output->data, luos_version, sizeof(output->data));
+        output->header.size = strlen((char *)output->data);
+        output->header.target = input->header.source;
+        luos_pub = LUOS_REVISION;
+        return 1;
+    }
+
     if ((input->header.cmd == NODE_UUID) & (input->header.size == 0))
     {
         output->header.cmd = NODE_UUID;
