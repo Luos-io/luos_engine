@@ -40,10 +40,8 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
     {
         output->header.cmd = REVISION;
         output->header.target_mode = ID;
-#ifndef FIRM_REV
-#define FIRM_REV "unknown"
-#endif
-        memcpy(output->data, FIRM_REV, sizeof("unknown"));
+        sprintf(output->data, "%s", module->firm_version);
+        memcpy(output->data, module->firm_version, sizeof(output->data));
         output->header.size = strlen((char *)output->data);
         output->header.target = input->header.source;
         luos_pub = REVISION;
@@ -282,7 +280,7 @@ void luos_modules_clear(void)
     robus_modules_clear();
 }
 
-module_t *luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias)
+module_t *luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias, char *firm_revision)
 {
     unsigned char i = 0;
     module_t *module = &module_table[module_number];
@@ -313,6 +311,17 @@ module_t *luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alia
         }
         module->alias[i] = '\0';
     }
+
+    //Initialise the module firm_version to 0
+    memset((void *)module->firm_version, 0, sizeof(module->firm_version));
+    // Save firmware version
+    for (i = 0; i < 20; i++)
+    {
+        module->firm_version[i] = firm_revision[i];
+        if (module->firm_version[i] == '\0')
+            break;
+    }
+
     module_number++;
     return module;
 }
