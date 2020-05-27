@@ -98,6 +98,8 @@ typedef enum
     // Revision management
     REVISION,       // Module sends its firmware revision
     LUOS_REVISION,  // Module sends its luos revision
+    ROBUS_REVISION, // Module sends its robus revision
+
     // compatibility area
     LUOS_PROTOCOL_NB,
 } module_register_t;

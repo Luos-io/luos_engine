@@ -59,7 +59,17 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         luos_pub = LUOS_REVISION;
         return 1;
     }
-
+    if ((input->header.cmd == ROBUS_REVISION) & (input->header.size == 0))
+    {
+        output->header.cmd = ROBUS_REVISION;
+        output->header.target_mode = ID;
+        sprintf(output->data, "%s", ROBUS_VERSION);
+        memcpy(output->data, ROBUS_VERSION, sizeof(output->data));
+        output->header.size = strlen((char *)output->data);
+        output->header.target = input->header.source;
+        luos_pub = ROBUS_REVISION;
+        return 1;
+    }
     if ((input->header.cmd == NODE_UUID) & (input->header.size == 0))
     {
         output->header.cmd = NODE_UUID;
