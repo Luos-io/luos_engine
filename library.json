@@ -1,7 +1,7 @@
 {
     "name": "Luos",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,module,ST",
-    "description": "Luos turn your embedded system as modules like microservice do it in software.",
+    "description": "Luos turns your embedded system into modules like microservices architecture does it in software.",
     "version": "0.6.7",
     "authors": {
         "name": "Luos",
