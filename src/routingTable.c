@@ -1,5 +1,7 @@
 #include <routingTable.h>
 #include <string.h>
+#include <stdio.h>
+#include "luos_board.h"
 
 route_table_t route_table[MAX_MODULES_NUMBER];
 volatile int last_module = 0;
@@ -255,8 +257,8 @@ int wait_route_table(module_t *module, msg_t *intro_msg)
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_route_table_entry;
     luos_send(module, intro_msg);
-    uint32_t timestamp = HAL_GetTick(); // TODO : create a function for it into board
-    while ((HAL_GetTick() - timestamp) < timeout)
+    uint32_t timestamp = node_get_systick();
+    while ((node_get_systick() - timestamp) < timeout)
     {
         // If this request is for a module in this board allow him to respond.
         luos_loop();

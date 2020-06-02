@@ -62,7 +62,7 @@ void node_init(void)
 
     // ********************* ADC : power and temperature ****************************
     // interesting tutorial about ADC : https://visualgdb.com/tutorials/arm/stm32/adc/
-    ADC_ChannelConfTypeDef sConfig = {0};
+    //ADC_ChannelConfTypeDef sConfig = {0};
 
     // Enable  ADC Gpio clocks
     //__HAL_RCC_GPIOA_CLK_ENABLE(); => already enabled previously
