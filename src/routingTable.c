@@ -42,6 +42,16 @@ int id_from_type(module_type_t type)
     return -1;
 }
 
+int id_from_module(module_t *module)
+{
+    // make sure route table is clean before sharing id
+    if (last_route_table_entry == 0)
+    {
+        return 0;
+    }
+    return (int)module->vm->id;
+}
+
 // Create a string from a module type
 char *string_from_type(module_type_t type)
 {

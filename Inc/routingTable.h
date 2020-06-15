@@ -41,6 +41,7 @@ typedef struct __attribute__((__packed__))
 // ********************* route_table search tools ************************
 int id_from_alias(char *alias);
 int id_from_type(module_type_t type);
+int id_from_module(module_t *module);
 char *string_from_type(module_type_t type);
 char *alias_from_id(uint16_t id);
 module_type_t type_from_id(uint16_t id);
