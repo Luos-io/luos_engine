@@ -47,7 +47,7 @@ void mngr_get_msg(int module_index, int msg_index, mngr_t *chunk)
         return;
     }
     // get module
-    chunk->module = module_msg_mngr[module_index];
+    chunk->module = (module_t *)module_msg_mngr[module_index];
     node_disable_irq();
     for (i = module_index; i < module_msg_available; i++)
     {

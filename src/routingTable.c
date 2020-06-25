@@ -1,5 +1,7 @@
 #include <routingTable.h>
 #include <string.h>
+#include <stdio.h>
+#include "luos_board.h"
 
 route_table_t route_table[MAX_MODULES_NUMBER];
 volatile int last_module = 0;
@@ -38,6 +40,16 @@ int id_from_type(module_type_t type)
         }
     }
     return -1;
+}
+
+int id_from_module(module_t *module)
+{
+    // make sure route table is clean before sharing id
+    if (last_route_table_entry == 0)
+    {
+        return 0;
+    }
+    return (int)module->vm->id;
 }
 
 // Create a string from a module type
@@ -255,8 +267,8 @@ int wait_route_table(module_t *module, msg_t *intro_msg)
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_route_table_entry;
     luos_send(module, intro_msg);
-    uint32_t timestamp = HAL_GetTick(); // TODO : create a function for it into board
-    while ((HAL_GetTick() - timestamp) < timeout)
+    uint32_t timestamp = node_get_systick();
+    while ((node_get_systick() - timestamp) < timeout)
     {
         // If this request is for a module in this board allow him to respond.
         luos_loop();

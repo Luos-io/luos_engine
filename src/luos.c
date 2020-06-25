@@ -1,6 +1,6 @@
 #include "luos.h"
 #include "luos_board.h"
-#include <string.h>
+#include <stdio.h>
 #include "message_mngr.h"
 
 #define STRINGIFY(s) STRINGIFY1(s)
@@ -29,7 +29,7 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
     if (input->header.cmd == INTRODUCTION_CMD)
     {
         volatile route_table_t *route_tab = &get_route_table()[get_last_entry()];
-        if (luos_receive_data(module, input, route_tab))
+        if (luos_receive_data(module, input, (void *)route_tab))
         {
             // route table of this board is finish
             compute_route_table_entry_nb();
@@ -40,7 +40,7 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
     {
         output->header.cmd = REVISION;
         output->header.target_mode = ID;
-        sprintf(output->data, "%s", module->firm_version);
+        sprintf((char *)output->data, "%s", module->firm_version);
         memcpy(output->data, module->firm_version, sizeof(output->data));
         output->header.size = strlen((char *)output->data);
         output->header.target = input->header.source;
@@ -52,7 +52,7 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         output->header.cmd = LUOS_REVISION;
         output->header.target_mode = ID;
         const char *luos_version = STRINGIFY(VERSION);
-        sprintf(output->data, "%s", luos_version);
+        sprintf((char *)output->data, "%s", luos_version);
         memcpy(output->data, luos_version, sizeof(output->data));
         output->header.size = strlen((char *)output->data);
         output->header.target = input->header.source;
@@ -63,7 +63,7 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
     {
         output->header.cmd = ROBUS_REVISION;
         output->header.target_mode = ID;
-        sprintf(output->data, "%s", ROBUS_VERSION);
+        sprintf((char *)output->data, "%s", ROBUS_VERSION);
         memcpy(output->data, ROBUS_VERSION, sizeof(output->data));
         output->header.size = strlen((char *)output->data);
         output->header.target = input->header.source;
@@ -151,31 +151,31 @@ void luos_cb(vm_t *vm, msg_t *msg)
         while (1)
             ;
     }
-    if (luos_msg_handler(module, msg, (msg_t *)&luos_pub_msg))
+    if (luos_msg_handler((module_t *)module, msg, (msg_t *)&luos_pub_msg))
     {
-        luos_module_pointer = module;
+        luos_module_pointer = (module_t *)module;
         return;
     }
     // L0 message management
-    int pub_type = node_msg_handler(module, msg, (msg_t *)&luos_pub_msg);
+    int pub_type = node_msg_handler((module_t *)module, msg, (msg_t *)&luos_pub_msg);
     if (pub_type == NODE_LED)
     {
         return;
     }
     if (pub_type != LUOS_PROTOCOL_NB)
     {
-        luos_module_pointer = module;
+        luos_module_pointer = (module_t *)module;
         luos_pub = pub_type;
         return;
     }
     if ((module->rt >= 1) & (module->mod_cb != 0))
     {
-        module->mod_cb(module, msg);
+        module->mod_cb((module_t *)module, msg);
     }
     else
     {
         //store module and msg pointer
-        mngr_set(module, msg);
+        mngr_set((module_t *)module, msg);
     }
 }
 
@@ -193,13 +193,13 @@ void transmit_local_route_table(void)
     uuid.uuid[2] = LUOS_UUID[2];
     unsigned char table_size;
     unsigned short *detection_branches = robus_get_node_branches(&table_size);
-    convert_board_to_route_table(&local_route_table[entry_nb++], uuid, detection_branches, table_size);
+    convert_board_to_route_table((route_table_t *)&local_route_table[entry_nb++], uuid, detection_branches, table_size);
     // save modules entry
     for (int i = 0; i < module_number; i++)
     {
-        convert_module_to_route_table(&local_route_table[entry_nb++], &module_table[i]);
+        convert_module_to_route_table((route_table_t *)&local_route_table[entry_nb++], &module_table[i]);
     }
-    luos_send_data(luos_module_pointer, (msg_t *)&luos_pub_msg, local_route_table, (entry_nb * sizeof(route_table_t)));
+    luos_send_data(luos_module_pointer, (msg_t *)&luos_pub_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
 }
 
 void auto_update_manager(void)
@@ -368,7 +368,7 @@ unsigned char luos_send_data(module_t *module, msg_t *msg, void *bin_data, unsig
             chunk_size = size - sent_size;
 
         // Copy data into message
-        memcpy(msg->data, &bin_data[sent_size], chunk_size);
+        memcpy(msg->data, (char *)bin_data + sent_size, chunk_size);
         msg->header.size = size - sent_size;
 
         // Send message
@@ -459,7 +459,7 @@ unsigned char luos_receive_data(module_t *module, msg_t *msg, void *bin_data)
         chunk_size = msg->header.size;
 
     // Copy data into buffer
-    memcpy(&bin_data[data_size[id]], msg->data, chunk_size);
+    memcpy((char *)bin_data + data_size[id], msg->data, chunk_size);
 
     // Save buffer session
     data_size[id] = data_size[id] + chunk_size;

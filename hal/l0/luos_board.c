@@ -136,7 +136,7 @@ void node_init(void)
     // disable DMA Irq
     HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
     // Start infinite ADC measurement
-    HAL_ADC_Start_DMA(&luos_adc, node_analog.unmap, sizeof(node_analog_t) / sizeof(uint32_t));
+    HAL_ADC_Start_DMA(&luos_adc, (uint32_t *)node_analog.unmap, sizeof(node_analog_t) / sizeof(uint32_t));
 
     // ********************* EEPROM ****************************
     // Unlock the Flash Program Erase controller

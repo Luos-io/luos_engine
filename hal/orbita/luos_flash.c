@@ -50,12 +50,7 @@ uint8_t luos_flash_read(uint16_t byte_id, size_t size, void *data)
         return 1;
 
     // copy flash datas into data pointer.
-    memcpy(data, (__IO void *)(byte_id + ALIASES_BASE_ADDRESS), size);
-    // for (uint16_t i = StartVirtualAddress; i < HowManyToRead + StartVirtualAddress; i++)
-    // {
-    //     *Data = (*(__IO uint32_t *)((i * 4) + _EEPROM_FLASH_PAGE_ADDRESS));
-    //     Data++;
-    // }
+    memcpy(data, (void *)(byte_id + ALIASES_BASE_ADDRESS), size);
     return 0;
 }
 
@@ -73,7 +68,7 @@ uint8_t luos_flash_write(uint16_t byte_id, size_t size, const void *data)
     // Before writing we have to erase the entire page
     // to do that we have to backup current falues by copying it into RAM
     uint8_t page_backup[PAGE_SIZE];
-    memcpy(page_backup, (__IO void *)ALIASES_BASE_ADDRESS, PAGE_SIZE);
+    memcpy(page_backup, (void *)ALIASES_BASE_ADDRESS, PAGE_SIZE);
 
     // Now we can erase the page
     if (page_format())

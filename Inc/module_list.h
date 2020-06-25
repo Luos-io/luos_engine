@@ -22,7 +22,7 @@ typedef enum
     CONTROLLED_MOTOR_MOD,
     VOID_MOD,
     LOAD_MOD,
-    LUOS_LAST_MOD
+    LUOS_LAST_TYPE
 } module_type_t;
 
 typedef enum

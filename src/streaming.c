@@ -10,9 +10,9 @@ streaming_channel_t create_streaming_channel(const void *ring_buffer, int ring_b
             ;
     }
     // Save ring buffer informations
-    stream.ring_buffer = ring_buffer;
+    stream.ring_buffer = (void *)ring_buffer;
     stream.data_size = data_size;
-    stream.end_ring_buffer = ring_buffer + (stream.data_size * ring_buffer_size);
+    stream.end_ring_buffer = (void *)ring_buffer + (stream.data_size * ring_buffer_size);
 
     // Set data pointers to 0
     stream.data_ptr = stream.ring_buffer;
@@ -43,7 +43,7 @@ int get_samples(streaming_channel_t *stream, void *data, int size)
             int chunk1 = stream->end_ring_buffer - stream->sample_ptr;
             int chunk2 = (size * stream->data_size) - chunk1;
             memcpy(data, stream->sample_ptr, chunk1);
-            memcpy(&data[chunk1], stream->ring_buffer, chunk2);
+            memcpy((char *)data + chunk1, stream->ring_buffer, chunk2);
             // Set the new sample pointer
             stream->sample_ptr = stream->ring_buffer + chunk2;
         }
@@ -96,7 +96,7 @@ int set_samples(streaming_channel_t *stream, const void *data, int size)
         }
         // Everything good copy datas.
         memcpy(stream->data_ptr, data, chunk1);
-        memcpy(stream->ring_buffer, &data[chunk1], chunk2);
+        memcpy(stream->ring_buffer, (char *)data + chunk1, chunk2);
         // Set the new data pointer
         stream->data_ptr = stream->ring_buffer + chunk2;
     }
