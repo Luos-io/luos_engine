@@ -1,6 +1,6 @@
 <a href="https://luos.io"><img src="https://www.luos.io/wp-content/uploads/2020/03/Luos-color.png" alt="Luos logo" title="Luos" align="right" height="60" /></a>
 
-# GENERAL TERMS AND CONDITIONS
+# LICENSE
 # LUOS
 Entry into force: April 22, 2020
 
