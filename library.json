@@ -11,13 +11,17 @@
         "flags": [
             "-I Inc",
             "-I OD",
+            "-I Robus/inc",
             "-DVERSION=0.6.8"
         ],
-        "extraScript": "select_board_script.py"
+        "srcFilter": [
+            "+<*.c>",
+            "+<../Robus/src/*.c>"
+        ]
     },
     "dependencies": [
         {
-            "name": "Robus"
+            "name": "LuosHAL"
         }
     ],
     "repository": {
