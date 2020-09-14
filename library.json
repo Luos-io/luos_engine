@@ -9,7 +9,7 @@
     },
     "build": {
         "flags": [
-            "-I Inc",
+            "-I inc",
             "-I OD",
             "-I Robus/inc",
             "-DVERSION=0.6.8"
