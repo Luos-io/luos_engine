@@ -6,7 +6,7 @@
  */
 
 #include "message_mngr.h"
-#include "luos_board.h"
+#include "hal.h"
 
 // no real time callback management
 volatile int module_msg_available = 0;

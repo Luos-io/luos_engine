@@ -53,7 +53,7 @@ void robus_init(RX_CB callback)
     ctx.status.unmap = 0;
     ctx.status.identifier = 0xF;
     // Init hal
-    hal_init();
+    LuosHAL_init();
 }
 
 void robus_modules_clear(void)

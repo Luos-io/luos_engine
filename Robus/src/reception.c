@@ -12,7 +12,6 @@
 #include "cmd.h"
 #include "target.h"
 #include "sys_msg.h"
-#include "time.h"
 
 #ifdef DEBUG
 #include <stdio.h>

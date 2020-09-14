@@ -6,6 +6,7 @@
  */
 #include <robus.h>
 #include "sys_msg.h"
+#include "context.h"
 #include "hal.h"
 
 /**

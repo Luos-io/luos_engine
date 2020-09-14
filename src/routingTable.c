@@ -1,7 +1,7 @@
 #include <routingTable.h>
 #include <string.h>
 #include <stdio.h>
-#include "luos_board.h"
+#include "hal.h"
 
 route_table_t route_table[MAX_MODULES_NUMBER];
 volatile int last_module = 0;
@@ -295,9 +295,7 @@ void detect_modules(module_t *module)
         nb_mod = MAX_MODULES_NUMBER - 1;
 
     // Then, asks for introduction for every found modules.
-    int
-    try
-        = 0;
+    int try = 0;
     int last_id = bigest_id();
     while ((last_id < nb_mod) && (try < nb_mod))
     {
