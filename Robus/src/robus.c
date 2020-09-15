@@ -1,21 +1,32 @@
-/*
- * robus.c
- *
- * Created: 14/02/2017 11:53:28
- *  Author: nico
- *  Abstract: User functionalities of the robus communication protocol
- */
+/******************************************************************************
+ * @file robus
+ * @brief User functionalities of the robus communication protocol
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include <robus.h>
+
 #include <string.h>
 #include "sys_msg.h"
 #include "reception.h"
 #include "detection.h"
 #include "context.h"
-#include "hal.h"
+#include "luosHAL.h"
 #include "cmd.h"
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 // Creation of the robus context. This variable is used in all files of this lib.
 volatile context_t ctx;
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 // Startup and network configuration
 void robus_init(RX_CB callback)
@@ -53,7 +64,7 @@ void robus_init(RX_CB callback)
     ctx.status.unmap = 0;
     ctx.status.identifier = 0xF;
     // Init hal
-    LuosHAL_init();
+    LuosHAL_Init();
 }
 
 void robus_modules_clear(void)

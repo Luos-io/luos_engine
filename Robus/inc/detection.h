@@ -1,15 +1,19 @@
-/*
- * detection.h
- *
- *  Author: Nicolas Rabault
- *  Abstract: detection state machine.
- */
-
+/******************************************************************************
+ * @file detection
+ * @brief detection state machine.
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _DETECTION_H_
 #define _DETECTION_H_
 
 #include <robus.h>
-#include <hal.h>
+#include <luosHAL.h>
+
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
 
 #define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
@@ -34,20 +38,17 @@ typedef struct __attribute__((__packed__))
     unsigned short branches[NO_BRANCH];
     unsigned char activ_branch;
 } detection_t;
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 void reset_detection(void);
 unsigned char poke(branch_t branch);
 void poke_next_branch(void);
 void ptp_handler(branch_t branch);
-
-/**
- * \fn unsigned char reset_network_detection(vm_t* vm)
- * \brief  reset PTP state and detection state machine.
- *
- * \param virtual module who send.
- *
- * \return ok or not
- */
 unsigned char reset_network_detection(vm_t *vm);
 
 #endif /* _DETECTION_H_ */

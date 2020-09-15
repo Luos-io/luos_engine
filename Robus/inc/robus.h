@@ -1,19 +1,25 @@
-/**
- * \file robus.h
- * \brief Robus communication main include file.
- * \author Nicolas Rabault
- * \version 0.1
- * \date 18 Fevrier 2017
- *
- * Include this file to use the robus communication protocol.
- *
- */
-
+/******************************************************************************
+ * @file robus
+ * @brief User functionalities of the robus communication protocol
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _ROBUS_H_
 #define _ROBUS_H_
 
 #include "robus_struct.h"
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 /**
  * \fn void robus_init(RX_CB)
  * \brief Initialisation of the Robus communication lib.

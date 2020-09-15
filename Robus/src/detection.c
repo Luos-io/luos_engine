@@ -1,14 +1,25 @@
-/*
- * detection.c
- *
- *  Author: Nicolas Rabault
- *  Abstract: detection state machine.
- */
-#include <robus.h>
+/******************************************************************************
+ * @file detection
+ * @brief detection state machine.
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
+#include <detection.h>
+
 #include "sys_msg.h"
 #include "context.h"
-#include "hal.h"
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 /**
  * \fn ptp_handler(branch_t branch)
  * \brief all ptp interrupt handler
@@ -42,7 +53,7 @@ void ptp_handler(branch_t branch)
             {
                 for (int branch = 0; branch < NO_BRANCH; branch++)
                 {
-                    reset_PTP(branch);
+                	LuosHAL_PTPDetection(branch);
                 }
                 reset_detection();
             }
@@ -51,7 +62,7 @@ void ptp_handler(branch_t branch)
     else if (ctx.detection.expect == POKE)
     {
         // we receive a poke, pull the line to notify your presence
-        set_PTP(branch);
+    	LuosHAL_SetPTP(branch);
         ctx.detection.keepline = branch;
     }
 }
@@ -66,19 +77,19 @@ void ptp_handler(branch_t branch)
 unsigned char poke(branch_t branch)
 {
     // push the ptp line
-    set_PTP(branch);
+	LuosHAL_SetPTP(branch);
     // wait a little just to be sure everyone can read it
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
     // release the ptp line
-    reset_PTP(branch);
+    LuosHAL_PTPDetection(branch);
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
     // read the line state
-    if (get_PTP(branch))
+    if (LuosHAL_GetPTP(branch))
     {
         // Someone reply, reverse the detection to wake up on line release
-        reverse_detection(branch);
+    	LuosHAL_PTPReverseDetection(branch);
         ctx.detection.expect = RELEASE;
         ctx.detection.keepline = branch;
         // enable activ branch to get the next ID and save it into this branch number.
@@ -119,7 +130,7 @@ void poke_next_branch(void)
     // no more branch need to be poked
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
-        reset_PTP(branch);
+    	LuosHAL_PTPDetection(branch);
     }
     reset_detection();
     return;
@@ -145,7 +156,7 @@ unsigned char reset_network_detection(vm_t *vm)
 {
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
-        reset_PTP(branch);
+    	LuosHAL_PTPDetection(branch);
         ctx.detection.branches[branch] = 0;
     }
     reset_detection();

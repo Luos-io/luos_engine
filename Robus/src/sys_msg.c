@@ -1,17 +1,27 @@
-/*
- * sys_msg.c
- *
- * Created: 14/02/2017 11:53:28
- *  Author: Nicolas Rabault
- *  Abstract: protocol system message management.
- */
-#include <robus.h>
-#include "sys_msg.h"
-#include "hal.h"
+/******************************************************************************
+ * @file sys_msg
+ * @brief protocol system message management.
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
+#include <sys_msg.h>
+
+#include "luosHAL.h"
 #include <string.h>
 #include "context.h"
 #include "reception.h"
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 void wait_tx_unlock(void);
 unsigned char transmit(unsigned char *data, unsigned short size);
 
@@ -23,12 +33,12 @@ unsigned char transmit(unsigned char *data, unsigned short size);
 
 void send_ack(void)
 {
-    hal_enable_tx();
-    hal_disable_rx();
-    hal_transmit((unsigned char *)&ctx.status.unmap, 1);
-    hal_wait_transmit_end();
-    hal_enable_rx();
-    hal_disable_tx();
+	LuosHAL_TxStatus(true);
+	LuosHAL_RxStatus(false);
+	LuosHAL_ComTransmit((unsigned char *)&ctx.status.unmap, 1);
+	LuosHAL_ComTxTimeout();
+	LuosHAL_RxStatus(true);
+	LuosHAL_TxStatus(false);
     ctx.status.unmap = 0x0F;
 }
 
@@ -47,23 +57,23 @@ unsigned char robus_send_sys(vm_t *vm, msg_t *msg)
     msg->header.protocol = PROTOCOL_REVISION;
     msg->header.source = vm->id;
     // compute the CRC
-    crc(msg->stream, full_size, (unsigned char *)&msg->data[data_size]);
+    LuosHAL_ComputeCRC(msg->stream, full_size, (unsigned char *)&msg->data[data_size]);
     // Add the CRC to the total size of the message
     full_size += 2;
     ctx.vm_last_send = vm;
 ack_restart:
     nbr_nak_retry++;
-    hal_disable_irq();
+    LuosHAL_IrqStatus(false);
     ctx.ack = FALSE;
-    hal_enable_irq();
+    LuosHAL_IrqStatus(true);
     // Send message
     while (transmit((unsigned char *)msg->stream, full_size))
     {
         // There is a collision
-        hal_disable_irq();
+    	LuosHAL_IrqStatus(false);
         // switch reception in header mode
         ctx.data_cb = get_header;
-        hal_enable_irq();
+        LuosHAL_IrqStatus(true);
         // wait timeout of collided packet
         wait_tx_unlock();
         // timer proportional to ID
@@ -85,9 +95,9 @@ ack_restart:
         else
         {
             // ACK needed, change the state of state machine for wait a ACK
-            hal_disable_irq();
+        	LuosHAL_IrqStatus(false);
             ctx.data_cb = catch_ack;
-            hal_enable_irq();
+            LuosHAL_IrqStatus(true);
             volatile int time_out = 0;
             while (!ctx.ack & (time_out < (120 * (1000000 / ctx.baudrate))))
             {
@@ -101,9 +111,9 @@ ack_restart:
                 {
                     // This is probably a part of another message
                     // Send it to header
-                    hal_disable_irq();
+                	LuosHAL_IrqStatus(false);
                     ctx.data_cb = get_header;
-                    hal_enable_irq();
+                    LuosHAL_IrqStatus(true);
                     get_header(&vm->msg_pt->ack);
                 }
                 if (nbr_nak_retry < NBR_NAK_RETRY)
@@ -126,7 +136,7 @@ ack_restart:
     // localhost management
     if (module_concerned(&msg->header))
     {
-        hal_disable_irq();
+    	LuosHAL_IrqStatus(false);
         // Secure the message memory by copying it into msg buffer
         memcpy((void *)&ctx.msg[ctx.current_buffer], msg, sizeof(header_t) + msg->header.size + 2);
         // Manage this message
@@ -138,7 +148,7 @@ ack_restart:
             ctx.current_buffer = 0;
         }
         flush();
-        hal_enable_irq();
+        LuosHAL_IrqStatus(true);
     }
     return fail;
 }
@@ -152,39 +162,39 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     wait_tx_unlock();
     ctx.collision = FALSE;
     // Enable TX
-    hal_enable_tx();
-    hal_disable_irq();
+    LuosHAL_TxStatus(true);
+    LuosHAL_IrqStatus(false);
     // switch reception in collision detection mode
     ctx.data_cb = get_collision;
     ctx.tx_data = data;
-    hal_enable_irq();
+    LuosHAL_IrqStatus(true);
     // re-lock the transmission
-    if (ctx.collision | HAL_is_tx_lock())
+    if (ctx.collision | LuosHAL_GetTxLockStatus())
     {
         // We receive something during our configuration, stop this transmission
-        hal_disable_tx();
+    	LuosHAL_TxStatus(false);
         ctx.collision = FALSE;
         return 1;
     }
-    ctx.tx_lock = TRUE;
+    LuosHAL_SetTxLockStatus(true);
     // Try to detect a collision during the "col_check_data_num" first bytes
-    if (hal_transmit(data, col_check_data_num))
+    if (LuosHAL_ComTransmit(data, col_check_data_num))
     {
-        hal_disable_tx();
+    	LuosHAL_TxStatus(false);
         ctx.collision = FALSE;
         return 1;
     }
     // No collision occure, stop collision detection mode and continue to transmit
-    hal_disable_irq();
+    LuosHAL_IrqStatus(false);
     ctx.data_cb = get_header;
-    hal_enable_irq();
-    hal_disable_rx();
-    hal_transmit(data + col_check_data_num, size - col_check_data_num);
-    hal_wait_transmit_end();
+    LuosHAL_IrqStatus(true);
+    LuosHAL_RxStatus(false);
+    LuosHAL_ComTransmit(data + col_check_data_num, size - col_check_data_num);
+    LuosHAL_ComTxTimeout();
     // get ready to receive a ack just in case
     // disable TX and Enable RX
-    hal_enable_rx();
-    hal_disable_tx();
+    LuosHAL_RxStatus(true);
+    LuosHAL_TxStatus(false);
     // Force Usart Timeout
     timeout();
     return 0;
@@ -193,7 +203,7 @@ unsigned char transmit(unsigned char *data, unsigned short size)
 void wait_tx_unlock(void) // TODO : This function could be in HAL and replace HAL_is_tx_lock. By the way timeout management here is shity
 {
     volatile int timeout = 0;
-    while (HAL_is_tx_lock() && (timeout < 64000))
+    while (LuosHAL_GetTxLockStatus() && (timeout < 64000))
     {
         timeout++;
     }

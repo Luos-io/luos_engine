@@ -1,11 +1,28 @@
+/******************************************************************************
+ * @file routingTable
+ * @brief routing table descrption function
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include <routingTable.h>
+
 #include <string.h>
 #include <stdio.h>
-#include "hal.h"
+#include <luosHAL.h>
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 route_table_t route_table[MAX_MODULES_NUMBER];
 volatile int last_module = 0;
 volatile int last_route_table_entry = 0;
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 // ********************* route_table search tools ************************
 // Return an id from an alias (return 0 if no alias match)
@@ -267,8 +284,8 @@ int wait_route_table(module_t *module, msg_t *intro_msg)
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_route_table_entry;
     luos_send(module, intro_msg);
-    uint32_t timestamp = node_get_systick();
-    while ((node_get_systick() - timestamp) < timeout)
+    uint32_t timestamp = LuosHAL_GetSystick();
+    while ((LuosHAL_GetSystick() - timestamp) < timeout)
     {
         // If this request is for a module in this board allow him to respond.
         luos_loop();

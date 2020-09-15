@@ -1,29 +1,36 @@
-/*
- * reception.c
- *
- * Created: 14/02/2017 11:53:28
- *  Author: Nicolas Rabault
- *  Abstract: reception state machine
- */
-//#define DEBUG
-#include <string.h>
+/******************************************************************************
+ * @file reception
+ * @brief reception state machine
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "reception.h"
-#include "hal.h"
+
+#include <string.h>
+#include "luosHAL.h"
 #include "cmd.h"
 #include "target.h"
 #include "sys_msg.h"
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 #ifdef DEBUG
 #include <stdio.h>
 #endif
 
 #define CURRENTMSG ctx.msg[ctx.current_buffer]
 #define CURRENTMODULE ctx.vm_table[ctx.alloc_msg[ctx.current_buffer]]
-
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 unsigned char keep = FALSE;
 unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 unsigned short data_count = 0;
 unsigned short data_size = 0;
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 unsigned char module_concerned(header_t *header)
 {
@@ -115,7 +122,7 @@ void timeout(void)
     {
         ctx.status.rx_timeout = TRUE;
     }
-    ctx.tx_lock = FALSE;
+    LuosHAL_SetTxLockStatus(false);
     flush();
 }
 
@@ -127,11 +134,11 @@ void timeout(void)
  */
 void flush(void)
 {
-    hal_disable_irq();
+	LuosHAL_IrqStatus(false);
     ctx.data_cb = get_header;
     keep = FALSE;
     data_count = 0;
-    hal_enable_irq();
+    LuosHAL_IrqStatus(true);
 }
 static unsigned short crc_val = 0;
 
@@ -143,7 +150,7 @@ static unsigned short crc_val = 0;
  */
 void get_header(volatile unsigned char *data)
 {
-    ctx.tx_lock = TRUE;
+	LuosHAL_SetTxLockStatus(true);
     // Catch a byte.
     CURRENTMSG.header.unmap[data_count++] = *data;
 
@@ -174,7 +181,7 @@ void get_header(volatile unsigned char *data)
         if (keep)
         {
             // start crc computation
-            crc((unsigned char *)CURRENTMSG.stream, sizeof(header_t), (unsigned char *)&crc_val);
+        	LuosHAL_ComputeCRC((unsigned char *)CURRENTMSG.stream, sizeof(header_t), (unsigned char *)&crc_val);
         }
     }
 }
@@ -191,7 +198,7 @@ void get_data(volatile unsigned char *data)
     if ((data_count < data_size) && keep)
     {
         // Continue CRC computation until the end of data
-        crc((unsigned char *)&CURRENTMSG.data[data_count], 1, (unsigned char *)&crc_val);
+    	LuosHAL_ComputeCRC((unsigned char *)&CURRENTMSG.data[data_count], 1, (unsigned char *)&crc_val);
     }
     if (data_count > data_size)
     {
@@ -256,7 +263,7 @@ void get_collision(volatile unsigned char *data)
         //data dont match, or we don't start to send, there is a collision
         ctx.collision = TRUE;
         //Stop TX trying to save input datas
-        hal_disable_tx();
+        LuosHAL_TxStatus(false);
         // send all received datas
         get_header(data);
     }
@@ -345,7 +352,7 @@ void msg_complete(msg_t *msg)
             // Reinit branch state and link
             for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
             {
-                reset_PTP(branch);
+            	LuosHAL_PTPDetection(branch);
                 ctx.detection.branches[branch] = 0;
             }
             reset_detection();
@@ -358,7 +365,7 @@ void msg_complete(msg_t *msg)
             break;
         case SET_BAUDRATE:
             memcpy((void *)&ctx.baudrate, msg->data, msg->header.size);
-            set_baudrate(ctx.baudrate);
+            LuosHAL_ComInit(ctx.baudrate);
             break;
         default:
             // set VM data
