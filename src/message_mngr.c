@@ -58,25 +58,25 @@ void mngr_get_msg(int module_index, int msg_index, mngr_t *chunk)
     }
     // get module
     chunk->module = (module_t *)module_msg_mngr[module_index];
-    LuosHAL_IrqStatus(false);
+    LuosHAL_SetIrqState(false);
     for (i = module_index; i < module_msg_available; i++)
     {
         module_msg_mngr[i] = module_msg_mngr[i + 1];
     }
     module_msg_mngr[i] = 0;
     module_msg_available--;
-    LuosHAL_IrqStatus(true);
+    LuosHAL_SetIrqState(true);
 
     // get msg
     chunk->msg = chunk->module->msg_stack[msg_index];
-    LuosHAL_IrqStatus(false);
+    LuosHAL_SetIrqState(false);
     for (int i = msg_index; i < chunk->module->message_available; i++)
     {
         chunk->module->msg_stack[i] = chunk->module->msg_stack[i + 1];
     }
     chunk->module->msg_stack[i] = 0;
     chunk->module->message_available--;
-    LuosHAL_IrqStatus(true);
+    LuosHAL_SetIrqState(true);
 }
 
 void mngr_get(int module_index, mngr_t *chunk)

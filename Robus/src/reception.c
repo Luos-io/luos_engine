@@ -122,7 +122,7 @@ void timeout(void)
     {
         ctx.status.rx_timeout = TRUE;
     }
-    LuosHAL_SetTxLockStatus(false);
+    ctx.tx_lock = false;
     flush();
 }
 
@@ -134,11 +134,11 @@ void timeout(void)
  */
 void flush(void)
 {
-	LuosHAL_IrqStatus(false);
+	LuosHAL_SetIrqState(false);
     ctx.data_cb = get_header;
     keep = FALSE;
     data_count = 0;
-    LuosHAL_IrqStatus(true);
+    LuosHAL_SetIrqState(true);
 }
 static unsigned short crc_val = 0;
 
@@ -150,7 +150,7 @@ static unsigned short crc_val = 0;
  */
 void get_header(volatile unsigned char *data)
 {
-	LuosHAL_SetTxLockStatus(true);
+	ctx.tx_lock = true;
     // Catch a byte.
     CURRENTMSG.header.unmap[data_count++] = *data;
 
@@ -263,7 +263,7 @@ void get_collision(volatile unsigned char *data)
         //data dont match, or we don't start to send, there is a collision
         ctx.collision = TRUE;
         //Stop TX trying to save input datas
-        LuosHAL_TxStatus(false);
+        LuosHAL_SetTxState(false);
         // send all received datas
         get_header(data);
     }
@@ -352,7 +352,7 @@ void msg_complete(msg_t *msg)
             // Reinit branch state and link
             for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
             {
-            	LuosHAL_PTPDetection(branch);
+            	LuosHAL_SetPTPDefaultState(branch);
                 ctx.detection.branches[branch] = 0;
             }
             reset_detection();
