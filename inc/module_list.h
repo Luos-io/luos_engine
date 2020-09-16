@@ -96,9 +96,8 @@ typedef enum
     PARAMETERS,         // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
     // Revision management
-    REVISION,       // Module sends its firmware revision
-    LUOS_REVISION,  // Module sends its luos revision
-    ROBUS_REVISION, // Module sends its robus revision
+    REVISION,      // Module sends its firmware revision
+    LUOS_REVISION, // Module sends its luos revision
 
     // compatibility area
     LUOS_PROTOCOL_NB,

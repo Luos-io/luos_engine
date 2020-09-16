@@ -1,17 +1,33 @@
+/******************************************************************************
+ * @file luos
+ * @brief User functionalities of the Luos library
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "luos.h"
-#include "luos_board.h"
+
+#include <luosHAL.h>
 #include <stdio.h>
 #include "message_mngr.h"
-
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 #define STRINGIFY(s) STRINGIFY1(s)
 #define STRINGIFY1(s) #s
-
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 static module_t *luos_module_pointer;
 static volatile msg_t luos_pub_msg;
 static volatile int luos_pub = LUOS_PROTOCOL_NB;
 module_t module_table[MAX_VM_NUMBER];
 unsigned char module_number;
 volatile route_table_t *route_table_pt;
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
+static void write_alias(unsigned short local_id, char *alias);
+static char read_alias(unsigned short local_id, char *alias);
 
 //**************** Private functions*********************
 static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
@@ -59,17 +75,6 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         luos_pub = LUOS_REVISION;
         return 1;
     }
-    if ((input->header.cmd == ROBUS_REVISION) & (input->header.size == 0))
-    {
-        output->header.cmd = ROBUS_REVISION;
-        output->header.target_mode = ID;
-        sprintf((char *)output->data, "%s", ROBUS_VERSION);
-        memcpy(output->data, ROBUS_VERSION, sizeof(output->data));
-        output->header.size = strlen((char *)output->data);
-        output->header.target = input->header.source;
-        luos_pub = ROBUS_REVISION;
-        return 1;
-    }
     if ((input->header.cmd == NODE_UUID) & (input->header.size == 0))
     {
         output->header.cmd = NODE_UUID;
@@ -110,7 +115,7 @@ static int luos_msg_handler(module_t *module, msg_t *input, msg_t *output)
         time_from_msg(&time, input);
         module->auto_refresh.target = input->header.source;
         module->auto_refresh.time_ms = (uint16_t)time_to_ms(time);
-        module->auto_refresh.last_update = node_get_systick();
+        module->auto_refresh.last_update = LuosHAL_GetSystick();
         return 1;
     }
 
@@ -154,18 +159,6 @@ void luos_cb(vm_t *vm, msg_t *msg)
     if (luos_msg_handler((module_t *)module, msg, (msg_t *)&luos_pub_msg))
     {
         luos_module_pointer = (module_t *)module;
-        return;
-    }
-    // L0 message management
-    int pub_type = node_msg_handler((module_t *)module, msg, (msg_t *)&luos_pub_msg);
-    if (pub_type == NODE_LED)
-    {
-        return;
-    }
-    if (pub_type != LUOS_PROTOCOL_NB)
-    {
-        luos_module_pointer = (module_t *)module;
-        luos_pub = pub_type;
         return;
     }
     if ((module->rt >= 1) & (module->mod_cb != 0))
@@ -220,7 +213,7 @@ void auto_update_manager(void)
             // check if there is a timed update setted and if it's time to update it.
             if (module_table[i].auto_refresh.time_ms)
             {
-                if ((node_get_systick() - module_table[i].auto_refresh.last_update) >= module_table[i].auto_refresh.time_ms)
+                if ((LuosHAL_GetSystick() - module_table[i].auto_refresh.last_update) >= module_table[i].auto_refresh.time_ms)
                 {
                     // This module need to send an update
                     // Create a fake message for it from the module asking for update
@@ -240,7 +233,7 @@ void auto_update_manager(void)
                         // todo this can't work for now because this message is not permanent.
                         //mngr_set(&module_table[i], &updt_msg);
                     }
-                    module_table[i].auto_refresh.last_update = node_get_systick();
+                    module_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
             }
         }
@@ -252,7 +245,6 @@ void auto_update_manager(void)
 void luos_init(void)
 {
     module_number = 0;
-    node_init();
     robus_init(luos_cb);
 }
 
@@ -281,7 +273,6 @@ void luos_loop(void)
     }
     // manage timed auto update
     auto_update_manager();
-    node_loop();
 }
 
 void luos_modules_clear(void)
@@ -557,4 +548,25 @@ void luos_save_alias(module_t *module, char *alias)
 void luos_set_baudrate(module_t *module, uint32_t baudrate)
 {
     robus_set_baudrate(module->vm, baudrate);
+}
+
+static void write_alias(unsigned short local_id, char *alias)
+{
+    uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
+    LuosHAL_FlashWriteLuosMemoryInfo(addr, 16, (uint8_t *)alias);
+}
+
+static char read_alias(unsigned short local_id, char *alias)
+{
+    uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
+    LuosHAL_FlashReadLuosMemoryInfo(addr, 16, (uint8_t *)alias);
+    // Check name integrity
+    if ((((alias[0] < 'A') | (alias[0] > 'Z')) & ((alias[0] < 'a') | (alias[0] > 'z'))) | (alias[0] == '\0'))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
