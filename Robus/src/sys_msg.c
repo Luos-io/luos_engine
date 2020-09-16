@@ -8,6 +8,7 @@
 
 #include "luosHAL.h"
 #include <string.h>
+#include <stdbool.h>
 #include "context.h"
 #include "reception.h"
 

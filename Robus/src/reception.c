@@ -7,6 +7,7 @@
 #include "reception.h"
 
 #include <string.h>
+#include <stdbool.h>
 #include "luosHAL.h"
 #include "cmd.h"
 #include "target.h"
