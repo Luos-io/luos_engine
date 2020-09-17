@@ -24,12 +24,11 @@ typedef struct __attribute__((__packed__)) mngr_t
 /*******************************************************************************
  * Function
  ******************************************************************************/
-char mngr_message_available(void);
-void mngr_set(module_t *module, msg_t *msg);
-void mngr_get_msg(int module_index, int msg_index, mngr_t *chunk);
-void mngr_get(int module_index, mngr_t *chunk);
-int get_next_cb_id();
-int get_next_module_id(module_t *module);
-int get_next_msg_id(int mngr_id, short msg_from);
+uint8_t Mngr_AvailableMessage(void);
+void Mngr_SetIndexMsg(module_t *module, msg_t *msg);
+void Mngr_GetIndexMsg(int module_index, int msg_index, mngr_t *chunk);
+int8_t Mngr_GetNextCallbackID(void);
+int8_t Mngr_GetNextModuleID(module_t *module);
+int8_t Mngr_GetNextMsgID(int mngr_id, short msg_from);
 
 #endif /* MESSAGE_MNGR_H_ */

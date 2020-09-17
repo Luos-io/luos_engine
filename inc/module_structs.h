@@ -1,3 +1,9 @@
+/******************************************************************************
+ * @file modules structure
+ * @brief describs all the
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef __MODULE_STRUCT_H
 #define __MODULE_STRUCT_H
 
@@ -5,11 +11,10 @@
 #include "luos.h"
 #include "luos_od.h"
 
-/**
- * \struct timed_update_t
- * \brief timed update informations Structure
- *
- * This structure is used to manage modules timed auto update 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+/* This structure is used to manage modules timed auto update
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) timed_update_t
@@ -19,11 +24,7 @@ typedef struct __attribute__((__packed__)) timed_update_t
     unsigned short target;
 } timed_update_t;
 
-/**
- * \struct module_t
- * \brief Module Structure
- *
- * This structure is used to manage modules
+/* This structure is used to manage modules
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) module_t
@@ -43,9 +44,19 @@ typedef struct __attribute__((__packed__)) module_t
 
 typedef void (*MOD_CB)(module_t *module, msg_t *msg);
 
-// This file contain struct of messages exchanged between gate and modules
+/*
+ * Control modes
+ */
+typedef enum
+{
+    PLAY,
+    PAUSE,
+    STOP
+} control_type_t;
 
-// Luos unic ID => ARM serial number
+/*
+ * Luos unic ID => ARM serial number
+ */
 typedef struct __attribute__((__packed__))
 {
     union {
@@ -54,7 +65,9 @@ typedef struct __attribute__((__packed__))
     };
 } luos_uuid_t;
 
-// Handy struct TODO : remove it
+/*
+ * Handy struct TODO : remove it
+ */
 typedef struct __attribute__((__packed__))
 {
     union {
@@ -70,7 +83,9 @@ typedef struct __attribute__((__packed__))
     };
 } handy_t;
 
-// Pid
+/*
+ * Pid
+ */
 typedef struct __attribute__((__packed__))
 {
     union {
@@ -84,7 +99,9 @@ typedef struct __attribute__((__packed__))
     };
 } asserv_pid_t;
 
-// Servo
+/*
+ * Servo
+ */
 typedef struct
 {
     union {
@@ -98,14 +115,9 @@ typedef struct
     };
 } servo_parameters_t;
 
-// Control modes
-typedef enum
-{
-    PLAY,
-    PAUSE,
-    STOP
-} control_type_t;
-
+/*
+ * controle
+ */
 typedef struct __attribute__((__packed__))
 {
     union {
@@ -118,5 +130,13 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap;
     };
 } control_mode_t;
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 #endif /*__ __L0_H */
