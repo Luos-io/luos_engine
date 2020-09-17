@@ -1,16 +1,26 @@
-/*
- * message_mngr.c
- *
- *  Created on: 17 sept. 2019
- *      Author: Nicolas Rabault
- */
-
+/******************************************************************************
+ * @file message_mngr
+ * @brief function relative to message processing
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "message_mngr.h"
-#include "luos_board.h"
 
+#include <luosHAL.h>
+#include <stdbool.h>
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 // no real time callback management
 volatile int module_msg_available = 0;
 volatile module_t *module_msg_mngr[MSG_BUFFER_SIZE];
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 //**************** mngr things*********************
 
@@ -48,25 +58,25 @@ void mngr_get_msg(int module_index, int msg_index, mngr_t *chunk)
     }
     // get module
     chunk->module = (module_t *)module_msg_mngr[module_index];
-    node_disable_irq();
+    LuosHAL_SetIrqState(false);
     for (i = module_index; i < module_msg_available; i++)
     {
         module_msg_mngr[i] = module_msg_mngr[i + 1];
     }
     module_msg_mngr[i] = 0;
     module_msg_available--;
-    node_enable_irq();
+    LuosHAL_SetIrqState(true);
 
     // get msg
     chunk->msg = chunk->module->msg_stack[msg_index];
-    node_disable_irq();
+    LuosHAL_SetIrqState(false);
     for (int i = msg_index; i < chunk->module->message_available; i++)
     {
         chunk->module->msg_stack[i] = chunk->module->msg_stack[i + 1];
     }
     chunk->module->msg_stack[i] = 0;
     chunk->module->message_available--;
-    node_enable_irq();
+    LuosHAL_SetIrqState(true);
 }
 
 void mngr_get(int module_index, mngr_t *chunk)
