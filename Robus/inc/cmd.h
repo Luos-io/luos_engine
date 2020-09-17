@@ -1,13 +1,15 @@
-/*
- * cmd.h
- *
- * Created: 14/02/2017 11:53:28
- *  Author: Nicolas Rabault
- *  Abstract: Protocol level command list
- */
+/******************************************************************************
+ * @file cmd
+ * @brief list of cmd
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _CMD_H_
 #define _CMD_H_
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 /*
  * All applicativ side message should have a structure like :
  * HEADER - DATA[MAX_DATA_MSG_SIZE] - CHECKSUM (ACK)
@@ -25,5 +27,13 @@ typedef enum
     DEAD_MODULE,         /*!< This module is dead*/
     PROTOCOL_CMD_NB = 30 /*!< WARNING: do not exceed this value. This is the minimum cmd value available for applicative side. */
 } cmd_t;
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
+
 
 #endif /* _CONTEXT_H_ */

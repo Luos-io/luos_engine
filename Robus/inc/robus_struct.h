@@ -1,23 +1,19 @@
-/**
- * \file robus_struct.h
- * \brief Robus communication main include file.
- * \author Nicolas Rabault
- * \version 0.1
- * \date 18 Fevrier 2017
- *
- * Include this file to use the robus communication protocol.
- *
- */
-
+/******************************************************************************
+ * @file robus_struct
+ * @brief definition protocole robus structure
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _ROBUS_STRUCT_H_
 #define _ROBUS_STRUCT_H_
 
 #include "config.h"
 
-/**
- * \enum target_mode_t
- * \brief Message addressing mode enum.
- *
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/*
  * This structure is used to get the message addressing mode list.
  */
 typedef enum
@@ -29,11 +25,7 @@ typedef enum
     MULTICAST  /*!< Multicast mode, used to send something to multiple modules. */
 } target_mode_t;
 
-/**
- * \struct header_t
- * \brief Header structure.
- *
- * This structure is used specify data and destination of datas.
+/* This structure is used specify data and destination of datas.
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__))
@@ -52,11 +44,7 @@ typedef struct __attribute__((__packed__))
     };
 } header_t;
 
-/**
- * \struct msg_t
- * \brief Message structure.
- *
- * This structure is used to receive or send messages between modules in slave
+/* This structure is used to receive or send messages between modules in slave
  * and master mode.
  * please refer to the documentation
  */
@@ -76,11 +64,7 @@ typedef struct __attribute__((__packed__))
     };
 } msg_t;
 
-/**
- * \struct vm_t
- * \brief Virtual Module Structure
- *
- * This structure is used to manage virtual modules
+/* This structure is used to manage virtual modules
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) vm_t
@@ -98,5 +82,12 @@ typedef struct __attribute__((__packed__)) vm_t
 } vm_t;
 
 typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 #endif /* _ROBUS_STRUCT_H_ */

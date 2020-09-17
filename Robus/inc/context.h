@@ -1,10 +1,9 @@
-/*
- * context.h
- *
- * Created: 14/02/2017 11:53:28
- *  Author: Nicolas Rabault
- *  Abstract: shared structures containg the module states
- */
+/******************************************************************************
+ * @file context
+ * @brief definition of context structure environement luos variable
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
@@ -12,7 +11,9 @@
 #include "config.h"
 #include "cmd.h"
 #include "detection.h"
-
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 typedef void (*DATA_CB)(volatile unsigned char *data);
 
 typedef struct __attribute__((__packed__))
@@ -57,6 +58,12 @@ typedef struct __attribute__((__packed__))
     unsigned char alloc_msg[MSG_BUFFER_SIZE]; /*!< Message allocation table. */
 } context_t;
 
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 volatile extern context_t ctx;
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 #endif /* _CONTEXT_H_ */
