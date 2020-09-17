@@ -32,12 +32,14 @@ typedef struct __attribute__((__packed__))
  ******************************************************************************/
 
 void MsgAlloc_Init(void);
-void MsgAlloc_InvalidHeader(void);
-void MsgAlloc_ValidHeader(void);
+void MsgAlloc_ValidHeader(vm_t *concerned_module);
+void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
-uint8_t MsgAlloc_SetData(uint8_t data);
+void MsgAlloc_SetData(uint8_t data);
 msg_t *MsgAlloc_GetCurrentMsg(void);
-void MsgAlloc_GetAllocVars(msg_allocator_t *_alloc_table, uint16_t *_alloc_id);
-void MsgAlloc_ClearSlot(uint16_t _alloc_id);
+
+error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg);
+error_return_t MsgAlloc_LookAtAllocatorSlot(uint16_t alocator_id, vm_t **allocated_module, msg_t **unconsumed_message);
+uint16_t MsgAlloc_AllocNbr(void);
 
 #endif /* _MSGALLOC_H_ */
