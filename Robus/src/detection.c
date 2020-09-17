@@ -20,13 +20,13 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-/**
- * \fn ptp_handler(branch_t branch)
- * \brief all ptp interrupt handler
- *
- * \param branch branch id
- */
-void ptp_handler(branch_t branch)
+
+/******************************************************************************
+ * @brief all ptp interrupt handler
+ * @param branch id
+ * @return None
+ ******************************************************************************/
+void Detec_PtpHandler(branch_t branch)
 {
     if (ctx.detection.expect == RELEASE)
     {
@@ -41,7 +41,7 @@ void ptp_handler(branch_t branch)
                 if (ctx.detection.branches[branch] == 0)
                 {
                     // this branch have not been detected
-                    if (poke(branch))
+                    if (Detect_PokeBranch(branch))
                     {
                         //we get someone, go back to let the detection continue.
                         return;
@@ -55,7 +55,7 @@ void ptp_handler(branch_t branch)
                 {
                 	LuosHAL_SetPTPDefaultState(branch);
                 }
-                reset_detection();
+                Detec_ResetDetection();
             }
         }
     }
@@ -66,15 +66,12 @@ void ptp_handler(branch_t branch)
         ctx.detection.keepline = branch;
     }
 }
-
-/**
- * \fn unsigned char poke(branch_t branch)
- * \brief detect the next module
- *
- * \param branch branch id
- * \return 1 if there is someone, 0 if not
- */
-unsigned char poke(branch_t branch)
+/******************************************************************************
+ * @brief detect module by poke ptp line
+ * @param branch id
+ * @return None
+ ******************************************************************************/
+uint8_t Detect_PokeBranch(branch_t branch)
 {
     // push the ptp line
 	LuosHAL_PushPTP(branch);
@@ -104,19 +101,19 @@ unsigned char poke(branch_t branch)
     }
     return 0;
 }
-
-/**
- * \fn void poke_next_branch(void)
- * \brief find the next branch to poke and poke it
- */
-void poke_next_branch(void)
+/******************************************************************************
+ * @brief detect the next module by poke ptp line
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Detect_PokeNextBranch(void)
 {
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
         if (ctx.detection.branches[branch] == 0)
         {
             // this branch have not been poked
-            if (poke(branch))
+            if (Detect_PokeBranch(branch))
             {
                 return;
             }
@@ -132,18 +129,15 @@ void poke_next_branch(void)
     {
     	LuosHAL_SetPTPDefaultState(branch);
     }
-    reset_detection();
+    Detec_ResetDetection();
     return;
 }
-
-/**
- * \fn void reset_detection(void)
- * \brief reinit the detection state machine
- *
- * \param *vm virtual module who start the detection
- * \return return the number of detected module
- */
-void reset_detection(void)
+/******************************************************************************
+ * @brief reinit the detection state machine
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Detec_ResetDetection(void)
 {
     ctx.detection.keepline = NO_BRANCH;
     ctx.detection.detected_vm = 0;
@@ -151,15 +145,19 @@ void reset_detection(void)
     ctx.detection.expect = POKE;
     ctx.detection.activ_branch = NO_BRANCH;
 }
-
-unsigned char reset_network_detection(vm_t *vm)
+/******************************************************************************
+ * @brief reinit the detection state machine
+ * @param None
+ * @return None
+ ******************************************************************************/
+uint8_t Detec_ResetNetworkDetection(vm_t *vm)
 {
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
     	LuosHAL_SetPTPDefaultState(branch);
         ctx.detection.branches[branch] = 0;
     }
-    reset_detection();
+    Detec_ResetDetection();
     msg_t msg;
 
     msg.header.target = BROADCAST_VAL;
@@ -168,9 +166,9 @@ unsigned char reset_network_detection(vm_t *vm)
     msg.header.size = 0;
 
     //we don't have any way to tell every modules to reset their detection do it twice to be sure
-    if (robus_send_sys(vm, &msg))
+    if (Transmit_RobusSendSys(vm, &msg))
         return 1;
-    if (robus_send_sys(vm, &msg))
+    if (Transmit_RobusSendSys(vm, &msg))
         return 1;
 
     // Reinit VM id

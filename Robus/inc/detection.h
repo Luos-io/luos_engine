@@ -13,8 +13,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-
 #define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
 typedef enum
@@ -45,10 +43,10 @@ typedef struct __attribute__((__packed__))
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void reset_detection(void);
-unsigned char poke(branch_t branch);
-void poke_next_branch(void);
-void ptp_handler(branch_t branch);
-unsigned char reset_network_detection(vm_t *vm);
+void Detec_PtpHandler(branch_t branch);
+uint8_t Detect_PokeBranch(branch_t branch);
+void Detect_PokeNextBranch(void);
+void Detec_ResetDetection(void);
+uint8_t Detec_ResetNetworkDetection(vm_t *vm);
 
 #endif /* _DETECTION_H_ */

@@ -23,17 +23,16 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void wait_tx_unlock(void);
-static uint8_t get_lock(void);
-unsigned char transmit(unsigned char *data, unsigned short size);
+static uint8_t Transmit_Process(uint8_t *data, uint16_t size);
+static void Transmit_WaitUnlockTx(void);
+static uint8_t Transmit_GetLockStatus(void);
 
-/* Specific system mesages :
- * These messages don't follow generic rules of this protocol, there are
- * protocols level messages.
- * Please use it with caution
- */
-
-void send_ack(void)
+/******************************************************************************
+ * @brief detect network topologie
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Transmit_SendAck(void)
 {
 	LuosHAL_SetTxState(true);
 	LuosHAL_SetRxState(false);
@@ -43,8 +42,13 @@ void send_ack(void)
 	LuosHAL_SetTxState(false);
     ctx.status.unmap = 0x0F;
 }
-
-unsigned char robus_send_sys(vm_t *vm, msg_t *msg)
+/******************************************************************************
+ * @brief Send sys msg
+ * @param module who send
+ * @param msg to send
+ * @return Error
+ ******************************************************************************/
+uint8_t Transmit_RobusSendSys(vm_t *vm, msg_t *msg)
 {
     // Compute the full message size based on the header size info.
     unsigned short data_size = 0;
@@ -69,15 +73,15 @@ ack_restart:
     ctx.ack = FALSE;
     LuosHAL_SetIrqState(true);
     // Send message
-    while (transmit((unsigned char *)msg->stream, full_size))
+    while (Transmit_Process((unsigned char *)msg->stream, full_size))
     {
         // There is a collision
     	LuosHAL_SetIrqState(false);
         // switch reception in header mode
-        ctx.data_cb = get_header;
+        ctx.data_cb = Recep_GetHeader;
         LuosHAL_SetIrqState(true);
         // wait timeout of collided packet
-        wait_tx_unlock();
+        Transmit_WaitUnlockTx();
         // timer proportional to ID
         if (vm->id > 1)
         {
@@ -89,16 +93,16 @@ ack_restart:
     if (msg->header.target_mode == IDACK)
     {
         // Check if it is a localhost message
-        if (module_concerned(&msg->header) && (msg->header.target != DEFAULTID))
+        if (Recep_ModuleConcerned(&msg->header) && (msg->header.target != DEFAULTID))
         {
-            send_ack();
+        	Transmit_SendAck();
             ctx.ack = 0;
         }
         else
         {
             // ACK needed, change the state of state machine for wait a ACK
         	LuosHAL_SetIrqState(false);
-            ctx.data_cb = catch_ack;
+            ctx.data_cb = Recep_CatchAck;
             LuosHAL_SetIrqState(true);
             volatile int time_out = 0;
             while (!ctx.ack & (time_out < (120 * (1000000 / ctx.baudrate))))
@@ -114,13 +118,13 @@ ack_restart:
                     // This is probably a part of another message
                     // Send it to header
                 	LuosHAL_SetIrqState(false);
-                    ctx.data_cb = get_header;
+                    ctx.data_cb = Recep_GetHeader;
                     LuosHAL_SetIrqState(true);
-                    get_header(&vm->msg_pt->ack);
+                    Recep_GetHeader(&vm->msg_pt->ack);
                 }
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
-                    timeout();
+                	Recep_Timeout();
                     for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
                         ;
                     goto ack_restart;
@@ -136,42 +140,45 @@ ack_restart:
         }
     }
     // localhost management
-    if (module_concerned(&msg->header))
+    if (Recep_ModuleConcerned(&msg->header))
     {
     	LuosHAL_SetIrqState(false);
         // Secure the message memory by copying it into msg buffer
         memcpy((void *)&ctx.msg[ctx.current_buffer], msg, sizeof(header_t) + msg->header.size + 2);
         // Manage this message
-        msg_complete((msg_t *)&ctx.msg[ctx.current_buffer]);
+        Recep_MsgComplete((msg_t *)&ctx.msg[ctx.current_buffer]);
         // Select next message buffer slot.
         ctx.current_buffer++;
         if (ctx.current_buffer == MSG_BUFFER_SIZE)
         {
             ctx.current_buffer = 0;
         }
-        flush();
+        Recep_Reset();
         LuosHAL_SetIrqState(true);
     }
     return fail;
 }
-
-//*********************** local functions ***************************
-
-unsigned char transmit(unsigned char *data, unsigned short size)
+/******************************************************************************
+ * @brief transmission process
+ * @param pointer data to send
+ * @param size of data to send
+ * @return Error
+ ******************************************************************************/
+static uint8_t Transmit_Process(uint8_t *data, uint16_t size)
 {
     const int col_check_data_num = 5;
     // wait tx unlock
-    wait_tx_unlock();
+    Transmit_WaitUnlockTx();
     ctx.collision = FALSE;
     // Enable TX
     LuosHAL_SetTxState(true);
     LuosHAL_SetIrqState(false);
     // switch reception in collision detection mode
-    ctx.data_cb = get_collision;
+    ctx.data_cb = Recep_GetCollision;
     ctx.tx_data = data;
     LuosHAL_SetIrqState(true);
     // re-lock the transmission
-    if (ctx.collision | get_lock())
+    if (ctx.collision | Transmit_GetLockStatus())
     {
         // We receive something during our configuration, stop this transmission
     	LuosHAL_SetTxState(false);
@@ -188,7 +195,7 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     }
     // No collision occure, stop collision detection mode and continue to transmit
     LuosHAL_SetIrqState(false);
-    ctx.data_cb = get_header;
+    ctx.data_cb = Recep_GetHeader;
     LuosHAL_SetIrqState(true);
     LuosHAL_SetRxState(false);
     LuosHAL_ComTransmit(data + col_check_data_num, size - col_check_data_num);
@@ -198,20 +205,41 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     LuosHAL_SetRxState(true);
     LuosHAL_SetTxState(false);
     // Force Usart Timeout
-    timeout();
+    Recep_Timeout();
     return 0;
 }
-
-void wait_tx_unlock(void) // TODO : This function could be in HAL and replace HAL_is_tx_lock. By the way timeout management here is shity
+/******************************************************************************
+ * @brief wait end of a transmission to be free
+ * @param  None
+ * @return None
+ ******************************************************************************/
+static void Transmit_WaitUnlockTx(void) // TODO : This function could be in HAL and replace HAL_is_tx_lock. By the way timeout management here is shity
 {
     volatile int timeout = 0;
-    while (get_lock() && (timeout < 64000))
+    while (Transmit_GetLockStatus() && (timeout < 64000))
     {
         timeout++;
     }
 }
-
-unsigned char set_extern_id(vm_t *vm, target_mode_t target_mode, unsigned short target, unsigned short newid)
+/******************************************************************************
+ * @brief Send ID to others module on network
+ * @param None
+ * @return lock status
+ ******************************************************************************/
+static uint8_t Transmit_GetLockStatus(void)
+{
+	ctx.tx_lock |= LuosHAL_GetTxLockState();
+	return ctx.tx_lock;
+}
+/******************************************************************************
+ * @brief Send ID to others module on network
+ * @param module sending
+ * @param sending mode
+ * @param target to send
+ * @param new ID to module
+ * @return Error
+ ******************************************************************************/
+uint8_t Transmit_SetExternID(vm_t *vm, target_mode_t target_mode, unsigned short target, unsigned short newid)
 {
     msg_t msg;
     msg.header.target = target;
@@ -220,15 +248,10 @@ unsigned char set_extern_id(vm_t *vm, target_mode_t target_mode, unsigned short 
     msg.header.size = 2;
     msg.data[1] = newid;
     msg.data[0] = (newid << 8);
-    if (robus_send_sys(vm, &msg))
+    if (Transmit_RobusSendSys(vm, &msg))
     {
         return 1;
     }
     return 0;
 }
 
-static uint8_t get_lock(void)
-{
-	ctx.tx_lock |= LuosHAL_GetTxLockState();
-	return ctx.tx_lock;
-}

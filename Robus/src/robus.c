@@ -28,13 +28,18 @@ volatile context_t ctx;
  * Function
  ******************************************************************************/
 
-// Startup and network configuration
-void robus_init(RX_CB callback)
+
+/******************************************************************************
+ * @brief Initialisation of the Robus communication protocole
+ * @param Luos function pointer into the rx callback interrupt.
+ * @return None
+ ******************************************************************************/
+void Robus_Init(RX_CB callback)
 {
     // Init the number of created  virtual module.
     ctx.vm_number = 0;
     // Initialize the reception state machine
-    ctx.data_cb = get_header;
+    ctx.data_cb = Recep_GetHeader;
     // Set default module id. This id is a void id used if no module is created.
     ctx.id = DEFAULTID;
     // VOID Module type
@@ -47,7 +52,7 @@ void robus_init(RX_CB callback)
     ctx.baudrate = DEFAULTBAUDRATE;
 
     // init detection structure
-    reset_detection();
+    Detec_ResetDetection();
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
         ctx.detection.branches[branch] = 0;
@@ -66,16 +71,12 @@ void robus_init(RX_CB callback)
     // Init hal
     LuosHAL_Init();
 }
-
-void robus_modules_clear(void)
-{
-    // Clear vm table
-    memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
-    // Reset the number of created modules
-    ctx.vm_number = 0;
-}
-
-vm_t *robus_module_create(unsigned char type)
+/******************************************************************************
+ * @brief crete a module in route table
+ * @param type of module create
+ * @return None
+ ******************************************************************************/
+vm_t *Robus_ModuleCreate(unsigned char type)
 {
     unsigned char i = 0;
 
@@ -93,16 +94,38 @@ vm_t *robus_module_create(unsigned char type)
     // Return the freshly initialized vm pointer.
     return (vm_t *)&ctx.vm_table[ctx.vm_number++];
 }
-
-unsigned char robus_send(vm_t *vm, msg_t *msg)
+/******************************************************************************
+ * @brief clear module list in route table
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_ModulesClear(void)
+{
+    // Clear vm table
+    memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
+    // Reset the number of created modules
+    ctx.vm_number = 0;
+}
+/******************************************************************************
+ * @brief Send Msg to a module
+ * @param module to send
+ * @param msg to send
+ * @return Error
+ ******************************************************************************/
+uint8_t Robus_SendMsg(vm_t *vm, msg_t *msg)
 {
     msg->header.cmd += PROTOCOL_CMD_NB;
-    unsigned char ret = robus_send_sys(vm, msg);
+    unsigned char ret = Transmit_RobusSendSys(vm, msg);
     msg->header.cmd -= PROTOCOL_CMD_NB;
     return ret;
 }
-
-unsigned char robus_set_baudrate(vm_t *vm, unsigned int baudrate)
+/******************************************************************************
+ * @brief Send Msg to all module to change baudrate network
+ * @param module to send
+ * @param bauderate
+ * @return None
+ ******************************************************************************/
+uint8_t Robus_SetBaudrate(vm_t *vm, unsigned int baudrate)
 {
     msg_t msg;
     memcpy(msg.data, &baudrate, sizeof(unsigned int));
@@ -110,22 +133,30 @@ unsigned char robus_set_baudrate(vm_t *vm, unsigned int baudrate)
     msg.header.target = BROADCAST_VAL;
     msg.header.cmd = SET_BAUDRATE;
     msg.header.size = sizeof(unsigned int);
-    if (robus_send_sys(vm, &msg))
+    if (Transmit_RobusSendSys(vm, &msg))
         return 1;
     return 0;
 }
-
-unsigned short *robus_get_node_branches(unsigned char *size)
+/******************************************************************************
+ * @brief get branch where node is connected
+ * @param branch
+ * @return None
+ ******************************************************************************/
+uint8_t *Robus_GetNodeBranches(uint8_t *size)
 {
     *size = NO_BRANCH;
-    return (unsigned short *)ctx.detection.branches;
+    return (uint8_t *)ctx.detection.branches;
 }
-
-unsigned char robus_topology_detection(vm_t *vm)
+/******************************************************************************
+ * @brief detect network topologie
+ * @param module send detection
+ * @return None
+ ******************************************************************************/
+uint8_t Robus_NetworkTopologyDetection(vm_t *vm)
 {
     unsigned short newid = 1;
     // Reset all detection state of modules on the network
-    reset_network_detection(vm);
+    Detec_ResetNetworkDetection(vm);
     ctx.detection_mode = MASTER_DETECT;
     // wait for some us
     for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
@@ -149,14 +180,14 @@ unsigned char robus_topology_detection(vm_t *vm)
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
         ctx.detection_mode = MASTER_DETECT;
-        if (poke(branch))
+        if (Detect_PokeBranch(branch))
         {
             // Someone reply to our poke!
             // loop while the line is released
             int module_number = 0;
             while ((ctx.detection.keepline != NO_BRANCH) & (module_number < 1024))
             {
-                if (set_extern_id(vm, IDACK, DEFAULTID, newid++))
+                if (Transmit_SetExternID(vm, IDACK, DEFAULTID, newid++))
                 {
                     // set extern id fail
                     // remove this id and stop topology detection
