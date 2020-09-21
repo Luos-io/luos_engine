@@ -7,30 +7,28 @@
 #include "luos.h"
 
 #include <stdio.h>
-#include "message_mngr.h"
-#include <luosHAL.h>
+#include "context.h"  // TODO remove it
+#include "sys_msg.h"  // TODO remove it
+#include "msgAlloc.h" // TODO this is not really clean
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
 #define STRINGIFY(s) STRINGIFY1(s)
 #define STRINGIFY1(s) #s
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static module_t *luos_module_pointer;
-static volatile msg_t luos_pub_msg;
-static volatile int luos_pub = LUOS_PROTOCOL_NB;
 module_t module_table[MAX_VM_NUMBER];
 unsigned char module_number;
 volatile route_table_t *route_table_pt;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static int8_t Luos_MsgHandler(module_t *module, msg_t *input, msg_t *output);
-static void Luos_CallbackMsg(vm_t *vm, msg_t *msg);
+static int8_t Luos_MsgHandler(module_t *module, msg_t *input);
 static module_t *Luos_GetModule(vm_t *vm);
 static int8_t Luos_GetModuleIndex(module_t *module);
-static void Luos_TransmitLocalRouteTable(void);
+static void Luos_TransmitLocalRouteTable(module_t *module, msg_t *routeTB_msg);
 static void Luos_AutoUpdateManager(void);
 static uint8_t Luos_SaveAlias(module_t *module, char *alias);
 static void Luos_WriteAlias(unsigned short local_id, char *alias);
@@ -44,7 +42,7 @@ static char Luos_ReadAlias(unsigned short local_id, char *alias);
 void Luos_Init(void)
 {
     module_number = 0;
-    Robus_Init(Luos_CallbackMsg);
+    Robus_Init();
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -53,26 +51,42 @@ void Luos_Init(void)
  ******************************************************************************/
 void Luos_Loop(void)
 {
-    mngr_t chunk;
-    if (luos_pub != LUOS_PROTOCOL_NB)
+    uint16_t remaining_msg_number = 0;
+    vm_t *oldest_vm = NULL;
+    msg_t *unconsumed_msg = NULL;
+    msg_t *returned_msg = NULL;
+    // look at all received messages
+    while (MsgAlloc_LookAtAllocatorSlot(remaining_msg_number, &oldest_vm, &unconsumed_msg) != FAIL)
     {
-        if (luos_pub == IDENTIFY_CMD)
+        // There is a message available find the module linked to it
+        module_t *module = Luos_GetModule(oldest_vm);
+        // Is this module having a callback?
+        if (module->mod_cb != 0)
         {
-            Luos_TransmitLocalRouteTable();
+            // This module have a callback pull the message
+            if (MsgAlloc_PullMsg(oldest_vm, &returned_msg) == SUCESS)
+            {
+                // check if the content of this message need to be managed by Luos and do it if it is.
+                if (!Luos_MsgHandler((module_t *)module, returned_msg))
+                {
+                    // This message is for the user, pass it to the user.
+                    module->mod_cb(module, returned_msg);
+                }
+            }
         }
         else
         {
-            Luos_SendMsg(luos_module_pointer, (msg_t *)&luos_pub_msg);
+            //check if this msg cmd should be consumed by Luos_MsgHandler
+            if (Luos_MsgHandler((module_t *)module, unconsumed_msg))
+            {
+                // Luos_MsgHandler use it. clear this slot.
+                MsgAlloc_PullMsg(oldest_vm, &returned_msg);
+            }
+            else
+            {
+                remaining_msg_number++;
+            }
         }
-        luos_pub = LUOS_PROTOCOL_NB;
-    }
-    // filter stacked module with callback
-    int i = Mngr_GetNextCallbackID();
-    while (i >= 0)
-    {
-        Mngr_GetIndexMsg(i, 0, &chunk);
-        chunk.module->mod_cb(chunk.module, chunk.msg);
-        i = Mngr_GetNextCallbackID();
     }
     // manage timed auto update
     Luos_AutoUpdateManager();
@@ -84,126 +98,170 @@ void Luos_Loop(void)
  * @param output msg
  * @return None
  ******************************************************************************/
-static int8_t Luos_MsgHandler(module_t *module, msg_t *input, msg_t *output)
+static int8_t Luos_MsgHandler(module_t *module, msg_t *input)
 {
-    if (input->header.cmd == IDENTIFY_CMD)
+    uint32_t baudrate;
+    msg_t routeTB_msg;
+    route_table_t *route_tab = &RouteTB_Get()[RouteTB_GetLastEntry()];
+    time_luos_t time;
+    if (input->header.target_mode == ID ||
+        input->header.target_mode == IDACK ||
+        input->header.target_mode == TYPE ||
+        input->header.target_mode == BROADCAST)
     {
-        // someone request a local route table
-        // Just create an empty message, it will be filled in Luos_loop.
-        output->header.cmd = INTRODUCTION_CMD;
-        output->header.target_mode = IDACK;
-        output->header.target = input->header.source;
-        luos_pub = IDENTIFY_CMD;
-        return 1;
-    }
-    if (input->header.cmd == INTRODUCTION_CMD)
-    {
-        volatile route_table_t *route_tab = &RouteTB_Get()[RouteTB_GetLastEntry()];
-        if (Luos_ReceiveData(module, input, (void *)route_tab))
+        switch (input->header.cmd)
         {
-            // route table of this board is finish
-            RouteTB_ComputeRouteTableEntryNB();
-        }
-        return 1;
-    }
-    if ((input->header.cmd == REVISION) & (input->header.size == 0))
-    {
-        output->header.cmd = REVISION;
-        output->header.target_mode = ID;
-        sprintf((char *)output->data, "%s", module->firm_version);
-        memcpy(output->data, module->firm_version, sizeof(output->data));
-        output->header.size = strlen((char *)output->data);
-        output->header.target = input->header.source;
-        luos_pub = REVISION;
-        return 1;
-    }
-    if ((input->header.cmd == LUOS_REVISION) & (input->header.size == 0))
-    {
-        output->header.cmd = LUOS_REVISION;
-        output->header.target_mode = ID;
-        const char *luos_version = STRINGIFY(VERSION);
-        sprintf((char *)output->data, "%s", luos_version);
-        memcpy(output->data, luos_version, sizeof(output->data));
-        output->header.size = strlen((char *)output->data);
-        output->header.target = input->header.source;
-        luos_pub = LUOS_REVISION;
-        return 1;
-    }
-    if ((input->header.cmd == NODE_UUID) & (input->header.size == 0))
-    {
-        output->header.cmd = NODE_UUID;
-        output->header.target_mode = ID;
-        output->header.size = sizeof(luos_uuid_t);
-        output->header.target = input->header.source;
-        luos_uuid_t uuid;
-        uuid.uuid[0] = LUOS_UUID[0];
-        uuid.uuid[1] = LUOS_UUID[1];
-        uuid.uuid[2] = LUOS_UUID[2];
-        memcpy(output->data, &uuid.unmap, sizeof(luos_uuid_t));
-        luos_pub = NODE_UUID;
-        return 1;
-    }
-    if (input->header.cmd == WRITE_ALIAS)
-    {
-        // Make a clean copy with full \0 at the end.
-        memset(module->alias, '\0', sizeof(module->alias));
-        if (input->header.size > 16)
-            input->header.size = 16;
-        if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z')) | (input->data[0] == '\0')) & (input->header.size != 0))
-        {
-            memcpy(module->alias, input->data, input->header.size);
-            Luos_SaveAlias(module, module->alias);
-        }
-        else
-        {
-            // This is an alias erase instruction, get back to default one
-            Luos_SaveAlias(module, '\0');
-            memcpy(module->alias, module->default_alias, MAX_ALIAS_SIZE);
-        }
-        return 1;
-    }
-    if (input->header.cmd == UPDATE_PUB)
-    {
-        // this module need to be auto updated
-        time_luos_t time;
-        TimeOD_TimeFromMsg(&time, input);
-        module->auto_refresh.target = input->header.source;
-        module->auto_refresh.time_ms = (uint16_t)TimeOD_TimeTo_ms(time);
-        module->auto_refresh.last_update = LuosHAL_GetSystick();
-        return 1;
-    }
+        case WRITE_ID:
+            if (ctx.detection.activ_branch == NO_BRANCH)
+            {
+                // Get and save a new given ID
+                if ((ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
+                    (ctx.detection.keepline != NO_BRANCH) &
+                    (ctx.detection_mode != MASTER_DETECT))
+                {
+                    if (input->header.target_mode == IDACK)
+                    {
+                        // Acknoledge ID reception
+                        Transmit_SendAck();
+                    }
+                    // We are on topology detection mode, and this is our turn
+                    // Save id for the next module we have on this board
+                    ctx.vm_table[ctx.detection.detected_vm++].id =
+                        (((unsigned short)input->data[1]) |
+                         ((unsigned short)input->data[0] << 8));
+                    if (ctx.detection.detected_vm == 1)
+                    {
+                        // This is the first internal module, save the input branch with the previous ID
+                        ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
+                    }
+                    // Check if that was the last virtual module
+                    if (ctx.detection.detected_vm >= ctx.vm_number)
+                    {
+                        Detect_PokeNextBranch();
+                    }
+                }
+                else if (input->header.target != DEFAULTID)
+                {
+                    module->vm->id = (((unsigned short)input->data[1]) |
+                                      ((unsigned short)input->data[0] << 8));
+                }
+            }
+            else
+            {
+                unsigned short value = (((unsigned short)input->data[1]) |
+                                        ((unsigned short)input->data[0] << 8));
+                //We need to save this ID as a connection on a branch
+                ctx.detection.branches[ctx.detection.activ_branch] = value;
+                ctx.detection.activ_branch = NO_BRANCH;
+            }
+            return 1;
+            break;
+        case RESET_DETECTION:
+            Detec_InitDetection();
+            return 1;
+            break;
+        case SET_BAUDRATE:
+            memcpy(&baudrate, input->data, input->header.size);
+            Luos_SetBaudrate(module, baudrate);
+            return 1;
+            break;
 
+        case IDENTIFY_CMD:
+            // someone request a local route table
+            routeTB_msg.header.cmd = INTRODUCTION_CMD;
+            routeTB_msg.header.target_mode = IDACK;
+            routeTB_msg.header.target = input->header.source;
+            Luos_TransmitLocalRouteTable(module, &routeTB_msg);
+            return 1;
+            break;
+        case INTRODUCTION_CMD:
+            if (Luos_ReceiveData(module, input, (void *)route_tab))
+            {
+                // route table of this board is finish
+                RouteTB_ComputeRouteTableEntryNB();
+            }
+            return 1;
+            break;
+        case REVISION:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd = REVISION;
+                output.header.target_mode = ID;
+                sprintf((char *)output.data, "%s", module->firm_version);
+                memcpy(output.data, module->firm_version, sizeof(output.data));
+                output.header.size = strlen((char *)output.data);
+                output.header.target = input->header.source;
+                Luos_SendMsg(module, &output);
+                return 1;
+            }
+            break;
+        case LUOS_REVISION:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd = LUOS_REVISION;
+                output.header.target_mode = ID;
+                const char *luos_version = STRINGIFY(VERSION);
+                sprintf((char *)output.data, "%s", luos_version);
+                memcpy(output.data, luos_version, sizeof(output.data));
+                output.header.size = strlen((char *)output.data);
+                output.header.target = input->header.source;
+                Luos_SendMsg(module, &output);
+                return 1;
+            }
+            break;
+        case NODE_UUID:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd = NODE_UUID;
+                output.header.target_mode = ID;
+                output.header.size = sizeof(luos_uuid_t);
+                output.header.target = input->header.source;
+                luos_uuid_t uuid;
+                uuid.uuid[0] = LUOS_UUID[0];
+                uuid.uuid[1] = LUOS_UUID[1];
+                uuid.uuid[2] = LUOS_UUID[2];
+                memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
+                Luos_SendMsg(module, &output);
+                return 1;
+            }
+            break;
+        case WRITE_ALIAS:
+            // Make a clean copy with full \0 at the end.
+            memset(module->alias, '\0', sizeof(module->alias));
+            if (input->header.size > 16)
+            {
+                input->header.size = 16;
+            }
+            if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z')) | (input->data[0] == '\0')) & (input->header.size != 0))
+            {
+                memcpy(module->alias, input->data, input->header.size);
+                Luos_SaveAlias(module, module->alias);
+            }
+            else
+            {
+                // This is an alias erase instruction, get back to default one
+                Luos_SaveAlias(module, '\0');
+                memcpy(module->alias, module->default_alias, MAX_ALIAS_SIZE);
+            }
+            return 1;
+            break;
+        case UPDATE_PUB:
+            // this module need to be auto updated
+            TimeOD_TimeFromMsg(&time, input);
+            module->auto_refresh.target = input->header.source;
+            module->auto_refresh.time_ms = (uint16_t)TimeOD_TimeTo_ms(time);
+            module->auto_refresh.last_update = LuosHAL_GetSystick();
+            return 1;
+            break;
+        default:
+            return 0;
+            break;
+        }
+    }
     return 0;
-}
-/******************************************************************************
- * @brief callback for msg need to be rename will be unstack msg
- * @param None
- * @return None
- ******************************************************************************/
-static void Luos_CallbackMsg(vm_t *vm, msg_t *msg)
-{
-    // Luos message management
-    volatile module_t *module = Luos_GetModule(vm);
-    if (module == 0)
-    {
-        // module overwrited, it seem to be possible if ring_buffer overflow.
-        while (1)
-            ;
-    }
-    if (Luos_MsgHandler((module_t *)module, msg, (msg_t *)&luos_pub_msg))
-    {
-        luos_module_pointer = (module_t *)module;
-        return;
-    }
-    if ((module->rt >= 1) & (module->mod_cb != 0))
-    {
-        module->mod_cb((module_t *)module, msg);
-    }
-    else
-    {
-        //store module and msg pointer
-        Mngr_SetIndexMsg((module_t *)module, msg);
-    }
 }
 /******************************************************************************
  * @brief get pointer to a module in route table
@@ -242,7 +300,7 @@ static int8_t Luos_GetModuleIndex(module_t *module)
  * @param none
  * @return none
  ******************************************************************************/
-static void Luos_TransmitLocalRouteTable(void)
+static void Luos_TransmitLocalRouteTable(module_t *module, msg_t *routeTB_msg)
 {
     // We receive this command because someone creating a new route table
     // Reset the actual route table
@@ -262,7 +320,7 @@ static void Luos_TransmitLocalRouteTable(void)
     {
         RouteTB_ConvertModuleToRouteTable((route_table_t *)&local_route_table[entry_nb++], &module_table[i]);
     }
-    Luos_SendData(luos_module_pointer, (msg_t *)&luos_pub_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
+    Luos_SendData(module, (msg_t *)&routeTB_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
 }
 /******************************************************************************
  * @brief auto update publication for module
@@ -337,7 +395,6 @@ module_t *Luos_CreateModule(MOD_CB mod_cb, uint8_t type, const char *alias, char
     module_t *module = &module_table[module_number];
     module->vm = Robus_ModuleCreate(type);
     module->rt = 0;
-    module->message_available = 0;
 
     // Link the module to his callback
     module->mod_cb = mod_cb;
@@ -398,62 +455,58 @@ uint8_t Luos_SendMsg(module_t *module, msg_t *msg)
 /******************************************************************************
  * @brief read last msg from buffer for a module
  * @param module who receive the message we are looking for
- * @return received message pointer
+ * @param returned_msg oldest message of the module
+ * @return FAIL if no message available
  ******************************************************************************/
-msg_t *Luos_ReadMsg(module_t *module)
+error_return_t Luos_ReadMsg(module_t *module, msg_t **returned_msg)
 {
-    if (module->message_available > MSG_BUFFER_SIZE)
+    error_return_t error = SUCESS;
+    while (error == SUCESS)
     {
-        // msg read too slow
-    }
-    if (module->message_available)
-    {
-        // check if there is a message for this module
-        int i = Mngr_GetNextModuleID(module);
-        if (i >= 0)
+        error = MsgAlloc_PullMsg(module->vm, returned_msg);
+        // check if the content of this message need to be managed by Luos and do it if it is.
+        if ((!Luos_MsgHandler(module, *returned_msg)) & (error == SUCESS))
         {
-            // this module have a message, get it
-            mngr_t chunk;
-            Mngr_GetIndexMsg(i, 0, &chunk);
-            return chunk.msg;
+            // This message is for the user, pass it to the user.
+            return SUCESS;
         }
     }
-    return 0;
+    return FAIL;
 }
+
 /******************************************************************************
  * @brief read last msg from buffer from a special id module
  * @param module who receive the message we are looking for
  * @param id who sent the message we are looking for
- * @return received message pointer
+ * @param returned_msg oldest message of the module
+ * @return FAIL if no message available
  ******************************************************************************/
-msg_t *Luos_ReadFromModule(module_t *module, short id)
+error_return_t Luos_ReadFromModule(module_t *module, short id, msg_t **returned_msg)
 {
-    if (module->message_available)
+    uint16_t remaining_msg_number = 0;
+    vm_t *oldest_vm = NULL;
+    msg_t *source_id_msg = NULL;
+    error_return_t error = SUCESS;
+    while (MsgAlloc_LookAtAllocatorSlot(remaining_msg_number, &oldest_vm, &source_id_msg) != FAIL)
     {
-        // Get the next message manager id containing something for this module
-        int mngr_module_id = Mngr_GetNextModuleID(module);
-        if (mngr_module_id >= 0)
+        // Check the source id
+        if ((oldest_vm == module->vm) & (source_id_msg->header.source == id))
         {
-            // check if there is a message from this id in this module
-            int mngr_msg_id = Mngr_GetNextMsgID(mngr_module_id, id);
-            if (mngr_msg_id >= 0)
+            // Source id of this message match, get it and treat it.
+            error = MsgAlloc_PullMsg(module->vm, returned_msg);
+            // check if the content of this message need to be managed by Luos and do it if it is.
+            if ((!Luos_MsgHandler(module, *returned_msg)) & (error == SUCESS))
             {
-                mngr_t chunk;
-                Mngr_GetIndexMsg(mngr_module_id, mngr_msg_id, &chunk);
-                return chunk.msg;
+                // This message is for the user, pass it to the user.
+                return SUCESS;
             }
         }
+        else
+        {
+            remaining_msg_number++;
+        }
     }
-    return 0;
-}
-/******************************************************************************
- * @brief how many messages are available
- * @param none
- * @return the number of message received
- ******************************************************************************/
-uint8_t Luos_NbrAvailableMsg(void)
-{
-    return Mngr_AvailableMessage();
+    return FAIL;
 }
 /******************************************************************************
  * @brief Send large among of data and formating to send into multiple msg
@@ -640,19 +693,14 @@ uint8_t Luos_ReceiveStreaming(module_t *module, msg_t *msg, streaming_channel_t 
 static uint8_t Luos_SaveAlias(module_t *module, char *alias)
 {
     // Get module index
-    int8_t i = (int8_t)(Luos_GetModule(&module->vm));
+    int8_t i = (int8_t)(Luos_GetModuleIndex(module));
     if (i >= 0)
     {
         Luos_WriteAlias(i, alias);
     }
     return i;
 }
-/******************************************************************************
- * @brief write alias in flash
- * @param position in the route table
- * @param alias to store
- * @return error
- ******************************************************************************/
+
 static void Luos_WriteAlias(unsigned short local_id, char *alias)
 {
     uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
@@ -686,5 +734,44 @@ static char Luos_ReadAlias(unsigned short local_id, char *alias)
  ******************************************************************************/
 void Luos_SetBaudrate(module_t *module, uint32_t baudrate)
 {
-    Robus_SetBaudrate(module->vm, baudrate);
+    msg_t msg;
+    memcpy(msg.data, &baudrate, sizeof(unsigned int));
+    msg.header.target_mode = BROADCAST;
+    msg.header.target = BROADCAST_VAL;
+    msg.header.cmd = SET_BAUDRATE;
+    msg.header.size = sizeof(unsigned int);
+    Robus_SendMsg(module->vm, &msg);
+}
+
+/******************************************************************************
+ * @brief set id of a module trough the network
+ * @param module sending request
+ * @param target_mode
+ * @param target
+ * @param newid : The new Id of module(s)
+ * @return None
+ ******************************************************************************/
+uint8_t Luos_SetExternId(module_t *module, target_mode_t target_mode, uint16_t target, uint16_t newid)
+{
+    msg_t msg;
+    msg.header.target = target;
+    msg.header.target_mode = target_mode;
+    msg.header.cmd = WRITE_ID;
+    msg.header.size = 2;
+    msg.data[1] = newid;
+    msg.data[0] = (newid << 8);
+    if (Robus_SendMsg(module->vm, &msg))
+    {
+        return 1;
+    }
+    return 0;
+}
+/******************************************************************************
+ * @brief return the number of messages available
+ * @param None
+ * @return the number of messages
+ ******************************************************************************/
+uint16_t Luos_NbrAvailableMsg(void)
+{
+    return MsgAlloc_AllocNbr();
 }

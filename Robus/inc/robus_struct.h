@@ -60,10 +60,6 @@ typedef struct __attribute__((__packed__))
         };
         unsigned char stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
     };
-    union {
-        unsigned short crc;
-        volatile unsigned char ack;
-    };
 } msg_t;
 
 /* This structure is used to manage virtual modules
@@ -77,11 +73,20 @@ typedef struct __attribute__((__packed__)) vm_t
     unsigned char type; /*!< Module type. */
 
     // Variables
-    msg_t *msg_pt;                                               /*!< Message pointer. */
     unsigned char max_multicast_target;                          /*!< Position pointer of the last multicast target. */
     unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
     unsigned short dead_module_spotted;                          /*!< The ID of a module that don't reply to a lot of ACK msg */
 } vm_t;
+
+/******************************************************************************
+ * @struct error_return_t
+ * @brief Return function error global convention
+ ******************************************************************************/
+typedef enum
+{
+    SUCESS,     /*!< function work properly. */
+    FAIL = 0xFF /*!< function fail. */
+} error_return_t;
 
 typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
 /*******************************************************************************

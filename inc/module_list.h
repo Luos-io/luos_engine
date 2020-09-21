@@ -36,6 +36,11 @@ typedef enum
 
 typedef enum
 {
+    // protocol level command
+    WRITE_ID,            /*!< Get and save a new given ID. */
+    RESET_DETECTION,     /*!< Reset detection*/
+    SET_BAUDRATE,        /*!< Set Robus baudrate*/
+    
     // Common register for all modules and gate
     IDENTIFY_CMD,     // Gate asks a module to identify itself
     INTRODUCTION_CMD, // Module sends its alias and type to the gate

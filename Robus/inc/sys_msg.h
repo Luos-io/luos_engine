@@ -20,7 +20,7 @@
  * Function
  ******************************************************************************/
 void Transmit_SendAck(void);
-uint8_t Transmit_RobusSendSys(vm_t *vm, msg_t *msg);
-uint8_t Transmit_SetExternID(vm_t *vm, target_mode_t target_mode, unsigned short target, unsigned short newid);
+uint8_t Transmit_Process(uint8_t *data, uint16_t size);
+void Transmit_WaitUnlockTx(void);
 
 #endif /* _SYS_MSG_H_ */

@@ -4,6 +4,7 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+#include <stdbool.h>
 #include "detection.h"
 #include "sys_msg.h"
 #include "context.h"
@@ -20,6 +21,7 @@
  * Function
  ******************************************************************************/
 
+static void Detec_ResetDetection(void);
 /******************************************************************************
  * @brief all ptp interrupt handler
  * @param branch id
@@ -48,14 +50,11 @@ void Detec_PtpHandler(branch_t branch)
                 }
             }
             // if it is finished reset all lines
-            if (ctx.detection.detection_end)
+            for (int branch = 0; branch < NO_BRANCH; branch++)
             {
-                for (int branch = 0; branch < NO_BRANCH; branch++)
-                {
-                	LuosHAL_SetPTPDefaultState(branch);
-                }
-                Detec_ResetDetection();
+                LuosHAL_SetPTPDefaultState(branch);
             }
+            Detec_ResetDetection();
         }
     }
     else if (ctx.detection.expect == POKE)
@@ -144,36 +143,19 @@ void Detec_ResetDetection(void)
     ctx.detection.expect = POKE;
     ctx.detection.activ_branch = NO_BRANCH;
 }
-/******************************************************************************
- * @brief reinit the detection state machine
- * @param None
- * @return None
- ******************************************************************************/
-uint8_t Detec_ResetNetworkDetection(vm_t *vm)
+
+void Detec_InitDetection(void)
 {
+    // reset all PTP
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
         LuosHAL_SetPTPDefaultState(branch);
         ctx.detection.branches[branch] = 0;
     }
     Detec_ResetDetection();
-    msg_t msg;
-
-    msg.header.target = BROADCAST_VAL;
-    msg.header.target_mode = BROADCAST;
-    msg.header.cmd = RESET_DETECTION;
-    msg.header.size = 0;
-
-    //we don't have any way to tell every modules to reset their detection do it twice to be sure
-    if (Transmit_RobusSendSys(vm, &msg))
-        return 1;
-    if (Transmit_RobusSendSys(vm, &msg))
-        return 1;
-
     // Reinit VM id
     for (int i = 0; i < ctx.vm_number; i++)
     {
         ctx.vm_table[i].id = DEFAULTID;
     }
-    return 0;
 }

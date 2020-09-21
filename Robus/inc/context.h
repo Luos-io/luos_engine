@@ -9,7 +9,6 @@
 
 #include <robus.h>
 #include "config.h"
-#include "cmd.h"
 #include "detection.h"
 /*******************************************************************************
  * Definitions
@@ -35,7 +34,6 @@ typedef struct __attribute__((__packed__))
 
     // Variables
     DATA_CB data_cb;                  /*!< Data management callback. */
-    RX_CB luos_cb;                    /*!< Luos messages management callback. */
     status_t status;                  /*!< Status. */
     unsigned short id;                /*!< Module ID. */
     unsigned char type;               /*!< Module type. */
@@ -53,10 +51,6 @@ typedef struct __attribute__((__packed__))
     unsigned char vm_number;      /*!< Virtual Module number. */
     vm_t *vm_last_send;           /*!< Last Virtual Module id who send something. */
 
-    //msg allocation management
-    msg_t msg[MSG_BUFFER_SIZE];               /*!< Message table (one for each virtual module). */
-    unsigned char current_buffer;             /*!< current msg buffer used. */
-    unsigned char alloc_msg[MSG_BUFFER_SIZE]; /*!< Message allocation table. */
 } context_t;
 
 /*******************************************************************************

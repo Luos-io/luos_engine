@@ -29,9 +29,8 @@ typedef enum
 
 typedef struct __attribute__((__packed__))
 {
-    branch_t keepline;           /*!< last keepline status on PTP lines . */
-    unsigned char detection_end; /*!< All Virtual Module have ID. */
-    unsigned char detected_vm;   /*!< Virtual Module number. */
+    branch_t keepline;         /*!< last keepline status on PTP lines . */
+    unsigned char detected_vm; /*!< Virtual Module number. */
     expected_detection_t expect;
     unsigned short branches[NO_BRANCH];
     unsigned char activ_branch;
@@ -46,7 +45,6 @@ typedef struct __attribute__((__packed__))
 void Detec_PtpHandler(branch_t branch);
 uint8_t Detect_PokeBranch(branch_t branch);
 void Detect_PokeNextBranch(void);
-void Detec_ResetDetection(void);
-uint8_t Detec_ResetNetworkDetection(vm_t *vm);
+void Detec_InitDetection(void);
 
 #endif /* _DETECTION_H_ */

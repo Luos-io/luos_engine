@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <luosHAL.h>
+#include "context.h" //TODO to remove
 
 /*******************************************************************************
  * Definitions
@@ -279,7 +280,6 @@ int8_t RouteTB_GetNodeID(unsigned short index)
     return route_table[index + 1].id;
 }
 
-
 // ********************* route_table management tools ************************
 
 /******************************************************************************
@@ -358,11 +358,83 @@ static int8_t RouteTB_WaitRouteTable(module_t *module, msg_t *intro_msg)
     }
     return 0;
 }
-/******************************************************************************
- * @brief Detect all modules and create a route table with it.
- * @param module ask detection of others module
- * @return None
- ******************************************************************************/
+
+unsigned char RouteTB_ResetNetworkDetection(vm_t *vm)
+{
+    msg_t msg;
+
+    msg.header.target = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd = RESET_DETECTION;
+    msg.header.size = 0;
+
+    //we don't have any way to tell every modules to reset their detection do it twice to be sure
+    if (Robus_SendMsg(vm, &msg))
+        return 1;
+    if (Robus_SendMsg(vm, &msg))
+        return 1;
+
+    // reinit detection
+    Detec_InitDetection();
+    return 0;
+}
+
+static unsigned char RouteTB_NetworkTopologyDetection(module_t *module)
+{
+    unsigned short newid = 1;
+    // Reset all detection state of modules on the network
+    RouteTB_ResetNetworkDetection(module->vm);
+    ctx.detection_mode = MASTER_DETECT;
+    // wait for some us
+    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
+        ;
+
+    // setup sending vm
+    module->vm->id = newid++;
+
+    // Parse internal vm other than the sending one
+    for (unsigned char i = 0; i < ctx.vm_number; i++)
+    {
+        if (&ctx.vm_table[i] != module->vm)
+        {
+            ctx.vm_table[i].id = newid++;
+        }
+    }
+
+    ctx.detection.detected_vm = ctx.vm_number;
+
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    {
+        ctx.detection_mode = MASTER_DETECT;
+        if (Detect_PokeBranch(branch))
+        {
+            // Someone reply to our poke!
+            // loop while the line is released
+            int module_number = 0;
+            while ((ctx.detection.keepline != NO_BRANCH) & (module_number < 1024))
+            {
+                if (Luos_SetExternId(module, IDACK, DEFAULTID, newid++))
+                {
+                    // set extern id fail
+                    // remove this id and stop topology detection
+                    newid--;
+                    break;
+                }
+                module_number++;
+                // wait for some us
+                for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
+                    ;
+            }
+        }
+    }
+    ctx.detection_mode = NO_DETECT;
+
+    return newid - 1;
+}
+
+// Detect all modules and create a route table with it.
+// If multiple modules have the same name it will be changed with a number in it automatically.
+// At the end this function create a list of sensors id
 void RouteTB_DetectModules(module_t *module)
 {
     msg_t intro_msg, auto_name;
@@ -370,7 +442,7 @@ void RouteTB_DetectModules(module_t *module)
     // clear network detection state and all previous info.
     RouteTB_Erase();
     // Starts the topology detection.
-    int nb_mod = Robus_NetworkTopologyDetection(module->vm);
+    int nb_mod = RouteTB_NetworkTopologyDetection(module);
     if (nb_mod > MAX_MODULES_NUMBER - 1)
     {
         nb_mod = MAX_MODULES_NUMBER - 1;

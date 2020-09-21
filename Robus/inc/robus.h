@@ -20,12 +20,10 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Robus_Init(RX_CB callback);
+void Robus_Init(void);
 vm_t *Robus_ModuleCreate(uint8_t type);
 void Robus_ModulesClear(void);
 uint8_t Robus_SendMsg(vm_t *vm, msg_t *msg);
-uint8_t Robus_SetBaudrate(vm_t *vm, unsigned int baudrate);
-uint8_t *Robus_GetNodeBranches(uint8_t *size);
-uint8_t Robus_NetworkTopologyDetection(vm_t *vm);
+uint16_t *Robus_GetNodeBranches(uint8_t *size);
 
 #endif /* _ROBUS_H_ */

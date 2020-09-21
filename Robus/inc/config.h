@@ -29,11 +29,15 @@
 #endif
 
 #ifndef MAX_VM_NUMBER
-#define MAX_VM_NUMBER 20
+#define MAX_VM_NUMBER 5
 #endif
 
 #ifndef MSG_BUFFER_SIZE
-#define MSG_BUFFER_SIZE 5
+#define MSG_BUFFER_SIZE 3 * sizeof(msg_t)
+#endif
+
+#ifndef MAX_MSG_NB
+#define MAX_MSG_NB 2 * MAX_VM_NUMBER
 #endif
 
 #ifndef MODULETYPE

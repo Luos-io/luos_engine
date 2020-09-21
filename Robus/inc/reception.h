@@ -30,7 +30,7 @@ void Recep_CatchAck(volatile unsigned char *data);
 
 void Recep_Reset(void);
 void Recep_Timeout(void);
-void Recep_MsgComplete(msg_t *msg);
 uint8_t Recep_ModuleConcerned(header_t *header);
+uint8_t Recep_NodeConcerned(header_t *header);
 
 #endif /* _RECEPTION_H_ */
