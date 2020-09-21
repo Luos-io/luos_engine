@@ -255,7 +255,7 @@ static void Luos_TransmitLocalRouteTable(void)
     uuid.uuid[1] = LUOS_UUID[1];
     uuid.uuid[2] = LUOS_UUID[2];
     unsigned char table_size;
-    unsigned short *detection_branches = Robus_GetNodeBranches(&table_size);
+    uint16_t *detection_branches = Robus_GetNodeBranches(&table_size);
     RouteTB_ConvertNodeToRouteTable((route_table_t *)&local_route_table[entry_nb++], uuid, detection_branches, table_size);
     // save modules entry
     for (int i = 0; i < module_number; i++)
@@ -331,7 +331,7 @@ void Luos_ModulesClear(void)
  * @param version FW for the module
  * @return module object pointer.
  ******************************************************************************/
-module_t *Luos_CreateModule(MOD_CB mod_cb, unsigned char type, const char *alias, char *firm_revision)
+module_t *Luos_CreateModule(MOD_CB mod_cb, uint8_t type, const char *alias, char *firm_revision)
 {
     unsigned char i = 0;
     module_t *module = &module_table[module_number];

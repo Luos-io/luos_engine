@@ -59,7 +59,8 @@ typedef enum
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         uint32_t uuid[3];
         uint8_t unmap[3 * sizeof(uint32_t)]; /*!< Uncmaped form. */
     };
@@ -70,7 +71,8 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             uint8_t index;
@@ -88,7 +90,8 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             float p;
@@ -104,7 +107,8 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             angular_position_t max_angle;
@@ -120,7 +124,8 @@ typedef struct
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             // control modes

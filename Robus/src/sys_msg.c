@@ -34,12 +34,12 @@ static uint8_t Transmit_GetLockStatus(void);
  ******************************************************************************/
 void Transmit_SendAck(void)
 {
-	LuosHAL_SetTxState(true);
-	LuosHAL_SetRxState(false);
-	LuosHAL_ComTransmit((unsigned char *)&ctx.status.unmap, 1);
-	LuosHAL_ComTxTimeout();
-	LuosHAL_SetRxState(true);
-	LuosHAL_SetTxState(false);
+    LuosHAL_SetTxState(true);
+    LuosHAL_SetRxState(false);
+    LuosHAL_ComTransmit((unsigned char *)&ctx.status.unmap, 1);
+    LuosHAL_ComTxTimeout();
+    LuosHAL_SetRxState(true);
+    LuosHAL_SetTxState(false);
     ctx.status.unmap = 0x0F;
 }
 /******************************************************************************
@@ -181,7 +181,7 @@ static uint8_t Transmit_Process(uint8_t *data, uint16_t size)
     if (ctx.collision | Transmit_GetLockStatus())
     {
         // We receive something during our configuration, stop this transmission
-    	LuosHAL_SetTxState(false);
+        LuosHAL_SetTxState(false);
         ctx.collision = FALSE;
         return 1;
     }
@@ -189,7 +189,7 @@ static uint8_t Transmit_Process(uint8_t *data, uint16_t size)
     // Try to detect a collision during the "col_check_data_num" first bytes
     if (LuosHAL_ComTransmit(data, col_check_data_num))
     {
-    	LuosHAL_SetTxState(false);
+        LuosHAL_SetTxState(false);
         ctx.collision = FALSE;
         return 1;
     }

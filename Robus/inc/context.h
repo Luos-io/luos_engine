@@ -18,7 +18,8 @@ typedef void (*DATA_CB)(volatile unsigned char *data);
 
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             unsigned char identifier : 4;

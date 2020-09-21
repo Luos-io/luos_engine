@@ -4,8 +4,7 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include <detection.h>
-
+#include "detection.h"
 #include "sys_msg.h"
 #include "context.h"
 
@@ -62,7 +61,7 @@ void Detec_PtpHandler(branch_t branch)
     else if (ctx.detection.expect == POKE)
     {
         // we receive a poke, pull the line to notify your presence
-    	LuosHAL_PushPTP(branch);
+        LuosHAL_PushPTP(branch);
         ctx.detection.keepline = branch;
     }
 }
@@ -74,7 +73,7 @@ void Detec_PtpHandler(branch_t branch)
 uint8_t Detect_PokeBranch(branch_t branch)
 {
     // push the ptp line
-	LuosHAL_PushPTP(branch);
+    LuosHAL_PushPTP(branch);
     // wait a little just to be sure everyone can read it
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
@@ -86,7 +85,7 @@ uint8_t Detect_PokeBranch(branch_t branch)
     if (LuosHAL_GetPTPState(branch))
     {
         // Someone reply, reverse the detection to wake up on line release
-    	LuosHAL_SetPTPReverseState(branch);
+        LuosHAL_SetPTPReverseState(branch);
         ctx.detection.expect = RELEASE;
         ctx.detection.keepline = branch;
         // enable activ branch to get the next ID and save it into this branch number.
@@ -127,7 +126,7 @@ void Detect_PokeNextBranch(void)
     // no more branch need to be poked
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
-    	LuosHAL_SetPTPDefaultState(branch);
+        LuosHAL_SetPTPDefaultState(branch);
     }
     Detec_ResetDetection();
     return;
@@ -154,7 +153,7 @@ uint8_t Detec_ResetNetworkDetection(vm_t *vm)
 {
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
-    	LuosHAL_SetPTPDefaultState(branch);
+        LuosHAL_SetPTPDefaultState(branch);
         ctx.detection.branches[branch] = 0;
     }
     Detec_ResetDetection();

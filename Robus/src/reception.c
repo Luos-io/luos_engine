@@ -41,7 +41,7 @@ static unsigned short crc_val = 0;
  ******************************************************************************/
 void Recep_GetHeader(volatile unsigned char *data)
 {
-	ctx.tx_lock = true;
+    ctx.tx_lock = true;
     // Catch a byte.
     CURRENTMSG.header.unmap[data_count++] = *data;
 
@@ -178,7 +178,7 @@ void Recep_Timeout(void)
  ******************************************************************************/
 void Recep_Reset(void)
 {
-	LuosHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     ctx.data_cb = Recep_GetHeader;
     keep = FALSE;
     data_count = 0;
@@ -302,7 +302,7 @@ void Recep_MsgComplete(msg_t *msg)
  * @param header of message
  * @return None
  ******************************************************************************/
-uint8_t Recep_ModuleConcerned(header_t *header)
+unsigned char Recep_ModuleConcerned(header_t *header)
 {
     unsigned char concerned = FALSE;
     // Find if we are concerned by this message.

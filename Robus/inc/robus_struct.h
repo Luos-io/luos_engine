@@ -30,7 +30,8 @@ typedef enum
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             unsigned short protocol : 4;    /*!< Protocol version. */
@@ -50,7 +51,8 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             header_t header;                       /*!< Header filed. */

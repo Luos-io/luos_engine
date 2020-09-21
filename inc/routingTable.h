@@ -30,7 +30,8 @@ typedef enum
 typedef struct __attribute__((__packed__))
 {
     entry_mode_t mode;
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {                               // MODULE mode entry
             unsigned short id;          // Module ID

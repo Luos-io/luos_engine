@@ -372,20 +372,21 @@ void RouteTB_DetectModules(module_t *module)
     // Starts the topology detection.
     int nb_mod = Robus_NetworkTopologyDetection(module->vm);
     if (nb_mod > MAX_MODULES_NUMBER - 1)
+    {
         nb_mod = MAX_MODULES_NUMBER - 1;
+    }
 
     // Then, asks for introduction for every found modules.
-    int try = 0;
+    int try_nb = 0;
     int last_id = RouteTB_BigestID();
-    while ((last_id < nb_mod) && (try < nb_mod))
+    while ((last_id < nb_mod) && (try_nb < nb_mod))
     {
         intro_msg.header.cmd = IDENTIFY_CMD;
         intro_msg.header.target_mode = IDACK;
         intro_msg.header.size = 0;
         // Target next unknown module (the first one of the next node)
         intro_msg.header.target = last_id + 1;
-        try
-            ++;
+        try_nb++;
         // Ask to introduce and wait for a reply
         if (!RouteTB_WaitRouteTable(module, &intro_msg))
         {
