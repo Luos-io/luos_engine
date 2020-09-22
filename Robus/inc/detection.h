@@ -27,7 +27,7 @@ typedef enum
     RELEASE
 } expected_detection_t;
 
-typedef struct __attribute__((__packed__))
+typedef struct
 {
     branch_t keepline;         /*!< last keepline status on PTP lines . */
     unsigned char detected_vm; /*!< Virtual Module number. */
