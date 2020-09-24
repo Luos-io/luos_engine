@@ -373,9 +373,8 @@ unsigned char RouteTB_ResetNetworkDetection(vm_t *vm)
         return 1;
     if (Robus_SendMsg(vm, &msg))
         return 1;
-
-    // reinit detection
-    Detec_InitDetection();
+    // run luos_loop() to manage the 2 previous broadcast msgs.
+    Luos_Loop();
     return 0;
 }
 
