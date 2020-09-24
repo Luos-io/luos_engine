@@ -305,8 +305,8 @@ static void Luos_TransmitLocalRouteTable(module_t *module, msg_t *routeTB_msg)
     // We receive this command because someone creating a new route table
     // Reset the actual route table
     RouteTB_Erase();
-    volatile int entry_nb = 0;
-    volatile route_table_t local_route_table[module_number + 1];
+    uint16_t entry_nb = 0;
+    route_table_t local_route_table[module_number + 1];
     //start by saving board entry
     luos_uuid_t uuid;
     uuid.uuid[0] = LUOS_UUID[0];
@@ -314,13 +314,14 @@ static void Luos_TransmitLocalRouteTable(module_t *module, msg_t *routeTB_msg)
     uuid.uuid[2] = LUOS_UUID[2];
     unsigned char table_size;
     uint16_t *detection_branches = Robus_GetNodeBranches(&table_size);
-    RouteTB_ConvertNodeToRouteTable((route_table_t *)&local_route_table[entry_nb++], uuid, detection_branches, table_size);
+    RouteTB_ConvertNodeToRouteTable(&local_route_table[entry_nb], uuid, detection_branches, table_size);
+    entry_nb++;
     // save modules entry
     for (int i = 0; i < module_number; i++)
     {
         RouteTB_ConvertModuleToRouteTable((route_table_t *)&local_route_table[entry_nb++], &module_table[i]);
     }
-    Luos_SendData(module, (msg_t *)&routeTB_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
+    Luos_SendData(module, routeTB_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
 }
 /******************************************************************************
  * @brief auto update publication for module
@@ -742,7 +743,6 @@ void Luos_SetBaudrate(module_t *module, uint32_t baudrate)
     msg.header.size = sizeof(unsigned int);
     Robus_SendMsg(module->vm, &msg);
 }
-
 /******************************************************************************
  * @brief set id of a module trough the network
  * @param module sending request

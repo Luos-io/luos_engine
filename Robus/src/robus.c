@@ -158,9 +158,9 @@ ack_restart:
             }
             status_t status;
             status.unmap = ctx.ack;
-            if ((status.rx_error) | (status.identifier != 0xF))
+            if ((status.rx_error) | (status.identifier != 0x0F))
             {
-                if (ctx.ack && status.identifier != 0xF)
+                if ((ctx.ack) && (status.identifier != 0x0F))
                 {
                     // This is probably a part of another message
                     // Send it to header

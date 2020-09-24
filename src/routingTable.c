@@ -524,7 +524,7 @@ void RouteTB_DetectModules(module_t *module)
 void RouteTB_ConvertNodeToRouteTable(route_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb)
 {
     entry->uuid = uuid;
-    for (int i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 4; i++)
     {
         if (i < branch_nb)
         {
