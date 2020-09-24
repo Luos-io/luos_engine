@@ -80,6 +80,8 @@ uint8_t Detect_PokeBranch(branch_t branch)
     LuosHAL_SetPTPDefaultState(branch);
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
+    // Save branch as empty by default
+    ctx.detection.branches[branch] = 0xFFFF;
     // read the line state
     if (LuosHAL_GetPTPState(branch))
     {
@@ -91,12 +93,7 @@ uint8_t Detect_PokeBranch(branch_t branch)
         ctx.detection.activ_branch = branch;
         return 1;
     }
-    else
-    {
-        // Nobodies reply to our poke
-        // Save branch as empty
-        ctx.detection.branches[branch] = 0xFFFF;
-    }
+    // Nobodies reply to our poke
     return 0;
 }
 /******************************************************************************
