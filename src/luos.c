@@ -55,6 +55,7 @@ void Luos_Loop(void)
     vm_t *oldest_vm = NULL;
     msg_t *unconsumed_msg = NULL;
     msg_t *returned_msg = NULL;
+    Robus_Loop();
     // look at all received messages
     while (MsgAlloc_LookAtAllocatorSlot(remaining_msg_number, &oldest_vm, &unconsumed_msg) != FAIL)
     {

@@ -34,9 +34,12 @@ typedef struct __attribute__((__packed__))
 void MsgAlloc_Init(void);
 void MsgAlloc_ValidHeader(void);
 void MsgAlloc_InvalidMsg(void);
-void MsgAlloc_EndMsg(vm_t **module_concerned_by_current_msg, uint16_t *module_concerned_stack_pointer);
+void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
 msg_t *MsgAlloc_GetCurrentMsg(void);
+void MsgAlloc_SlotAlloc(vm_t *module_concerned_by_current_msg, msg_t *concerned_msg);
+
+error_return_t MsgAlloc_PullMsgToManage(msg_t **returned_msg);
 
 error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg);
 error_return_t MsgAlloc_LookAtAllocatorSlot(uint16_t alocator_id, vm_t **allocated_module, msg_t **unconsumed_message);

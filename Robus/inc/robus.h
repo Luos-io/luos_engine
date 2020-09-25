@@ -21,6 +21,7 @@
  * Function
  ******************************************************************************/
 void Robus_Init(void);
+void Robus_Loop(void);
 vm_t *Robus_ModuleCreate(uint8_t type);
 void Robus_ModulesClear(void);
 uint8_t Robus_SendMsg(vm_t *vm, msg_t *msg);

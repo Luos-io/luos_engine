@@ -23,6 +23,8 @@ volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];     /*!< Memory space used to save
 volatile msg_allocator_t alloc_table[MAX_MSG_NB]; /*!< Message allocation table. */
 volatile uint16_t alloc_id;                       /*!< last writen alloc_table id. */
 volatile msg_t *current_msg;                      /*!< current work in progress msg pointer. */
+volatile msg_t *msg_table[MAX_MSG_NB];            /*!< received message table. */
+volatile uint16_t msg_stack_pointer;              /*!< last writen msg_table id. */
 volatile uint8_t *data_ptr;                       /*!< Pointer to the next data able to be writen into msgbuffer. */
 
 /*******************************************************************************
@@ -34,6 +36,7 @@ volatile uint8_t *data_ptr;                       /*!< Pointer to the next data 
  ******************************************************************************/
 
 static inline void MsgAlloc_ClearSlot(uint16_t _alloc_id);
+static inline void MsgAlloc_ClearMsg(void);
 static inline error_return_t MsgAlloc_ClearMemSpace(void *from, void *to);
 
 /******************************************************************************
@@ -54,7 +57,20 @@ static inline void MsgAlloc_ClearSlot(uint16_t _alloc_id)
     }
     alloc_id--;
 }
-
+/******************************************************************************
+ * @brief Clear a slot. This action is due to an error
+ * @param None
+ * @return None
+ ******************************************************************************/
+static inline void MsgAlloc_ClearMsg(void)
+{
+    // TODO we should set an error into the concerned module
+    for (uint16_t rm = 0; rm < msg_stack_pointer; rm++)
+    {
+        msg_table[rm] = msg_table[rm + 1];
+    }
+    msg_stack_pointer--;
+}
 /******************************************************************************
  * @brief prepare a buffer space to be usable by cleaning remaining messages and prepare pointers
  * @param from : start of the memory space to clean
@@ -71,15 +87,19 @@ static inline error_return_t MsgAlloc_ClearMemSpace(void *from, void *to)
     }
     //******** Prepare a memory space to be writable **********
     // check if there is no msg between from and to
-    while (((uint32_t)alloc_table[0].msg_pt >= (uint32_t)from) & ((uint32_t)alloc_table[0].msg_pt <= (uint32_t)to) & (i <= alloc_id))
+    while (((uint32_t)alloc_table[0].msg_pt >= (uint32_t)from) & ((uint32_t)alloc_table[0].msg_pt <= (uint32_t)to))
     {
         // This message is in the space we want to use, clear the slot
         MsgAlloc_ClearSlot(0);
     }
+    while (((uint32_t)msg_table[0] >= (uint32_t)from) & ((uint32_t)msg_table[0] <= (uint32_t)to))
+    {
+        // This message is in the space we want to use, clear the slot
+        MsgAlloc_ClearMsg();
+    }
     // if we go here there is no reason to continue because newest messages can't overlap the memory zone.
     return SUCESS;
 }
-
 /******************************************************************************
  * @brief Init the allocator.
  * @param None
@@ -91,8 +111,8 @@ void MsgAlloc_Init(void)
     current_msg = (msg_t *)&msg_buffer[0];
     data_ptr = (uint8_t *)&msg_buffer[0];
     alloc_id = 0;
+    msg_stack_pointer = 0;
 }
-
 /******************************************************************************
  * @brief Invalid the current message header by removing it (data will be ignored).
  * @param None
@@ -103,7 +123,6 @@ void MsgAlloc_InvalidMsg(void)
     //******** Remove the header by reseting data_ptr *********
     data_ptr = (uint8_t *)current_msg;
 }
-
 /******************************************************************************
  * @brief Valid the current message header by preparing the allocator to get the message data
  * @param concerned_module : The module concerned by this message
@@ -135,31 +154,23 @@ void MsgAlloc_ValidHeader(void)
         data_ptr = &msg_buffer[0] + sizeof(header_t) + 1;
     }
 }
-
 /******************************************************************************
- * @brief Finish and valid the current message
+ * @brief Finish the current message
  * @param module_concerned_by_current_msg list of concerned modules
  * @param module_concerned_stack_pointer Number of module concerned
  * @return None
  ******************************************************************************/
-void MsgAlloc_EndMsg(vm_t **module_concerned_by_current_msg, uint16_t *module_concerned_stack_pointer)
+void MsgAlloc_EndMsg(void)
 {
     //******** End the message **********
-    // create a slot for each concerned module
-    while (*module_concerned_stack_pointer > 0)
+    // Store the received message
+    if (msg_stack_pointer == MAX_MSG_NB)
     {
-        // find a free slot
-        if (alloc_id == MAX_MSG_NB)
-        {
-            // There is no more space on the alloc_table, remove the oldest msg.
-            MsgAlloc_ClearSlot(0);
-        }
-        // fill the informations of the message in this slot
-        alloc_table[alloc_id].msg_pt = (msg_t *)current_msg;
-        alloc_table[alloc_id].vm_pt = module_concerned_by_current_msg[*module_concerned_stack_pointer - 1];
-        (*module_concerned_stack_pointer)--;
-        alloc_id++;
+        // There is no more space on the alloc_table, remove the oldest msg.
+        MsgAlloc_ClearMsg();
     }
+    msg_table[msg_stack_pointer] = current_msg;
+    msg_stack_pointer++;
     //******** Prepare the next msg *********
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= 2;
@@ -174,7 +185,25 @@ void MsgAlloc_EndMsg(vm_t **module_concerned_by_current_msg, uint16_t *module_co
     // update the current_msg
     current_msg = (volatile msg_t *)data_ptr;
 }
-
+/******************************************************************************
+ * @brief Alloc task slots
+ * @param module_concerned_by_current_msg concerned modules
+ * @param module_concerned_by_current_msg concerned msg
+ * @return None
+ ******************************************************************************/
+void MsgAlloc_SlotAlloc(vm_t *module_concerned_by_current_msg, msg_t *concerned_msg)
+{
+    // find a free slot
+    if (alloc_id == MAX_MSG_NB)
+    {
+        // There is no more space on the alloc_table, remove the oldest msg.
+        MsgAlloc_ClearSlot(0);
+    }
+    // fill the informations of the message in this slot
+    alloc_table[alloc_id].msg_pt = concerned_msg;
+    alloc_table[alloc_id].vm_pt = module_concerned_by_current_msg;
+    alloc_id++;
+}
 /******************************************************************************
  * @brief write a byte into the current message.
  * @param uint8_t data to write in the allocator
@@ -186,7 +215,6 @@ void MsgAlloc_SetData(uint8_t data)
     *data_ptr = data;
     data_ptr++;
 }
-
 /******************************************************************************
  * @brief return the current message
  * @param None
@@ -195,6 +223,28 @@ void MsgAlloc_SetData(uint8_t data)
 msg_t *MsgAlloc_GetCurrentMsg(void)
 {
     return (msg_t *)current_msg;
+}
+
+/*******************************************************************************
+ * Functions --> msg consume
+ ******************************************************************************/
+
+error_return_t MsgAlloc_PullMsgToManage(msg_t **returned_msg)
+{
+    if (msg_stack_pointer > 0)
+    {
+        *returned_msg = (msg_t *)msg_table[0];
+        LuosHAL_SetIrqState(FALSE);
+        for (uint16_t rm = 0; rm < msg_stack_pointer; rm++)
+        {
+            msg_table[rm] = msg_table[rm + 1];
+        }
+        msg_stack_pointer--;
+        LuosHAL_SetIrqState(FALSE);
+        return SUCESS;
+    }
+    // At this point we don't find any message for this module
+    return FAIL;
 }
 
 /*******************************************************************************

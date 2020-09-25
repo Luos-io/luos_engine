@@ -31,7 +31,7 @@ volatile context_t ctx;
 
 /******************************************************************************
  * @brief Initialisation of the Robus communication protocole
- * @param Luos function pointer into the rx callback interrupt.
+ * @param None
  * @return None
  ******************************************************************************/
 void Robus_Init(void)
@@ -61,6 +61,19 @@ void Robus_Init(void)
     ctx.status.identifier = 0xF;
     // Init hal
     LuosHAL_Init();
+}
+/******************************************************************************
+ * @brief Loop of the Robus communication protocole
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_Loop(void)
+{
+    msg_t *msg = NULL;
+    while (MsgAlloc_PullMsgToManage(&msg) == SUCESS)
+    {
+        Recep_InterpretMsgProtocol(msg);
+    }
 }
 /******************************************************************************
  * @brief crete a module in route table
@@ -193,19 +206,12 @@ ack_restart:
         // Reset potential residue of collision detection
         MsgAlloc_InvalidMsg();
         LuosHAL_SetIrqState(false);
-
-        for (int i = 0; i < (sizeof(header_t)); i++)
-        {
-            MsgAlloc_SetData((uint8_t)msg->stream[i]);
-        }
-        // Generate alloc list by computing concerned modules
-        Recep_ModuleConcerned(&msg->header);
         // Secure the message memory by copying it into msg buffer
-        for (int i = sizeof(header_t); i < (sizeof(header_t) + msg->header.size + 2); i++)
+        for (int i = 0; i < (sizeof(header_t) + msg->header.size + 2); i++)
         {
             MsgAlloc_SetData((uint8_t)msg->stream[i]);
         }
-        Recep_EndMsg();
+        MsgAlloc_EndMsg();
         Recep_Reset();
         LuosHAL_SetIrqState(true);
     }
