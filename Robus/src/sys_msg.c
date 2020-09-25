@@ -110,6 +110,9 @@ void Transmit_WaitUnlockTx(void) // TODO : This function could be in HAL and rep
  ******************************************************************************/
 static uint8_t Transmit_GetLockStatus(void)
 {
-    ctx.tx_lock |= LuosHAL_GetTxLockState();
+    if (ctx.tx_lock != true)
+    {
+        ctx.tx_lock |= LuosHAL_GetTxLockState();
+    }
     return ctx.tx_lock;
 }
