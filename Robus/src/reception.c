@@ -101,15 +101,14 @@ void Recep_GetHeader(volatile unsigned char *data)
  ******************************************************************************/
 void Recep_GetData(volatile unsigned char *data)
 {
-    uint8_t current_data = *data;
     if (keep)
     {
-        MsgAlloc_SetData(current_data);
-    }
-    if ((data_count < data_size) && keep)
-    {
-        // Continue CRC computation until the end of data
-        LuosHAL_ComputeCRC((unsigned char *)&current_data, 1, (unsigned char *)&crc_val);
+        MsgAlloc_SetData(*data);
+        if (data_count < data_size)
+        {
+            // Continue CRC computation until the end of data
+            LuosHAL_ComputeCRC((unsigned char *)data, 1, (unsigned char *)&crc_val);
+        }
     }
     if (data_count > data_size)
     {
@@ -123,20 +122,19 @@ void Recep_GetData(volatile unsigned char *data)
                 {
                     Transmit_SendAck();
                 }
-                ctx.data_cb = Recep_GetHeader;
                 MsgAlloc_EndMsg(module_concerned_by_current_msg, &module_concerned_stack_pointer);
             }
             else
             {
                 ctx.status.rx_error = TRUE;
-                module_concerned_stack_pointer = 0;
-                MsgAlloc_InvalidMsg();
                 if ((current_msg->header.target_mode == IDACK))
                 {
                     Transmit_SendAck();
                 }
-                ctx.data_cb = Recep_GetHeader;
+                module_concerned_stack_pointer = 0;
+                MsgAlloc_InvalidMsg();
             }
+            ctx.data_cb = Recep_GetHeader;
         }
         Recep_Reset();
         return;
@@ -170,7 +168,6 @@ void Recep_GetCollision(volatile unsigned char *data)
     }
     ctx.tx_data = ctx.tx_data + 1;
 }
-
 /******************************************************************************
  * @brief end of a reception
  * @param None
@@ -314,9 +311,10 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         }
         break;
     case BROADCAST:
-        for (int i = 0; i < ctx.vm_number; i++)
+        while (module_concerned_stack_pointer < ctx.vm_number)
         {
-            module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[i];
+            module_concerned_by_current_msg[module_concerned_stack_pointer] = (vm_t *)&ctx.vm_table[module_concerned_stack_pointer];
+            module_concerned_stack_pointer++;
         }
         MsgAlloc_ValidHeader();
         return TRUE;
