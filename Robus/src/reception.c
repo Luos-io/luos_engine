@@ -12,6 +12,7 @@
 #include "target.h"
 #include "sys_msg.h"
 #include "msgAlloc.h"
+#include "main.h"
 
 /*******************************************************************************
  * Definitions
@@ -29,10 +30,25 @@ unsigned char keep = FALSE;
 unsigned short data_count = 0;
 unsigned short data_size = 0;
 unsigned short crc_val = 0;
+msg_t *current_msg;
+vm_t *module_concerned_by_current_msg[MAX_VM_NUMBER]; /*!< Save the module concerned by the current message. */
+uint16_t module_concerned_stack_pointer = 0;          /*!< The next empty case of module_concerned_by_current_msg */
 /*******************************************************************************
  * Function
  ******************************************************************************/
 
+/******************************************************************************
+ * @brief Reception init.
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_Init(void)
+{
+    // Initialize the reception state machine
+    ctx.data_cb = Recep_GetHeader;
+    // Get allocation values
+    current_msg = MsgAlloc_GetCurrentMsg();
+}
 /******************************************************************************
  * @brief Callback to get a complete header
  * @param data come from RX
@@ -48,8 +64,6 @@ void Recep_GetHeader(volatile unsigned char *data)
     // Check if we have all we need.
     if (data_count == (sizeof(header_t)))
     {
-        msg_t *current_msg = MsgAlloc_GetCurrentMsg();
-
 #ifdef DEBUG
         printf("*******header data*******\n");
         printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
@@ -68,7 +82,6 @@ void Recep_GetHeader(volatile unsigned char *data)
             data_size = MAX_DATA_MSG_SIZE;
         else
             data_size = current_msg->header.size;
-
         keep = Recep_ModuleConcerned((header_t *)&current_msg->header);
         if (keep)
         {
@@ -102,8 +115,6 @@ void Recep_GetData(volatile unsigned char *data)
     {
         if (keep)
         {
-            msg_t *current_msg = MsgAlloc_GetCurrentMsg();
-
             uint16_t crc = ((unsigned short)current_msg->data[data_size]) |
                            ((unsigned short)current_msg->data[data_size + 1] << 8);
             if (crc == crc_val)
@@ -113,11 +124,12 @@ void Recep_GetData(volatile unsigned char *data)
                     Transmit_SendAck();
                 }
                 ctx.data_cb = Recep_GetHeader;
-                MsgAlloc_EndMsg();
+                MsgAlloc_EndMsg(module_concerned_by_current_msg, &module_concerned_stack_pointer);
             }
             else
             {
                 ctx.status.rx_error = TRUE;
+                module_concerned_stack_pointer = 0;
                 MsgAlloc_InvalidMsg();
                 if ((current_msg->header.target_mode == IDACK))
                 {
@@ -130,6 +142,15 @@ void Recep_GetData(volatile unsigned char *data)
         return;
     }
     data_count++;
+}
+/******************************************************************************
+ * @brief Finish a message and alloc all concerned modules
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_EndMsg(void)
+{
+    MsgAlloc_EndMsg(module_concerned_by_current_msg, &module_concerned_stack_pointer);
 }
 /******************************************************************************
  * @brief Callback to get a collision beetween RX and Tx
@@ -161,6 +182,7 @@ void Recep_Timeout(void)
     {
         ctx.status.rx_timeout = TRUE;
     }
+    module_concerned_stack_pointer = 0;
     MsgAlloc_InvalidMsg();
     ctx.tx_lock = false;
     Recep_Reset();
@@ -254,7 +276,8 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
         if ((header->target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH))
         {
-            MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[0]);
+            module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[0];
+            MsgAlloc_ValidHeader();
             return TRUE;
             break;
         }
@@ -263,7 +286,8 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         {
             if (header->target == ctx.vm_table[i].id)
             {
-                MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
+                module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[i];
+                MsgAlloc_ValidHeader();
                 return TRUE;
                 break;
             }
@@ -273,7 +297,8 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         //check default type
         if (header->target == ctx.type)
         {
-            MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[0]);
+            module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[0];
+            MsgAlloc_ValidHeader();
             return TRUE;
             break;
         }
@@ -282,7 +307,8 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         {
             if (header->target == ctx.vm_table[i].type)
             {
-                MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
+                module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[i];
+                MsgAlloc_ValidHeader();
                 return TRUE;
             }
         }
@@ -290,8 +316,9 @@ uint8_t Recep_ModuleConcerned(header_t *header)
     case BROADCAST:
         for (int i = 0; i < ctx.vm_number; i++)
         {
-                MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
+            module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[i];
         }
+        MsgAlloc_ValidHeader();
         return TRUE;
         break;
     case MULTICAST:
@@ -299,12 +326,13 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         {
             if (Trgt_MulticastTargetBank((vm_t *)&ctx.vm_table[i], header->target))
             { //TODO manage multiple slave concerned
-                MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
+                module_concerned_by_current_msg[module_concerned_stack_pointer++] = (vm_t *)&ctx.vm_table[i];
                 concerned = true;
             }
         }
         if (concerned == true)
         {
+            MsgAlloc_ValidHeader();
             return true;
         }
         else

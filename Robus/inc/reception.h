@@ -28,6 +28,8 @@ void Recep_GetCollision(volatile unsigned char *data);
 // Callbacks send
 void Recep_CatchAck(volatile unsigned char *data);
 
+void Recep_Init(void);
+void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);
 uint8_t Recep_ModuleConcerned(header_t *header);

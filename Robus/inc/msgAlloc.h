@@ -32,9 +32,9 @@ typedef struct __attribute__((__packed__))
  ******************************************************************************/
 
 void MsgAlloc_Init(void);
-void MsgAlloc_ValidHeader(vm_t *concerned_module);
+void MsgAlloc_ValidHeader(void);
 void MsgAlloc_InvalidMsg(void);
-void MsgAlloc_EndMsg(void);
+void MsgAlloc_EndMsg(vm_t **module_concerned_by_current_msg, uint16_t *module_concerned_stack_pointer);
 void MsgAlloc_SetData(uint8_t data);
 msg_t *MsgAlloc_GetCurrentMsg(void);
 

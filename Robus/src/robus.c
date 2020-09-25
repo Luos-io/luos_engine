@@ -38,8 +38,6 @@ void Robus_Init(void)
 {
     // Init the number of created  virtual module.
     ctx.vm_number = 0;
-    // Initialize the reception state machine
-    ctx.data_cb = Recep_GetHeader;
     // Set default module id. This id is a void id used if no module is created.
     ctx.id = DEFAULTID;
     // VOID Module type
@@ -48,6 +46,9 @@ void Robus_Init(void)
     ctx.tx_lock = FALSE;
     // Save luos baudrate
     ctx.baudrate = DEFAULTBAUDRATE;
+
+    // Init reception
+    Recep_Init();
 
     // init detection structure
     Detec_InitDetection();
@@ -204,7 +205,7 @@ ack_restart:
         {
             MsgAlloc_SetData((uint8_t)msg->stream[i]);
         }
-        MsgAlloc_EndMsg();
+        Recep_EndMsg();
         Recep_Reset();
         LuosHAL_SetIrqState(true);
     }
