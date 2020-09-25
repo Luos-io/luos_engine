@@ -61,6 +61,8 @@ void Recep_GetHeader(volatile unsigned char *data)
 #endif
         // Reset the catcher.
         data_count = 0;
+        // Switch state machiine to data reception
+        ctx.data_cb = Recep_GetData;
         // Cap size for big messages
         if (current_msg->header.size > MAX_DATA_MSG_SIZE)
             data_size = MAX_DATA_MSG_SIZE;
@@ -193,20 +195,17 @@ void Recep_CatchAck(volatile unsigned char *data)
  ******************************************************************************/
 uint8_t Recep_NodeConcerned(header_t *header)
 {
-    unsigned char concerned = FALSE;
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
     case IDACK:
-        ctx.status.rx_error = FALSE;
     case ID:
         // Check all VM id
         for (int i = 0; i < ctx.vm_number; i++)
         {
-            concerned = (header->target == ctx.vm_table[i].id);
-            if (concerned)
+            if ((header->target == ctx.vm_table[i].id))
             {
-                break;
+                return true;
             }
         }
         break;
@@ -216,29 +215,27 @@ uint8_t Recep_NodeConcerned(header_t *header)
         {
             if (header->target == ctx.vm_table[i].type)
             {
-                concerned = TRUE;
-                break;
+                return true;
             }
         }
         break;
     case BROADCAST:
-        concerned = TRUE;
+        return true;
         break;
     case MULTICAST:
         for (int i = 0; i < ctx.vm_number; i++)
         {
             if (Trgt_MulticastTargetBank((vm_t *)&ctx.vm_table[i], header->target))
             { //TODO manage multiple slave concerned
-                concerned = TRUE;
-                break;
+                return true;
             }
         }
         break;
     default:
-        return concerned;
+        return false;
         break;
     }
-    return concerned;
+    return false;
 }
 /******************************************************************************
  * @brief Parse msg to find all modules concerned
@@ -247,7 +244,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
  ******************************************************************************/
 uint8_t Recep_ModuleConcerned(header_t *header)
 {
-    unsigned char concerned = FALSE;
+    uint8_t concerned = FALSE;
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
@@ -257,19 +254,17 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
         if ((header->target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH))
         {
-            concerned = TRUE;
             MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[0]);
-            ctx.data_cb = Recep_GetData;
+            return TRUE;
             break;
         }
         // Check all VM id
         for (int i = 0; i < ctx.vm_number; i++)
         {
-            concerned = (header->target == ctx.vm_table[i].id);
-            if (concerned)
+            if (header->target == ctx.vm_table[i].id)
             {
                 MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
-                ctx.data_cb = Recep_GetData;
+                return TRUE;
                 break;
             }
         }
@@ -278,9 +273,8 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         //check default type
         if (header->target == ctx.type)
         {
-            concerned = TRUE;
             MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[0]);
-            ctx.data_cb = Recep_GetData;
+            return TRUE;
             break;
         }
         // Check all VM type
@@ -288,37 +282,39 @@ uint8_t Recep_ModuleConcerned(header_t *header)
         {
             if (header->target == ctx.vm_table[i].type)
             {
-                concerned = TRUE;
                 MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
-                ctx.data_cb = Recep_GetData;
+                return TRUE;
             }
         }
         break;
     case BROADCAST:
-        concerned = (header->target == BROADCAST_VAL);
-        ctx.data_cb = Recep_GetData;
-        if (concerned)
+        for (int i = 0; i < ctx.vm_number; i++)
         {
-            for (int i = 0; i < ctx.vm_number; i++)
-            {
                 MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
-            }
         }
+        return TRUE;
         break;
     case MULTICAST:
         for (int i = 0; i < ctx.vm_number; i++)
         {
             if (Trgt_MulticastTargetBank((vm_t *)&ctx.vm_table[i], header->target))
             { //TODO manage multiple slave concerned
-                concerned = TRUE;
                 MsgAlloc_ValidHeader((vm_t *)&ctx.vm_table[i]);
+                concerned = true;
             }
         }
-        ctx.data_cb = Recep_GetData;
+        if (concerned == true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
         break;
     default:
-        return concerned;
+        return FALSE;
         break;
     }
-    return concerned;
+    return FALSE;
 }
