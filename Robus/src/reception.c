@@ -60,36 +60,47 @@ void Recep_GetHeader(volatile unsigned char *data)
     data_count++;
 
     // Check if we have all we need.
-    if (data_count == (sizeof(header_t)))
+
+    if (data_count == 3)
     {
-#ifdef DEBUG
-        printf("*******header data*******\n");
-        printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
-        printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-        printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-        printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-        printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
-        printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
-#endif
-        // Reset the catcher.
-        data_count = 0;
-        // Switch state machiine to data reception
-        ctx.data_cb = Recep_GetData;
-        // Cap size for big messages
-        if (current_msg->header.size > MAX_DATA_MSG_SIZE)
-            data_size = MAX_DATA_MSG_SIZE;
-        else
-            data_size = current_msg->header.size;
         keep = Recep_NodeConcerned((header_t *)&current_msg->header);
-        if (keep)
+    }
+    else
+    {
+        if (data_count == (sizeof(header_t)))
         {
-            MsgAlloc_ValidHeader();
-            // start crc computation
-            LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
-        }
-        else
-        {
-            MsgAlloc_InvalidMsg();
+#ifdef DEBUG
+            printf("*******header data*******\n");
+            printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
+            printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+            printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
+            printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
+#endif
+            // Reset the catcher.
+            data_count = 0;
+            // Switch state machiine to data reception
+            ctx.data_cb = Recep_GetData;
+            // Cap size for big messages
+            if (current_msg->header.size > MAX_DATA_MSG_SIZE)
+            {
+                data_size = MAX_DATA_MSG_SIZE;
+            }
+            else
+            {
+                data_size = current_msg->header.size;
+            }
+            if (keep)
+            {
+                MsgAlloc_ValidHeader();
+                // start crc computation
+                LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
+            }
+            else
+            {
+                MsgAlloc_InvalidMsg();
+            }
         }
     }
 }
