@@ -37,7 +37,8 @@ uint8_t Luos_SendData(module_t *module, msg_t *msg, void *bin_data, uint16_t siz
 uint8_t Luos_ReceiveData(module_t *module, msg_t *msg, void *bin_data);
 uint8_t Luos_SendStreaming(module_t *module, msg_t *msg, streaming_channel_t *stream);
 uint8_t Luos_ReceiveStreaming(module_t *module, msg_t *msg, streaming_channel_t *stream);
-void Luos_SetBaudrate(module_t *module, uint32_t baudrate);
+void Luos_SetBaudrate(uint32_t baudrate);
+void Luos_SendBaudrate(module_t *module, uint32_t baudrate);
 uint8_t Luos_SetExternId(module_t *module, target_mode_t target_mode, uint16_t target, uint16_t newid);
 uint16_t Luos_NbrAvailableMsg(void);
 

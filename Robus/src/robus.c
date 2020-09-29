@@ -69,8 +69,11 @@ void Robus_Init(void)
  ******************************************************************************/
 void Robus_Loop(void)
 {
+    // Execute message allocation tasks
+    MsgAlloc_loop();
+    // Interpreat received messages and create luos task for it.
     msg_t *msg = NULL;
-    while (MsgAlloc_PullMsgToManage(&msg) == SUCESS)
+    while (MsgAlloc_PullMsgToInterpret(&msg) == SUCESS)
     {
         Recep_InterpretMsgProtocol(msg);
     }

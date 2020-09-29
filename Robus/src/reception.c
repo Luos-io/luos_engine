@@ -12,7 +12,6 @@
 #include "target.h"
 #include "sys_msg.h"
 #include "msgAlloc.h"
-#include "main.h"
 
 /*******************************************************************************
  * Definitions
@@ -93,7 +92,10 @@ void Recep_GetHeader(volatile unsigned char *data)
             }
             if (keep)
             {
-                MsgAlloc_ValidHeader();
+                if (data_size)
+                {
+                    MsgAlloc_ValidHeader();
+                }
                 // start crc computation
                 LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
             }
@@ -265,7 +267,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
         if ((msg->header.target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH))
         {
-            MsgAlloc_SlotAlloc((vm_t *)&ctx.vm_table[0], msg);
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
             return;
         }
         // Check all VM id
@@ -273,7 +275,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         {
             if (msg->header.target == ctx.vm_table[i].id)
             {
-                MsgAlloc_SlotAlloc((vm_t *)&ctx.vm_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
                 return;
             }
         }
@@ -282,7 +284,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         //check default type
         if (msg->header.target == ctx.type)
         {
-            MsgAlloc_SlotAlloc((vm_t *)&ctx.vm_table[0], msg);
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
             return;
         }
         // Check all VM type
@@ -290,7 +292,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         {
             if (msg->header.target == ctx.vm_table[i].type)
             {
-                MsgAlloc_SlotAlloc((vm_t *)&ctx.vm_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
                 return;
             }
         }
@@ -298,7 +300,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     case BROADCAST:
         for (int i = 0; i < ctx.vm_number; i++)
         {
-            MsgAlloc_SlotAlloc((vm_t *)&ctx.vm_table[i], msg);
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
         }
         return;
         break;
@@ -308,7 +310,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
             if (Trgt_MulticastTargetBank((vm_t *)&ctx.vm_table[i], msg->header.target))
             {
                 //TODO manage multiple slave concerned
-                MsgAlloc_SlotAlloc((vm_t *)&ctx.vm_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
                 return;
             }
         }

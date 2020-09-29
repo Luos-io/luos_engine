@@ -33,6 +33,7 @@ static void Luos_AutoUpdateManager(void);
 static uint8_t Luos_SaveAlias(module_t *module, char *alias);
 static void Luos_WriteAlias(unsigned short local_id, char *alias);
 static char Luos_ReadAlias(unsigned short local_id, char *alias);
+static error_return_t Luos_IsALuosCmd(uint8_t cmd);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -53,11 +54,10 @@ void Luos_Loop(void)
 {
     uint16_t remaining_msg_number = 0;
     vm_t *oldest_vm = NULL;
-    msg_t *unconsumed_msg = NULL;
     msg_t *returned_msg = NULL;
     Robus_Loop();
     // look at all received messages
-    while (MsgAlloc_LookAtAllocatorSlot(remaining_msg_number, &oldest_vm, &unconsumed_msg) != FAIL)
+    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_vm) != FAIL)
     {
         // There is a message available find the module linked to it
         module_t *module = Luos_GetModule(oldest_vm);
@@ -77,11 +77,24 @@ void Luos_Loop(void)
         }
         else
         {
+            uint8_t cmd = 0;
+            if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAIL)
+            {
+                // this is a critical failure we should never go here
+                while (1)
+                    ;
+            }
             //check if this msg cmd should be consumed by Luos_MsgHandler
-            if (Luos_MsgHandler((module_t *)module, unconsumed_msg))
+            if (Luos_IsALuosCmd(cmd) == SUCESS)
             {
                 // Luos_MsgHandler use it. clear this slot.
-                MsgAlloc_PullMsg(oldest_vm, &returned_msg);
+                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == FAIL)
+                {
+                    // this is a critical failure we should never go here
+                    while (1)
+                        ;
+                }
+                Luos_MsgHandler((module_t *)module, returned_msg);
             }
             else
             {
@@ -91,6 +104,19 @@ void Luos_Loop(void)
     }
     // manage timed auto update
     Luos_AutoUpdateManager();
+}
+/******************************************************************************
+ * @brief Check if this command concern luos
+ * @param cmd The command value
+ * @return Success if the command if for Luos else Fail 
+ ******************************************************************************/
+static error_return_t Luos_IsALuosCmd(uint8_t cmd)
+{
+    if (cmd <= LUOS_REVISION)
+    {
+        return SUCESS;
+    }
+    return FAIL;
 }
 /******************************************************************************
  * @brief handling msg for Luos library
@@ -162,8 +188,8 @@ static int8_t Luos_MsgHandler(module_t *module, msg_t *input)
             return 1;
             break;
         case SET_BAUDRATE:
-            memcpy(&baudrate, input->data, input->header.size);
-            Luos_SetBaudrate(module, baudrate);
+            memcpy(&baudrate, input->data, sizeof(uint32_t));
+            Luos_SetBaudrate(baudrate);
             return 1;
             break;
 
@@ -487,20 +513,28 @@ error_return_t Luos_ReadFromModule(module_t *module, short id, msg_t **returned_
 {
     uint16_t remaining_msg_number = 0;
     vm_t *oldest_vm = NULL;
-    msg_t *source_id_msg = NULL;
     error_return_t error = SUCESS;
-    while (MsgAlloc_LookAtAllocatorSlot(remaining_msg_number, &oldest_vm, &source_id_msg) != FAIL)
+    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_vm) != FAIL)
     {
         // Check the source id
-        if ((oldest_vm == module->vm) & (source_id_msg->header.source == id))
+        if (oldest_vm == module->vm)
         {
-            // Source id of this message match, get it and treat it.
-            error = MsgAlloc_PullMsg(module->vm, returned_msg);
-            // check if the content of this message need to be managed by Luos and do it if it is.
-            if ((!Luos_MsgHandler(module, *returned_msg)) & (error == SUCESS))
+            uint16_t source = 0;
+            MsgAlloc_GetLuosTaskSourceId(remaining_msg_number, &source);
+            if (source == id)
             {
-                // This message is for the user, pass it to the user.
-                return SUCESS;
+                // Source id of this message match, get it and treat it.
+                error = MsgAlloc_PullMsg(module->vm, returned_msg);
+                // check if the content of this message need to be managed by Luos and do it if it is.
+                if ((!Luos_MsgHandler(module, *returned_msg)) & (error == SUCESS))
+                {
+                    // This message is for the user, pass it to the user.
+                    return SUCESS;
+                }
+            }
+            else
+            {
+                remaining_msg_number++;
             }
         }
         else
@@ -729,19 +763,28 @@ static char Luos_ReadAlias(unsigned short local_id, char *alias)
     }
 }
 /******************************************************************************
- * @brief set network bauderate
+ * @brief set serial baudrate
+ * @param baudrate
+ * @return None
+ ******************************************************************************/
+void Luos_SetBaudrate(uint32_t baudrate)
+{
+    LuosHAL_ComInit(baudrate);
+}
+/******************************************************************************
+ * @brief send network bauderate
  * @param module sending request
  * @param baudrate
  * @return None
  ******************************************************************************/
-void Luos_SetBaudrate(module_t *module, uint32_t baudrate)
+void Luos_SendBaudrate(module_t *module, uint32_t baudrate)
 {
     msg_t msg;
-    memcpy(msg.data, &baudrate, sizeof(unsigned int));
+    memcpy(msg.data, &baudrate, sizeof(uint32_t));
     msg.header.target_mode = BROADCAST;
     msg.header.target = BROADCAST_VAL;
     msg.header.cmd = SET_BAUDRATE;
-    msg.header.size = sizeof(unsigned int);
+    msg.header.size = sizeof(uint32_t);
     Robus_SendMsg(module->vm, &msg);
 }
 /******************************************************************************
@@ -774,5 +817,5 @@ uint8_t Luos_SetExternId(module_t *module, target_mode_t target_mode, uint16_t t
  ******************************************************************************/
 uint16_t Luos_NbrAvailableMsg(void)
 {
-    return MsgAlloc_AllocNbr();
+    return MsgAlloc_LuosTasksNbr();
 }

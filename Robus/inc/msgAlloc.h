@@ -14,35 +14,33 @@
  * Definitions
  ******************************************************************************/
 
-/******************************************************************************
- * @struct msg_allocator_t
- * @brief Message allocator loger structure.
- * 
- * This structure is used to link modules and messages into the allocator.
- * 
- ******************************************************************************/
-typedef struct __attribute__((__packed__))
-{
-    msg_t *msg_pt; /*!< Start pointer of the msg on msg_buffer. */
-    vm_t *vm_pt;   /*!< Pointer to the concerned vm. */
-} msg_allocator_t;
-
 /*******************************************************************************
  * Functions
  ******************************************************************************/
 
+// generic functions
 void MsgAlloc_Init(void);
+void MsgAlloc_loop(void);
+
+// msg buffering functions
 void MsgAlloc_ValidHeader(void);
 void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
 msg_t *MsgAlloc_GetCurrentMsg(void);
-void MsgAlloc_SlotAlloc(vm_t *module_concerned_by_current_msg, msg_t *concerned_msg);
 
-error_return_t MsgAlloc_PullMsgToManage(msg_t **returned_msg);
+// msg interpretation task stack
+error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg);
 
+// Luos task stack
+void MsgAlloc_LuosTaskAlloc(vm_t *module_concerned_by_current_msg, msg_t *concerned_msg);
+
+// Luos task research and pull
 error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg);
-error_return_t MsgAlloc_LookAtAllocatorSlot(uint16_t alocator_id, vm_t **allocated_module, msg_t **unconsumed_message);
-uint16_t MsgAlloc_AllocNbr(void);
+error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **returned_msg);
+error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, vm_t **allocated_module);
+error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *source_id);
+error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd);
+uint16_t MsgAlloc_LuosTasksNbr(void);
 
 #endif /* _MSGALLOC_H_ */

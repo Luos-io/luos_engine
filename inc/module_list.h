@@ -37,16 +37,25 @@ typedef enum
 typedef enum
 {
     // protocol level command
-    WRITE_ID,            /*!< Get and save a new given ID. */
-    RESET_DETECTION,     /*!< Reset detection*/
-    SET_BAUDRATE,        /*!< Set Robus baudrate*/
-    
-    // Common register for all modules and gate
+    WRITE_ID,        /*!< Get and save a new given ID. */
+    RESET_DETECTION, /*!< Reset detection*/
+    SET_BAUDRATE,    /*!< Set Robus baudrate*/
+
+    // Luos specific registers
     IDENTIFY_CMD,     // Gate asks a module to identify itself
     INTRODUCTION_CMD, // Module sends its alias and type to the gate
     WRITE_ALIAS,      // Get and save a new given alias.
-    ASK_PUB_CMD,      // Gate asks a sensor module to publish its data
     UPDATE_PUB,       // Ask to update a sensor value each time duration to the sender
+    NODE_UUID,        // luos_uuid_t
+
+    // Revision management
+    REVISION,      // Module sends its firmware revision
+    LUOS_REVISION, // Module sends its luos revision
+
+    // ************* End of Luos managed commands ****************
+
+    // Common register for all modules
+    ASK_PUB_CMD, // asks a module to publish its data
 
     // Generic data
     COLOR,       // color_t (R, G, B)
@@ -73,12 +82,6 @@ typedef enum
     DIMENSION,  // dimention of an element m linear_position_t
     OFFSET,     // decay float
     SETID,      // Set Dynamixel ID
-
-    // Node things
-    NODE_TEMPERATURE, // temperature_t (°c)
-    NODE_VOLTAGE,     // voltage_t (V)
-    NODE_LED,         // char (True/False)
-    NODE_UUID,        // luos_uuid_t
 
     // Space positioning
     ANGULAR_POSITION, // angular_position_t (deg)
@@ -108,10 +111,6 @@ typedef enum
     DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
     HANDY_SET_POSITION, // handy_t
     PARAMETERS,         // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
-
-    // Revision management
-    REVISION,      // Module sends its firmware revision
-    LUOS_REVISION, // Module sends its luos revision
 
     // compatibility area
     LUOS_PROTOCOL_NB,
