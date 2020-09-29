@@ -157,14 +157,16 @@ void Recep_GetData(volatile unsigned char *data)
  ******************************************************************************/
 void Recep_GetCollision(volatile unsigned char *data)
 {
+    // send all received datas
+    Recep_GetHeader(data);
     if ((*ctx.tx_data != *data) || (!ctx.tx_lock))
     {
         //data dont match, or we don't start to send, there is a collision
         ctx.collision = TRUE;
         //Stop TX trying to save input datas
         LuosHAL_SetTxState(false);
-        // send all received datas
-        Recep_GetHeader(data);
+        // switch to get header.
+        ctx.data_cb = Recep_GetHeader;
     }
     ctx.tx_data = ctx.tx_data + 1;
 }
