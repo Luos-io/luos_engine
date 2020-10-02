@@ -20,7 +20,7 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Robus_Init(void);
+void Robus_Init(memory_stats_t *memory_stats);
 void Robus_Loop(void);
 vm_t *Robus_ModuleCreate(uint8_t type);
 void Robus_ModulesClear(void);

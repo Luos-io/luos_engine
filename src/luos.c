@@ -21,6 +21,8 @@
 module_t module_table[MAX_VM_NUMBER];
 unsigned char module_number;
 volatile route_table_t *route_table_pt;
+
+luos_stats_t luos_stats;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -42,7 +44,8 @@ static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size);
 void Luos_Init(void)
 {
     module_number = 0;
-    Robus_Init();
+    memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
+    Robus_Init(&luos_stats.memory);
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -51,9 +54,15 @@ void Luos_Init(void)
  ******************************************************************************/
 void Luos_Loop(void)
 {
+    static unsigned long last_loop_date;
     uint16_t remaining_msg_number = 0;
     vm_t *oldest_vm = NULL;
     msg_t *returned_msg = NULL;
+    // check loop call time stat
+    if ((LuosHAL_GetSystick() - last_loop_date) > luos_stats.max_loop_time_ms)
+    {
+        luos_stats.max_loop_time_ms = LuosHAL_GetSystick() - last_loop_date;
+    }
     Robus_Loop();
     // look at all received messages
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_vm) != FAIL)
@@ -110,6 +119,8 @@ void Luos_Loop(void)
     }
     // manage timed auto update
     Luos_AutoUpdateManager();
+    // save loop date
+    last_loop_date = LuosHAL_GetSystick();
 }
 /******************************************************************************
  * @brief Check if this command concern luos
@@ -219,7 +230,6 @@ static int8_t Luos_MsgHandler(module_t *module, msg_t *input)
             Luos_SetBaudrate(baudrate);
             return 1;
             break;
-
         case IDENTIFY_CMD:
             // someone request a local route table
             routeTB_msg.header.cmd = INTRODUCTION_CMD;
@@ -278,6 +288,19 @@ static int8_t Luos_MsgHandler(module_t *module, msg_t *input)
                 uuid.uuid[1] = LUOS_UUID[1];
                 uuid.uuid[2] = LUOS_UUID[2];
                 memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
+                Luos_SendMsg(module, &output);
+                return 1;
+            }
+            break;
+        case LUOS_STATISTICS:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd = LUOS_STATISTICS;
+                output.header.target_mode = ID;
+                output.header.size = sizeof(luos_stats_t);
+                output.header.target = input->header.source;
+                memcpy(output.data, &luos_stats.unmap, sizeof(luos_stats_t));
                 Luos_SendMsg(module, &output);
                 return 1;
             }

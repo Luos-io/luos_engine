@@ -13,6 +13,18 @@
  * Definitions
  ******************************************************************************/
 
+/******************************************************************************
+ * @struct memory_stats_t
+ * @brief store informations about RAM occupation
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    unsigned char alloc_stack_ratio;
+    unsigned char msg_stack_ratio;
+    unsigned char luos_stack_ratio;
+    unsigned char msg_drop_number;
+} memory_stats_t;
+
 /*
  * This structure is used to get the message addressing mode list.
  */

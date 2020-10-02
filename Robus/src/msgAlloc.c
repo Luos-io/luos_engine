@@ -83,6 +83,8 @@ typedef struct __attribute__((__packed__))
  * Variables
  ******************************************************************************/
 
+memory_stats_t *mem_stat = NULL;
+
 // msg buffering
 volatile uint8_t msg_buffer[MSG_BUFFER_SIZE]; /*!< Memory space used to save and alloc messages. */
 volatile msg_t *current_msg;                  /*!< current work in progress msg pointer. */
@@ -132,7 +134,7 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id);
  * @param None
  * @return None
  ******************************************************************************/
-void MsgAlloc_Init(void)
+void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
     current_msg = (msg_t *)&msg_buffer[0];
@@ -140,6 +142,7 @@ void MsgAlloc_Init(void)
     luos_tasks_stack_id = 0;
     msg_pre_tasks_stack_id = 0;
     msg_tasks_stack_id = 0;
+    mem_stat = memory_stats;
 }
 /******************************************************************************
  * @brief execute some things out of IRQ
@@ -148,6 +151,13 @@ void MsgAlloc_Init(void)
  ******************************************************************************/
 void MsgAlloc_loop(void)
 {
+    // Compute memory stats for allocator task memory usage
+    uint8_t stat = 0;
+    stat = (uint8_t)(((uint32_t)alloc_tasks_stack_id * 100) / (MAX_MSG_NB * 2));
+    if (stat > mem_stat->alloc_stack_ratio)
+    {
+        mem_stat->alloc_stack_ratio = stat;
+    }
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
     {
@@ -176,6 +186,10 @@ void MsgAlloc_loop(void)
         {
             // There is no more space on the luos_tasks, remove the oldest msg.
             MsgAlloc_ClearMsgTask();
+            if (mem_stat->msg_drop_number < 0xFF)
+            {
+                mem_stat->msg_drop_number++;
+            }
         }
         msg_tasks[msg_tasks_stack_id] = msg_pre_tasks[0];
         msg_tasks_stack_id++;
@@ -187,6 +201,12 @@ void MsgAlloc_loop(void)
         }
         msg_pre_tasks_stack_id--;
         LuosHAL_SetIrqState(TRUE);
+    }
+    // Compute memory stats for msg task memory usage
+    stat = (uint8_t)(((uint32_t)msg_tasks_stack_id * 100) / (MAX_MSG_NB));
+    if (stat > mem_stat->msg_stack_ratio)
+    {
+        mem_stat->msg_stack_ratio = stat;
     }
 }
 
@@ -272,6 +292,10 @@ void MsgAlloc_EndMsg(void)
             msg_pre_tasks[rm] = msg_pre_tasks[rm + 1];
         }
         msg_pre_tasks_stack_id--;
+        if (mem_stat->msg_drop_number < 0xFF)
+        {
+            mem_stat->msg_drop_number++;
+        }
     }
     msg_pre_tasks[msg_pre_tasks_stack_id] = current_msg;
     msg_pre_tasks_stack_id++;
@@ -333,12 +357,20 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     {
         // This message is in the space we want to use, clear the task
         MsgAlloc_ClearLuosTask(0);
+        if (mem_stat->msg_drop_number < 0xFF)
+        {
+            mem_stat->msg_drop_number++;
+        }
     }
     // check if there is no msg between from and to on msg_tasks
     while (((uint32_t)msg_tasks[0] >= (uint32_t)from) & ((uint32_t)msg_tasks[0] <= (uint32_t)to))
     {
         // This message is in the space we want to use, clear the task
         MsgAlloc_ClearMsgTask();
+        if (mem_stat->msg_drop_number < 0xFF)
+        {
+            mem_stat->msg_drop_number++;
+        }
     }
     // if we go here there is no reason to continue because newest messages can't overlap the memory zone.
     return SUCESS;
@@ -446,6 +478,12 @@ void MsgAlloc_LuosTaskAlloc(vm_t *module_concerned_by_current_msg, msg_t *concer
     luos_tasks[luos_tasks_stack_id].msg_pt = concerned_msg;
     luos_tasks[luos_tasks_stack_id].vm_pt = module_concerned_by_current_msg;
     luos_tasks_stack_id++;
+    // luos task memory usage
+    uint8_t stat = (uint8_t)(((uint32_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
+    if (stat > mem_stat->luos_stack_ratio)
+    {
+        mem_stat->luos_stack_ratio = stat;
+    }
 }
 
 /*******************************************************************************

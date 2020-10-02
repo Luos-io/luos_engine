@@ -34,7 +34,7 @@ volatile context_t ctx;
  * @param None
  * @return None
  ******************************************************************************/
-void Robus_Init(void)
+void Robus_Init(memory_stats_t *memory_stats)
 {
     // Init the number of created  virtual module.
     ctx.vm_number = 0;
@@ -54,7 +54,7 @@ void Robus_Init(void)
     Detec_InitDetection();
 
     // Clear message allocation buffer table
-    MsgAlloc_Init();
+    MsgAlloc_Init(memory_stats);
 
     // Initialize the robus module status
     ctx.status.unmap = 0;

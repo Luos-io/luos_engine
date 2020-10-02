@@ -19,7 +19,7 @@
  ******************************************************************************/
 
 // generic functions
-void MsgAlloc_Init(void);
+void MsgAlloc_Init(memory_stats_t *memory_stats);
 void MsgAlloc_loop(void);
 
 // msg buffering functions

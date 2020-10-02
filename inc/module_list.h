@@ -49,8 +49,9 @@ typedef enum
     NODE_UUID,        // luos_uuid_t
 
     // Revision management
-    REVISION,      // Module sends its firmware revision
-    LUOS_REVISION, // Module sends its luos revision
+    REVISION,        // Module sends its firmware revision
+    LUOS_REVISION,   // Module sends its luos revision
+    LUOS_STATISTICS, // Module sends its luos revision
 
     // ************* End of Luos managed commands ****************
 
