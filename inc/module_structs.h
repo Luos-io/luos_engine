@@ -65,25 +65,6 @@ typedef struct __attribute__((__packed__))
 } luos_uuid_t;
 
 /*
- * Handy struct TODO : remove it
- */
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            uint8_t index;
-            uint8_t middle;
-            uint8_t ring;
-            uint8_t pinky;
-            uint8_t thumb;
-        };
-        uint8_t unmap[(5 * sizeof(uint8_t))]; /*!< Uncmaped form. */
-    };
-} handy_t;
-
-/*
  * Pid
  */
 typedef struct __attribute__((__packed__))

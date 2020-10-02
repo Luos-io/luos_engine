@@ -34,7 +34,7 @@
  *              reception of the next header by creating a, "Alloc B" task on
  *              Alloc_tasks.
  *  - Event C : This event represent alloc_loop and it is executed outside of IT.
- *              To begin this event execute all Alloc_tasks. Then check if
+ *              To begin this event execute Alloc_tasks. Then check if
  *              "Pre msg B" compromise any data on msg_tasks or Luos_tasks.
  *              If it compromise something we have to remove compromised data before
  *              moving the msg as "Msg C".
@@ -79,7 +79,6 @@ typedef struct __attribute__((__packed__))
     void *from;
     void *to;
 } allocator_task_t;
-
 /*******************************************************************************
  * Variables
  ******************************************************************************/

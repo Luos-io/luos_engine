@@ -5,11 +5,10 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "luos.h"
-
 #include <stdio.h>
-#include "context.h"  // TODO remove it
-#include "sys_msg.h"  // TODO remove it
-#include "msgAlloc.h" // TODO this is not really clean
+#include "context.h" // TODO remove it
+#include "sys_msg.h" // TODO remove it
+#include "msgAlloc.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
