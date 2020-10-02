@@ -33,7 +33,7 @@ static void Luos_AutoUpdateManager(void);
 static uint8_t Luos_SaveAlias(module_t *module, char *alias);
 static void Luos_WriteAlias(unsigned short local_id, char *alias);
 static char Luos_ReadAlias(unsigned short local_id, char *alias);
-static error_return_t Luos_IsALuosCmd(uint8_t cmd);
+static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -78,14 +78,21 @@ void Luos_Loop(void)
         else
         {
             uint8_t cmd = 0;
+            uint16_t size = 0;
             if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAIL)
             {
                 // this is a critical failure we should never go here
                 while (1)
                     ;
             }
+            if (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == FAIL)
+            {
+                // this is a critical failure we should never go here
+                while (1)
+                    ;
+            }
             //check if this msg cmd should be consumed by Luos_MsgHandler
-            if (Luos_IsALuosCmd(cmd) == SUCESS)
+            if (Luos_IsALuosCmd(cmd, size) == SUCESS)
             {
                 // Luos_MsgHandler use it. clear this slot.
                 if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == FAIL)
@@ -110,11 +117,32 @@ void Luos_Loop(void)
  * @param cmd The command value
  * @return Success if the command if for Luos else Fail 
  ******************************************************************************/
-static error_return_t Luos_IsALuosCmd(uint8_t cmd)
+static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size)
 {
-    if (cmd <= LUOS_REVISION)
+    switch (cmd)
     {
+    case WRITE_ID:
+    case RESET_DETECTION:
+    case SET_BAUDRATE:
+    case IDENTIFY_CMD:
+    case INTRODUCTION_CMD:
+    case WRITE_ALIAS:
+    case UPDATE_PUB:
         return SUCESS;
+        break;
+
+    case REVISION:
+    case LUOS_REVISION:
+    case NODE_UUID:
+    case LUOS_STATISTICS:
+        if (size == 0)
+        {
+            return SUCESS;
+        }
+        break;
+    default:
+        return FAIL;
+        break;
     }
     return FAIL;
 }

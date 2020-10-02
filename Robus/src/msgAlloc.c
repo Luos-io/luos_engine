@@ -489,6 +489,21 @@ error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *sou
     return FAIL;
 }
 /******************************************************************************
+ * @brief get back a specific slot message command
+ * @param luos_task_id : Id of the allocator slot
+ * @param size : The pointer filled with the size value.
+ * @return error_return_t : Fail is there is no more message available.
+ ******************************************************************************/
+error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size)
+{
+    if (luos_task_id < luos_tasks_stack_id)
+    {
+        *size = luos_tasks[luos_task_id].msg_pt->header.size;
+        return SUCESS;
+    }
+    return FAIL;
+}
+/******************************************************************************
  * @brief return the number of allocated messages
  * @param None
  * @return the number of messages

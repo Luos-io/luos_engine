@@ -41,6 +41,7 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
 error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, vm_t **allocated_module);
 error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *source_id);
 error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd);
+error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size);
 uint16_t MsgAlloc_LuosTasksNbr(void);
 
 #endif /* _MSGALLOC_H_ */
