@@ -266,7 +266,7 @@ void MsgAlloc_ValidHeader(void)
         // Move current_msg to msg_buffer
         current_msg = (volatile msg_t *)&msg_buffer[0];
         // move data_ptr after the new location of the header
-        data_ptr = &msg_buffer[0] + sizeof(header_t) + 1;
+        data_ptr = &msg_buffer[0] + sizeof(header_t);
     }
     else
     {
