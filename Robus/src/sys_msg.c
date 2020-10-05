@@ -51,6 +51,8 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
     const int col_check_data_num = 5;
     // wait tx unlock
     Transmit_WaitUnlockTx();
+    // compute the CRC
+    LuosHAL_ComputeCRC(data, size - 2, (unsigned char *)&data[size - 2]);
     ctx.collision = FALSE;
     // Enable TX
     LuosHAL_SetTxState(true);

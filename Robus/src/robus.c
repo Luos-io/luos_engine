@@ -126,8 +126,6 @@ uint8_t Robus_SendMsg(vm_t *vm, msg_t *msg)
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     msg->header.source = vm->id;
-    // compute the CRC
-    LuosHAL_ComputeCRC(msg->stream, full_size, (unsigned char *)&msg->data[data_size]);
     // Add the CRC to the total size of the message
     full_size += 2;
     ctx.vm_last_send = vm;
