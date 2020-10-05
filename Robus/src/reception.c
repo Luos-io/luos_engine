@@ -92,12 +92,12 @@ void Recep_GetHeader(volatile unsigned char *data)
             }
             if (keep)
             {
+                // start crc computation
+                LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
                 if (data_size)
                 {
                     MsgAlloc_ValidHeader();
                 }
-                // start crc computation
-                LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
             }
             else
             {
@@ -144,6 +144,8 @@ void Recep_GetData(volatile unsigned char *data)
                     Transmit_SendAck();
                 }
                 MsgAlloc_InvalidMsg();
+                if (crc + 1 == 0xFFFF)
+                    *data++;
             }
             ctx.data_cb = Recep_GetHeader;
         }
