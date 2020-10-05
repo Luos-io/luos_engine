@@ -29,7 +29,7 @@ typedef struct __attribute__((__packed__))
     };
 } status_t;
 
-typedef struct __attribute__((__packed__))
+typedef struct
 {
 
     // Variables
