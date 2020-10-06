@@ -179,7 +179,16 @@ void MsgAlloc_loop(void)
     while (msg_pre_tasks_stack_id)
     {
         // clear the message_space
-        MsgAlloc_ClearMsgSpace((void *)msg_pre_tasks[0], (void *)(msg_pre_tasks[0] + sizeof(header_t) + msg_pre_tasks[0]->header.size));
+        uint16_t data_size = 0;
+        if (msg_pre_tasks[0]->header.size > MAX_DATA_MSG_SIZE)
+        {
+            data_size = MAX_DATA_MSG_SIZE;
+        }
+        else
+        {
+            data_size = msg_pre_tasks[0]->header.size;
+        }
+        MsgAlloc_ClearMsgSpace((void *)msg_pre_tasks[0], (void *)(msg_pre_tasks[0] + sizeof(header_t) + data_size));
 
         // move msg_pre_task to msg_task
         if (msg_tasks_stack_id == MAX_MSG_NB)
@@ -256,11 +265,21 @@ void MsgAlloc_ValidHeader(void)
     }
 #endif
     // Be sure that the end of msg_buffer is after data_ptr + header_t.size
-    if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[current_msg->header.size + 2])) == FAIL)
+    uint16_t data_size = 0;
+    if (current_msg->header.size > MAX_DATA_MSG_SIZE)
+    {
+        data_size = MAX_DATA_MSG_SIZE;
+    }
+    else
+    {
+        data_size = current_msg->header.size;
+    }
+
+    if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + 2])) == FAIL)
     {
         // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
         // Create a task to clean the begin of msg_buffer with the space of the complete message
-        MsgAlloc_CreateMsgSpaceTask((void *)&msg_buffer[0], (void *)(&msg_buffer[0] + sizeof(header_t) + current_msg->header.size + 2));
+        MsgAlloc_CreateMsgSpaceTask((void *)&msg_buffer[0], (void *)(&msg_buffer[0] + sizeof(header_t) + data_size + 2));
         // Create a task to copy the header at the begining of msg_buffer
         copy_task_pointer = (header_t *)&current_msg->header;
         // Move current_msg to msg_buffer
@@ -271,7 +290,7 @@ void MsgAlloc_ValidHeader(void)
     else
     {
         // We have space in msg_buffer, create a task to clean the memory zone
-        MsgAlloc_CreateMsgSpaceTask((void *)current_msg, (void *)(&current_msg->data[current_msg->header.size + 2]));
+        MsgAlloc_CreateMsgSpaceTask((void *)current_msg, (void *)(&current_msg->data[data_size + 2]));
     }
 }
 /******************************************************************************
