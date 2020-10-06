@@ -144,8 +144,6 @@ void Recep_GetData(volatile unsigned char *data)
                     Transmit_SendAck();
                 }
                 MsgAlloc_InvalidMsg();
-                if (crc + 1 == 0xFFFF)
-                    *data++;
             }
             ctx.data_cb = Recep_GetHeader;
         }
@@ -245,9 +243,12 @@ uint8_t Recep_NodeConcerned(header_t *header)
         }
         break;
     case BROADCAST:
-    case MULTICAST:
-        return true;
+        if (header->target == BROADCAST_VAL)
+        {
+            return true;
+        }
         break;
+    case MULTICAST: // For now Multicast is disabled
     default:
         return false;
         break;
