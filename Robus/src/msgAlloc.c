@@ -91,7 +91,7 @@ volatile msg_t *current_msg;                  /*!< current work in progress msg 
 volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be writen into msgbuffer. */
 
 // Allocator task stack
-header_t *copy_task_pointer = NULL;                    /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
+volatile header_t *copy_task_pointer = NULL;           /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
 volatile allocator_task_t alloc_tasks[MAX_MSG_NB * 2]; /*!< List of things to do outide of IRQ. */
 volatile uint16_t alloc_tasks_stack_id;                /*!< last writen alloc tasks id. */
 
@@ -203,10 +203,11 @@ void MsgAlloc_loop(void)
         msg_tasks[msg_tasks_stack_id] = msg_pre_tasks[0];
         msg_tasks_stack_id++;
         // remove the msg_pre_task
-        LuosHAL_SetIrqState(FALSE);
         for (int i = 0; i < msg_pre_tasks_stack_id - 1; i++)
         {
+            LuosHAL_SetIrqState(TRUE);
             msg_pre_tasks[i] = msg_pre_tasks[i + 1];
+            LuosHAL_SetIrqState(FALSE);
         }
         msg_pre_tasks_stack_id--;
         LuosHAL_SetIrqState(TRUE);
@@ -414,10 +415,11 @@ static inline void MsgAlloc_CreateMsgSpaceTask(void *from, void *to)
 static inline void MsgAlloc_ClearMsgSpaceTask(void)
 {
     // remove clear task
-    LuosHAL_SetIrqState(FALSE);
     for (int i = 0; i < alloc_tasks_stack_id - 1; i++)
     {
+        LuosHAL_SetIrqState(TRUE);
         alloc_tasks[i] = alloc_tasks[i + 1];
+        LuosHAL_SetIrqState(FALSE);
     }
     alloc_tasks_stack_id--;
     LuosHAL_SetIrqState(TRUE);
@@ -449,9 +451,7 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
     if (msg_tasks_stack_id > 0)
     {
         *returned_msg = (msg_t *)msg_tasks[0];
-        LuosHAL_SetIrqState(FALSE);
         MsgAlloc_ClearMsgTask();
-        LuosHAL_SetIrqState(TRUE);
         return SUCESS;
     }
     // At this point we don't find any message for this module
@@ -523,14 +523,12 @@ error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg)
         if (luos_tasks[i].vm_pt == target_module)
         {
             *returned_msg = luos_tasks[i].msg_pt;
-            LuosHAL_SetIrqState(FALSE);
             // Clear the slot by sliding others to the left on it
             for (uint16_t rm = i; rm < luos_tasks_stack_id; rm++)
             {
                 luos_tasks[rm] = luos_tasks[rm + 1];
             }
             luos_tasks_stack_id--;
-            LuosHAL_SetIrqState(TRUE);
             return SUCESS;
         }
     }
@@ -549,14 +547,12 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     if (luos_task_id < luos_tasks_stack_id)
     {
         *returned_msg = luos_tasks[luos_task_id].msg_pt;
-        LuosHAL_SetIrqState(FALSE);
         // Clear the slot by sliding others to the left on it
         for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
         {
             luos_tasks[rm] = luos_tasks[rm + 1];
         }
         luos_tasks_stack_id--;
-        LuosHAL_SetIrqState(TRUE);
         return SUCESS;
     }
     // At this point we don't find any message for this module
