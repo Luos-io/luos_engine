@@ -57,7 +57,7 @@ int8_t RouteTB_IDFromAlias(char *alias)
  * @param type of module look at
  * @return ID or Error
  ******************************************************************************/
-int8_t RouteTB_IDFromType(module_type_t type)
+int8_t RouteTB_IDFromType(luos_type_t type)
 {
     for (int i = 0; i <= last_route_table_entry; i++)
     {
@@ -109,7 +109,7 @@ char *RouteTB_AliasFromId(uint16_t id)
  * @param id module look at
  * @return pointer module or Error
  ******************************************************************************/
-module_type_t RouteTB_TypeFromID(uint16_t id)
+luos_type_t RouteTB_TypeFromID(uint16_t id)
 {
     for (int i = 0; i <= last_route_table_entry; i++)
     {
@@ -128,7 +128,7 @@ module_type_t RouteTB_TypeFromID(uint16_t id)
  * @param alias module look at
  * @return pointer to module or Error
  ******************************************************************************/
-module_type_t RouteTB_TypeFromAlias(char *alias)
+luos_type_t RouteTB_TypeFromAlias(char *alias)
 {
     uint16_t id = RouteTB_IDFromAlias(alias);
     return RouteTB_TypeFromID(id);
@@ -138,7 +138,7 @@ module_type_t RouteTB_TypeFromAlias(char *alias)
  * @param type of module look at
  * @return pointer to string or Error
  ******************************************************************************/
-char *RouteTB_StringFromType(module_type_t type)
+char *RouteTB_StringFromType(luos_type_t type)
 {
     switch (type)
     {
@@ -200,7 +200,7 @@ char *RouteTB_StringFromType(module_type_t type)
  * @param module look at
  * @return Error
  ******************************************************************************/
-uint8_t RouteTB_ModuleIsSensor(module_type_t type)
+uint8_t RouteTB_ModuleIsSensor(luos_type_t type)
 {
     if ((type == ANGLE_MOD) ||
         (type == STATE_MOD) ||

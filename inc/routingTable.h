@@ -23,7 +23,7 @@ typedef enum
  * Variables
  ******************************************************************************/
 
- /* This structure is used to receive or send messages between modules in slave
+/* This structure is used to receive or send messages between modules in slave
  * and master mode.
  * please refer to the documentation
  */
@@ -51,13 +51,13 @@ typedef struct __attribute__((__packed__))
  ******************************************************************************/
 // ********************* route_table search tools ************************
 int8_t RouteTB_IDFromAlias(char *alias);
-int8_t RouteTB_IDFromType(module_type_t type);
+int8_t RouteTB_IDFromType(luos_type_t type);
 int8_t RouteTB_IDFromModule(module_t *module);
 char *RouteTB_AliasFromId(uint16_t id);
-module_type_t RouteTB_TypeFromID(uint16_t id);
-module_type_t RouteTB_TypeFromAlias(char *alias);
-char *RouteTB_StringFromType(module_type_t type);
-uint8_t RouteTB_ModuleIsSensor(module_type_t type);
+luos_type_t RouteTB_TypeFromID(uint16_t id);
+luos_type_t RouteTB_TypeFromAlias(char *alias);
+char *RouteTB_StringFromType(luos_type_t type);
+uint8_t RouteTB_ModuleIsSensor(luos_type_t type);
 int8_t RouteTB_GetNodeNB(void);
 void RouteTB_GetNodeList(unsigned short *list);
 int8_t RouteTB_GetNodeID(unsigned short index);
