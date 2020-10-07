@@ -4,8 +4,8 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef MODULE_LIST_H
-#define MODULE_LIST_H
+#ifndef LUOS_LIST_H
+#define LUOS_LIST_H
 
 #include <robus.h>
 
@@ -125,4 +125,4 @@ typedef enum
  * Function
  ******************************************************************************/
 
-#endif /* MODULE_LIST_H */
+#endif /* LUOS_LIST_H */

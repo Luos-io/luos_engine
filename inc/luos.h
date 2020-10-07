@@ -7,7 +7,7 @@
 #ifndef LUOS_H
 #define LUOS_H
 
-#include "module_list.h"
+#include "luos_list.h"
 #include "module_structs.h"
 #include "routingTable.h"
 #include "luos_od.h"
