@@ -90,7 +90,7 @@ vm_t *Robus_ModuleCreate(unsigned char type)
     // Initialise the module id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
     ctx.vm_table[ctx.vm_number].id = DEFAULTID;
     // Initialize dead module detection
-    ctx.vm_table[ctx.vm_number].dead_module_spotted = 0;
+    ctx.vm_table[ctx.vm_number].dead_container_spotted = 0;
     // Return the freshly initialized vm pointer.
     return (vm_t *)&ctx.vm_table[ctx.vm_number++];
 }
@@ -194,7 +194,7 @@ ack_restart:
                 else
                 {
                     // Set the dead module ID into the VM
-                    vm->dead_module_spotted = msg->header.target;
+                    vm->dead_container_spotted = msg->header.target;
                     fail = 1;
                 }
             }

@@ -30,11 +30,11 @@ typedef struct __attribute__((__packed__))
  */
 typedef enum
 {
-    ID,        /*!< Unique or virtual ID, used to send something to only one module. */
+    ID,        /*!< Unique or virtual ID, used to send something to only one container. */
     IDACK,     /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
-    TYPE,      /*!< Type mode, used to send something to all module of the same type. */
+    TYPE,      /*!< Type mode, used to send something to all container of the same type. */
     BROADCAST, /*!< Broadcast mode, used to send something to everybody. */
-    MULTICAST  /*!< Multicast mode, used to send something to multiple modules. */
+    MULTICAST  /*!< Multicast mode, used to send something to multiple containers. */
 } target_mode_t;
 
 /* This structure is used specify data and destination of datas.
@@ -57,7 +57,7 @@ typedef struct __attribute__((__packed__))
     };
 } header_t;
 
-/* This structure is used to receive or send messages between modules in slave
+/* This structure is used to receive or send messages between containers in slave
  * and master mode.
  * please refer to the documentation
  */
@@ -74,20 +74,20 @@ typedef struct __attribute__((__packed__))
     };
 } msg_t;
 
-/* This structure is used to manage virtual modules
+/* This structure is used to manage virtual containers
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) vm_t
 {
 
-    // Module infomations
-    unsigned short id;  /*!< Module ID. */
-    unsigned char type; /*!< Module type. */
+    // Container infomations
+    unsigned short id;  /*!< Container ID. */
+    unsigned char type; /*!< Container type. */
 
     // Variables
     unsigned char max_multicast_target;                          /*!< Position pointer of the last multicast target. */
     unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
-    unsigned short dead_module_spotted;                          /*!< The ID of a module that don't reply to a lot of ACK msg */
+    unsigned short dead_container_spotted;                       /*!< The ID of a container that don't reply to a lot of ACK msg */
 } vm_t;
 
 /******************************************************************************
