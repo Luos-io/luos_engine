@@ -396,7 +396,7 @@ static void Luos_TransmitLocalRouteTable(container_t *module, msg_t *routeTB_msg
     // save modules entry
     for (int i = 0; i < module_number; i++)
     {
-        RouteTB_ConvertModuleToRouteTable((route_table_t *)&local_route_table[entry_nb++], &container_table[i]);
+        RouteTB_ConvertContainerToRouteTable((route_table_t *)&local_route_table[entry_nb++], &container_table[i]);
     }
     Luos_SendData(module, routeTB_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
 }
