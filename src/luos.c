@@ -454,7 +454,7 @@ static void Luos_AutoUpdateManager(void)
  * @param none
  * @return none
  ******************************************************************************/
-void Luos_ModulesClear(void)
+void Luos_ContainersClear(void)
 {
     module_number = 0;
     Robus_ModulesClear();
@@ -467,7 +467,7 @@ void Luos_ModulesClear(void)
  * @param version FW for the module
  * @return module object pointer.
  ******************************************************************************/
-container_t *Luos_CreateModule(CONT_CB cont_cb, uint8_t type, const char *alias, char *firm_revision)
+container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, char *firm_revision)
 {
     unsigned char i = 0;
     container_t *module = &container_table[module_number];
@@ -559,7 +559,7 @@ error_return_t Luos_ReadMsg(container_t *module, msg_t **returned_msg)
  * @param returned_msg oldest message of the module
  * @return FAIL if no message available
  ******************************************************************************/
-error_return_t Luos_ReadFromModule(container_t *module, short id, msg_t **returned_msg)
+error_return_t Luos_ReadFromContainer(container_t *module, short id, msg_t **returned_msg)
 {
     uint16_t remaining_msg_number = 0;
     vm_t *oldest_vm = NULL;
