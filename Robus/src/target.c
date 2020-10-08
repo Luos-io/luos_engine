@@ -19,7 +19,7 @@
 
 /******************************************************************************
  * @brief lookink for a bank of target in multicast mode
- * @param module in multicast
+ * @param container in multicast
  * @param multicast bank
  * @return Error
  ******************************************************************************/
@@ -35,7 +35,7 @@ uint8_t Trgt_MulticastTargetBank(vm_t *vm, unsigned short val)
 }
 /******************************************************************************
  * @brief add a target to the bank
- * @param module in multicast
+ * @param container in multicast
  * @param target to add
  * @return Error
  ******************************************************************************/

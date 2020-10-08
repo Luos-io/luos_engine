@@ -457,7 +457,7 @@ static void Luos_AutoUpdateManager(void)
 void Luos_ContainersClear(void)
 {
     container_number = 0;
-    Robus_ModulesClear();
+    Robus_ContainersClear();
 }
 /******************************************************************************
  * @brief API to Create a container
@@ -471,7 +471,7 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
 {
     unsigned char i = 0;
     container_t *container = &container_table[container_number];
-    container->vm = Robus_ModuleCreate(type);
+    container->vm = Robus_ContainerCreate(type);
 
     // Link the container to his callback
     container->cont_cb = cont_cb;

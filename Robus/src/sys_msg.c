@@ -107,7 +107,7 @@ void Transmit_WaitUnlockTx(void) // TODO : This function could be in HAL and rep
     }
 }
 /******************************************************************************
- * @brief Send ID to others module on network
+ * @brief Send ID to others container on network
  * @param None
  * @return lock status
  ******************************************************************************/

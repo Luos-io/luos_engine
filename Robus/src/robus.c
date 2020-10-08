@@ -36,11 +36,11 @@ volatile context_t ctx;
  ******************************************************************************/
 void Robus_Init(memory_stats_t *memory_stats)
 {
-    // Init the number of created  virtual module.
+    // Init the number of created  virtual container.
     ctx.vm_number = 0;
-    // Set default module id. This id is a void id used if no module is created.
+    // Set default container id. This id is a void id used if no container is created.
     ctx.id = DEFAULTID;
-    // VOID Module type
+    // VOID Container type
     ctx.type = 0;
     // no transmission lock
     ctx.tx_lock = FALSE;
@@ -56,7 +56,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Clear message allocation buffer table
     MsgAlloc_Init(memory_stats);
 
-    // Initialize the robus module status
+    // Initialize the robus container status
     ctx.status.unmap = 0;
     ctx.status.identifier = 0xF;
     // Init hal
@@ -79,36 +79,36 @@ void Robus_Loop(void)
     }
 }
 /******************************************************************************
- * @brief crete a module in route table
- * @param type of module create
+ * @brief crete a container in route table
+ * @param type of container create
  * @return None
  ******************************************************************************/
-vm_t *Robus_ModuleCreate(unsigned char type)
+vm_t *Robus_ContainerCreate(unsigned char type)
 {
-    // Set the module type
+    // Set the container type
     ctx.vm_table[ctx.vm_number].type = type;
-    // Initialise the module id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
+    // Initialise the container id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
     ctx.vm_table[ctx.vm_number].id = DEFAULTID;
-    // Initialize dead module detection
+    // Initialize dead container detection
     ctx.vm_table[ctx.vm_number].dead_container_spotted = 0;
     // Return the freshly initialized vm pointer.
     return (vm_t *)&ctx.vm_table[ctx.vm_number++];
 }
 /******************************************************************************
- * @brief clear module list in route table
+ * @brief clear container list in route table
  * @param None
  * @return None
  ******************************************************************************/
-void Robus_ModulesClear(void)
+void Robus_ContainersClear(void)
 {
     // Clear vm table
     memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
-    // Reset the number of created modules
+    // Reset the number of created containers
     ctx.vm_number = 0;
 }
 /******************************************************************************
- * @brief Send Msg to a module
- * @param module to send
+ * @brief Send Msg to a container
+ * @param container to send
  * @param msg to send
  * @return Error
  ******************************************************************************/
@@ -193,7 +193,7 @@ ack_restart:
                 }
                 else
                 {
-                    // Set the dead module ID into the VM
+                    // Set the dead container ID into the VM
                     vm->dead_container_spotted = msg->header.target;
                     fail = 1;
                 }
