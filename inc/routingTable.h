@@ -52,7 +52,7 @@ typedef struct __attribute__((__packed__))
 // ********************* route_table search tools ************************
 int8_t RouteTB_IDFromAlias(char *alias);
 int8_t RouteTB_IDFromType(luos_type_t type);
-int8_t RouteTB_IDFromModule(module_t *module);
+int8_t RouteTB_IDFromModule(container_t *module);
 char *RouteTB_AliasFromId(uint16_t id);
 luos_type_t RouteTB_TypeFromID(uint16_t id);
 luos_type_t RouteTB_TypeFromAlias(char *alias);
@@ -64,9 +64,9 @@ int8_t RouteTB_GetNodeID(unsigned short index);
 
 // ********************* route_table management tools ************************
 void RouteTB_ComputeRouteTableEntryNB(void);
-void RouteTB_DetectModules(module_t *module);
+void RouteTB_DetectModules(container_t *module);
 void RouteTB_ConvertNodeToRouteTable(route_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb);
-void RouteTB_ConvertModuleToRouteTable(route_table_t *entry, module_t *module);
+void RouteTB_ConvertModuleToRouteTable(route_table_t *entry, container_t *module);
 void RouteTB_InsertOnRouteTable(route_table_t *entry);
 void RouteTB_RemoveOnRouteTable(int id);
 void RouteTB_Erase(void);

@@ -26,7 +26,7 @@ volatile int last_route_table_entry = 0;
  ******************************************************************************/
 static void RouteTB_AddNumToAlias(char *alias, int num);
 static int8_t RouteTB_BigestID(void);
-static int8_t RouteTB_WaitRouteTable(module_t *module, msg_t *intro_msg);
+static int8_t RouteTB_WaitRouteTable(container_t *module, msg_t *intro_msg);
 
 // ************************ route_table search tools ***************************
 
@@ -76,7 +76,7 @@ int8_t RouteTB_IDFromType(luos_type_t type)
  * @param module look at
  * @return ID or Error
  ******************************************************************************/
-int8_t RouteTB_IDFromModule(module_t *module)
+int8_t RouteTB_IDFromModule(container_t *module)
 {
     // make sure route table is clean before sharing id
     if (last_route_table_entry == 0)
@@ -341,7 +341,7 @@ static void RouteTB_AddNumToAlias(char *alias, int num)
  * @param intro msg in route table
  * @return None
  ******************************************************************************/
-static int8_t RouteTB_WaitRouteTable(module_t *module, msg_t *intro_msg)
+static int8_t RouteTB_WaitRouteTable(container_t *module, msg_t *intro_msg)
 {
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_route_table_entry;
@@ -378,7 +378,7 @@ unsigned char RouteTB_ResetNetworkDetection(vm_t *vm)
     return 0;
 }
 
-static unsigned char RouteTB_NetworkTopologyDetection(module_t *module)
+static unsigned char RouteTB_NetworkTopologyDetection(container_t *module)
 {
     unsigned short newid = 1;
     // Reset all detection state of modules on the network
@@ -434,7 +434,7 @@ static unsigned char RouteTB_NetworkTopologyDetection(module_t *module)
 // Detect all modules and create a route table with it.
 // If multiple modules have the same name it will be changed with a number in it automatically.
 // At the end this function create a list of sensors id
-void RouteTB_DetectModules(module_t *module)
+void RouteTB_DetectModules(container_t *module)
 {
     msg_t intro_msg, auto_name;
     unsigned char i = 0;
@@ -543,7 +543,7 @@ void RouteTB_ConvertNodeToRouteTable(route_table_t *entry, luos_uuid_t uuid, uns
  * @param module in node
  * @return None
  ******************************************************************************/
-void RouteTB_ConvertModuleToRouteTable(route_table_t *entry, module_t *module)
+void RouteTB_ConvertModuleToRouteTable(route_table_t *entry, container_t *module)
 {
     entry->type = module->vm->type;
     entry->id = module->vm->id;

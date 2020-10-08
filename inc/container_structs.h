@@ -1,11 +1,11 @@
 /******************************************************************************
- * @file modules structure
+ * @file containers structure
  * @brief describs all the
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef __MODULE_STRUCT_H
-#define __MODULE_STRUCT_H
+#ifndef __CONTAINER_STRUCT_H
+#define __CONTAINER_STRUCT_H
 
 #include <stdint.h>
 #include "luos.h"
@@ -14,7 +14,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-/* This structure is used to manage modules timed auto update
+/* This structure is used to manage containers timed auto update
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) timed_update_t
@@ -24,23 +24,23 @@ typedef struct __attribute__((__packed__)) timed_update_t
     unsigned short target;
 } timed_update_t;
 
-/* This structure is used to manage modules
+/* This structure is used to manage containers
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) module_t
+typedef struct __attribute__((__packed__)) container_t
 {
     vm_t *vm;
     // Callback
-    void (*mod_cb)(struct module_t *module, msg_t *msg);
+    void (*cont_cb)(struct container_t *container, msg_t *msg);
     // Variables
-    unsigned char rt;                   /*!< is this module a real time one? */
-    char default_alias[MAX_ALIAS_SIZE]; /*!< Module default alias. */
-    char alias[MAX_ALIAS_SIZE];         /*!< Module alias. */
-    timed_update_t auto_refresh;        /*!< Module auto refresh context. */
-    char firm_version[20];              /*!< Module firmware version. */
-} module_t;
+    unsigned char rt;                   /*!< is this container a real time one? */
+    char default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
+    char alias[MAX_ALIAS_SIZE];         /*!< container alias. */
+    timed_update_t auto_refresh;        /*!< container auto refresh context. */
+    char firm_version[20];              /*!< container firmware version. */
+} container_t;
 
-typedef void (*MOD_CB)(module_t *module, msg_t *msg);
+typedef void (*CONT_CB)(container_t *container, msg_t *msg);
 
 /*
  * Control modes
@@ -123,4 +123,4 @@ typedef struct __attribute__((__packed__))
  * Function
  ******************************************************************************/
 
-#endif /*__ __L0_H */
+#endif /*__CONTAINER_STRUCT_H */
