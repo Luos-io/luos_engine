@@ -8,7 +8,7 @@
 #define LUOS_H
 
 #include "luos_list.h"
-#include "module_structs.h"
+#include "container_structs.h"
 #include "routingTable.h"
 #include "luos_od.h"
 #include "streaming.h"
