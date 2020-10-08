@@ -33,12 +33,12 @@ msg_t *MsgAlloc_GetCurrentMsg(void);
 error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg);
 
 // Luos task stack
-void MsgAlloc_LuosTaskAlloc(vm_t *module_concerned_by_current_msg, msg_t *concerned_msg);
+void MsgAlloc_LuosTaskAlloc(vm_t *container_concerned_by_current_msg, msg_t *concerned_msg);
 
 // Luos task research and pull
-error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg);
+error_return_t MsgAlloc_PullMsg(vm_t *target_container, msg_t **returned_msg);
 error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **returned_msg);
-error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, vm_t **allocated_module);
+error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, vm_t **allocated_container);
 error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *source_id);
 error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd);
 error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size);
