@@ -33,7 +33,6 @@ typedef struct __attribute__((__packed__)) container_t
     // Callback
     void (*cont_cb)(struct container_t *container, msg_t *msg);
     // Variables
-    unsigned char rt;                   /*!< is this container a real time one? */
     char default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
     char alias[MAX_ALIAS_SIZE];         /*!< container alias. */
     timed_update_t auto_refresh;        /*!< container auto refresh context. */

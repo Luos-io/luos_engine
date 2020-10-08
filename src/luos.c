@@ -472,7 +472,6 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
     unsigned char i = 0;
     container_t *module = &container_table[module_number];
     module->vm = Robus_ModuleCreate(type);
-    module->rt = 0;
 
     // Link the module to his callback
     module->cont_cb = cont_cb;
@@ -510,15 +509,6 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
 
     module_number++;
     return module;
-}
-/******************************************************************************
- * @brief Real time module will be change to real time msg
- * @param none
- * @return module
- ******************************************************************************/
-void Luos_ModuleEnableRT(container_t *module)
-{
-    module->rt = 1;
 }
 /******************************************************************************
  * @brief Send msg through network
