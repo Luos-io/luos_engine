@@ -70,6 +70,7 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
         return 1;
     }
     ctx.tx_lock = true;
+    LuosHAL_SetTxLockDetecState(false);
     // Try to detect a collision during the "col_check_data_num" first bytes
     if (LuosHAL_ComTransmit(data, col_check_data_num))
     {

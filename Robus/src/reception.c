@@ -195,6 +195,7 @@ void Recep_Timeout(void)
 void Recep_Reset(void)
 {
     LuosHAL_SetIrqState(false);
+    LuosHAL_SetTxLockDetecState(true);
     ctx.data_cb = Recep_GetHeader;
     keep = FALSE;
     data_count = 0;
