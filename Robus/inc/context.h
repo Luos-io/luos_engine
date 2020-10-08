@@ -35,8 +35,8 @@ typedef struct
     // Variables
     DATA_CB data_cb;                  /*!< Data management callback. */
     status_t status;                  /*!< Status. */
-    unsigned short id;                /*!< Module ID. */
-    unsigned char type;               /*!< Module type. */
+    unsigned short id;                /*!< Container ID. */
+    unsigned char type;               /*!< Container type. */
     volatile unsigned char *tx_data;  /*!< sent data pointer. */
     volatile unsigned char tx_lock;   /*!< transmission locking management. */
     volatile unsigned char collision; /*!< collision flag. */
@@ -46,10 +46,10 @@ typedef struct
     detection_mode_t detection_mode;
     detection_t detection;
 
-    //Virtual module management
-    vm_t vm_table[MAX_VM_NUMBER]; /*!< Virtual Module table. */
-    unsigned char vm_number;      /*!< Virtual Module number. */
-    vm_t *vm_last_send;           /*!< Last Virtual Module id who send something. */
+    //Virtual container management
+    vm_t vm_table[MAX_VM_NUMBER]; /*!< Virtual Container table. */
+    unsigned char vm_number;      /*!< Virtual Container number. */
+    vm_t *vm_last_send;           /*!< Last Virtual Container id who send something. */
 
 } context_t;
 
