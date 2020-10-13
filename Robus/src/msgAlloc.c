@@ -627,3 +627,18 @@ uint16_t MsgAlloc_LuosTasksNbr(void)
 {
     return (uint16_t)luos_tasks_stack_id;
 }
+/******************************************************************************
+ * @brief return the number of allocated messages
+ * @param None
+ * @return the number of messages
+ ******************************************************************************/
+void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
+{
+    for (uint16_t id = 0; id < luos_tasks_stack_id; id++)
+    {
+        if (luos_tasks[id].msg_pt == msg)
+        {
+            MsgAlloc_ClearLuosTask(id);
+        }
+    }
+}

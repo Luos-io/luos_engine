@@ -43,5 +43,6 @@ error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *sou
 error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd);
 error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size);
 uint16_t MsgAlloc_LuosTasksNbr(void);
+void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg);
 
 #endif /* _MSGALLOC_H_ */

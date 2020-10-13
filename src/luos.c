@@ -69,47 +69,60 @@ void Luos_Loop(void)
     {
         // There is a message available find the container linked to it
         container_t *container = Luos_GetContainer(oldest_vm);
-        // Is this container having a callback?
-        if (container->cont_cb != 0)
+        // check if this is a Luos Command
+        uint8_t cmd = 0;
+        uint16_t size = 0;
+        if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAIL)
         {
-            // This container have a callback pull the message
-            if (MsgAlloc_PullMsg(oldest_vm, &returned_msg) == SUCESS)
+            // this is a critical failure we should never go here
+            while (1)
+                ;
+        }
+        if (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == FAIL)
+        {
+            // this is a critical failure we should never go here
+            while (1)
+                ;
+        }
+        //check if this msg cmd should be consumed by Luos_MsgHandler
+        if (Luos_IsALuosCmd(cmd, size) == SUCESS)
+        {
+            if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCESS)
             {
-                // check if the content of this message need to be managed by Luos and do it if it is.
+                // be sure the content of this message need to be managed by Luos and do it if it is.
                 if (!Luos_MsgHandler((container_t *)container, returned_msg))
                 {
+                    // we should not go there there is a mistake on Luos_IsALuosCmd or Luos_MsgHandler
                     // This message is for the user, pass it to the user.
                     container->cont_cb(container, returned_msg);
                 }
+                else
+                {
+                    // Luos CMD are generic for all continers and have to be executed only once
+                    // Clear all luos tasks related to this message (in case of multicast message)
+                    MsgAlloc_ClearMsgFromLuosTasks(returned_msg);
+                }
+            }
+            else
+            {
+                // this is a critical failure we should never go here
+                while (1)
+                    ;
+                container->cont_cb(container, returned_msg);
             }
         }
         else
         {
-            uint8_t cmd = 0;
-            uint16_t size = 0;
-            if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAIL)
+            // This message is for a container
+            // check if this continer have a callback?
+            if (container->cont_cb != 0)
             {
-                // this is a critical failure we should never go here
-                while (1)
-                    ;
-            }
-            if (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == FAIL)
-            {
-                // this is a critical failure we should never go here
-                while (1)
-                    ;
-            }
-            //check if this msg cmd should be consumed by Luos_MsgHandler
-            if (Luos_IsALuosCmd(cmd, size) == SUCESS)
-            {
-                // Luos_MsgHandler use it. clear this slot.
-                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == FAIL)
+                // This container have a callback pull the message
+                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCESS)
                 {
-                    // this is a critical failure we should never go here
-                    while (1)
-                        ;
+                    // This message is for the user, pass it to the user.
+                    container->cont_cb(container, returned_msg);
                 }
-                Luos_MsgHandler((container_t *)container, returned_msg);
             }
             else
             {
