@@ -34,7 +34,9 @@ typedef enum
     IDACK,     /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
     TYPE,      /*!< Type mode, used to send something to all container of the same type. */
     BROADCAST, /*!< Broadcast mode, used to send something to everybody. */
-    MULTICAST  /*!< Multicast mode, used to send something to multiple containers. */
+    MULTICAST, /*!< Multicast mode, used to send something to multiple containers. */
+    NODEID,    /*!< Node mode, used to send something to all containers of a node. */
+    NODEIDACK  /*!< Node mode with reception Acknoledgment (ACK). */
 } target_mode_t;
 
 /* This structure is used specify data and destination of datas.
