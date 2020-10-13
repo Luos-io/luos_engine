@@ -20,7 +20,7 @@
  ******************************************************************************/
 container_t container_table[MAX_VM_NUMBER];
 unsigned char container_number;
-volatile route_table_t *route_table_pt;
+volatile routing_table_t *routing_table_pt;
 
 luos_stats_t luos_stats;
 /*******************************************************************************
@@ -29,7 +29,7 @@ luos_stats_t luos_stats;
 static int8_t Luos_MsgHandler(container_t *container, msg_t *input);
 static container_t *Luos_GetContainer(vm_t *vm);
 static int8_t Luos_GetContainerIndex(container_t *container);
-static void Luos_TransmitLocalRouteTable(container_t *container, msg_t *routeTB_msg);
+static void Luos_TransmitLocalRoutingTable(container_t *container, msg_t *routeTB_msg);
 static void Luos_AutoUpdateManager(void);
 static uint8_t Luos_SaveAlias(container_t *container, char *alias);
 static void Luos_WriteAlias(unsigned short local_id, char *alias);
@@ -167,7 +167,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
 {
     uint32_t baudrate;
     msg_t routeTB_msg;
-    route_table_t *route_tab = &RouteTB_Get()[RouteTB_GetLastEntry()];
+    routing_table_t *route_tab = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
     time_luos_t time;
     if (input->header.target_mode == ID ||
         input->header.target_mode == IDACK ||
@@ -235,14 +235,14 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
             routeTB_msg.header.cmd = INTRODUCTION_CMD;
             routeTB_msg.header.target_mode = IDACK;
             routeTB_msg.header.target = input->header.source;
-            Luos_TransmitLocalRouteTable(container, &routeTB_msg);
+            Luos_TransmitLocalRoutingTable(container, &routeTB_msg);
             return 1;
             break;
         case INTRODUCTION_CMD:
             if (Luos_ReceiveData(container, input, (void *)route_tab))
             {
                 // route table of this board is finish
-                RouteTB_ComputeRouteTableEntryNB();
+                RoutingTB_ComputeRoutingTableEntryNB();
             }
             return 1;
             break;
@@ -377,13 +377,13 @@ static int8_t Luos_GetContainerIndex(container_t *container)
  * @param none
  * @return none
  ******************************************************************************/
-static void Luos_TransmitLocalRouteTable(container_t *container, msg_t *routeTB_msg)
+static void Luos_TransmitLocalRoutingTable(container_t *container, msg_t *routeTB_msg)
 {
     // We receive this command because someone creating a new route table
     // Reset the actual route table
-    RouteTB_Erase();
+    RoutingTB_Erase();
     uint16_t entry_nb = 0;
-    route_table_t local_route_table[container_number + 1];
+    routing_table_t local_routing_table[container_number + 1];
     //start by saving board entry
     luos_uuid_t uuid;
     uuid.uuid[0] = LUOS_UUID[0];
@@ -391,14 +391,14 @@ static void Luos_TransmitLocalRouteTable(container_t *container, msg_t *routeTB_
     uuid.uuid[2] = LUOS_UUID[2];
     unsigned char table_size;
     uint16_t *detection_branches = Robus_GetNodeBranches(&table_size);
-    RouteTB_ConvertNodeToRouteTable(&local_route_table[entry_nb], uuid, detection_branches, table_size);
+    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], uuid, detection_branches, table_size);
     entry_nb++;
     // save containers entry
     for (int i = 0; i < container_number; i++)
     {
-        RouteTB_ConvertContainerToRouteTable((route_table_t *)&local_route_table[entry_nb++], &container_table[i]);
+        RoutingTB_ConvertContainerToRoutingTable((routing_table_t *)&local_routing_table[entry_nb++], &container_table[i]);
     }
-    Luos_SendData(container, routeTB_msg, (void *)local_route_table, (entry_nb * sizeof(route_table_t)));
+    Luos_SendData(container, routeTB_msg, (void *)local_routing_table, (entry_nb * sizeof(routing_table_t)));
 }
 /******************************************************************************
  * @brief auto update publication for container
