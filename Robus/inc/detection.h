@@ -13,8 +13,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-
 #define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
 typedef enum
@@ -29,11 +27,10 @@ typedef enum
     RELEASE
 } expected_detection_t;
 
-typedef struct __attribute__((__packed__))
+typedef struct
 {
-    branch_t keepline;           /*!< last keepline status on PTP lines . */
-    unsigned char detection_end; /*!< All Virtual Module have ID. */
-    unsigned char detected_vm;   /*!< Virtual Module number. */
+    branch_t keepline;         /*!< last keepline status on PTP lines . */
+    unsigned char detected_vm; /*!< Virtual Container number. */
     expected_detection_t expect;
     unsigned short branches[NO_BRANCH];
     unsigned char activ_branch;
@@ -45,10 +42,9 @@ typedef struct __attribute__((__packed__))
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void reset_detection(void);
-unsigned char poke(branch_t branch);
-void poke_next_branch(void);
-void ptp_handler(branch_t branch);
-unsigned char reset_network_detection(vm_t *vm);
+void Detec_PtpHandler(branch_t branch);
+uint8_t Detect_PokeBranch(branch_t branch);
+void Detect_PokeNextBranch(void);
+void Detec_InitDetection(void);
 
 #endif /* _DETECTION_H_ */

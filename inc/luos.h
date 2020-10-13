@@ -7,8 +7,8 @@
 #ifndef LUOS_H
 #define LUOS_H
 
-#include "module_list.h"
-#include "module_structs.h"
+#include "luos_list.h"
+#include "container_structs.h"
 #include "routingTable.h"
 #include "luos_od.h"
 #include "streaming.h"
@@ -17,6 +17,23 @@
  * Definitions
  ******************************************************************************/
 
+/******************************************************************************
+ * @struct luos_stats_t
+ * @brief store informations about luos stats
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            memory_stats_t memory;
+            uint8_t max_loop_time_ms;
+        };
+        uint8_t unmap[5]; /*!< streamable form. */
+    };
+} luos_stats_t;
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -24,157 +41,21 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-/**
- * \fn void luos_init(void)
- * \brief Initialisation of Luos.
- *
- */
-void luos_init(void);
 
-/**
- * \fn void luos_loop(void)
- * \brief loop of Luos.
- *
- */
-void luos_loop(void);
-
-/**
- * \fn void luos_modules_clear(void)
- * \brief Completely reset the list of virtual modules.
- *
- */
-void luos_modules_clear(void);
-
-/**
- * \fn module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, unsigned char *alias)
- * \brief Initialisation of the module.
- *
- * \param mod_cb function pointer into the rx callback.
- * \param type type reference of this module hardware.
- * \param alias string (15 caracters max).
- *
- * \return module object pointer.
- *
- */
-module_t* luos_module_create(MOD_CB mod_cb, unsigned char type, const char *alias, char *firm_revision);
-
-/**
- * \fn void luos_module_enable_rt(module_t*module)
- * \brief Enable real time callback mode.
- *
- * \param module module to enable.
- *
- */
-void luos_module_enable_rt(module_t *module);
-
-/**
- * \fn unsigned char luos_send(module_t* module, msg_t *msg)
- * \brief  Send message function.
- *
- * \param virtual module who send.
- * \param msg Message to send to the slave.
- *
- * \return send or not
- */
-unsigned char luos_send(module_t *module, msg_t *msg);
-
-/**
- * \fn unsigned char luos_send_data(module_t* module, msg_t*msg, void* bin_data, unsigned int size)
- * \brief  Send message with big datas into multiple chunk.
- *
- * \param module who send.
- * \param msg Message to send to the slave with basic informations.
- * \param bin_data Pointer to the message data table
- * \param size Size of the data to transmit
- *
- * \return send or not
- */
-unsigned char luos_send_data(module_t *module, msg_t *msg, void *bin_data, unsigned short size);
-
-/**
- * \fn unsigned char luos_send_streaming(module_t *module, msg_t *msg, streaming_channel_t *streaming)
- * \brief  Send datas of a streaming channel.
- *
- * \param module who send.
- * \param msg Message to send to the slave with basic informations.
- * \param streaming streaming channel pointer
- *
- * \return send or not
- */
-unsigned char luos_send_streaming(module_t *module, msg_t *msg, streaming_channel_t *stream);
-
-/**
- * \fn unsigned char luos_receive_data(module_t* module, msg_t* msg, void* bin_data, unsigned int* size)
- * \brief  Retrieve a multi chunk data
- *
- * \param module who receive.
- * \param msg Message chunk received by the slave.
- * \param bin_data Pointer to the data table
- * \param size Size of the received data
- *
- * \return reception finish or not
- */
-unsigned char luos_receive_data(module_t *module, msg_t *msg, void *bin_data);
-
-/**
- * \fn nsigned char luos_receive_streaming(module_t *module, msg_t *msg, streaming_channel_t streaming)
- * \brief  Receive a streaming channel datas
- *
- * \param module who receive.
- * \param msg Message received by the slave.
- * \param streaming streaming channel pointer
- *
- * \return reception finish or not
- */
-unsigned char luos_receive_streaming(module_t *module, msg_t *msg, streaming_channel_t *stream);
-
-/**
- * \fn msg_t* luos_read(module_t* module)
- * \brief  get a received message from a specific module.
- *
- * \param module who receive.
- *
- * \return the received message pointer
- */
-msg_t *luos_read(module_t *module);
-
-/**
- * \fn msg_t* luos_read_from(module_t* module, short id)
- * \brief  get a received message from a specific id to a specific module.
- *
- * \param module who receive the message we are looking for.
- * \param id who sent the message we are looking for .
- *
- * \return the received message pointer
- */
-msg_t *luos_read_from(module_t *module, short id);
-
-/**
- * \fn char luos_message_available(void)
- * \brief how many messages are available
- *
- * \return the number of message received.
- */
-char luos_message_available(void);
-
-/**
- * \fn void luos_save_alias(module_t* module, char* alias)
- * \brief  Save Alias in EEprom.
- *
- * \param concerned virtual module.
- * \param name string.
- *
- */
-void luos_save_alias(module_t *module, char *alias);
-
-/**
- * \fn void luos_set_baudrate(module_t* module, uint32_t baudrate)
- * \brief  Setup the entire luos network baudrate .
- *
- * \param module sending this command.
- * \param new baudrate.
- *
- */
-void luos_set_baudrate(module_t *module, uint32_t baudrate);
+void Luos_Init(void);
+void Luos_Loop(void);
+void Luos_ContainersClear(void);
+container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, char *firm_revision);
+uint8_t Luos_SendMsg(container_t *container, msg_t *msg);
+error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg);
+error_return_t Luos_ReadFromContainer(container_t *container, int16_t id, msg_t **returned_msg);
+uint8_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t size);
+uint8_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data);
+uint8_t Luos_SendStreaming(container_t *container, msg_t *msg, streaming_channel_t *stream);
+uint8_t Luos_ReceiveStreaming(container_t *container, msg_t *msg, streaming_channel_t *stream);
+void Luos_SetBaudrate(uint32_t baudrate);
+void Luos_SendBaudrate(container_t *container, uint32_t baudrate);
+uint8_t Luos_SetExternId(container_t *container, target_mode_t target_mode, uint16_t target, uint16_t newid);
+uint16_t Luos_NbrAvailableMsg(void);
 
 #endif /* LUOS_H */

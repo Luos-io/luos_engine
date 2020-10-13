@@ -1,8 +1,17 @@
-#ifndef MODULE_LIST_H
-#define MODULE_LIST_H
+/******************************************************************************
+ * @file luos list
+ * @brief list luos specific type and commands
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
+#ifndef LUOS_LIST_H
+#define LUOS_LIST_H
 
 #include <robus.h>
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 typedef enum
 {
     GATE_MOD,
@@ -23,16 +32,31 @@ typedef enum
     VOID_MOD,
     LOAD_MOD,
     LUOS_LAST_TYPE
-} module_type_t;
+} luos_type_t;
 
 typedef enum
 {
-    // Common register for all modules and gate
-    IDENTIFY_CMD,     // Gate asks a module to identify itself
-    INTRODUCTION_CMD, // Module sends its alias and type to the gate
+    // protocol level command
+    WRITE_ID,        /*!< Get and save a new given ID. */
+    RESET_DETECTION, /*!< Reset detection*/
+    SET_BAUDRATE,    /*!< Set Robus baudrate*/
+
+    // Luos specific registers
+    IDENTIFY_CMD,     // Gate asks a container to identify itself
+    INTRODUCTION_CMD, // container sends its alias and type to the gate
     WRITE_ALIAS,      // Get and save a new given alias.
-    ASK_PUB_CMD,      // Gate asks a sensor module to publish its data
     UPDATE_PUB,       // Ask to update a sensor value each time duration to the sender
+    NODE_UUID,        // luos_uuid_t
+
+    // Revision management
+    REVISION,        // container sends its firmware revision
+    LUOS_REVISION,   // container sends its luos revision
+    LUOS_STATISTICS, // container sends its luos revision
+
+    // ************* End of Luos managed commands ****************
+
+    // Common register for all containers
+    ASK_PUB_CMD, // asks a container to publish its data
 
     // Generic data
     COLOR,       // color_t (R, G, B)
@@ -59,12 +83,6 @@ typedef enum
     DIMENSION,  // dimention of an element m linear_position_t
     OFFSET,     // decay float
     SETID,      // Set Dynamixel ID
-
-    // Node things
-    NODE_TEMPERATURE, // temperature_t (°c)
-    NODE_VOLTAGE,     // voltage_t (V)
-    NODE_LED,         // char (True/False)
-    NODE_UUID,        // luos_uuid_t
 
     // Space positioning
     ANGULAR_POSITION, // angular_position_t (deg)
@@ -93,14 +111,18 @@ typedef enum
     // Specific register
     DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
     HANDY_SET_POSITION, // handy_t
-    PARAMETERS,         // depend on the module, can be : servo_parameters_t, imu_report_t, motor_mode_t
-
-    // Revision management
-    REVISION,      // Module sends its firmware revision
-    LUOS_REVISION, // Module sends its luos revision
+    PARAMETERS,         // depend on the container, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
     // compatibility area
     LUOS_PROTOCOL_NB,
-} module_register_t;
+} luos_cmd_t;
 
-#endif /* MODULE_LIST_H */
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
+
+#endif /* LUOS_LIST_H */

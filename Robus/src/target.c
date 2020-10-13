@@ -1,13 +1,29 @@
-/*
- * target.c
- *
- * Created: 14/02/2017 11:53:28
- *  Author: Nicolas Rabault
- *  Abstract: manage multicast address bank
- */
+/******************************************************************************
+ * @file target
+ * @brief multicast protocole description
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "target.h"
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 
-unsigned char multicast_target_bank(vm_t *vm, unsigned short val)
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
+
+/******************************************************************************
+ * @brief lookink for a bank of target in multicast mode
+ * @param container in multicast
+ * @param multicast bank
+ * @return Error
+ ******************************************************************************/
+uint8_t Trgt_MulticastTargetBank(vm_t *vm, unsigned short val)
 {
     unsigned char i;
     for (i = 0; i < vm->max_multicast_target; i++)
@@ -17,8 +33,13 @@ unsigned char multicast_target_bank(vm_t *vm, unsigned short val)
     }
     return FALSE;
 }
-
-void add_multicast_target(vm_t *vm, unsigned short target)
+/******************************************************************************
+ * @brief add a target to the bank
+ * @param container in multicast
+ * @param target to add
+ * @return Error
+ ******************************************************************************/
+void Trgt_AddMulticastTarget(vm_t *vm, unsigned short target)
 {
     vm->multicast_target_bank[vm->max_multicast_target++] = target;
 }

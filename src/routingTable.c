@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <luosHAL.h>
+#include "context.h" //TODO to remove
 
 /*******************************************************************************
  * Definitions
@@ -17,22 +18,30 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-route_table_t route_table[MAX_MODULES_NUMBER];
-volatile int last_module = 0;
+route_table_t route_table[MAX_CONTAINERS_NUMBER];
+volatile int last_container = 0;
 volatile int last_route_table_entry = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
+static void RouteTB_AddNumToAlias(char *alias, int num);
+static int8_t RouteTB_BigestID(void);
+static int8_t RouteTB_WaitRouteTable(container_t *container, msg_t *intro_msg);
 
-// ********************* route_table search tools ************************
-// Return an id from an alias (return 0 if no alias match)
-int id_from_alias(char *alias)
+// ************************ route_table search tools ***************************
+
+/******************************************************************************
+ * @brief  Return an id from alias
+ * @param pointer to alias
+ * @return ID or Error
+ ******************************************************************************/
+int8_t RouteTB_IDFromAlias(char *alias)
 {
     if (*alias != -1)
     {
         for (int i = 0; i <= last_route_table_entry; i++)
         {
-            if (route_table[i].mode == MODULE)
+            if (route_table[i].mode == CONTAINER)
             {
                 if (strcmp(route_table[i].alias, alias) == 0)
                 {
@@ -43,12 +52,16 @@ int id_from_alias(char *alias)
     }
     return -1;
 }
-
-int id_from_type(module_type_t type)
+/******************************************************************************
+ * @brief  Return an id from type
+ * @param type of container look at
+ * @return ID or Error
+ ******************************************************************************/
+int8_t RouteTB_IDFromType(luos_type_t type)
 {
     for (int i = 0; i <= last_route_table_entry; i++)
     {
-        if (route_table[i].mode == MODULE)
+        if (route_table[i].mode == CONTAINER)
         {
             if (type == route_table[i].type)
             {
@@ -58,19 +71,74 @@ int id_from_type(module_type_t type)
     }
     return -1;
 }
-
-int id_from_module(module_t *module)
+/******************************************************************************
+ * @brief  Return an id from container
+ * @param container look at
+ * @return ID or Error
+ ******************************************************************************/
+int8_t RouteTB_IDFromContainer(container_t *container)
 {
     // make sure route table is clean before sharing id
     if (last_route_table_entry == 0)
     {
         return 0;
     }
-    return (int)module->vm->id;
+    return (int)container->vm->id;
 }
-
-// Create a string from a module type
-char *string_from_type(module_type_t type)
+/******************************************************************************
+ * @brief  Return container Alias from ID
+ * @param id container look at
+ * @return pointer to string or Error
+ ******************************************************************************/
+char *RouteTB_AliasFromId(uint16_t id)
+{
+    for (int i = 0; i <= last_route_table_entry; i++)
+    {
+        if (route_table[i].mode == CONTAINER)
+        {
+            if (id == route_table[i].id)
+            {
+                return route_table[i].alias;
+            }
+        }
+    }
+    return (char *)0;
+}
+/******************************************************************************
+ * @brief  Return container type from ID
+ * @param id container look at
+ * @return pointer container or Error
+ ******************************************************************************/
+luos_type_t RouteTB_TypeFromID(uint16_t id)
+{
+    for (int i = 0; i <= last_route_table_entry; i++)
+    {
+        if (route_table[i].mode == CONTAINER)
+        {
+            if (route_table[i].id == id)
+            {
+                return route_table[i].type;
+            }
+        }
+    }
+    return -1;
+}
+/******************************************************************************
+ * @brief  Return container type from alias
+ * @param alias container look at
+ * @return pointer to container or Error
+ ******************************************************************************/
+luos_type_t RouteTB_TypeFromAlias(char *alias)
+{
+    uint16_t id = RouteTB_IDFromAlias(alias);
+    return RouteTB_TypeFromID(id);
+}
+/******************************************************************************
+ * @brief  Create a string from a container type
+ * @param type of container look at
+ * @return pointer to string or Error
+ ******************************************************************************/
+char *RouteTB_StringFromType(luos_type_t type)
 {
     switch (type)
     {
@@ -127,40 +195,12 @@ char *string_from_type(module_type_t type)
         break;
     }
 }
-
-char *alias_from_id(uint16_t id)
-{
-    for (int i = 0; i <= last_route_table_entry; i++)
-    {
-        if (route_table[i].mode == MODULE)
-        {
-            if (id == route_table[i].id)
-            {
-                return route_table[i].alias;
-            }
-        }
-    }
-    return (char *)0;
-}
-
-int bigest_id()
-{
-    int max_id = 0;
-    for (int i = 0; i < last_route_table_entry; i++)
-    {
-        if (route_table[i].mode == MODULE)
-        {
-            if (route_table[i].id > max_id)
-            {
-                max_id = route_table[i].id;
-            }
-        }
-    }
-    return max_id;
-}
-
-// check if the module is a sensor or not
-uint8_t is_sensor(module_type_t type)
+/******************************************************************************
+ * @brief  check if the container is a sensor or not
+ * @param container look at
+ * @return Error
+ ******************************************************************************/
+uint8_t RouteTB_ContainerIsSensor(luos_type_t type)
 {
     if ((type == ANGLE_MOD) ||
         (type == STATE_MOD) ||
@@ -176,31 +216,32 @@ uint8_t is_sensor(module_type_t type)
     }
     return 0;
 }
-
-// Return a module_type from an id
-module_type_t type_from_id(uint16_t id)
+/******************************************************************************
+ * @brief  return bigest ID in list
+ * @param None
+ * @return ID
+ ******************************************************************************/
+static int8_t RouteTB_BigestID(void)
 {
-    for (int i = 0; i <= last_route_table_entry; i++)
+    int max_id = 0;
+    for (int i = 0; i < last_route_table_entry; i++)
     {
-        if (route_table[i].mode == MODULE)
+        if (route_table[i].mode == CONTAINER)
         {
-            if (route_table[i].id == id)
+            if (route_table[i].id > max_id)
             {
-                return route_table[i].type;
+                max_id = route_table[i].id;
             }
         }
     }
-    return -1;
+    return max_id;
 }
-
-// Return a module type from alias
-module_type_t type_from_alias(char *alias)
-{
-    uint16_t id = id_from_alias(alias);
-    return type_from_id(id);
-}
-
-int get_node_nb(void)
+/******************************************************************************
+ * @brief  get number of a node on network
+ * @param None
+ * @return Error
+ ******************************************************************************/
+int8_t RouteTB_GetNodeNB(void)
 {
     int node_nb = 0;
     for (int i = 0; i <= last_route_table_entry; i++)
@@ -212,8 +253,12 @@ int get_node_nb(void)
     }
     return node_nb - 1;
 }
-
-void get_node_list(unsigned short *list)
+/******************************************************************************
+ * @brief  get List of node on network
+ * @param pointer to list of Node
+ * @return None
+ ******************************************************************************/
+void RouteTB_GetNodeList(unsigned short *list)
 {
     int node_nb = 0;
     for (int i = 0; i <= last_route_table_entry; i++)
@@ -225,22 +270,30 @@ void get_node_list(unsigned short *list)
         }
     }
 }
-
-int get_node_id(unsigned short index)
+/******************************************************************************
+ * @brief  get ID of node on network
+ * @param pointer to index of Node
+ * @return None
+ ******************************************************************************/
+int8_t RouteTB_GetNodeID(unsigned short index)
 {
     return route_table[index + 1].id;
 }
 
 // ********************* route_table management tools ************************
 
-// compute entry number
-void compute_route_table_entry_nb(void)
+/******************************************************************************
+ * @brief compute entry number
+ * @param None
+ * @return None
+ ******************************************************************************/
+void RouteTB_ComputeRouteTableEntryNB(void)
 {
-    for (int i = 0; i < MAX_MODULES_NUMBER; i++)
+    for (int i = 0; i < MAX_CONTAINERS_NUMBER; i++)
     {
-        if (route_table[i].mode == MODULE)
+        if (route_table[i].mode == CONTAINER)
         {
-            last_module = route_table[i].id;
+            last_container = route_table[i].id;
         }
         if (route_table[i].mode == CLEAR)
         {
@@ -249,9 +302,13 @@ void compute_route_table_entry_nb(void)
         }
     }
 }
-
-// manage module name increment
-void add_num_to_alias(char *alias, int num)
+/******************************************************************************
+ * @brief manage container name increment to never have same alias
+ * @param alias to change
+ * @param nb to add
+ * @return None
+ ******************************************************************************/
+static void RouteTB_AddNumToAlias(char *alias, int num)
 {
     int intsize = 1;
     if (num > 9)
@@ -278,17 +335,22 @@ void add_num_to_alias(char *alias, int num)
     // Add a number at the end of the alias
     sprintf(alias, "%s%d", alias, num);
 }
-
-int wait_route_table(module_t *module, msg_t *intro_msg)
+/******************************************************************************
+ * @brief time out to receive en route table from
+ * @param container receive
+ * @param intro msg in route table
+ * @return None
+ ******************************************************************************/
+static int8_t RouteTB_WaitRouteTable(container_t *container, msg_t *intro_msg)
 {
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_route_table_entry;
-    luos_send(module, intro_msg);
+    Luos_SendMsg(container, intro_msg);
     uint32_t timestamp = LuosHAL_GetSystick();
     while ((LuosHAL_GetSystick() - timestamp) < timeout)
     {
-        // If this request is for a module in this board allow him to respond.
-        luos_loop();
+        // If this request is for a container in this board allow him to respond.
+        Luos_Loop();
         if (entry_bkp != last_route_table_entry)
         {
             return 1;
@@ -297,92 +359,172 @@ int wait_route_table(module_t *module, msg_t *intro_msg)
     return 0;
 }
 
-// Detect all modules and create a route table with it.
-// If multiple modules have the same name it will be changed with a number in it automatically.
+unsigned char RouteTB_ResetNetworkDetection(vm_t *vm)
+{
+    msg_t msg;
+
+    msg.header.target = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd = RESET_DETECTION;
+    msg.header.size = 0;
+
+    //we don't have any way to tell every containers to reset their detection do it twice to be sure
+    if (Robus_SendMsg(vm, &msg))
+        return 1;
+    if (Robus_SendMsg(vm, &msg))
+        return 1;
+    // run luos_loop() to manage the 2 previous broadcast msgs.
+    Luos_Loop();
+    return 0;
+}
+
+static unsigned char RouteTB_NetworkTopologyDetection(container_t *container)
+{
+    unsigned short newid = 1;
+    // Reset all detection state of containers on the network
+    RouteTB_ResetNetworkDetection(container->vm);
+    ctx.detection_mode = MASTER_DETECT;
+    // wait for some us
+    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
+        ;
+
+    // setup sending vm
+    container->vm->id = newid++;
+
+    // Parse internal vm other than the sending one
+    for (unsigned char i = 0; i < ctx.vm_number; i++)
+    {
+        if (&ctx.vm_table[i] != container->vm)
+        {
+            ctx.vm_table[i].id = newid++;
+        }
+    }
+
+    ctx.detection.detected_vm = ctx.vm_number;
+
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    {
+        ctx.detection_mode = MASTER_DETECT;
+        if (Detect_PokeBranch(branch))
+        {
+            // Someone reply to our poke!
+            // loop while the line is released
+            int container_number = 0;
+            while ((ctx.detection.keepline != NO_BRANCH) & (container_number < 1024))
+            {
+                if (Luos_SetExternId(container, IDACK, DEFAULTID, newid++))
+                {
+                    // set extern id fail
+                    // remove this id and stop topology detection
+                    newid--;
+                    break;
+                }
+                container_number++;
+                // wait for some us
+                for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
+                    ;
+            }
+        }
+    }
+    ctx.detection_mode = NO_DETECT;
+
+    return newid - 1;
+}
+
+// Detect all containers and create a route table with it.
+// If multiple containers have the same name it will be changed with a number in it automatically.
 // At the end this function create a list of sensors id
-void detect_modules(module_t *module)
+void RouteTB_DetectContainers(container_t *container)
 {
     msg_t intro_msg, auto_name;
     unsigned char i = 0;
     // clear network detection state and all previous info.
-    flush_route_table();
+    RouteTB_Erase();
     // Starts the topology detection.
-    int nb_mod = robus_topology_detection(module->vm);
-    if (nb_mod > MAX_MODULES_NUMBER - 1)
-        nb_mod = MAX_MODULES_NUMBER - 1;
+    int nb_mod = RouteTB_NetworkTopologyDetection(container);
+    if (nb_mod > MAX_CONTAINERS_NUMBER - 1)
+    {
+        nb_mod = MAX_CONTAINERS_NUMBER - 1;
+    }
 
-    // Then, asks for introduction for every found modules.
-    int try = 0;
-    int last_id = bigest_id();
-    while ((last_id < nb_mod) && (try < nb_mod))
+    // Then, asks for introduction for every found containers.
+    int try_nb = 0;
+    int last_id = RouteTB_BigestID();
+    while ((last_id < nb_mod) && (try_nb < nb_mod))
     {
         intro_msg.header.cmd = IDENTIFY_CMD;
         intro_msg.header.target_mode = IDACK;
         intro_msg.header.size = 0;
-        // Target next unknown module (the first one of the next node)
+        // Target next unknown container (the first one of the next node)
         intro_msg.header.target = last_id + 1;
-        try
-            ++;
+        try_nb++;
         // Ask to introduce and wait for a reply
-        if (!wait_route_table(module, &intro_msg))
+        if (!RouteTB_WaitRouteTable(container, &intro_msg))
         {
             // We don't get the answer
             nb_mod = last_id;
             break;
         }
-        last_id = bigest_id();
+        last_id = RouteTB_BigestID();
     }
     for (int id = 1; id <= nb_mod; id++)
     {
-        int computed_id = id_from_alias(alias_from_id(id));
+        int computed_id = RouteTB_IDFromAlias(RouteTB_AliasFromId(id));
         if ((computed_id != id) & (computed_id != -1))
         {
             int annotation = 1;
             // this name already exist in the network change it and send it back.
             // find the new alias to give him
             char aliasbis[15] = {0};
-            memcpy(aliasbis, alias_from_id(id), 15);
-            add_num_to_alias(alias_from_id(id), annotation++);
-            while (id_from_alias(alias_from_id(id)) != id)
+            memcpy(aliasbis, RouteTB_AliasFromId(id), 15);
+            RouteTB_AddNumToAlias(RouteTB_AliasFromId(id), annotation++);
+            while (RouteTB_IDFromAlias(RouteTB_AliasFromId(id)) != id)
             {
-                memcpy(alias_from_id(id), aliasbis, 15);
-                add_num_to_alias(alias_from_id(id), annotation++);
+                memcpy(RouteTB_AliasFromId(id), aliasbis, 15);
+                RouteTB_AddNumToAlias(RouteTB_AliasFromId(id), annotation++);
             }
             auto_name.header.target_mode = ID;
             auto_name.header.target = id;
             auto_name.header.cmd = WRITE_ALIAS;
-            auto_name.header.size = strlen(alias_from_id(id));
+            auto_name.header.size = strlen(RouteTB_AliasFromId(id));
             // Copy the alias into the data field of the message
             for (i = 0; i < auto_name.header.size; i++)
             {
-                auto_name.data[i] = alias_from_id(id)[i];
+                auto_name.data[i] = RouteTB_AliasFromId(id)[i];
             }
             auto_name.data[auto_name.header.size] = '\0';
             // Send the message using the WRITE_ALIAS system command
-            robus_send(module->vm, &auto_name);
+            Robus_SendMsg(container->vm, &auto_name);
             //TODO update name into route_table
         }
     }
 
-    // send route table to each nodes. Route tables are commonly usable for each modules of a node.
-    int nb_node = get_node_nb();
-    unsigned short node_index_list[MAX_MODULES_NUMBER];
-    get_node_list(node_index_list);
+    // send route table to each nodes. Route tables are commonly usable for each containers of a node.
+    int nb_node = RouteTB_GetNodeNB();
+    unsigned short node_index_list[MAX_CONTAINERS_NUMBER];
+    RouteTB_GetNodeList(node_index_list);
 
     intro_msg.header.cmd = INTRODUCTION_CMD;
     intro_msg.header.target_mode = IDACK;
 
     for (int i = 1; i <= nb_node; i++)
     {
-        intro_msg.header.target = get_node_id(node_index_list[i]);
-        luos_send_data(module, &intro_msg, route_table, (last_route_table_entry * sizeof(route_table_t)));
+        intro_msg.header.target = RouteTB_GetNodeID(node_index_list[i]);
+        Luos_SendData(container, &intro_msg, route_table, (last_route_table_entry * sizeof(route_table_t)));
     }
 }
-
-void convert_board_to_route_table(route_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb)
+/******************************************************************************
+ * @brief entry in routable node with associate container
+ * @param route table
+ * @param uuid node
+ * @param node table
+ * @param brach for node
+ * @return None
+ ******************************************************************************/
+void RouteTB_ConvertNodeToRouteTable(route_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb)
 {
     entry->uuid = uuid;
-    for (int i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 4; i++)
     {
         if (i < branch_nb)
         {
@@ -395,60 +537,82 @@ void convert_board_to_route_table(route_table_t *entry, luos_uuid_t uuid, unsign
     }
     entry->mode = NODE;
 }
-
-// convert a module on the route_table
-void convert_module_to_route_table(route_table_t *entry, module_t *module)
+/******************************************************************************
+ * @brief entry in routable container associate to a node
+ * @param route table
+ * @param container in node
+ * @return None
+ ******************************************************************************/
+void RouteTB_ConvertContainerToRouteTable(route_table_t *entry, container_t *container)
 {
-    entry->type = module->vm->type;
-    entry->id = module->vm->id;
-    entry->mode = MODULE;
+    entry->type = container->vm->type;
+    entry->id = container->vm->id;
+    entry->mode = CONTAINER;
     for (int i = 0; i < MAX_ALIAS_SIZE; i++)
     {
-        entry->alias[i] = module->alias[i];
+        entry->alias[i] = container->alias[i];
     }
 }
-
-// add a new module on the route_table
-void insert_on_route_table(route_table_t *entry)
+/******************************************************************************
+ * @brief add a new container on the route_table
+ * @param route table
+ * @return None
+ ******************************************************************************/
+void RouteTB_InsertOnRouteTable(route_table_t *entry)
 {
     memcpy(&route_table[last_route_table_entry++], entry, sizeof(route_table_t));
-    if (entry->mode == MODULE)
+    if (entry->mode == CONTAINER)
     {
-        last_module = entry->id;
+        last_container = entry->id;
     }
 }
-
-// remove an entry from route_table
-void remove_on_route_table(int index)
+/******************************************************************************
+ * @brief remove an entry from route_table
+ * @param index of container
+ * @return None
+ ******************************************************************************/
+void RouteTB_RemoveOnRouteTable(int index)
 {
     route_table[index].alias[0] = '\0';
     route_table[index].type = VOID_MOD;
     route_table[index].id = 0;
     route_table[index].mode = CLEAR;
 }
-
-// erase route_table
-void flush_route_table()
+/******************************************************************************
+ * @brief eras eroute_table
+ * @param None
+ * @return None
+ ******************************************************************************/
+void RouteTB_Erase(void)
 {
     memset(route_table, 0, sizeof(route_table));
-    last_module = 0;
+    last_container = 0;
     last_route_table_entry = 0;
 }
-
-//return the route_table
-route_table_t *get_route_table(void)
+/******************************************************************************
+ * @brief get route_table
+ * @param None
+ * @return route table
+ ******************************************************************************/
+route_table_t *RouteTB_Get(void)
 {
     return route_table;
 }
-
-//return the last ID registered into the route_table
-int get_last_module(void)
+/******************************************************************************
+ * @brief return the last ID registered into the route_table
+ * @param None
+ * @return last container ID
+ ******************************************************************************/
+int8_t RouteTB_GetLastContainer(void)
 {
-    return last_module;
+    return last_container;
 }
-
-//return the last ID registered into the route_table
-int get_last_entry(void)
+/******************************************************************************
+ * @brief return the last ID registered into the route_table
+ * @param index of container
+ * @return Last entry
+ ******************************************************************************/
+int8_t RouteTB_GetLastEntry(void)
 {
     return last_route_table_entry;
 }

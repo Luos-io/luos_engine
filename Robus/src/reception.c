@@ -9,9 +9,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "luosHAL.h"
-#include "cmd.h"
 #include "target.h"
 #include "sys_msg.h"
+#include "msgAlloc.h"
 
 /*******************************************************************************
  * Definitions
@@ -26,364 +26,300 @@
  * Variables
  ******************************************************************************/
 unsigned char keep = FALSE;
-unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 unsigned short data_count = 0;
 unsigned short data_size = 0;
+unsigned short crc_val = 0;
+msg_t *current_msg;
 /*******************************************************************************
  * Function
  ******************************************************************************/
 
-unsigned char module_concerned(header_t *header)
+/******************************************************************************
+ * @brief Reception init.
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_Init(void)
 {
-    unsigned char concerned = FALSE;
-    // Find if we are concerned by this message.
-    switch (header->target_mode)
-    {
-    case IDACK:
-        ctx.status.rx_error = FALSE;
-    case ID:
-        // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
-        if ((header->target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH))
-        {
-            concerned = TRUE;
-            ctx.alloc_msg[ctx.current_buffer] = 0;
-            ctx.data_cb = get_data;
-            break;
-        }
-        // Check all VM id
-        for (int i = 0; i < ctx.vm_number; i++)
-        {
-            concerned = (header->target == ctx.vm_table[i].id);
-            if (concerned)
-            {
-                ctx.alloc_msg[ctx.current_buffer] = i;
-                ctx.data_cb = get_data;
-                break;
-            }
-        }
-        break;
-    case TYPE:
-        //check default type
-        if (header->target == ctx.type)
-        {
-            concerned = TRUE;
-            concernedmodules[0] = TRUE;
-            ctx.data_cb = get_data;
-            break;
-        }
-        // Check all VM type
-        for (int i = 0; i < ctx.vm_number; i++)
-        {
-            if (header->target == ctx.vm_table[i].type)
-            {
-                concerned = TRUE;
-                concernedmodules[i] = TRUE;
-                ctx.data_cb = get_data;
-            }
-        }
-        break;
-    case BROADCAST:
-        concerned = (header->target == BROADCAST_VAL);
-        ctx.data_cb = get_data;
-        if (concerned)
-        {
-            for (int i = 0; i < ctx.vm_number; i++)
-            {
-                concernedmodules[i] = TRUE;
-            }
-        }
-        break;
-    case MULTICAST:
-        for (int i = 0; i < ctx.vm_number; i++)
-        {
-            if (multicast_target_bank((vm_t *)&ctx.vm_table[i], header->target))
-            { //TODO manage multiple slave concerned
-                concerned = TRUE;
-                concernedmodules[i] = TRUE;
-            }
-        }
-        ctx.data_cb = get_data;
-        break;
-    default:
-        return concerned;
-        break;
-    }
-    return concerned;
+    // Initialize the reception state machine
+    ctx.data_cb = Recep_GetHeader;
+    // Get allocation values
+    current_msg = MsgAlloc_GetCurrentMsg();
 }
-
-/**
- * \fn void timeout(flush)
- * \brief manage timeout event
- *
- * \return
- */
-void timeout(void)
+/******************************************************************************
+ * @brief Callback to get a complete header
+ * @param data come from RX
+ * @return None
+ ******************************************************************************/
+void Recep_GetHeader(volatile unsigned char *data)
 {
-    if (ctx.data_cb != get_header)
-    {
-        ctx.status.rx_timeout = TRUE;
-    }
-    ctx.tx_lock = false;
-    flush();
-}
-
-/**
- * \fn void flush(flush)
- * \brief reset the reception state machine
- *
- * \return
- */
-void flush(void)
-{
-	LuosHAL_SetIrqState(false);
-    ctx.data_cb = get_header;
-    keep = FALSE;
-    data_count = 0;
-    LuosHAL_SetIrqState(true);
-}
-static unsigned short crc_val = 0;
-
-/**
- * \fn void get_header(volatile unsigned char *data)
- * \brief catch a complete header
- *
- * \param *data byte received from serial
- */
-void get_header(volatile unsigned char *data)
-{
-	ctx.tx_lock = true;
+    ctx.tx_lock = true;
     // Catch a byte.
-    CURRENTMSG.header.unmap[data_count++] = *data;
+    MsgAlloc_SetData(*data);
+    data_count++;
 
     // Check if we have all we need.
-    if (data_count == (sizeof(header_t)))
+
+    if (data_count == 3)
     {
-
-#ifdef DEBUG
-        printf("*******header data*******\n");
-        printf("protocol : 0x%04x\n", CURRENTMSG.header.protocol);       /*!< Protocol version. */
-        printf("target : 0x%04x\n", CURRENTMSG.header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-        printf("target_mode : 0x%04x\n", CURRENTMSG.header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-        printf("source : 0x%04x\n", CURRENTMSG.header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-        printf("cmd : 0x%04x\n", CURRENTMSG.header.cmd);                 /*!< msg definition. */
-        printf("size : 0x%04x\n", CURRENTMSG.header.size);               /*!< Size of the data field. */
-#endif
-        // Reset the catcher.
-        data_count = 0;
-        // Cap size for big messages
-        if (CURRENTMSG.header.size > MAX_DATA_MSG_SIZE)
-            data_size = MAX_DATA_MSG_SIZE;
-        else
-            data_size = CURRENTMSG.header.size;
-        // Reset the msg allocation
-        ctx.alloc_msg[ctx.current_buffer] = 0;
-
-        keep = module_concerned((header_t *)&CURRENTMSG.header);
-        if (keep)
+        keep = Recep_NodeConcerned((header_t *)&current_msg->header);
+    }
+    else
+    {
+        if (data_count == (sizeof(header_t)))
         {
-            // start crc computation
-        	LuosHAL_ComputeCRC((unsigned char *)CURRENTMSG.stream, sizeof(header_t), (unsigned char *)&crc_val);
+#ifdef DEBUG
+            printf("*******header data*******\n");
+            printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
+            printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+            printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
+            printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
+#endif
+            // Reset the catcher.
+            data_count = 0;
+            // Switch state machiine to data reception
+            ctx.data_cb = Recep_GetData;
+            // Cap size for big messages
+            if (current_msg->header.size > MAX_DATA_MSG_SIZE)
+            {
+                data_size = MAX_DATA_MSG_SIZE;
+            }
+            else
+            {
+                data_size = current_msg->header.size;
+            }
+            if (keep)
+            {
+                // start crc computation
+                LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
+                if (data_size)
+                {
+                    MsgAlloc_ValidHeader();
+                }
+            }
+            else
+            {
+                MsgAlloc_InvalidMsg();
+            }
         }
     }
 }
-
-/**
- * \fn void get_infos(volatile unsigned char *data)
- * \brief catch data field.
- *
- * \param *data byte received from serial
- */
-void get_data(volatile unsigned char *data)
+/******************************************************************************
+ * @brief Callback to get a complete data
+ * @param data come from RX
+ * @return None
+ ******************************************************************************/
+void Recep_GetData(volatile unsigned char *data)
 {
-    CURRENTMSG.data[data_count] = *data;
-    if ((data_count < data_size) && keep)
+    if (keep)
     {
-        // Continue CRC computation until the end of data
-    	LuosHAL_ComputeCRC((unsigned char *)&CURRENTMSG.data[data_count], 1, (unsigned char *)&crc_val);
+        MsgAlloc_SetData(*data);
+        if (data_count < data_size)
+        {
+            // Continue CRC computation until the end of data
+            LuosHAL_ComputeCRC((unsigned char *)data, 1, (unsigned char *)&crc_val);
+        }
     }
     if (data_count > data_size)
     {
         if (keep)
         {
-            CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[data_size]) |
-                             ((unsigned short)CURRENTMSG.data[data_size + 1] << 8);
-            if (CURRENTMSG.crc == crc_val)
+            uint16_t crc = ((unsigned short)current_msg->data[data_size]) |
+                           ((unsigned short)current_msg->data[data_size + 1] << 8);
+            if (crc == crc_val)
             {
-                if ((CURRENTMSG.header.target_mode == IDACK) && (CURRENTMSG.header.target != DEFAULTID))
+                if ((current_msg->header.target_mode == IDACK) && (current_msg->header.target != DEFAULTID))
                 {
-                    send_ack();
+                    Transmit_SendAck();
                 }
-                ctx.data_cb = get_header;
-                if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK)
-                {
-                    msg_complete((msg_t *)&CURRENTMSG);
-                }
-                else
-                {
-                    for (int i = 0; i < ctx.vm_number; i++)
-                    {
-                        if (concernedmodules[i])
-                        {
-                            ctx.alloc_msg[ctx.current_buffer] = i;
-                            msg_complete((msg_t *)&CURRENTMSG);
-                            concernedmodules[i] = FALSE;
-                        }
-                    }
-                }
-                ctx.current_buffer++;
-                if (ctx.current_buffer == MSG_BUFFER_SIZE)
-                {
-                    ctx.current_buffer = 0;
-                }
+                MsgAlloc_EndMsg();
             }
             else
             {
                 ctx.status.rx_error = TRUE;
-                if ((CURRENTMSG.header.target_mode == IDACK))
+                if ((current_msg->header.target_mode == IDACK))
                 {
-                    send_ack();
+                    Transmit_SendAck();
                 }
+                MsgAlloc_InvalidMsg();
             }
+            ctx.data_cb = Recep_GetHeader;
         }
-        flush();
+        Recep_Reset();
         return;
     }
     data_count++;
 }
-
-/**
- * \fn void get_collision(volatile unsigned char *data)
- * \brief catch bus collision.
- *
- * \param *data byte received from serial
- */
-void get_collision(volatile unsigned char *data)
+/******************************************************************************
+ * @brief Callback to get a collision beetween RX and Tx
+ * @param data come from RX
+ * @return None
+ ******************************************************************************/
+void Recep_GetCollision(volatile unsigned char *data)
 {
+    // send all received datas
+    Recep_GetHeader(data);
     if ((*ctx.tx_data != *data) || (!ctx.tx_lock))
     {
         //data dont match, or we don't start to send, there is a collision
         ctx.collision = TRUE;
         //Stop TX trying to save input datas
         LuosHAL_SetTxState(false);
-        // send all received datas
-        get_header(data);
+        // switch to get header.
+        ctx.data_cb = Recep_GetHeader;
     }
     ctx.tx_data = ctx.tx_data + 1;
 }
-
-/**
- * \fn void catch_ack(volatile unsigned char *data)
- * \brief catch ack.
- *
- * \param *data byte received from serial
- */
-void catch_ack(volatile unsigned char *data)
+/******************************************************************************
+ * @brief end of a reception
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_Timeout(void)
 {
-    // set VM msg
-    ctx.vm_last_send->msg_pt = (msg_t *)&CURRENTMSG;
-    // Check ACK value.
-    CURRENTMSG.ack = *data;
-    // notify ACK reception
-    ctx.ack = TRUE;
-    ctx.data_cb = get_header;
+    if (ctx.data_cb != Recep_GetHeader)
+    {
+        ctx.status.rx_timeout = TRUE;
+    }
+    MsgAlloc_InvalidMsg();
+    ctx.tx_lock = false;
+    Recep_Reset();
 }
-
-/**
- * \fn void msg_complete()
- * \brief the message is now complete, manage it.
- *
- * \param *data byte received from serial
- */
-void msg_complete(msg_t *msg)
+/******************************************************************************
+ * @brief reset the reception state machine
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_Reset(void)
 {
-    if (msg->header.target_mode == ID ||
-        msg->header.target_mode == IDACK ||
-        msg->header.target_mode == TYPE ||
-        msg->header.target_mode == BROADCAST)
+    LuosHAL_SetIrqState(false);
+    LuosHAL_SetTxLockDetecState(true);
+    ctx.data_cb = Recep_GetHeader;
+    keep = FALSE;
+    data_count = 0;
+    LuosHAL_SetIrqState(true);
+}
+/******************************************************************************
+ * @brief Catch ack when needed for the sended msg
+ * @param data come from RX
+ * @return None
+ ******************************************************************************/
+void Recep_CatchAck(volatile unsigned char *data)
+{
+    ctx.ack = *data;
+    ctx.data_cb = Recep_GetHeader;
+}
+/******************************************************************************
+ * @brief Parse msg to find a module concerne
+ * @param header of message
+ * @return None
+ ******************************************************************************/
+uint8_t Recep_NodeConcerned(header_t *header)
+{
+    // Find if we are concerned by this message.
+    switch (header->target_mode)
     {
-        switch (msg->header.cmd)
+    case IDACK:
+        ctx.status.rx_error = FALSE;
+    case ID:
+        // Check all VM id
+        for (int i = 0; i < ctx.vm_number; i++)
         {
-        case WRITE_ID:
-            if (ctx.detection.activ_branch == NO_BRANCH)
+            if ((header->target == ctx.vm_table[i].id))
             {
-                // Get and save a new given ID
-                if ((ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
-                    (ctx.detection.keepline != NO_BRANCH) &
-                    (ctx.detection_mode != MASTER_DETECT) &
-                    (!ctx.detection.detection_end))
-                {
-                    if (msg->header.target_mode == IDACK)
-                    {
-                        // Acknoledge ID reception
-                        send_ack();
-                    }
-                    // We are on topology detection mode, and this is our turn
-                    // Save id for the next module we have on this board
-                    ctx.vm_table[ctx.detection.detected_vm++].id =
-                        (((unsigned short)msg->data[1]) |
-                         ((unsigned short)msg->data[0] << 8));
-                    if (ctx.detection.detected_vm == 1)
-                    {
-                        // This is the first internal module, save the input branch with the previous ID
-                        ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
-                    }
-                    // Check if that was the last virtual module
-                    if (ctx.detection.detected_vm >= ctx.vm_number)
-                    {
-                        ctx.detection.detection_end = TRUE;
-                        poke_next_branch();
-                    }
-                }
-                else if (msg->header.target != DEFAULTID)
-                {
-                    CURRENTMODULE.id = (((unsigned short)msg->data[1]) |
-                                        ((unsigned short)msg->data[0] << 8));
-                }
+                return true;
             }
-            else
-            {
-                unsigned short value = (((unsigned short)msg->data[1]) |
-                                        ((unsigned short)msg->data[0] << 8));
-                //We need to save this ID as a connection on a branch
-                ctx.detection.branches[ctx.detection.activ_branch] = value;
-                ctx.detection.activ_branch = NO_BRANCH;
-            }
-            break;
-        case RESET_DETECTION:
-            // Reinit branch state and link
-            for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
-            {
-            	LuosHAL_SetPTPDefaultState(branch);
-                ctx.detection.branches[branch] = 0;
-            }
-            reset_detection();
-            // Reinit VM id
-            for (int i = 0; i < ctx.vm_number; i++)
-            {
-                ctx.vm_table[i].id = DEFAULTID;
-            }
-            ctx.detection.detection_end = FALSE;
-            break;
-        case SET_BAUDRATE:
-            memcpy((void *)&ctx.baudrate, msg->data, msg->header.size);
-            LuosHAL_ComInit(ctx.baudrate);
-            break;
-        default:
-            // set VM data
-            CURRENTMODULE.msg_pt = msg;
-            msg->header.cmd -= PROTOCOL_CMD_NB;
-            ctx.luos_cb((vm_t *)&CURRENTMODULE, CURRENTMODULE.msg_pt);
-            break;
         }
+        break;
+    case TYPE:
+        // Check all VM type
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            if (header->target == ctx.vm_table[i].type)
+            {
+                return true;
+            }
+        }
+        break;
+    case BROADCAST:
+        if (header->target == BROADCAST_VAL)
+        {
+            return true;
+        }
+        break;
+    case MULTICAST: // For now Multicast is disabled
+    default:
+        return false;
+        break;
     }
-    else
+    return false;
+}
+/******************************************************************************
+ * @brief Parse msg to find all modules concerned and create
+ * @param msg pointer
+ * @return None
+ ******************************************************************************/
+void Recep_InterpretMsgProtocol(msg_t *msg)
+{
+    // Find if we are concerned by this message.
+    switch (msg->header.target_mode)
     {
-        // set VM data
-        CURRENTMODULE.msg_pt = msg;
-        // call callback
-        msg->header.cmd -= PROTOCOL_CMD_NB;
-        ctx.luos_cb((vm_t *)&CURRENTMODULE, CURRENTMODULE.msg_pt);
-        msg->header.cmd += PROTOCOL_CMD_NB;
+    case IDACK:
+    case ID:
+        // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
+        if ((msg->header.target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH))
+        {
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
+            return;
+        }
+        // Check all VM id
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            if (msg->header.target == ctx.vm_table[i].id)
+            {
+                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+                return;
+            }
+        }
+        break;
+    case TYPE:
+        //check default type
+        if (msg->header.target == ctx.type)
+        {
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
+            return;
+        }
+        // Check all VM type
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            if (msg->header.target == ctx.vm_table[i].type)
+            {
+                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+                return;
+            }
+        }
+        break;
+    case BROADCAST:
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+        }
+        return;
+        break;
+    case MULTICAST:
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            if (Trgt_MulticastTargetBank((vm_t *)&ctx.vm_table[i], msg->header.target))
+            {
+                //TODO manage multiple slave concerned
+                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+                return;
+            }
+        }
+        break;
+    default:
+        break;
     }
-    ctx.data_cb = get_header;
 }

@@ -12,7 +12,8 @@
 #include "detection.h"
 #include "context.h"
 #include "luosHAL.h"
-#include "cmd.h"
+#include "msgAlloc.h"
+#include <stdbool.h>
 
 /*******************************************************************************
  * Definitions
@@ -28,149 +29,202 @@ volatile context_t ctx;
  * Function
  ******************************************************************************/
 
-// Startup and network configuration
-void robus_init(RX_CB callback)
+/******************************************************************************
+ * @brief Initialisation of the Robus communication protocole
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_Init(memory_stats_t *memory_stats)
 {
-    // Init the number of created  virtual module.
+    // Init the number of created  virtual container.
     ctx.vm_number = 0;
-    // Initialize the reception state machine
-    ctx.data_cb = get_header;
-    // Set default module id. This id is a void id used if no module is created.
+    // Set default container id. This id is a void id used if no container is created.
     ctx.id = DEFAULTID;
-    // VOID Module type
+    // VOID Container type
     ctx.type = 0;
     // no transmission lock
     ctx.tx_lock = FALSE;
-    // Save luos callback
-    ctx.luos_cb = callback;
     // Save luos baudrate
     ctx.baudrate = DEFAULTBAUDRATE;
 
+    // Init reception
+    Recep_Init();
+
     // init detection structure
-    reset_detection();
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
-    {
-        ctx.detection.branches[branch] = 0;
-    }
+    Detec_InitDetection();
 
     // Clear message allocation buffer table
-    for (int i = 0; i < MSG_BUFFER_SIZE; i++)
-    {
-        ctx.alloc_msg[i] = 0;
-    }
-    // Initialize the start case of the message buffer
-    ctx.current_buffer = 0;
-    // Initialize the robus module status
+    MsgAlloc_Init(memory_stats);
+
+    // Initialize the robus container status
     ctx.status.unmap = 0;
     ctx.status.identifier = 0xF;
     // Init hal
     LuosHAL_Init();
 }
-
-void robus_modules_clear(void)
+/******************************************************************************
+ * @brief Loop of the Robus communication protocole
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_Loop(void)
 {
-    // Clear vm table
-    memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
-    // Reset the number of created modules
-    ctx.vm_number = 0;
-}
-
-vm_t *robus_module_create(unsigned char type)
-{
-    unsigned char i = 0;
-
-    // Set the module type
-    ctx.vm_table[ctx.vm_number].type = type;
-    // Initialise the module id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
-    ctx.vm_table[ctx.vm_number].id = DEFAULTID;
-    // Clear the msg allocation table.
-    for (i = 0; i < MSG_BUFFER_SIZE; i++)
+    // Execute message allocation tasks
+    MsgAlloc_loop();
+    // Interpreat received messages and create luos task for it.
+    msg_t *msg = NULL;
+    while (MsgAlloc_PullMsgToInterpret(&msg) == SUCESS)
     {
-        ctx.alloc_msg[i] = 0;
+        Recep_InterpretMsgProtocol(msg);
     }
-    // Initialize dead module detection
-    ctx.vm_table[ctx.vm_number].dead_module_spotted = 0;
+}
+/******************************************************************************
+ * @brief crete a container in route table
+ * @param type of container create
+ * @return None
+ ******************************************************************************/
+vm_t *Robus_ContainerCreate(unsigned char type)
+{
+    // Set the container type
+    ctx.vm_table[ctx.vm_number].type = type;
+    // Initialise the container id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
+    ctx.vm_table[ctx.vm_number].id = DEFAULTID;
+    // Initialize dead container detection
+    ctx.vm_table[ctx.vm_number].dead_container_spotted = 0;
     // Return the freshly initialized vm pointer.
     return (vm_t *)&ctx.vm_table[ctx.vm_number++];
 }
-
-unsigned char robus_send(vm_t *vm, msg_t *msg)
+/******************************************************************************
+ * @brief clear container list in route table
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_ContainersClear(void)
 {
-    msg->header.cmd += PROTOCOL_CMD_NB;
-    unsigned char ret = robus_send_sys(vm, msg);
-    msg->header.cmd -= PROTOCOL_CMD_NB;
-    return ret;
+    // Clear vm table
+    memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
+    // Reset the number of created containers
+    ctx.vm_number = 0;
 }
-
-unsigned char robus_set_baudrate(vm_t *vm, unsigned int baudrate)
+/******************************************************************************
+ * @brief Send Msg to a container
+ * @param container to send
+ * @param msg to send
+ * @return Error
+ ******************************************************************************/
+uint8_t Robus_SendMsg(vm_t *vm, msg_t *msg)
 {
-    msg_t msg;
-    memcpy(msg.data, &baudrate, sizeof(unsigned int));
-    msg.header.target_mode = BROADCAST;
-    msg.header.target = BROADCAST_VAL;
-    msg.header.cmd = SET_BAUDRATE;
-    msg.header.size = sizeof(unsigned int);
-    if (robus_send_sys(vm, &msg))
-        return 1;
-    return 0;
+    // Compute the full message size based on the header size info.
+    unsigned short data_size = 0;
+    unsigned char fail = 0;
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+        data_size = MAX_DATA_MSG_SIZE;
+    else
+        data_size = msg->header.size;
+    unsigned short full_size = sizeof(header_t) + data_size;
+    unsigned char nbr_nak_retry = 0;
+    // Set protocol revision and source ID on the message
+    msg->header.protocol = PROTOCOL_REVISION;
+    msg->header.source = vm->id;
+    // Add the CRC to the total size of the message
+    full_size += 2;
+    ctx.vm_last_send = vm;
+ack_restart:
+    nbr_nak_retry++;
+    LuosHAL_SetIrqState(false);
+    ctx.ack = FALSE;
+    LuosHAL_SetIrqState(true);
+    // Send message
+    while (Transmit_Process((unsigned char *)msg->stream, full_size))
+    {
+        // There is a collision
+        LuosHAL_SetIrqState(false);
+        // switch reception in header mode
+        ctx.data_cb = Recep_GetHeader;
+        LuosHAL_SetIrqState(true);
+        // wait timeout of collided packet
+        Transmit_WaitUnlockTx();
+        // timer proportional to ID
+        if (vm->id > 1)
+        {
+            for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id - 1)); tempo++)
+                ;
+        }
+    }
+    // Check if ACK needed
+    if (msg->header.target_mode == IDACK)
+    {
+        // Check if it is a localhost message
+        if (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID))
+        {
+            Transmit_SendAck();
+            ctx.ack = 0;
+        }
+        else
+        {
+            // ACK needed, change the state of state machine for wait a ACK
+            LuosHAL_SetIrqState(false);
+            ctx.data_cb = Recep_CatchAck;
+            LuosHAL_SetIrqState(true);
+            volatile int time_out = 0;
+            while (!ctx.ack & (time_out < (120 * (1000000 / ctx.baudrate))))
+            {
+                time_out++;
+            }
+            status_t status;
+            status.unmap = ctx.ack;
+            if ((status.rx_error) | (status.identifier != 0x0F))
+            {
+                if ((ctx.ack) && (status.identifier != 0x0F))
+                {
+                    // This is probably a part of another message
+                    // Send it to header
+                    LuosHAL_SetIrqState(false);
+                    ctx.data_cb = Recep_GetHeader;
+                    LuosHAL_SetIrqState(true);
+                    Recep_GetHeader(&ctx.ack);
+                }
+                if (nbr_nak_retry < NBR_NAK_RETRY)
+                {
+                    Recep_Timeout();
+                    for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
+                        ;
+                    goto ack_restart;
+                }
+                else
+                {
+                    // Set the dead container ID into the VM
+                    vm->dead_container_spotted = msg->header.target;
+                    fail = 1;
+                }
+            }
+            ctx.ack = 0;
+        }
+    }
+    // localhost management
+    if (Recep_NodeConcerned(&msg->header))
+    {
+        // Reset potential residue of collision detection
+        MsgAlloc_InvalidMsg();
+        LuosHAL_SetIrqState(false);
+        // Secure the message memory by copying it into msg buffer
+        for (int i = 0; i < (sizeof(header_t) + msg->header.size + 2); i++)
+        {
+            MsgAlloc_SetData((uint8_t)msg->stream[i]);
+        }
+        MsgAlloc_EndMsg();
+        Recep_Reset();
+        LuosHAL_SetIrqState(true);
+    }
+    return fail;
 }
-
-unsigned short *robus_get_node_branches(unsigned char *size)
+/******************************************************************************
+ * @brief get branch where node is connected
+ * @param branch
+ * @return None
+ ******************************************************************************/
+uint16_t *Robus_GetNodeBranches(uint8_t *size)
 {
     *size = NO_BRANCH;
-    return (unsigned short *)ctx.detection.branches;
-}
-
-unsigned char robus_topology_detection(vm_t *vm)
-{
-    unsigned short newid = 1;
-    // Reset all detection state of modules on the network
-    reset_network_detection(vm);
-    ctx.detection_mode = MASTER_DETECT;
-    // wait for some us
-    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
-        ;
-
-    // setup sending vm
-    vm->id = newid++;
-
-    // Parse internal vm other than the sending one
-    for (unsigned char i = 0; i < ctx.vm_number; i++)
-    {
-        if (&ctx.vm_table[i] != vm)
-        {
-            ctx.vm_table[i].id = newid++;
-        }
-    }
-
-    ctx.detection.detected_vm = ctx.vm_number;
-    ctx.detection.detection_end = TRUE;
-
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
-    {
-        ctx.detection_mode = MASTER_DETECT;
-        if (poke(branch))
-        {
-            // Someone reply to our poke!
-            // loop while the line is released
-            int module_number = 0;
-            while ((ctx.detection.keepline != NO_BRANCH) & (module_number < 1024))
-            {
-                if (set_extern_id(vm, IDACK, DEFAULTID, newid++))
-                {
-                    // set extern id fail
-                    // remove this id and stop topology detection
-                    newid--;
-                    break;
-                }
-                module_number++;
-                // wait for some us
-                for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
-                    ;
-            }
-        }
-    }
-    ctx.detection_mode = NO_DETECT;
-
-    return newid - 1;
+    return (uint16_t *)ctx.detection.branches;
 }

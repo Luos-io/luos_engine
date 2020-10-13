@@ -21,16 +21,18 @@
  * Function
  ******************************************************************************/
 // Callbacks reception
-void get_header(volatile unsigned char *data);
-void get_data(volatile unsigned char *data);
-void get_collision(volatile unsigned char *data);
+void Recep_GetHeader(volatile unsigned char *data);
+void Recep_GetData(volatile unsigned char *data);
+void Recep_GetCollision(volatile unsigned char *data);
 
 // Callbacks send
-void catch_ack(volatile unsigned char *data);
+void Recep_CatchAck(volatile unsigned char *data);
 
-void flush(void);
-void timeout(void);
-void msg_complete(msg_t *msg);
-unsigned char module_concerned(header_t *header);
+void Recep_Init(void);
+void Recep_EndMsg(void);
+void Recep_Reset(void);
+void Recep_Timeout(void);
+void Recep_InterpretMsgProtocol(msg_t *msg);
+uint8_t Recep_NodeConcerned(header_t *header);
 
 #endif /* _RECEPTION_H_ */

@@ -1,44 +1,49 @@
-/**
- * \file robus_struct.h
- * \brief Robus communication main include file.
- * \author Nicolas Rabault
- * \version 0.1
- * \date 18 Fevrier 2017
- *
- * Include this file to use the robus communication protocol.
- *
- */
-
+/******************************************************************************
+ * @file robus_struct
+ * @brief definition protocole robus structure
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _ROBUS_STRUCT_H_
 #define _ROBUS_STRUCT_H_
 
 #include "config.h"
 
-/**
- * \enum target_mode_t
- * \brief Message addressing mode enum.
- *
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/******************************************************************************
+ * @struct memory_stats_t
+ * @brief store informations about RAM occupation
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    unsigned char alloc_stack_ratio;
+    unsigned char msg_stack_ratio;
+    unsigned char luos_stack_ratio;
+    unsigned char msg_drop_number;
+} memory_stats_t;
+
+/*
  * This structure is used to get the message addressing mode list.
  */
 typedef enum
 {
-    ID,        /*!< Unique or virtual ID, used to send something to only one module. */
+    ID,        /*!< Unique or virtual ID, used to send something to only one container. */
     IDACK,     /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
-    TYPE,      /*!< Type mode, used to send something to all module of the same type. */
+    TYPE,      /*!< Type mode, used to send something to all container of the same type. */
     BROADCAST, /*!< Broadcast mode, used to send something to everybody. */
-    MULTICAST  /*!< Multicast mode, used to send something to multiple modules. */
+    MULTICAST  /*!< Multicast mode, used to send something to multiple containers. */
 } target_mode_t;
 
-/**
- * \struct header_t
- * \brief Header structure.
- *
- * This structure is used specify data and destination of datas.
+/* This structure is used specify data and destination of datas.
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             unsigned short protocol : 4;    /*!< Protocol version. */
@@ -52,17 +57,14 @@ typedef struct __attribute__((__packed__))
     };
 } header_t;
 
-/**
- * \struct msg_t
- * \brief Message structure.
- *
- * This structure is used to receive or send messages between modules in slave
+/* This structure is used to receive or send messages between containers in slave
  * and master mode.
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             header_t header;                       /*!< Header filed. */
@@ -70,33 +72,41 @@ typedef struct __attribute__((__packed__))
         };
         unsigned char stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
     };
-    union {
-        unsigned short crc;
-        volatile unsigned char ack;
-    };
 } msg_t;
 
-/**
- * \struct vm_t
- * \brief Virtual Module Structure
- *
- * This structure is used to manage virtual modules
+/* This structure is used to manage virtual containers
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) vm_t
 {
 
-    // Module infomations
-    unsigned short id;  /*!< Module ID. */
-    unsigned char type; /*!< Module type. */
+    // Container infomations
+    unsigned short id;  /*!< Container ID. */
+    unsigned char type; /*!< Container type. */
 
     // Variables
-    msg_t *msg_pt;                                               /*!< Message pointer. */
     unsigned char max_multicast_target;                          /*!< Position pointer of the last multicast target. */
     unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
-    unsigned short dead_module_spotted;                          /*!< The ID of a module that don't reply to a lot of ACK msg */
+    unsigned short dead_container_spotted;                       /*!< The ID of a container that don't reply to a lot of ACK msg */
 } vm_t;
 
+/******************************************************************************
+ * @struct error_return_t
+ * @brief Return function error global convention
+ ******************************************************************************/
+typedef enum
+{
+    SUCESS,     /*!< function work properly. */
+    FAIL = 0xFF /*!< function fail. */
+} error_return_t;
+
 typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 #endif /* _ROBUS_STRUCT_H_ */

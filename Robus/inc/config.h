@@ -1,14 +1,15 @@
-/*
- * config.h
- *
- * Created: 14/02/2017 11:53:28
- *  Author: Nicolas Rabault
- *  Abstract: default configuration of the project.
- */
-
+/******************************************************************************
+ * @file config
+ * @brief config for luos library ans robus protocole
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
 #define TRUE 1
 #define FALSE 0
 
@@ -28,15 +29,22 @@
 #endif
 
 #ifndef MAX_VM_NUMBER
-#define MAX_VM_NUMBER 20
+#define MAX_VM_NUMBER 5
 #endif
 
 #ifndef MSG_BUFFER_SIZE
-#define MSG_BUFFER_SIZE 5
+#define MSG_BUFFER_SIZE 3 * sizeof(msg_t)
 #endif
 
-#ifndef MODULETYPE
-#define MODULETYPE DEV_BOARD
+#ifndef MAX_MSG_NB
+#define MAX_MSG_NB 2 * MAX_VM_NUMBER
 #endif
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
 
 #endif /* _CONFIG_H_ */
