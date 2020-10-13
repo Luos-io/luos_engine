@@ -224,12 +224,26 @@ uint8_t Recep_NodeConcerned(header_t *header)
     case IDACK:
         ctx.status.rx_error = FALSE;
     case ID:
-        // Check all VM id
-        for (int i = 0; i < ctx.vm_number; i++)
+        if (header->target == DEFAULTID)
         {
-            if ((header->target == ctx.vm_table[i].id))
+            if(ctx.detection.keepline != NO_BRANCH)
             {
                 return true;
+            }
+            else// discard message if ID = 0 and one PTP at 1
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // Check all VM id
+            for (int i = 0; i < ctx.vm_number; i++)
+            {
+                if ((header->target == ctx.vm_table[i].id))
+                {
+                    return true;
+                }
             }
         }
         break;
