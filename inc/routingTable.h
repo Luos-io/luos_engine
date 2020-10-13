@@ -44,34 +44,34 @@ typedef struct __attribute__((__packed__))
             unsigned short port_table[4]; // Node link table
         };
     };
-} route_table_t;
+} routing_table_t;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-// ********************* route_table search tools ************************
-int8_t RouteTB_IDFromAlias(char *alias);
-int8_t RouteTB_IDFromType(luos_type_t type);
-int8_t RouteTB_IDFromContainer(container_t *container);
-char *RouteTB_AliasFromId(uint16_t id);
-luos_type_t RouteTB_TypeFromID(uint16_t id);
-luos_type_t RouteTB_TypeFromAlias(char *alias);
-char *RouteTB_StringFromType(luos_type_t type);
-uint8_t RouteTB_ContainerIsSensor(luos_type_t type);
-int8_t RouteTB_GetNodeNB(void);
-void RouteTB_GetNodeList(unsigned short *list);
-int8_t RouteTB_GetNodeID(unsigned short index);
+// ********************* routing_table search tools ************************
+int8_t RoutingTB_IDFromAlias(char *alias);
+int8_t RoutingTB_IDFromType(luos_type_t type);
+int8_t RoutingTB_IDFromContainer(container_t *container);
+char *RoutingTB_AliasFromId(uint16_t id);
+luos_type_t RoutingTB_TypeFromID(uint16_t id);
+luos_type_t RoutingTB_TypeFromAlias(char *alias);
+char *RoutingTB_StringFromType(luos_type_t type);
+uint8_t RoutingTB_ContainerIsSensor(luos_type_t type);
+int8_t RoutingTB_GetNodeNB(void);
+void RoutingTB_GetNodeList(unsigned short *list);
+int8_t RoutingTB_GetNodeID(unsigned short index);
 
-// ********************* route_table management tools ************************
-void RouteTB_ComputeRouteTableEntryNB(void);
-void RouteTB_DetectContainers(container_t *container);
-void RouteTB_ConvertNodeToRouteTable(route_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb);
-void RouteTB_ConvertContainerToRouteTable(route_table_t *entry, container_t *container);
-void RouteTB_InsertOnRouteTable(route_table_t *entry);
-void RouteTB_RemoveOnRouteTable(int id);
-void RouteTB_Erase(void);
-route_table_t *RouteTB_Get(void);
-int8_t RouteTB_GetLastContainer(void);
-int8_t RouteTB_GetLastEntry(void);
+// ********************* routing_table management tools ************************
+void RoutingTB_ComputeRoutingTableEntryNB(void);
+void RoutingTB_DetectContainers(container_t *container);
+void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb);
+void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_t *container);
+void RoutingTB_InsertOnRoutingTable(routing_table_t *entry);
+void RoutingTB_RemoveOnRoutingTable(int id);
+void RoutingTB_Erase(void);
+routing_table_t *RoutingTB_Get(void);
+int8_t RoutingTB_GetLastContainer(void);
+int8_t RoutingTB_GetLastEntry(void);
 
 #endif /* TABLE */
