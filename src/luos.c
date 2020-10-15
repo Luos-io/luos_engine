@@ -391,14 +391,8 @@ static void Luos_TransmitLocalRoutingTable(container_t *container, msg_t *routeT
     RoutingTB_Erase();
     uint16_t entry_nb = 0;
     routing_table_t local_routing_table[container_number + 1];
-    //start by saving board entry
-    luos_uuid_t uuid;
-    uuid.uuid[0] = LUOS_UUID[0];
-    uuid.uuid[1] = LUOS_UUID[1];
-    uuid.uuid[2] = LUOS_UUID[2];
-    unsigned char table_size;
-    uint16_t *detection_branches = Robus_GetNodeBranches(&table_size);
-    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], uuid, detection_branches, table_size);
+    //start by saving node entry
+    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Robus_GetNode());
     entry_nb++;
     // save containers entry
     for (int i = 0; i < container_number; i++)

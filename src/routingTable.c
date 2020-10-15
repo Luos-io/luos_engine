@@ -516,26 +516,21 @@ void RoutingTB_DetectContainers(container_t *container)
 /******************************************************************************
  * @brief entry in routable node with associate container
  * @param route table
- * @param uuid node
- * @param node table
- * @param brach for node
+ * @param node structure
  * @return None
  ******************************************************************************/
-void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb)
+void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
 {
-    entry->uuid = uuid;
-    for (uint8_t i = 0; i < 4; i++)
+    if (sizeof(node_t) > (sizeof(routing_table_t) - 1))
     {
-        if (i < branch_nb)
-        {
-            entry->port_table[i] = port_table[i];
-        }
-        else
-        {
-            entry->port_table[i] = 0;
-        }
+        // This is a critical error.
+        // The NBR_BRANCH config is too high to fit into routing table.
+        while (1)
+            ;
     }
+    memset(entry, 0, sizeof(routing_table_t));
     entry->mode = NODE;
+    memcpy(entry->unmap_data, node->unmap, sizeof(node_t));
 }
 /******************************************************************************
  * @brief entry in routable container associate to a node

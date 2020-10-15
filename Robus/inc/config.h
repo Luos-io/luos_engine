@@ -39,6 +39,11 @@
 #ifndef MAX_MSG_NB
 #define MAX_MSG_NB 2 * MAX_VM_NUMBER
 #endif
+
+#ifndef NBR_BRANCH
+#define NBR_BRANCH 2
+#endif
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/

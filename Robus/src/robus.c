@@ -219,12 +219,11 @@ ack_restart:
     return fail;
 }
 /******************************************************************************
- * @brief get branch where node is connected
- * @param branch
- * @return None
+ * @brief get node structure
+ * @param None
+ * @return Node pointer
  ******************************************************************************/
-uint16_t *Robus_GetNodeBranches(uint8_t *size)
+node_t *Robus_GetNode(void)
 {
-    *size = NO_BRANCH;
-    return (uint16_t *)ctx.detection.branches;
+    return (node_t *)&ctx.node;
 }
