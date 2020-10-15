@@ -83,11 +83,11 @@ typedef struct __attribute__((__packed__)) vm_t
 {
 
     // Container infomations
-    unsigned short id;  /*!< Container ID. */
-    unsigned char type; /*!< Container type. */
+    unsigned short id;   /*!< Container ID. */
+    unsigned short type; /*!< Container type. */
 
     // Variables
-    unsigned char max_multicast_target;                          /*!< Position pointer of the last multicast target. */
+    unsigned short max_multicast_target;                         /*!< Position pointer of the last multicast target. */
     unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
     unsigned short dead_container_spotted;                       /*!< The ID of a container that don't reply to a lot of ACK msg */
 } vm_t;
@@ -101,6 +101,27 @@ typedef enum
     SUCESS,     /*!< function work properly. */
     FAIL = 0xFF /*!< function fail. */
 } error_return_t;
+
+/******************************************************************************
+ * @struct node_t
+ * @brief node informations structure
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            struct __attribute__((__packed__))
+            {
+                unsigned short node_id : 12;  /*!< Node id */
+                unsigned short certified : 4; /*!< True if the node have a certificate */
+            };
+            unsigned short port_table[NBR_BRANCH]; /*!< Phisical port connections */
+        };
+        unsigned char unmap[NBR_BRANCH + 2]; /*!< Uncmaped form. */
+    };
+} node_t;
 
 typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
 /*******************************************************************************

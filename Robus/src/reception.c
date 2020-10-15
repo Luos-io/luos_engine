@@ -226,11 +226,11 @@ uint8_t Recep_NodeConcerned(header_t *header)
     case ID:
         if (header->target == DEFAULTID)
         {
-            if(ctx.detection.keepline != NO_BRANCH)
+            if (ctx.detection.keepline != NO_BRANCH)
             {
                 return true;
             }
-            else// discard message if ID = 0 and one PTP at 1
+            else // discard message if ID = 0 and one PTP at 1
             {
                 return false;
             }
@@ -266,7 +266,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
     case NODEIDACK:
         ctx.status.rx_error = FALSE;
     case NODEID:
-        if (header->target == ctx.node_id)
+        if (header->target == ctx.node.node_id)
         {
             return true;
         }

@@ -205,7 +205,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
                 if (ctx.detection.detected_vm == 1)
                 {
                     // This is the first internal container, save the input branch with the previous ID
-                    ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
+                    ctx.node.port_table[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
                 }
                 // Check if that was the last virtual container
                 if (ctx.detection.detected_vm >= ctx.vm_number)
@@ -224,7 +224,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
             unsigned short value = (((unsigned short)input->data[1]) |
                                     ((unsigned short)input->data[0] << 8));
             //We need to save this ID as a connection on a branch
-            ctx.detection.branches[ctx.detection.activ_branch] = value;
+            ctx.node.port_table[ctx.detection.activ_branch] = value;
             ctx.detection.activ_branch = NO_BRANCH;
         }
         return 1;

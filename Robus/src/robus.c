@@ -39,7 +39,9 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Init the number of created  virtual container.
     ctx.vm_number = 0;
     // Set default container id. This id is a void id used if no container is created.
-    ctx.node_id = DEFAULTID;
+    ctx.node.node_id = DEFAULTID;
+    // By default node are not certified.
+    ctx.node.certified = false;
     // no transmission lock
     ctx.tx_lock = FALSE;
     // Save luos baudrate
@@ -81,7 +83,7 @@ void Robus_Loop(void)
  * @param type of container create
  * @return None
  ******************************************************************************/
-vm_t *Robus_ContainerCreate(unsigned char type)
+vm_t *Robus_ContainerCreate(uint16_t type)
 {
     // Set the container type
     ctx.vm_table[ctx.vm_number].type = type;

@@ -35,7 +35,7 @@ typedef struct
     // Variables
     DATA_CB data_cb;                  /*!< Data management callback. */
     status_t status;                  /*!< Status. */
-    unsigned short node_id;           /*!< Node ID. */
+    node_t node;                      /*!< Node informations. */
     volatile unsigned char *tx_data;  /*!< sent data pointer. */
     volatile unsigned char tx_lock;   /*!< transmission locking management. */
     volatile unsigned char collision; /*!< collision flag. */

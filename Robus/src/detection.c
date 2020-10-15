@@ -39,7 +39,7 @@ void Detec_PtpHandler(branch_t branch)
         {
             for (int branch = 0; branch < NO_BRANCH; branch++)
             {
-                if (ctx.detection.branches[branch] == 0)
+                if (ctx.node.port_table[branch] == 0)
                 {
                     // this branch have not been detected
                     if (Detect_PokeBranch(branch))
@@ -81,7 +81,7 @@ uint8_t Detect_PokeBranch(branch_t branch)
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
     // Save branch as empty by default
-    ctx.detection.branches[branch] = 0xFFFF;
+    ctx.node.port_table[branch] = 0xFFFF;
     // read the line state
     if (LuosHAL_GetPTPState(branch))
     {
@@ -105,7 +105,7 @@ void Detect_PokeNextBranch(void)
 {
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
-        if (ctx.detection.branches[branch] == 0)
+        if (ctx.node.port_table[branch] == 0)
         {
             // this branch have not been poked
             if (Detect_PokeBranch(branch))
@@ -115,7 +115,7 @@ void Detect_PokeNextBranch(void)
             else
             {
                 // nobody is here
-                ctx.detection.branches[branch] = 0xFFFF;
+                ctx.node.port_table[branch] = 0xFFFF;
             }
         }
     }
@@ -147,7 +147,7 @@ void Detec_InitDetection(void)
     for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
     {
         LuosHAL_SetPTPDefaultState(branch);
-        ctx.detection.branches[branch] = 0;
+        ctx.node.port_table[branch] = 0;
     }
     Detec_ResetDetection();
     // Reinit VM id
