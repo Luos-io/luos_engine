@@ -25,10 +25,10 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-unsigned char keep = FALSE;
-unsigned short data_count = 0;
-unsigned short data_size = 0;
-unsigned short crc_val = 0;
+uint8_t keep = FALSE;
+uint16_t data_count = 0;
+uint16_t data_size = 0;
+uint16_t crc_val = 0;
 msg_t *current_msg;
 /*******************************************************************************
  * Function
@@ -53,21 +53,23 @@ void Recep_Init(void)
  ******************************************************************************/
 void Recep_GetHeader(volatile unsigned char *data)
 {
-    ctx.tx_lock = true;
     // Catch a byte.
     MsgAlloc_SetData(*data);
     data_count++;
 
     // Check if we have all we need.
+    switch(data_count)
+    {
+        case 1 ://reset CRC computation
+            ctx.tx_lock = true;
+            LuosHAL_ResetCRC((uint8_t *)&crc_val);
+            break;
 
-    if (data_count == 3)
-    {
-        keep = Recep_NodeConcerned((header_t *)&current_msg->header);
-    }
-    else
-    {
-        if (data_count == (sizeof(header_t)))
-        {
+        case 3 ://check if message is for the node
+            keep = Recep_NodeConcerned((header_t *)&current_msg->header);
+            break;
+
+        case (sizeof(header_t)) ://Process at the header
 #ifdef DEBUG
             printf("*******header data*******\n");
             printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
@@ -77,34 +79,36 @@ void Recep_GetHeader(volatile unsigned char *data)
             printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
             printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
 #endif
-            // Reset the catcher.
-            data_count = 0;
-            // Switch state machiine to data reception
-            ctx.data_cb = Recep_GetData;
-            // Cap size for big messages
-            if (current_msg->header.size > MAX_DATA_MSG_SIZE)
-            {
-                data_size = MAX_DATA_MSG_SIZE;
-            }
-            else
-            {
-                data_size = current_msg->header.size;
-            }
-            if (keep)
-            {
-                // start crc computation
-                LuosHAL_ComputeCRC((unsigned char *)current_msg->stream, sizeof(header_t), (unsigned char *)&crc_val);
-                if (data_size)
+                // Reset the catcher.
+                data_count = 0;
+                // Switch state machiine to data reception
+                ctx.data_cb = Recep_GetData;
+                // Cap size for big messages
+                if (current_msg->header.size > MAX_DATA_MSG_SIZE)
                 {
-                    MsgAlloc_ValidHeader();
+                    data_size = MAX_DATA_MSG_SIZE;
                 }
-            }
-            else
-            {
-                MsgAlloc_InvalidMsg();
-            }
-        }
+                else
+                {
+                    data_size = current_msg->header.size;
+                }
+                if (keep)
+                {
+                    if (data_size)
+                    {
+                        MsgAlloc_ValidHeader();
+                    }
+                }
+                else
+                {
+                    MsgAlloc_InvalidMsg();
+                }
+            break;
+
+        default:
+        break;
     }
+    LuosHAL_ComputeCRC((uint8_t *)data, 1, (uint8_t *)&crc_val);
 }
 /******************************************************************************
  * @brief Callback to get a complete data
@@ -119,15 +123,15 @@ void Recep_GetData(volatile unsigned char *data)
         if (data_count < data_size)
         {
             // Continue CRC computation until the end of data
-            LuosHAL_ComputeCRC((unsigned char *)data, 1, (unsigned char *)&crc_val);
+            LuosHAL_ComputeCRC((uint8_t *)data, 1, (uint8_t *)&crc_val);
         }
     }
     if (data_count > data_size)
     {
         if (keep)
         {
-            uint16_t crc = ((unsigned short)current_msg->data[data_size]) |
-                           ((unsigned short)current_msg->data[data_size + 1] << 8);
+            uint16_t crc = ((uint16_t)current_msg->data[data_size]) |
+                           ((uint16_t)current_msg->data[data_size + 1] << 8);
             if (crc == crc_val)
             {
                 if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)) && (current_msg->header.target != DEFAULTID))
