@@ -32,7 +32,6 @@ typedef struct
     branch_t keepline;         /*!< last keepline status on PTP lines . */
     unsigned char detected_vm; /*!< Virtual Container number. */
     expected_detection_t expect;
-    unsigned short branches[NO_BRANCH];
     unsigned char activ_branch;
 } detection_t;
 /*******************************************************************************

@@ -34,15 +34,24 @@ typedef struct __attribute__((__packed__))
     {
         struct __attribute__((__packed__))
         {                               // CONTAINER mode entry
-            unsigned short id;          // Container ID
-            unsigned char type;         /*!< Container type. */
-            char alias[MAX_ALIAS_SIZE]; /*!< Container alias. */
+            uint16_t id;                // Container ID.
+            uint16_t type;              // Container type.
+            char alias[MAX_ALIAS_SIZE]; // Container alias.
         };
         struct __attribute__((__packed__))
-        {                                 // NODE mode entry
-            luos_uuid_t uuid;             // Node UUID
-            unsigned short port_table[4]; // Node link table
+        { // NODE mode entry
+            // Watch out this structure have a lot similarities with the node_t struct.
+            // It is similar to allow copy of a node_t struct directly in this one.
+            // But you there is potentially a port_table size difference so
+            // Do not replace it with node_t struct.
+            struct __attribute__((__packed__))
+            {
+                uint16_t node_id : 12;  // Node id
+                uint16_t certified : 4; // True if the node have a certificate
+            };
+            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 - 2) / 2]; // Node link table
         };
+        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2];
     };
 } routing_table_t;
 
@@ -65,7 +74,7 @@ int8_t RoutingTB_GetNodeID(unsigned short index);
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);
 void RoutingTB_DetectContainers(container_t *container);
-void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, luos_uuid_t uuid, unsigned short *port_table, int branch_nb);
+void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
 void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_t *container);
 void RoutingTB_InsertOnRoutingTable(routing_table_t *entry);
 void RoutingTB_RemoveOnRoutingTable(int id);

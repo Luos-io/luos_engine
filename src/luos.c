@@ -205,7 +205,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
                 if (ctx.detection.detected_vm == 1)
                 {
                     // This is the first internal container, save the input branch with the previous ID
-                    ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
+                    ctx.node.port_table[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
                 }
                 // Check if that was the last virtual container
                 if (ctx.detection.detected_vm >= ctx.vm_number)
@@ -224,7 +224,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
             unsigned short value = (((unsigned short)input->data[1]) |
                                     ((unsigned short)input->data[0] << 8));
             //We need to save this ID as a connection on a branch
-            ctx.detection.branches[ctx.detection.activ_branch] = value;
+            ctx.node.port_table[ctx.detection.activ_branch] = value;
             ctx.detection.activ_branch = NO_BRANCH;
         }
         return 1;
@@ -391,14 +391,8 @@ static void Luos_TransmitLocalRoutingTable(container_t *container, msg_t *routeT
     RoutingTB_Erase();
     uint16_t entry_nb = 0;
     routing_table_t local_routing_table[container_number + 1];
-    //start by saving board entry
-    luos_uuid_t uuid;
-    uuid.uuid[0] = LUOS_UUID[0];
-    uuid.uuid[1] = LUOS_UUID[1];
-    uuid.uuid[2] = LUOS_UUID[2];
-    unsigned char table_size;
-    uint16_t *detection_branches = Robus_GetNodeBranches(&table_size);
-    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], uuid, detection_branches, table_size);
+    //start by saving node entry
+    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Robus_GetNode());
     entry_nb++;
     // save containers entry
     for (int i = 0; i < container_number; i++)

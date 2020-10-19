@@ -22,9 +22,9 @@
  ******************************************************************************/
 void Robus_Init(memory_stats_t *memory_stats);
 void Robus_Loop(void);
-vm_t *Robus_ContainerCreate(uint8_t type);
+vm_t *Robus_ContainerCreate(uint16_t type);
 void Robus_ContainersClear(void);
 uint8_t Robus_SendMsg(vm_t *vm, msg_t *msg);
-uint16_t *Robus_GetNodeBranches(uint8_t *size);
+node_t *Robus_GetNode(void);
 
 #endif /* _ROBUS_H_ */
