@@ -16,12 +16,6 @@
 
 typedef enum
 {
-    NO_DETECT,
-    MASTER_DETECT
-} detection_mode_t;
-
-typedef enum
-{
     POKE,
     RELEASE
 } expected_detection_t;

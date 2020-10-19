@@ -42,7 +42,6 @@ typedef struct
     volatile unsigned char ack;       /*!< acknoledge flag. */
     unsigned int baudrate;            /*!< System current baudrate. */
 
-    detection_mode_t detection_mode;
     detection_t detection;
 
     //Virtual container management
