@@ -9,6 +9,7 @@
 #include "context.h" // TODO remove it
 #include "sys_msg.h" // TODO remove it
 #include "msgAlloc.h"
+#include "LuosHAL.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -185,12 +186,10 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
     switch (input->header.cmd)
     {
     case WRITE_ID:
-        if (ctx.detection.activ_branch == NO_BRANCH)
+        if (ctx.detection.activ_branch == NBR_BRANCH)
         {
             // Get and save a new given ID
-            if ((ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
-                (ctx.detection.keepline != NO_BRANCH) &
-                (ctx.detection_mode != MASTER_DETECT))
+            if (ctx.detection_mode != MASTER_DETECT)
             {
                 if ((input->header.target_mode == IDACK) | (input->header.target_mode == NODEIDACK))
                 {
@@ -225,7 +224,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
                                     ((unsigned short)input->data[0] << 8));
             //We need to save this ID as a connection on a branch
             ctx.node.port_table[ctx.detection.activ_branch] = value;
-            ctx.detection.activ_branch = NO_BRANCH;
+            ctx.detection.activ_branch = NBR_BRANCH;
         }
         return 1;
         break;

@@ -230,7 +230,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
     case ID:
         if (header->target == DEFAULTID)
         {
-            if (ctx.detection.keepline != NO_BRANCH)
+            if (ctx.detection.keepline != NBR_BRANCH)
             {
                 return true;
             }
@@ -295,7 +295,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     case IDACK:
     case ID:
         // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
-        if ((msg->header.target == DEFAULTID) && (ctx.detection.activ_branch != NO_BRANCH))
+        if ((msg->header.target == DEFAULTID) && (ctx.detection.activ_branch != NBR_BRANCH))
         {
             MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
             return;

@@ -8,7 +8,6 @@
 #define _DETECTION_H_
 
 #include <robus.h>
-#include <luosHAL.h>
 
 /*******************************************************************************
  * Definitions
@@ -29,10 +28,9 @@ typedef enum
 
 typedef struct
 {
-    branch_t keepline;         /*!< last keepline status on PTP lines . */
-    unsigned char detected_vm; /*!< Virtual Container number. */
-    expected_detection_t expect;
-    unsigned char activ_branch;
+    uint8_t keepline;         /*!< last keepline status on PTP lines . */
+    uint16_t detected_vm; /*!< Virtual Container number. */
+    uint8_t activ_branch;
 } detection_t;
 /*******************************************************************************
  * Variables
@@ -41,9 +39,10 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Detec_PtpHandler(branch_t branch);
-uint8_t Detect_PokeBranch(branch_t branch);
-void Detect_PokeNextBranch(void);
 void Detec_InitDetection(void);
+void Detec_PtpHandler(uint8_t PTPNbr);
+uint8_t Detect_PokeBranch(uint8_t PTPNbr);
+void Detect_PokeNextBranch(void);
+uint8_t Detec_OnePokedPTP(void);
 
 #endif /* _DETECTION_H_ */
