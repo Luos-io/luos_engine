@@ -392,7 +392,7 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
     container->vm->id = newid++;
 
     // Parse internal vm other than the sending one
-    for (unsigned char i = 0; i < ctx.vm_number; i++)
+    for (uint8_t i = 0; i < ctx.vm_number; i++)
     {
         if (&ctx.vm_table[i] != container->vm)
         {
@@ -402,7 +402,7 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
 
     ctx.detection.detected_vm = ctx.vm_number;
 
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
     {
         ctx.detection_mode = MASTER_DETECT;
         if (Detect_PokeBranch(branch))
@@ -410,7 +410,7 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
             // Someone reply to our poke!
             // loop while the line is released
             int container_number = 0;
-            while ((ctx.detection.keepline != NO_BRANCH) & (container_number < 1024))
+            while ((ctx.detection.keepline != NBR_BRANCH) & (container_number < 1024))
             {
                 if (Luos_SetExternId(container, IDACK, DEFAULTID, newid++))
                 {
