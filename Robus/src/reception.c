@@ -62,7 +62,7 @@ void Recep_GetHeader(volatile unsigned char *data)
     {
         case 1 ://reset CRC computation
             ctx.tx_lock = true;
-            LuosHAL_ResetCRC((uint8_t *)&crc_val);
+            crc_val = 0xFFFF;
             break;
 
         case 3 ://check if message is for the node
@@ -108,7 +108,7 @@ void Recep_GetHeader(volatile unsigned char *data)
         default:
         break;
     }
-    LuosHAL_ComputeCRC((uint8_t *)data, 1, (uint8_t *)&crc_val);
+    LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
 }
 /******************************************************************************
  * @brief Callback to get a complete data
@@ -123,7 +123,7 @@ void Recep_GetData(volatile unsigned char *data)
         if (data_count < data_size)
         {
             // Continue CRC computation until the end of data
-            LuosHAL_ComputeCRC((uint8_t *)data, 1, (uint8_t *)&crc_val);
+            LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
         }
     }
     if (data_count > data_size)
