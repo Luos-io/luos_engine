@@ -130,7 +130,7 @@ void Recep_GetData(volatile unsigned char *data)
                            ((unsigned short)current_msg->data[data_size + 1] << 8);
             if (crc == crc_val)
             {
-                if ((current_msg->header.target_mode == IDACK) && (current_msg->header.target != DEFAULTID))
+                if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)) && (current_msg->header.target != DEFAULTID))
                 {
                     Transmit_SendAck();
                 }
@@ -139,7 +139,7 @@ void Recep_GetData(volatile unsigned char *data)
             else
             {
                 ctx.status.rx_error = TRUE;
-                if ((current_msg->header.target_mode == IDACK))
+                if ((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK))
                 {
                     Transmit_SendAck();
                 }
@@ -263,6 +263,14 @@ uint8_t Recep_NodeConcerned(header_t *header)
             return true;
         }
         break;
+    case NODEIDACK:
+        ctx.status.rx_error = FALSE;
+    case NODEID:
+        if (header->target == ctx.node_id)
+        {
+            return true;
+        }
+        break;
     case MULTICAST: // For now Multicast is disabled
     default:
         return false;
@@ -283,7 +291,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     case IDACK:
     case ID:
         // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
-        if ((msg->header.target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH))
+        if ((msg->header.target == DEFAULTID) && (ctx.detection.activ_branch != NO_BRANCH))
         {
             MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
             return;
@@ -299,12 +307,6 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         }
         break;
     case TYPE:
-        //check default type
-        if (msg->header.target == ctx.type)
-        {
-            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
-            return;
-        }
         // Check all VM type
         for (int i = 0; i < ctx.vm_number; i++)
         {
@@ -332,6 +334,14 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                 return;
             }
         }
+        break;
+    case NODEIDACK:
+    case NODEID:
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+        }
+        return;
         break;
     default:
         break;

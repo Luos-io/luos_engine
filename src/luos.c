@@ -69,47 +69,60 @@ void Luos_Loop(void)
     {
         // There is a message available find the container linked to it
         container_t *container = Luos_GetContainer(oldest_vm);
-        // Is this container having a callback?
-        if (container->cont_cb != 0)
+        // check if this is a Luos Command
+        uint8_t cmd = 0;
+        uint16_t size = 0;
+        if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAIL)
         {
-            // This container have a callback pull the message
-            if (MsgAlloc_PullMsg(oldest_vm, &returned_msg) == SUCESS)
+            // this is a critical failure we should never go here
+            while (1)
+                ;
+        }
+        if (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == FAIL)
+        {
+            // this is a critical failure we should never go here
+            while (1)
+                ;
+        }
+        //check if this msg cmd should be consumed by Luos_MsgHandler
+        if (Luos_IsALuosCmd(cmd, size) == SUCESS)
+        {
+            if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCESS)
             {
-                // check if the content of this message need to be managed by Luos and do it if it is.
+                // be sure the content of this message need to be managed by Luos and do it if it is.
                 if (!Luos_MsgHandler((container_t *)container, returned_msg))
                 {
-                    // This message is for the user, pass it to the user.
-                    container->cont_cb(container, returned_msg);
+                    // we should not go there there is a mistake on Luos_IsALuosCmd or Luos_MsgHandler
+                    while (1)
+                        ;
                 }
+                else
+                {
+                    // Luos CMD are generic for all continers and have to be executed only once
+                    // Clear all luos tasks related to this message (in case of multicast message)
+                    MsgAlloc_ClearMsgFromLuosTasks(returned_msg);
+                }
+            }
+            else
+            {
+                // this is a critical failure we should never go here
+                while (1)
+                    ;
+                container->cont_cb(container, returned_msg);
             }
         }
         else
         {
-            uint8_t cmd = 0;
-            uint16_t size = 0;
-            if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAIL)
+            // This message is for a container
+            // check if this continer have a callback?
+            if (container->cont_cb != 0)
             {
-                // this is a critical failure we should never go here
-                while (1)
-                    ;
-            }
-            if (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == FAIL)
-            {
-                // this is a critical failure we should never go here
-                while (1)
-                    ;
-            }
-            //check if this msg cmd should be consumed by Luos_MsgHandler
-            if (Luos_IsALuosCmd(cmd, size) == SUCESS)
-            {
-                // Luos_MsgHandler use it. clear this slot.
-                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == FAIL)
+                // This container have a callback pull the message
+                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCESS)
                 {
-                    // this is a critical failure we should never go here
-                    while (1)
-                        ;
+                    // This message is for the user, pass it to the user.
+                    container->cont_cb(container, returned_msg);
                 }
-                Luos_MsgHandler((container_t *)container, returned_msg);
             }
             else
             {
@@ -169,174 +182,168 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
     msg_t routeTB_msg;
     routing_table_t *route_tab = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
     time_luos_t time;
-    if (input->header.target_mode == ID ||
-        input->header.target_mode == IDACK ||
-        input->header.target_mode == TYPE ||
-        input->header.target_mode == BROADCAST)
+    switch (input->header.cmd)
     {
-        switch (input->header.cmd)
+    case WRITE_ID:
+        if (ctx.detection.activ_branch == NO_BRANCH)
         {
-        case WRITE_ID:
-            if (ctx.detection.activ_branch == NO_BRANCH)
+            // Get and save a new given ID
+            if ((ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
+                (ctx.detection.keepline != NO_BRANCH) &
+                (ctx.detection_mode != MASTER_DETECT))
             {
-                // Get and save a new given ID
-                if ((ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
-                    (ctx.detection.keepline != NO_BRANCH) &
-                    (ctx.detection_mode != MASTER_DETECT))
+                if ((input->header.target_mode == IDACK) | (input->header.target_mode == NODEIDACK))
                 {
-                    if (input->header.target_mode == IDACK)
-                    {
-                        // Acknoledge ID reception
-                        Transmit_SendAck();
-                    }
-                    // We are on topology detection mode, and this is our turn
-                    // Save id for the next container we have on this board
-                    ctx.vm_table[ctx.detection.detected_vm++].id =
-                        (((unsigned short)input->data[1]) |
-                         ((unsigned short)input->data[0] << 8));
-                    if (ctx.detection.detected_vm == 1)
-                    {
-                        // This is the first internal container, save the input branch with the previous ID
-                        ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
-                    }
-                    // Check if that was the last virtual container
-                    if (ctx.detection.detected_vm >= ctx.vm_number)
-                    {
-                        Detect_PokeNextBranch();
-                    }
+                    // Acknoledge ID reception
+                    Transmit_SendAck();
                 }
-                else if (input->header.target != DEFAULTID)
+                // We are on topology detection mode, and this is our turn
+                // Save id for the next container we have on this board
+                ctx.vm_table[ctx.detection.detected_vm++].id =
+                    (((unsigned short)input->data[1]) |
+                     ((unsigned short)input->data[0] << 8));
+                if (ctx.detection.detected_vm == 1)
                 {
-                    container->vm->id = (((unsigned short)input->data[1]) |
-                                         ((unsigned short)input->data[0] << 8));
+                    // This is the first internal container, save the input branch with the previous ID
+                    ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
+                }
+                // Check if that was the last virtual container
+                if (ctx.detection.detected_vm >= ctx.vm_number)
+                {
+                    Detect_PokeNextBranch();
                 }
             }
-            else
+            else if (input->header.target != DEFAULTID)
             {
-                unsigned short value = (((unsigned short)input->data[1]) |
-                                        ((unsigned short)input->data[0] << 8));
-                //We need to save this ID as a connection on a branch
-                ctx.detection.branches[ctx.detection.activ_branch] = value;
-                ctx.detection.activ_branch = NO_BRANCH;
+                container->vm->id = (((unsigned short)input->data[1]) |
+                                     ((unsigned short)input->data[0] << 8));
             }
-            return 1;
-            break;
-        case RESET_DETECTION:
-            Detec_InitDetection();
-            return 1;
-            break;
-        case SET_BAUDRATE:
-            memcpy(&baudrate, input->data, sizeof(uint32_t));
-            Luos_SetBaudrate(baudrate);
-            return 1;
-            break;
-        case IDENTIFY_CMD:
-            // someone request a local route table
-            routeTB_msg.header.cmd = INTRODUCTION_CMD;
-            routeTB_msg.header.target_mode = IDACK;
-            routeTB_msg.header.target = input->header.source;
-            Luos_TransmitLocalRoutingTable(container, &routeTB_msg);
-            return 1;
-            break;
-        case INTRODUCTION_CMD:
-            if (Luos_ReceiveData(container, input, (void *)route_tab))
-            {
-                // route table of this board is finish
-                RoutingTB_ComputeRoutingTableEntryNB();
-            }
-            return 1;
-            break;
-        case REVISION:
-            if (input->header.size == 0)
-            {
-                msg_t output;
-                output.header.cmd = REVISION;
-                output.header.target_mode = ID;
-                sprintf((char *)output.data, "%s", container->firm_version);
-                memcpy(output.data, container->firm_version, sizeof(output.data));
-                output.header.size = strlen((char *)output.data);
-                output.header.target = input->header.source;
-                Luos_SendMsg(container, &output);
-                return 1;
-            }
-            break;
-        case LUOS_REVISION:
-            if (input->header.size == 0)
-            {
-                msg_t output;
-                output.header.cmd = LUOS_REVISION;
-                output.header.target_mode = ID;
-                const char *luos_version = STRINGIFY(VERSION);
-                sprintf((char *)output.data, "%s", luos_version);
-                memcpy(output.data, luos_version, sizeof(output.data));
-                output.header.size = strlen((char *)output.data);
-                output.header.target = input->header.source;
-                Luos_SendMsg(container, &output);
-                return 1;
-            }
-            break;
-        case NODE_UUID:
-            if (input->header.size == 0)
-            {
-                msg_t output;
-                output.header.cmd = NODE_UUID;
-                output.header.target_mode = ID;
-                output.header.size = sizeof(luos_uuid_t);
-                output.header.target = input->header.source;
-                luos_uuid_t uuid;
-                uuid.uuid[0] = LUOS_UUID[0];
-                uuid.uuid[1] = LUOS_UUID[1];
-                uuid.uuid[2] = LUOS_UUID[2];
-                memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
-                Luos_SendMsg(container, &output);
-                return 1;
-            }
-            break;
-        case LUOS_STATISTICS:
-            if (input->header.size == 0)
-            {
-                msg_t output;
-                output.header.cmd = LUOS_STATISTICS;
-                output.header.target_mode = ID;
-                output.header.size = sizeof(luos_stats_t);
-                output.header.target = input->header.source;
-                memcpy(output.data, &luos_stats.unmap, sizeof(luos_stats_t));
-                Luos_SendMsg(container, &output);
-                return 1;
-            }
-            break;
-        case WRITE_ALIAS:
-            // Make a clean copy with full \0 at the end.
-            memset(container->alias, '\0', sizeof(container->alias));
-            if (input->header.size > 16)
-            {
-                input->header.size = 16;
-            }
-            if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z')) | (input->data[0] == '\0')) & (input->header.size != 0))
-            {
-                memcpy(container->alias, input->data, input->header.size);
-                Luos_SaveAlias(container, container->alias);
-            }
-            else
-            {
-                // This is an alias erase instruction, get back to default one
-                Luos_SaveAlias(container, '\0');
-                memcpy(container->alias, container->default_alias, MAX_ALIAS_SIZE);
-            }
-            return 1;
-            break;
-        case UPDATE_PUB:
-            // this container need to be auto updated
-            TimeOD_TimeFromMsg(&time, input);
-            container->auto_refresh.target = input->header.source;
-            container->auto_refresh.time_ms = (uint16_t)TimeOD_TimeTo_ms(time);
-            container->auto_refresh.last_update = LuosHAL_GetSystick();
-            return 1;
-            break;
-        default:
-            return 0;
-            break;
         }
+        else
+        {
+            unsigned short value = (((unsigned short)input->data[1]) |
+                                    ((unsigned short)input->data[0] << 8));
+            //We need to save this ID as a connection on a branch
+            ctx.detection.branches[ctx.detection.activ_branch] = value;
+            ctx.detection.activ_branch = NO_BRANCH;
+        }
+        return 1;
+        break;
+    case RESET_DETECTION:
+        Detec_InitDetection();
+        return 1;
+        break;
+    case SET_BAUDRATE:
+        memcpy(&baudrate, input->data, sizeof(uint32_t));
+        Luos_SetBaudrate(baudrate);
+        return 1;
+        break;
+    case IDENTIFY_CMD:
+        // someone request a local route table
+        routeTB_msg.header.cmd = INTRODUCTION_CMD;
+        routeTB_msg.header.target_mode = IDACK;
+        routeTB_msg.header.target = input->header.source;
+        Luos_TransmitLocalRoutingTable(container, &routeTB_msg);
+        return 1;
+        break;
+    case INTRODUCTION_CMD:
+        if (Luos_ReceiveData(container, input, (void *)route_tab))
+        {
+            // route table of this board is finish
+            RoutingTB_ComputeRoutingTableEntryNB();
+        }
+        return 1;
+        break;
+    case REVISION:
+        if (input->header.size == 0)
+        {
+            msg_t output;
+            output.header.cmd = REVISION;
+            output.header.target_mode = ID;
+            sprintf((char *)output.data, "%s", container->firm_version);
+            memcpy(output.data, container->firm_version, sizeof(output.data));
+            output.header.size = strlen((char *)output.data);
+            output.header.target = input->header.source;
+            Luos_SendMsg(container, &output);
+            return 1;
+        }
+        break;
+    case LUOS_REVISION:
+        if (input->header.size == 0)
+        {
+            msg_t output;
+            output.header.cmd = LUOS_REVISION;
+            output.header.target_mode = ID;
+            const char *luos_version = STRINGIFY(VERSION);
+            sprintf((char *)output.data, "%s", luos_version);
+            memcpy(output.data, luos_version, sizeof(output.data));
+            output.header.size = strlen((char *)output.data);
+            output.header.target = input->header.source;
+            Luos_SendMsg(container, &output);
+            return 1;
+        }
+        break;
+    case NODE_UUID:
+        if (input->header.size == 0)
+        {
+            msg_t output;
+            output.header.cmd = NODE_UUID;
+            output.header.target_mode = ID;
+            output.header.size = sizeof(luos_uuid_t);
+            output.header.target = input->header.source;
+            luos_uuid_t uuid;
+            uuid.uuid[0] = LUOS_UUID[0];
+            uuid.uuid[1] = LUOS_UUID[1];
+            uuid.uuid[2] = LUOS_UUID[2];
+            memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
+            Luos_SendMsg(container, &output);
+            return 1;
+        }
+        break;
+    case LUOS_STATISTICS:
+        if (input->header.size == 0)
+        {
+            msg_t output;
+            output.header.cmd = LUOS_STATISTICS;
+            output.header.target_mode = ID;
+            output.header.size = sizeof(luos_stats_t);
+            output.header.target = input->header.source;
+            memcpy(output.data, &luos_stats.unmap, sizeof(luos_stats_t));
+            Luos_SendMsg(container, &output);
+            return 1;
+        }
+        break;
+    case WRITE_ALIAS:
+        // Make a clean copy with full \0 at the end.
+        memset(container->alias, '\0', sizeof(container->alias));
+        if (input->header.size > 16)
+        {
+            input->header.size = 16;
+        }
+        if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z')) | (input->data[0] == '\0')) & (input->header.size != 0))
+        {
+            memcpy(container->alias, input->data, input->header.size);
+            Luos_SaveAlias(container, container->alias);
+        }
+        else
+        {
+            // This is an alias erase instruction, get back to default one
+            Luos_SaveAlias(container, '\0');
+            memcpy(container->alias, container->default_alias, MAX_ALIAS_SIZE);
+        }
+        return 1;
+        break;
+    case UPDATE_PUB:
+        // this container need to be auto updated
+        TimeOD_TimeFromMsg(&time, input);
+        container->auto_refresh.target = input->header.source;
+        container->auto_refresh.time_ms = (uint16_t)TimeOD_TimeTo_ms(time);
+        container->auto_refresh.last_update = LuosHAL_GetSystick();
+        return 1;
+        break;
+    default:
+        return 0;
+        break;
     }
     return 0;
 }

@@ -39,9 +39,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Init the number of created  virtual container.
     ctx.vm_number = 0;
     // Set default container id. This id is a void id used if no container is created.
-    ctx.id = DEFAULTID;
-    // VOID Container type
-    ctx.type = 0;
+    ctx.node_id = DEFAULTID;
     // no transmission lock
     ctx.tx_lock = FALSE;
     // Save luos baudrate
@@ -152,7 +150,7 @@ ack_restart:
         }
     }
     // Check if ACK needed
-    if (msg->header.target_mode == IDACK)
+    if ((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK))
     {
         // Check if it is a localhost message
         if (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID))
