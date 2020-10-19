@@ -189,33 +189,25 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
         if (ctx.detection.activ_branch == NBR_BRANCH)
         {
             // Get and save a new given ID
-            if (ctx.detection_mode != MASTER_DETECT)
+            if ((input->header.target_mode == IDACK) | (input->header.target_mode == NODEIDACK))
             {
-                if ((input->header.target_mode == IDACK) | (input->header.target_mode == NODEIDACK))
-                {
-                    // Acknoledge ID reception
-                    Transmit_SendAck();
-                }
-                // We are on topology detection mode, and this is our turn
-                // Save id for the next container we have on this board
-                ctx.vm_table[ctx.detection.detected_vm++].id =
-                    (((unsigned short)input->data[1]) |
-                     ((unsigned short)input->data[0] << 8));
-                if (ctx.detection.detected_vm == 1)
-                {
-                    // This is the first internal container, save the input branch with the previous ID
-                    ctx.node.port_table[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
-                }
-                // Check if that was the last virtual container
-                if (ctx.detection.detected_vm >= ctx.vm_number)
-                {
-                    Detect_PokeNextBranch();
-                }
+                // Acknoledge ID reception
+                Transmit_SendAck();
             }
-            else if (input->header.target != DEFAULTID)
+            // We are on topology detection mode, and this is our turn
+            // Save id for the next container we have on this board
+            ctx.vm_table[ctx.detection.detected_vm++].id =
+                (((unsigned short)input->data[1]) |
+                 ((unsigned short)input->data[0] << 8));
+            if (ctx.detection.detected_vm == 1)
             {
-                container->vm->id = (((unsigned short)input->data[1]) |
-                                     ((unsigned short)input->data[0] << 8));
+                // This is the first internal container, save the input branch with the previous ID
+                ctx.node.port_table[ctx.detection.keepline] = ctx.vm_table[0].id - 1;
+            }
+            // Check if that was the last virtual container
+            if (ctx.detection.detected_vm >= ctx.vm_number)
+            {
+                Detect_PokeNextBranch();
             }
         }
         else

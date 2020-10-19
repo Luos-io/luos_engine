@@ -56,27 +56,19 @@ void Detec_PtpHandler(uint8_t PTPNbr)
         ctx.detection.keepline = NBR_BRANCH;
         PTP_ExpectedState = POKE;
         // Check if every line have been poked and poke it if not
-        if (ctx.detection_mode != MASTER_DETECT)
+        for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
         {
-            for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
+            if (ctx.node.port_table[branch] == 0)
             {
-                if (ctx.node.port_table[branch] == 0)
-                {
-                    // this branch have not been detected
-                    if (Detect_PokeBranch(branch))
-                    {
-                        //we get someone, go back to let the detection continue.
-                        return;
-                    }
-                }
+                return;
             }
-            // if it is finished reset all lines
-            for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
-            {
-                LuosHAL_SetPTPDefaultState(branch);
-            }
-            Detec_ResetDetection();
         }
+        // if it is finished reset all lines
+        for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
+        {
+            LuosHAL_SetPTPDefaultState(branch);
+        }
+        Detec_ResetDetection();
     }
     else if (PTP_ExpectedState == POKE)
     {
@@ -157,7 +149,6 @@ void Detec_ResetDetection(void)
 {
     ctx.detection.keepline = NBR_BRANCH;
     ctx.detection.detected_vm = 0;
-    ctx.detection_mode = NO_DETECT;
     PTP_ExpectedState = POKE;
     ctx.detection.activ_branch = NBR_BRANCH;
 }

@@ -383,7 +383,6 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
     unsigned short newid = 1;
     // Reset all detection state of containers on the network
     RoutingTB_ResetNetworkDetection(container->vm);
-    ctx.detection_mode = MASTER_DETECT;
     // wait for some us
     for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
         ;
@@ -404,7 +403,6 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
 
     for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
     {
-        ctx.detection_mode = MASTER_DETECT;
         if (Detect_PokeBranch(branch))
         {
             // Someone reply to our poke!
@@ -426,7 +424,6 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
             }
         }
     }
-    ctx.detection_mode = NO_DETECT;
 
     return newid - 1;
 }
