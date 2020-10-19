@@ -48,11 +48,17 @@ void Transmit_SendAck(void)
  ******************************************************************************/
 uint8_t Transmit_Process(uint8_t *data, uint16_t size)
 {
+    uint16_t crc_val = 0xFFFF;
     const int col_check_data_num = 5;
     // wait tx unlock
     Transmit_WaitUnlockTx();
     // compute the CRC
-    LuosHAL_ComputeCRC(data, size - 2, (unsigned char *)&data[size - 2]);
+    for(uint16_t i = 0; i < size - 2; i++)
+    {
+        LuosHAL_ComputeCRC(&data[i], (uint8_t*)&crc_val);
+    }
+    data[size-2] = (uint8_t)(crc_val);
+    data[size-1] = (uint8_t)(crc_val>>8);
     ctx.collision = FALSE;
     // Enable TX
     LuosHAL_SetTxState(true);
