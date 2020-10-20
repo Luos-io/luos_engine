@@ -117,11 +117,20 @@ typedef struct __attribute__((__packed__))
                 unsigned short node_id : 12;  /*!< Node id */
                 unsigned short certified : 4; /*!< True if the node have a certificate */
             };
-            unsigned short port_table[NBR_BRANCH]; /*!< Phisical port connections */
+            unsigned short port_table[NBR_PORT]; /*!< Phisical port connections */
         };
-        unsigned char unmap[NBR_BRANCH + 2]; /*!< Uncmaped form. */
+        unsigned char unmap[NBR_PORT + 2]; /*!< Uncmaped form. */
     };
 } node_t;
+
+typedef enum
+{
+    // protocol level command
+    WRITE_NODE_ID,   /*!< Get and save a new given node ID. */
+    RESET_DETECTION, /*!< Reset detection*/
+    SET_BAUDRATE,    /*!< Set Robus baudrate*/
+    ROBUS_PROTOCOL_NB,
+} robus_cmd_t;
 
 typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
 /*******************************************************************************

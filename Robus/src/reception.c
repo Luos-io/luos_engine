@@ -42,7 +42,7 @@ msg_t *current_msg;
 void Recep_Init(void)
 {
     // Initialize the reception state machine
-    ctx.data_cb = Recep_GetHeader;
+    ctx.rx.callback = Recep_GetHeader;
     // Get allocation values
     current_msg = MsgAlloc_GetCurrentMsg();
 }
@@ -61,7 +61,7 @@ void Recep_GetHeader(volatile unsigned char *data)
     switch (data_count)
     {
     case 1: //reset CRC computation
-        ctx.tx_lock = true;
+        ctx.tx.lock = true;
         crc_val = 0xFFFF;
         break;
 
@@ -82,7 +82,7 @@ void Recep_GetHeader(volatile unsigned char *data)
         // Reset the catcher.
         data_count = 0;
         // Switch state machiine to data reception
-        ctx.data_cb = Recep_GetData;
+        ctx.rx.callback = Recep_GetData;
         // Cap size for big messages
         if (current_msg->header.size > MAX_DATA_MSG_SIZE)
         {
@@ -134,22 +134,33 @@ void Recep_GetData(volatile unsigned char *data)
                            ((uint16_t)current_msg->data[data_size + 1] << 8);
             if (crc == crc_val)
             {
-                if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)) && (current_msg->header.target != DEFAULTID))
+                if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)))
                 {
                     Transmit_SendAck();
                 }
-                MsgAlloc_EndMsg();
+
+                // Make an exception for reset detection command
+                if (current_msg->header.cmd == RESET_DETECTION)
+                {
+                     ctx.node.node_id = 0;
+                     PortMng_Init();
+                     MsgAlloc_Init(NULL);
+                }
+                else
+                {
+                    MsgAlloc_EndMsg();
+                }
             }
             else
             {
-                ctx.status.rx_error = TRUE;
+                ctx.rx.status.rx_error = TRUE;
                 if ((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK))
                 {
                     Transmit_SendAck();
                 }
                 MsgAlloc_InvalidMsg();
             }
-            ctx.data_cb = Recep_GetHeader;
+            ctx.rx.callback = Recep_GetHeader;
         }
         Recep_Reset();
         return;
@@ -165,16 +176,16 @@ void Recep_GetCollision(volatile unsigned char *data)
 {
     // send all received datas
     Recep_GetHeader(data);
-    if ((*ctx.tx_data != *data) || (!ctx.tx_lock))
+    if ((*ctx.tx.data != *data) || (!ctx.tx.lock))
     {
         //data dont match, or we don't start to send, there is a collision
-        ctx.collision = TRUE;
+        ctx.tx.collision = TRUE;
         //Stop TX trying to save input datas
         LuosHAL_SetTxState(false);
         // switch to get header.
-        ctx.data_cb = Recep_GetHeader;
+        ctx.rx.callback = Recep_GetHeader;
     }
-    ctx.tx_data = ctx.tx_data + 1;
+    ctx.tx.data = ctx.tx.data + 1;
 }
 /******************************************************************************
  * @brief end of a reception
@@ -183,12 +194,12 @@ void Recep_GetCollision(volatile unsigned char *data)
  ******************************************************************************/
 void Recep_Timeout(void)
 {
-    if (ctx.data_cb != Recep_GetHeader)
+    if (ctx.rx.callback != Recep_GetHeader)
     {
-        ctx.status.rx_timeout = TRUE;
+        ctx.rx.status.rx_timeout = TRUE;
     }
     MsgAlloc_InvalidMsg();
-    ctx.tx_lock = false;
+    ctx.tx.lock = false;
     Recep_Reset();
 }
 /******************************************************************************
@@ -200,7 +211,7 @@ void Recep_Reset(void)
 {
     LuosHAL_SetIrqState(false);
     LuosHAL_SetTxLockDetecState(true);
-    ctx.data_cb = Recep_GetHeader;
+    ctx.rx.callback = Recep_GetHeader;
     keep = FALSE;
     data_count = 0;
     LuosHAL_SetIrqState(true);
@@ -213,7 +224,50 @@ void Recep_Reset(void)
 void Recep_CatchAck(volatile unsigned char *data)
 {
     ctx.ack = *data;
-    ctx.data_cb = Recep_GetHeader;
+    ctx.rx.callback = Recep_GetHeader;
+}
+/******************************************************************************
+ * @brief Parse msg to find a module concerned
+ * @param header of message
+ * @return vm pointer
+ ******************************************************************************/
+vm_t *Recep_GetConcernedVm(header_t *header)
+{
+    // Find if we are concerned by this message.
+    switch (header->target_mode)
+    {
+    case IDACK:
+    case ID:
+        // Check all VM id
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            if ((header->target == ctx.vm_table[i].id))
+            {
+                return (vm_t *)&ctx.vm_table[i];
+            }
+        }
+        break;
+    case TYPE:
+        // Check all VM type
+        for (int i = 0; i < ctx.vm_number; i++)
+        {
+            if (header->target == ctx.vm_table[i].type)
+            {
+                return (vm_t *)&ctx.vm_table[i];
+            }
+        }
+        break;
+    case BROADCAST:
+    case NODEIDACK:
+    case NODEID:
+        return (vm_t *)&ctx.vm_table[0];
+        break;
+    case MULTICAST: // For now Multicast is disabled
+    default:
+        return NULL;
+        break;
+    }
+    return NULL;
 }
 /******************************************************************************
  * @brief Parse msg to find a module concerne
@@ -226,7 +280,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
     switch (header->target_mode)
     {
     case IDACK:
-        ctx.status.rx_error = FALSE;
+        ctx.rx.status.rx_error = FALSE;
     case ID:
         // Check all VM id
         for (int i = 0; i < ctx.vm_number; i++)
@@ -254,22 +308,15 @@ uint8_t Recep_NodeConcerned(header_t *header)
         }
         break;
     case NODEIDACK:
-        ctx.status.rx_error = FALSE;
+        ctx.rx.status.rx_error = FALSE;
     case NODEID:
-        if ((header->target == 0) && (ctx.node.node_id == 0))
+        if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
         {
-            if (ctx.detection.keepline != NO_BRANCH)
-            {
-                return true;
-            }
-            else // discard message if ID = 0 and one PTP at 1
-            {
-                return false;
-            }
+            return true; // discard message if ID = 0 and no Port activ
         }
         else
         {
-            if (header->target == ctx.node.node_id)
+            if ((header->target == ctx.node.node_id) && (header->target != 0))
             {
                 return true;
             }
@@ -294,12 +341,6 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     {
     case IDACK:
     case ID:
-        // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
-        if ((msg->header.target == DEFAULTID) && (ctx.detection.activ_branch != NBR_BRANCH))
-        {
-            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
-            return;
-        }
         // Check all VM id
         for (int i = 0; i < ctx.vm_number; i++)
         {
@@ -341,6 +382,11 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         break;
     case NODEIDACK:
     case NODEID:
+        if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
+        {
+            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
+            return;
+        }
         for (int i = 0; i < ctx.vm_number; i++)
         {
             MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);

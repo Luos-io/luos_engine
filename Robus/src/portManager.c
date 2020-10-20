@@ -13,97 +13,94 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+typedef enum
+{
+    POKE,
+    RELEASE
+} PortState_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-expected_detection_t PTP_ExpectedState = POKE;
+PortState_t Port_ExpectedState = POKE;
 /*******************************************************************************
  * Function
  ******************************************************************************/
 
-static void Detec_ResetDetection(void);
+static void PortMng_Reset(void);
 /******************************************************************************
- * @brief init the detection state machine
+ * @brief init the portManager state machine
  * @param None
  * @return None
  ******************************************************************************/
-void Detec_InitDetection(void)
+void PortMng_Init(void)
 {
-    // reset all PTP
-    for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
-    {
-        LuosHAL_SetPTPDefaultState(branch);
-        ctx.node.port_table[branch] = 0;
-    }
-    Detec_ResetDetection();
+    PortMng_Reset();
     // Reinit VM id
     for (uint8_t i = 0; i < ctx.vm_number; i++)
     {
         ctx.vm_table[i].id = DEFAULTID;
     }
+    // Reinit port table
+    for (uint8_t port = 0; port < NBR_PORT; port++)
+    {
+        ctx.node.port_table[port] = 0;
+    }
 }
 /******************************************************************************
- * @brief all ptp interrupt handler
- * @param branch id
+ * @brief PTP interrupt handler
+ * @param port id
  * @return None
  ******************************************************************************/
-void Detec_PtpHandler(uint8_t PTPNbr)
+void PortMng_PtpHandler(uint8_t PortNbr)
 {
-    if (PTP_ExpectedState == RELEASE)
+    if (Port_ExpectedState == RELEASE)
     {
-        // the line was released
-        ctx.detection.keepline = NBR_BRANCH;
-        PTP_ExpectedState = POKE;
+        Port_ExpectedState = POKE;
+        ctx.port.keepLine = false;
         // Check if every line have been poked and poke it if not
-        for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
+        for (uint8_t port = 0; port < NBR_PORT; port++)
         {
-            if (ctx.node.port_table[branch] == 0)
+            if (ctx.node.port_table[port] == 0)
             {
                 return;
             }
         }
-        // if it is finished reset all lines
-        for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
-        {
-            LuosHAL_SetPTPDefaultState(branch);
-        }
-        Detec_ResetDetection();
+        PortMng_Reset();
     }
-    else if (PTP_ExpectedState == POKE)
+    else if (Port_ExpectedState == POKE)
     {
         // we receive a poke, pull the line to notify your presence
-        LuosHAL_PushPTP(PTPNbr);
-        ctx.detection.keepline = PTPNbr;
+        LuosHAL_PushPTP(PortNbr);
+        ctx.port.activ = PortNbr;
     }
 }
 /******************************************************************************
- * @brief detect module by poke ptp line
- * @param branch id
+ * @brief Poke
+ * @param port id
  * @return None
  ******************************************************************************/
-uint8_t Detect_PokeBranch(uint8_t PTPNbr)
+uint8_t PortMng_PokePort(uint8_t PortNbr)
 {
     // push the ptp line
-    LuosHAL_PushPTP(PTPNbr);
+    LuosHAL_PushPTP(PortNbr);
     // wait a little just to be sure everyone can read it
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
     // release the ptp line
-    LuosHAL_SetPTPDefaultState(PTPNbr);
+    LuosHAL_SetPTPDefaultState(PortNbr);
     for (volatile unsigned int i = 0; i < TIMERVAL; i++)
         ;
-    // Save branch as empty by default
-    ctx.node.port_table[PTPNbr] = 0xFFFF;
+    // Save port as empty by default
+    ctx.node.port_table[PortNbr] = 0xFFFF;
     // read the line state
-    if (LuosHAL_GetPTPState(PTPNbr))
+    if (LuosHAL_GetPTPState(PortNbr))
     {
         // Someone reply, reverse the detection to wake up on line release
-        LuosHAL_SetPTPReverseState(PTPNbr);
-        PTP_ExpectedState = RELEASE;
-        ctx.detection.keepline = PTPNbr;
-        // enable activ branch to get the next ID and save it into this branch number.
-        ctx.detection.activ_branch = PTPNbr;
+        LuosHAL_SetPTPReverseState(PortNbr);
+        Port_ExpectedState = RELEASE;
+        // Port poked by node
+        ctx.port.activ = PortNbr;
+        ctx.port.keepLine = true;
         return 1;
     }
     // Nobodies reply to our poke
@@ -112,43 +109,42 @@ uint8_t Detect_PokeBranch(uint8_t PTPNbr)
 /******************************************************************************
  * @brief detect the next module by poke ptp line
  * @param None
- * @return None
+ * @return true if a port have been poke else false
  ******************************************************************************/
-void Detect_PokeNextBranch(void)
+error_return_t PortMng_PokeNextPort(void)
 {
-    for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
+    for (uint8_t port = 0; port < NBR_PORT; port++)
     {
-        if (ctx.node.port_table[branch] == 0)
+        if (ctx.node.port_table[port] == 0)
         {
-            // this branch have not been poked
-            if (Detect_PokeBranch(branch))
+            // this port have not been poked
+            if (PortMng_PokePort(port))
             {
-                return;
+                return SUCESS;
             }
             else
             {
                 // nobody is here
-                ctx.node.port_table[branch] = 0xFFFF;
+                ctx.node.port_table[port] = 0xFFFF;
             }
         }
     }
-    // no more branch need to be poked
-    for (uint8_t branch = 0; branch < NBR_BRANCH; branch++)
-    {
-        LuosHAL_SetPTPDefaultState(branch);
-    }
-    Detec_ResetDetection();
-    return;
+    PortMng_Reset();
+    return FAIL;
 }
 /******************************************************************************
  * @brief reinit the detection state machine
  * @param None
  * @return None
  ******************************************************************************/
-void Detec_ResetDetection(void)
+void PortMng_Reset(void)
 {
-    ctx.detection.keepline = NBR_BRANCH;
-    ctx.detection.detected_vm = 0;
-    PTP_ExpectedState = POKE;
-    ctx.detection.activ_branch = NBR_BRANCH;
+    ctx.port.keepLine = false;
+    ctx.port.activ = NBR_PORT;
+    Port_ExpectedState = POKE;
+    // if it is finished reset all lines
+    for (uint8_t port = 0; port < NBR_PORT; port++)
+    {
+        LuosHAL_SetPTPDefaultState(port);
+    }
 }

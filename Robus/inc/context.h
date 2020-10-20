@@ -10,44 +10,24 @@
 #include <robus.h>
 #include "config.h"
 #include "portManager.h"
+#include "Reception.h"
+#include "Transmission.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-typedef void (*DATA_CB)(volatile unsigned char *data);
-
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            unsigned char identifier : 4;
-            unsigned char rx_error : 1;
-            unsigned char rx_timeout : 1;
-        };
-        unsigned char unmap; /*!< Uncmaped form. */
-    };
-} status_t;
-
 typedef struct
 {
 
     // Variables
-    DATA_CB data_cb;                  /*!< Data management callback. */
-    status_t status;                  /*!< Status. */
-    node_t node;                      /*!< Node informations. */
-    volatile unsigned char *tx_data;  /*!< sent data pointer. */
-    volatile unsigned char tx_lock;   /*!< transmission locking management. */
-    volatile unsigned char collision; /*!< collision flag. */
-    volatile unsigned char ack;       /*!< acknoledge flag. */
-    unsigned int baudrate;            /*!< System current baudrate. */
-
-    detection_t detection;
+    node_t node;                     /*!< Node informations. */
+    RxCom_t rx;                      /*!< Receiver informations. */
+    TxCom_t tx;                      /*!< Transmitter informations. */
+    uint8_t ack;                     /*!< Ack informations. */
+    PortMng_t port;                  /*!< port informations. */
 
     //Virtual container management
-    vm_t vm_table[MAX_VM_NUMBER]; /*!< Virtual Container table. */
-    unsigned char vm_number;      /*!< Virtual Container number. */
-    vm_t *vm_last_send;           /*!< Last Virtual Container id who send something. */
+    vm_t vm_table[MAX_VM_NUMBER];    /*!< Virtual Container table. */
+    uint8_t vm_number;         /*!< Virtual Container number. */
 
 } context_t;
 

@@ -34,11 +34,11 @@ void Transmit_SendAck(void)
 {
     LuosHAL_SetTxState(true);
     LuosHAL_SetRxState(false);
-    LuosHAL_ComTransmit((unsigned char *)&ctx.status.unmap, 1);
+    LuosHAL_ComTransmit((unsigned char *)&ctx.rx.status.unmap, 1);
     LuosHAL_ComTxTimeout();
     LuosHAL_SetRxState(true);
     LuosHAL_SetTxState(false);
-    ctx.status.unmap = 0x0F;
+    ctx.rx.status.unmap = 0x0F;
 }
 /******************************************************************************
  * @brief transmission process
@@ -53,40 +53,40 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
     // wait tx unlock
     Transmit_WaitUnlockTx();
     // compute the CRC
-    for(uint16_t i = 0; i < size - 2; i++)
+    for (uint16_t i = 0; i < size - 2; i++)
     {
-        LuosHAL_ComputeCRC(&data[i], (uint8_t*)&crc_val);
+        LuosHAL_ComputeCRC(&data[i], (uint8_t *)&crc_val);
     }
-    data[size-2] = (uint8_t)(crc_val);
-    data[size-1] = (uint8_t)(crc_val>>8);
-    ctx.collision = FALSE;
+    data[size - 2] = (uint8_t)(crc_val);
+    data[size - 1] = (uint8_t)(crc_val >> 8);
+    ctx.tx.collision = FALSE;
     // Enable TX
     LuosHAL_SetTxState(true);
     LuosHAL_SetIrqState(false);
     // switch reception in collision detection mode
-    ctx.data_cb = Recep_GetCollision;
-    ctx.tx_data = data;
+    ctx.rx.callback = Recep_GetCollision;
+    ctx.tx.data = data;
     LuosHAL_SetIrqState(true);
     // re-lock the transmission
-    if (ctx.collision | Transmit_GetLockStatus())
+    if (ctx.tx.collision | Transmit_GetLockStatus())
     {
         // We receive something during our configuration, stop this transmission
         LuosHAL_SetTxState(false);
-        ctx.collision = FALSE;
+        ctx.tx.collision = FALSE;
         return 1;
     }
-    ctx.tx_lock = true;
+    ctx.tx.lock = true;
     LuosHAL_SetTxLockDetecState(false);
     // Try to detect a collision during the "col_check_data_num" first bytes
     if (LuosHAL_ComTransmit(data, col_check_data_num))
     {
         LuosHAL_SetTxState(false);
-        ctx.collision = FALSE;
+        ctx.tx.collision = FALSE;
         return 1;
     }
     // No collision occure, stop collision detection mode and continue to transmit
     LuosHAL_SetIrqState(false);
-    ctx.data_cb = Recep_GetHeader;
+    ctx.rx.callback = Recep_GetHeader;
     LuosHAL_SetIrqState(true);
     LuosHAL_SetRxState(false);
     LuosHAL_ComTransmit(data + col_check_data_num, size - col_check_data_num);
@@ -119,9 +119,9 @@ void Transmit_WaitUnlockTx(void) // TODO : This function could be in HAL and rep
  ******************************************************************************/
 static uint8_t Transmit_GetLockStatus(void)
 {
-    if (ctx.tx_lock != true)
+    if (ctx.tx.lock != true)
     {
-        ctx.tx_lock |= LuosHAL_GetTxLockState();
+        ctx.tx.lock |= LuosHAL_GetTxLockState();
     }
-    return ctx.tx_lock;
+    return ctx.tx.lock;
 }

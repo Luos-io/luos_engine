@@ -33,10 +33,10 @@ typedef struct __attribute__((__packed__)) container_t
     // Callback
     void (*cont_cb)(struct container_t *container, msg_t *msg);
     // Variables
-    char default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
-    char alias[MAX_ALIAS_SIZE];         /*!< container alias. */
+    uint8_t default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
+    uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
     timed_update_t auto_refresh;        /*!< container auto refresh context. */
-    char firm_version[20];              /*!< container firmware version. */
+    uint8_t firm_version[20];              /*!< container firmware version. */
 } container_t;
 
 typedef void (*CONT_CB)(container_t *container, msg_t *msg);

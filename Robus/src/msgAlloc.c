@@ -142,7 +142,11 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     luos_tasks_stack_id = 0;
     msg_pre_tasks_stack_id = 0;
     msg_tasks_stack_id = 0;
-    mem_stat = memory_stats;
+    copy_task_pointer = NULL;
+    if (memory_stats != NULL)
+    {
+        mem_stat = memory_stats;
+    }
 }
 /******************************************************************************
  * @brief execute some things out of IRQ
@@ -188,7 +192,7 @@ void MsgAlloc_loop(void)
         {
             data_size = msg_pre_tasks[0]->header.size;
         }
-        MsgAlloc_ClearMsgSpace((void *)msg_pre_tasks[0], (void *)(msg_pre_tasks[0] + sizeof(header_t) + data_size));
+        MsgAlloc_ClearMsgSpace((void *)msg_pre_tasks[0], (void *)(&msg_pre_tasks[0]->data[data_size]));
 
         // move msg_pre_task to msg_task
         if (msg_tasks_stack_id == MAX_MSG_NB)
@@ -280,13 +284,13 @@ void MsgAlloc_ValidHeader(void)
     {
         // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
         // Create a task to clean the begin of msg_buffer with the space of the complete message
-        MsgAlloc_CreateMsgSpaceTask((void *)&msg_buffer[0], (void *)(&msg_buffer[0] + sizeof(header_t) + data_size + 2));
+        MsgAlloc_CreateMsgSpaceTask((void *)&msg_buffer[0], (void *)(&msg_buffer[sizeof(header_t) + data_size + 2]));
         // Create a task to copy the header at the begining of msg_buffer
         copy_task_pointer = (header_t *)&current_msg->header;
         // Move current_msg to msg_buffer
         current_msg = (volatile msg_t *)&msg_buffer[0];
         // move data_ptr after the new location of the header
-        data_ptr = &msg_buffer[0] + sizeof(header_t);
+        data_ptr = &msg_buffer[sizeof(header_t)];
     }
     else
     {
@@ -330,7 +334,7 @@ void MsgAlloc_EndMsg(void)
     // update the current_msg
     current_msg = (volatile msg_t *)data_ptr;
     // create a task to clear this space
-    MsgAlloc_CreateMsgSpaceTask((void *)current_msg, (void *)(current_msg + sizeof(header_t) + 2));
+    MsgAlloc_CreateMsgSpaceTask((void *)current_msg, (void *)(&current_msg->stream[sizeof(header_t) + 2]));
 }
 /******************************************************************************
  * @brief write a byte into the current message.
@@ -342,6 +346,52 @@ void MsgAlloc_SetData(uint8_t data)
     //******** Write data  *********
     *data_ptr = data;
     data_ptr++;
+}
+/******************************************************************************
+ * @brief write a complete message.
+ * @param msg_t* msg to write in the allocator
+ * @return None
+ ******************************************************************************/
+void MsgAlloc_SetMessage(msg_t *msg)
+{
+    //******** Clean the message space **********
+    // Be sure that the end of msg_buffer is after data_ptr + header_t.size + header_t
+    uint16_t data_size = 0;
+    msg_t *cpy_msg;
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+    {
+        data_size = MAX_DATA_MSG_SIZE + sizeof(header_t);
+    }
+    else
+    {
+        data_size = msg->header.size + sizeof(header_t);
+    }
+
+    LuosHAL_SetIrqState(false);
+    if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->stream[data_size])) == FAIL)
+    {
+        // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
+        // Move current_msg to msg_buffer
+        current_msg = (volatile msg_t *)&msg_buffer[0];
+    }
+    MsgAlloc_CreateMsgSpaceTask((void *)current_msg, (void *)(&current_msg->stream[data_size]));
+
+    //******** finish the message**********
+    /* 
+     * To prevent reception concurency, before copying any data we have to prepare
+     * the reception of the next one in a thread safe code part.
+     * Then we can copy it without trouble.
+     */
+    // copy the message to copy location
+    cpy_msg = (msg_t *)current_msg;
+    // fake the data_ptr progression
+    data_ptr = &current_msg->stream[data_size + 2];
+    // finish the message and prepare the next reception
+    MsgAlloc_EndMsg();
+    LuosHAL_SetIrqState(true);
+
+    //******** Write data *********
+    memcpy((void *)cpy_msg, (void *)msg, data_size);
 }
 /******************************************************************************
  * @brief return the current message
@@ -373,7 +423,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     }
     //******** Prepare a memory space to be writable **********
     // check if there is no msg between from and to on luos_tasks
-    while (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) & ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to))
+    while (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) && ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to) && (luos_tasks_stack_id > 0))
     {
         // This message is in the space we want to use, clear the task
         MsgAlloc_ClearLuosTask(0);
@@ -383,7 +433,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
         }
     }
     // check if there is no msg between from and to on msg_tasks
-    while (((uint32_t)msg_tasks[0] >= (uint32_t)from) & ((uint32_t)msg_tasks[0] <= (uint32_t)to))
+    while (((uint32_t)msg_tasks[0] >= (uint32_t)from) && ((uint32_t)msg_tasks[0] <= (uint32_t)to) && (msg_tasks_stack_id > 0))
     {
         // This message is in the space we want to use, clear the task
         MsgAlloc_ClearMsgTask();
@@ -435,6 +485,10 @@ static inline void MsgAlloc_ClearMsgSpaceTask(void)
  ******************************************************************************/
 static inline void MsgAlloc_ClearMsgTask(void)
 {
+    if (msg_tasks_stack_id == 0)
+    {
+        while(1);
+    }
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
         msg_tasks[rm] = msg_tasks[rm + 1];
@@ -469,9 +523,9 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
  ******************************************************************************/
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 {
-    if (luos_task_id > luos_tasks_stack_id)
+    if ((luos_task_id > luos_tasks_stack_id)||(luos_tasks_stack_id == 0))
     {
-        return;
+        while(1);
     }
     for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
     {
@@ -523,12 +577,9 @@ error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg)
         if (luos_tasks[i].vm_pt == target_module)
         {
             *returned_msg = luos_tasks[i].msg_pt;
+
             // Clear the slot by sliding others to the left on it
-            for (uint16_t rm = i; rm < luos_tasks_stack_id; rm++)
-            {
-                luos_tasks[rm] = luos_tasks[rm + 1];
-            }
-            luos_tasks_stack_id--;
+            MsgAlloc_ClearLuosTask(i);
             return SUCESS;
         }
     }
@@ -547,12 +598,9 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     if (luos_task_id < luos_tasks_stack_id)
     {
         *returned_msg = luos_tasks[luos_task_id].msg_pt;
+
         // Clear the slot by sliding others to the left on it
-        for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
-        {
-            luos_tasks[rm] = luos_tasks[rm + 1];
-        }
-        luos_tasks_stack_id--;
+        MsgAlloc_ClearLuosTask(luos_task_id);
         return SUCESS;
     }
     // At this point we don't find any message for this module
@@ -634,11 +682,16 @@ uint16_t MsgAlloc_LuosTasksNbr(void)
  ******************************************************************************/
 void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
 {
-    for (uint16_t id = 0; id < luos_tasks_stack_id; id++)
+    uint16_t id = 0;
+    while (id < luos_tasks_stack_id)
     {
         if (luos_tasks[id].msg_pt == msg)
         {
             MsgAlloc_ClearLuosTask(id);
+        }
+        else
+        {
+            id++;
         }
     }
 }

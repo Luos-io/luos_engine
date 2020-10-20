@@ -14,29 +14,23 @@
  ******************************************************************************/
 #define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
-typedef enum
-{
-    POKE,
-    RELEASE
-} expected_detection_t;
-
-typedef struct
-{
-    uint8_t keepline;         /*!< last keepline status on PTP lines . */
-    uint16_t detected_vm; /*!< Virtual Container number. */
-    uint8_t activ_branch;
-} detection_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-
+typedef struct
+{
+    //Port manager
+    volatile uint8_t activ;        //last Port where thereis activity
+    volatile uint8_t keepLine;     //status of the line poked by your node
+}
+PortMng_t;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Detec_InitDetection(void);
-void Detec_PtpHandler(uint8_t PTPNbr);
-uint8_t Detect_PokeBranch(uint8_t PTPNbr);
-void Detect_PokeNextBranch(void);
-uint8_t Detec_OnePokedPTP(void);
+void PortMng_Init(void);
+void PortMng_PtpHandler(uint8_t PortNbr);
+uint8_t PortMng_PokePort(uint8_t PortNbr);
+error_return_t PortMng_PokeNextPort(void);
+uint8_t PortMng_PortPokedStatus(void);
 
 #endif /* _PORTMANAGER_H_ */
