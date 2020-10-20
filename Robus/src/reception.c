@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include "luosHAL.h"
 #include "target.h"
-#include "sys_msg.h"
+#include "transmission.h"
 #include "msgAlloc.h"
 
 /*******************************************************************************

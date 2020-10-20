@@ -1,11 +1,11 @@
 /******************************************************************************
- * @file detection
- * @brief detection state machine.
+ * @file portManager
+ * @brief portManager state machine.
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _DETECTION_H_
-#define _DETECTION_H_
+#ifndef _PORTMANAGER_H_
+#define _PORTMANAGER_H_
 
 #include <robus.h>
 #include <luosHAL.h>
@@ -46,4 +46,4 @@ uint8_t Detect_PokeBranch(branch_t branch);
 void Detect_PokeNextBranch(void);
 void Detec_InitDetection(void);
 
-#endif /* _DETECTION_H_ */
+#endif /* _PORTMANAGER_H_ */

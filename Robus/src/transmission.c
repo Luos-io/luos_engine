@@ -4,7 +4,7 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include <sys_msg.h>
+#include <transmission.h>
 
 #include "luosHAL.h"
 #include <string.h>

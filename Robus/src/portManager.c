@@ -5,8 +5,8 @@
  * @version 0.0.0
  ******************************************************************************/
 #include <stdbool.h>
-#include "detection.h"
-#include "sys_msg.h"
+#include "portManager.h"
+#include "transmission.h"
 #include "context.h"
 
 /*******************************************************************************

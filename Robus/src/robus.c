@@ -7,9 +7,9 @@
 #include <robus.h>
 
 #include <string.h>
-#include "sys_msg.h"
+#include "transmission.h"
 #include "reception.h"
-#include "detection.h"
+#include "portManager.h"
 #include "context.h"
 #include "luosHAL.h"
 #include "msgAlloc.h"
@@ -227,3 +227,4 @@ node_t *Robus_GetNode(void)
 {
     return (node_t *)&ctx.node;
 }
+
