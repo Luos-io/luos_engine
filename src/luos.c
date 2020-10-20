@@ -145,7 +145,7 @@ static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size)
 {
     switch (cmd)
     {
-    case WRITE_ID:
+    case WRITE_NODE_ID:
     case RESET_DETECTION:
     case SET_BAUDRATE:
     case IDENTIFY_CMD:
@@ -185,7 +185,7 @@ static int8_t Luos_MsgHandler(container_t *container, msg_t *input)
     time_luos_t time;
     switch (input->header.cmd)
     {
-    case WRITE_ID:
+    case WRITE_NODE_ID:
         if (ctx.detection.activ_branch == NBR_BRANCH)
         {
             // Get and save a new given ID
@@ -832,7 +832,7 @@ uint8_t Luos_SetExternId(container_t *container, target_mode_t target_mode, uint
     msg_t msg;
     msg.header.target = target;
     msg.header.target_mode = target_mode;
-    msg.header.cmd = WRITE_ID;
+    msg.header.cmd = WRITE_NODE_ID;
     msg.header.size = 2;
     msg.data[1] = newid;
     msg.data[0] = (newid << 8);

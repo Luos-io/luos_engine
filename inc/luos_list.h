@@ -37,7 +37,7 @@ typedef enum
 typedef enum
 {
     // protocol level command
-    WRITE_ID,        /*!< Get and save a new given ID. */
+    WRITE_NODE_ID,   /*!< Get and save a new given node ID. */
     RESET_DETECTION, /*!< Reset detection*/
     SET_BAUDRATE,    /*!< Set Robus baudrate*/
 

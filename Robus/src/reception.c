@@ -58,54 +58,54 @@ void Recep_GetHeader(volatile unsigned char *data)
     data_count++;
 
     // Check if we have all we need.
-    switch(data_count)
+    switch (data_count)
     {
-        case 1 ://reset CRC computation
-            ctx.tx_lock = true;
-            crc_val = 0xFFFF;
-            break;
+    case 1: //reset CRC computation
+        ctx.tx_lock = true;
+        crc_val = 0xFFFF;
+        break;
 
-        case 3 ://check if message is for the node
-            keep = Recep_NodeConcerned((header_t *)&current_msg->header);
-            break;
+    case 3: //check if message is for the node
+        keep = Recep_NodeConcerned((header_t *)&current_msg->header);
+        break;
 
-        case (sizeof(header_t)) ://Process at the header
+    case (sizeof(header_t)): //Process at the header
 #ifdef DEBUG
-            printf("*******header data*******\n");
-            printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
-            printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-            printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-            printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-            printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
-            printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
+        printf("*******header data*******\n");
+        printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
+        printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+        printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+        printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+        printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
+        printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
 #endif
-                // Reset the catcher.
-                data_count = 0;
-                // Switch state machiine to data reception
-                ctx.data_cb = Recep_GetData;
-                // Cap size for big messages
-                if (current_msg->header.size > MAX_DATA_MSG_SIZE)
-                {
-                    data_size = MAX_DATA_MSG_SIZE;
-                }
-                else
-                {
-                    data_size = current_msg->header.size;
-                }
-                if (keep)
-                {
-                    if (data_size)
-                    {
-                        MsgAlloc_ValidHeader();
-                    }
-                }
-                else
-                {
-                    MsgAlloc_InvalidMsg();
-                }
-            break;
+        // Reset the catcher.
+        data_count = 0;
+        // Switch state machiine to data reception
+        ctx.data_cb = Recep_GetData;
+        // Cap size for big messages
+        if (current_msg->header.size > MAX_DATA_MSG_SIZE)
+        {
+            data_size = MAX_DATA_MSG_SIZE;
+        }
+        else
+        {
+            data_size = current_msg->header.size;
+        }
+        if (keep)
+        {
+            if (data_size)
+            {
+                MsgAlloc_ValidHeader();
+            }
+        }
+        else
+        {
+            MsgAlloc_InvalidMsg();
+        }
+        break;
 
-        default:
+    default:
         break;
     }
     LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
@@ -228,26 +228,12 @@ uint8_t Recep_NodeConcerned(header_t *header)
     case IDACK:
         ctx.status.rx_error = FALSE;
     case ID:
-        if (header->target == DEFAULTID)
+        // Check all VM id
+        for (int i = 0; i < ctx.vm_number; i++)
         {
-            if (ctx.detection.keepline != NBR_BRANCH)
+            if ((header->target == ctx.vm_table[i].id))
             {
                 return true;
-            }
-            else // discard message if ID = 0 and one PTP at 1
-            {
-                return false;
-            }
-        }
-        else
-        {
-            // Check all VM id
-            for (int i = 0; i < ctx.vm_number; i++)
-            {
-                if ((header->target == ctx.vm_table[i].id))
-                {
-                    return true;
-                }
             }
         }
         break;
@@ -270,9 +256,23 @@ uint8_t Recep_NodeConcerned(header_t *header)
     case NODEIDACK:
         ctx.status.rx_error = FALSE;
     case NODEID:
-        if (header->target == ctx.node.node_id)
+        if ((header->target == 0) && (ctx.node.node_id == 0))
         {
-            return true;
+            if (ctx.detection.keepline != NO_BRANCH)
+            {
+                return true;
+            }
+            else // discard message if ID = 0 and one PTP at 1
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (header->target == ctx.node.node_id)
+            {
+                return true;
+            }
         }
         break;
     case MULTICAST: // For now Multicast is disabled

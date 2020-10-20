@@ -380,22 +380,27 @@ unsigned char RoutingTB_ResetNetworkDetection(vm_t *vm)
 
 static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
 {
-    unsigned short newid = 1;
+    unsigned short Nodeid = 1;
+    unsigned short Containerid = 1;
     // Reset all detection state of containers on the network
     RoutingTB_ResetNetworkDetection(container->vm);
     // wait for some us
     for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
         ;
 
+    // setup local node
+    node_t *local_node = Robus_GetNode();
+    local_node->node_id = Nodeid++;
+
     // setup sending vm
-    container->vm->id = newid++;
+    container->vm->id = Containerid++;
 
     // Parse internal vm other than the sending one
     for (uint8_t i = 0; i < ctx.vm_number; i++)
     {
         if (&ctx.vm_table[i] != container->vm)
         {
-            ctx.vm_table[i].id = newid++;
+            ctx.vm_table[i].id = Containerid++;
         }
     }
 
@@ -407,17 +412,17 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
         {
             // Someone reply to our poke!
             // loop while the line is released
-            int container_number = 0;
-            while ((ctx.detection.keepline != NBR_BRANCH) & (container_number < 1024))
+            int node_number = 0;
+            while ((ctx.detection.keepline != NBR_BRANCH) & (node_number < 1024))
             {
-                if (Luos_SetExternId(container, IDACK, DEFAULTID, newid++))
+                if (Luos_SetExternId(container, NODEIDACK, DEFAULTID, Nodeid++))
                 {
-                    // set extern id fail
+                    // set extern node id fail
                     // remove this id and stop topology detection
-                    newid--;
+                    Nodeid--;
                     break;
                 }
-                container_number++;
+                node_number++;
                 // wait for some us
                 for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
                     ;
@@ -425,7 +430,7 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
         }
     }
 
-    return newid - 1;
+    return Nodeid - 1;
 }
 
 // Detect all containers and create a route table with it.
