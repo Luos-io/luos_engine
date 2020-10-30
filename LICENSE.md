@@ -4,6 +4,8 @@
 # LUOS
 Entry into force: April 22, 2020
 
+Digest: Luos is free for open source projects, R&D, and design. Luos becomes chargeable when devices intended to be sold are produced with Luos in it.
+
 # 1. Purpose
 
 The company LUOS ROBOTICS, a simplified joint-stock company, registered in the Bordeaux Trade and Companies Register, under the number 840 964 902, whose registered office is located at 104B avenue Aristide Briand, Le Bouscat (33110) (hereafter referred to as: ("**LUOS**"), develops and markets embedded software in the form of a library pluggable into a bare-metal or embedded OS, allowing a user (hereinafter: the "**Licensee**") to link all the sub-assemblies of electronic devices into a single system image in a simple, fast and secure manner (hereinafter: the "**Technology**").
@@ -48,7 +50,7 @@ A copy of the General Terms and Conditions has been made available to the Licens
 
 LUOS grants the Licensee a non-exclusive, personal and non-transferable license to use the Technology, in its existing version at the date hereof and in any future versions, for use in the design and / or research & development of a product (hereinafter the "**Product**").
 
-The Free License granted is exclusively and strictly limited to use for the purposes of design, research & development on the Product, to the exclusion of any selling of the Product in any form whatsoever.
+The Free License granted is exclusively and strictly limited to use for the purposes of design, research & development on the Product, to the exclusion of any selling of the Product in any form whatsoever. Luos is free for open-source projects.
 
 In the event that the Licensee wishes to start selling the Product including the Technology, the Licensee undertakes to comply with the provisions applicable to the Premium License. Such provision shall also apply to paying prototypes or single copy destined to industrialization.
 
