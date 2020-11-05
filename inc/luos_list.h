@@ -36,17 +36,11 @@ typedef enum
 
 typedef enum
 {
-    // protocol level command
-    WRITE_ID,        /*!< Get and save a new given ID. */
-    RESET_DETECTION, /*!< Reset detection*/
-    SET_BAUDRATE,    /*!< Set Robus baudrate*/
-
     // Luos specific registers
-    IDENTIFY_CMD,     // Gate asks a container to identify itself
-    INTRODUCTION_CMD, // container sends its alias and type to the gate
-    WRITE_ALIAS,      // Get and save a new given alias.
-    UPDATE_PUB,       // Ask to update a sensor value each time duration to the sender
-    NODE_UUID,        // luos_uuid_t
+    RTB_CMD = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2), or share(size > 2) a routing_table.
+    WRITE_ALIAS,                 // Get and save a new given alias.
+    UPDATE_PUB,                  // Ask to update a sensor value each time duration to the sender
+    NODE_UUID,                   // luos_uuid_t
 
     // Revision management
     REVISION,        // container sends its firmware revision

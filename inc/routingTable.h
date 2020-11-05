@@ -11,7 +11,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define MAX_CONTAINERS_NUMBER 40
+#define MAX_RTB_ENTRY 40
 
 typedef enum
 {
@@ -68,7 +68,6 @@ luos_type_t RoutingTB_TypeFromAlias(char *alias);
 char *RoutingTB_StringFromType(luos_type_t type);
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type);
 int8_t RoutingTB_GetNodeNB(void);
-void RoutingTB_GetNodeList(unsigned short *list);
 int8_t RoutingTB_GetNodeID(unsigned short index);
 
 // ********************* routing_table management tools ************************
@@ -76,11 +75,13 @@ void RoutingTB_ComputeRoutingTableEntryNB(void);
 void RoutingTB_DetectContainers(container_t *container);
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
 void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_t *container);
-void RoutingTB_InsertOnRoutingTable(routing_table_t *entry);
+// void RoutingTB_InsertOnRoutingTable(routing_table_t *entry);
 void RoutingTB_RemoveOnRoutingTable(int id);
 void RoutingTB_Erase(void);
 routing_table_t *RoutingTB_Get(void);
-int8_t RoutingTB_GetLastContainer(void);
-int8_t RoutingTB_GetLastEntry(void);
+uint16_t RoutingTB_GetLastContainer(void);
+uint16_t *RoutingTB_GetLastNode(void);
+uint16_t RoutingTB_GetLastEntry(void);
+void RoutingTB_BootstrapNextNodes(container_t *container);
 
 #endif /* TABLE */

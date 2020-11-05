@@ -8,8 +8,9 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <luosHAL.h>
-#include "context.h" //TODO to remove
+#include <stdbool.h>
+#include "luosHAL.h"
+#include "context.h"
 
 /*******************************************************************************
  * Definitions
@@ -18,15 +19,19 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-routing_table_t routing_table[MAX_CONTAINERS_NUMBER];
-volatile int last_container = 0;
-volatile int last_routing_table_entry = 0;
+routing_table_t routing_table[MAX_RTB_ENTRY];
+volatile uint16_t last_container = 0;
+volatile uint16_t last_routing_table_entry = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static void RoutingTB_AddNumToAlias(char *alias, int num);
-static int8_t RoutingTB_BigestID(void);
-static int8_t RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_msg);
+static uint16_t RoutingTB_BigestID(void);
+static uint16_t RoutingTB_BigestNodeID(void);
+static bool RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_msg);
+
+static void RoutingTB_Generate(container_t *container, uint16_t nb_node);
+static void RoutingTB_Share(container_t *container, uint16_t nb_node);
 
 // ************************ routing_table search tools ***************************
 
@@ -57,6 +62,7 @@ int8_t RoutingTB_IDFromAlias(char *alias)
  * @param type of container look at
  * @return ID or Error
  ******************************************************************************/
+
 int8_t RoutingTB_IDFromType(luos_type_t type)
 {
     for (int i = 0; i <= last_routing_table_entry; i++)
@@ -217,11 +223,11 @@ uint8_t RoutingTB_ContainerIsSensor(luos_type_t type)
     return 0;
 }
 /******************************************************************************
- * @brief  return bigest ID in list
+ * @brief  return bigest container ID in list
  * @param None
  * @return ID
  ******************************************************************************/
-static int8_t RoutingTB_BigestID(void)
+static uint16_t RoutingTB_BigestID(void)
 {
     int max_id = 0;
     for (int i = 0; i < last_routing_table_entry; i++)
@@ -236,6 +242,27 @@ static int8_t RoutingTB_BigestID(void)
     }
     return max_id;
 }
+/******************************************************************************
+ * @brief  return bigest node ID in list
+ * @param None
+ * @return ID
+ ******************************************************************************/
+static uint16_t RoutingTB_BigestNodeID(void)
+{
+    int max_id = 0;
+    for (int i = 0; i < last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == NODE)
+        {
+            if (routing_table[i].node_id > max_id)
+            {
+                max_id = routing_table[i].node_id;
+            }
+        }
+    }
+    return max_id;
+}
+
 /******************************************************************************
  * @brief  get number of a node on network
  * @param None
@@ -252,23 +279,6 @@ int8_t RoutingTB_GetNodeNB(void)
         }
     }
     return node_nb - 1;
-}
-/******************************************************************************
- * @brief  get List of node on network
- * @param pointer to list of Node
- * @return None
- ******************************************************************************/
-void RoutingTB_GetNodeList(unsigned short *list)
-{
-    int node_nb = 0;
-    for (int i = 0; i <= last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == NODE)
-        {
-            list[node_nb] = i;
-            node_nb++;
-        }
-    }
 }
 /******************************************************************************
  * @brief  get ID of node on network
@@ -289,7 +299,7 @@ int8_t RoutingTB_GetNodeID(unsigned short index)
  ******************************************************************************/
 void RoutingTB_ComputeRoutingTableEntryNB(void)
 {
-    for (int i = 0; i < MAX_CONTAINERS_NUMBER; i++)
+    for (int i = 0; i < MAX_RTB_ENTRY; i++)
     {
         if (routing_table[i].mode == CONTAINER)
         {
@@ -341,7 +351,7 @@ static void RoutingTB_AddNumToAlias(char *alias, int num)
  * @param intro msg in route table
  * @return None
  ******************************************************************************/
-static int8_t RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_msg)
+static bool RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_msg)
 {
     const int timeout = 15; // timeout in ms
     const int entry_bkp = last_routing_table_entry;
@@ -353,82 +363,77 @@ static int8_t RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_ms
         Luos_Loop();
         if (entry_bkp != last_routing_table_entry)
         {
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
-unsigned char RoutingTB_ResetNetworkDetection(vm_t *vm)
+static void RoutingTB_Generate(container_t *container, uint16_t nb_node)
 {
-    msg_t msg;
-
-    msg.header.target = BROADCAST_VAL;
-    msg.header.target_mode = BROADCAST;
-    msg.header.cmd = RESET_DETECTION;
-    msg.header.size = 0;
-
-    //we don't have any way to tell every containers to reset their detection do it twice to be sure
-    if (Robus_SendMsg(vm, &msg))
-        return 1;
-    if (Robus_SendMsg(vm, &msg))
-        return 1;
-    // run luos_loop() to manage the 2 previous broadcast msgs.
-    Luos_Loop();
-    return 0;
-}
-
-static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
-{
-    unsigned short newid = 1;
-    // Reset all detection state of containers on the network
-    RoutingTB_ResetNetworkDetection(container->vm);
-    ctx.detection_mode = MASTER_DETECT;
-    // wait for some us
-    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
-        ;
-
-    // setup sending vm
-    container->vm->id = newid++;
-
-    // Parse internal vm other than the sending one
-    for (unsigned char i = 0; i < ctx.vm_number; i++)
+    // Asks for introduction for every found node (even the one detecting).
+    int try_nb = 0;
+    int last_node_id = RoutingTB_BigestNodeID();
+    uint16_t last_cont_id = 0;
+    msg_t intro_msg;
+    while ((last_node_id < nb_node) && (try_nb < nb_node))
     {
-        if (&ctx.vm_table[i] != container->vm)
+        try_nb++;
+        intro_msg.header.cmd = RTB_CMD;
+        intro_msg.header.target_mode = NODEIDACK;
+        // Target next unknown node
+        intro_msg.header.target = last_node_id + 1;
+        // set the first container id it can use
+        intro_msg.header.size = 2;
+        last_cont_id = RoutingTB_BigestID() + 1;
+        memcpy(intro_msg.data, &last_cont_id, sizeof(uint16_t));
+        // Ask to introduce and wait for a reply
+        if (!RoutingTB_WaitRoutingTable(container, &intro_msg))
         {
-            ctx.vm_table[i].id = newid++;
+            // We don't get the answer
+            nb_node = last_node_id;
+            break;
         }
+        last_node_id = RoutingTB_BigestNodeID();
     }
-
-    ctx.detection.detected_vm = ctx.vm_number;
-
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    // Check Alias duplication.
+    uint16_t nb_mod = RoutingTB_BigestID();
+    for (int id = 1; id <= nb_mod; id++)
     {
-        ctx.detection_mode = MASTER_DETECT;
-        if (Detect_PokeBranch(branch))
+        int found_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
+        if ((found_id != id) & (found_id != -1))
         {
-            // Someone reply to our poke!
-            // loop while the line is released
-            int container_number = 0;
-            while ((ctx.detection.keepline != NO_BRANCH) & (container_number < 1024))
+            // The found_id don't match with the actual ID of the container because the alias already exist
+            // Find the new alias to give him
+            int annotation = 1;
+            char base_alias[MAX_ALIAS_SIZE] = {0};
+            memcpy(base_alias, RoutingTB_AliasFromId(id), MAX_ALIAS_SIZE);
+            // Add a number after alias in routing table
+            RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
+            // check another time if this alias is already used
+            while (RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id)) != id)
             {
-                if (Luos_SetExternId(container, IDACK, DEFAULTID, newid++))
-                {
-                    // set extern id fail
-                    // remove this id and stop topology detection
-                    newid--;
-                    break;
-                }
-                container_number++;
-                // wait for some us
-                for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
-                    ;
+                // This alias is already used.
+                // Remove the number previously setuped by overwriting it with the base_alias
+                memcpy(RoutingTB_AliasFromId(id), base_alias, MAX_ALIAS_SIZE);
+                RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
             }
         }
     }
-    ctx.detection_mode = NO_DETECT;
+}
 
-    return newid - 1;
+static void RoutingTB_Share(container_t *container, uint16_t nb_node)
+{
+    // send route table to each nodes. Routing tables are commonly usable for each containers of a node.
+    msg_t intro_msg;
+    intro_msg.header.cmd = RTB_CMD;
+    intro_msg.header.target_mode = NODEIDACK;
+
+    for (int i = 2; i <= nb_node; i++) //don't send to ourself
+    {
+        intro_msg.header.target = i;
+        Luos_SendData(container, &intro_msg, routing_table, (last_routing_table_entry * sizeof(routing_table_t)));
+    }
 }
 
 // Detect all containers and create a route table with it.
@@ -436,82 +441,14 @@ static unsigned char RoutingTB_NetworkTopologyDetection(container_t *container)
 // At the end this function create a list of sensors id
 void RoutingTB_DetectContainers(container_t *container)
 {
-    msg_t intro_msg, auto_name;
-    unsigned char i = 0;
-    // clear network detection state and all previous info.
-    RoutingTB_Erase();
     // Starts the topology detection.
-    int nb_mod = RoutingTB_NetworkTopologyDetection(container);
-    if (nb_mod > MAX_CONTAINERS_NUMBER - 1)
-    {
-        nb_mod = MAX_CONTAINERS_NUMBER - 1;
-    }
-
-    // Then, asks for introduction for every found containers.
-    int try_nb = 0;
-    int last_id = RoutingTB_BigestID();
-    while ((last_id < nb_mod) && (try_nb < nb_mod))
-    {
-        intro_msg.header.cmd = IDENTIFY_CMD;
-        intro_msg.header.target_mode = IDACK;
-        intro_msg.header.size = 0;
-        // Target next unknown container (the first one of the next node)
-        intro_msg.header.target = last_id + 1;
-        try_nb++;
-        // Ask to introduce and wait for a reply
-        if (!RoutingTB_WaitRoutingTable(container, &intro_msg))
-        {
-            // We don't get the answer
-            nb_mod = last_id;
-            break;
-        }
-        last_id = RoutingTB_BigestID();
-    }
-    for (int id = 1; id <= nb_mod; id++)
-    {
-        int computed_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
-        if ((computed_id != id) & (computed_id != -1))
-        {
-            int annotation = 1;
-            // this name already exist in the network change it and send it back.
-            // find the new alias to give him
-            char aliasbis[15] = {0};
-            memcpy(aliasbis, RoutingTB_AliasFromId(id), 15);
-            RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
-            while (RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id)) != id)
-            {
-                memcpy(RoutingTB_AliasFromId(id), aliasbis, 15);
-                RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
-            }
-            auto_name.header.target_mode = ID;
-            auto_name.header.target = id;
-            auto_name.header.cmd = WRITE_ALIAS;
-            auto_name.header.size = strlen(RoutingTB_AliasFromId(id));
-            // Copy the alias into the data field of the message
-            for (i = 0; i < auto_name.header.size; i++)
-            {
-                auto_name.data[i] = RoutingTB_AliasFromId(id)[i];
-            }
-            auto_name.data[auto_name.header.size] = '\0';
-            // Send the message using the WRITE_ALIAS system command
-            Robus_SendMsg(container->vm, &auto_name);
-            //TODO update name into routing_table
-        }
-    }
-
-    // send route table to each nodes. Routing tables are commonly usable for each containers of a node.
-    int nb_node = RoutingTB_GetNodeNB();
-    unsigned short node_index_list[MAX_CONTAINERS_NUMBER];
-    RoutingTB_GetNodeList(node_index_list);
-
-    intro_msg.header.cmd = INTRODUCTION_CMD;
-    intro_msg.header.target_mode = IDACK;
-
-    for (int i = 1; i <= nb_node; i++)
-    {
-        intro_msg.header.target = RoutingTB_GetNodeID(node_index_list[i]);
-        Luos_SendData(container, &intro_msg, routing_table, (last_routing_table_entry * sizeof(routing_table_t)));
-    }
+    int nb_node = Robus_TopologyDetection(container->vm);
+    // clear the routing table.
+    RoutingTB_Erase();
+    // Generate the routing_table
+    RoutingTB_Generate(container, nb_node);
+    // We have a complete routing table now share it with others.
+    RoutingTB_Share(container, nb_node);
 }
 /******************************************************************************
  * @brief entry in routable node with associate container
@@ -524,7 +461,7 @@ void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
     if (sizeof(node_t) > (sizeof(routing_table_t) - 1))
     {
         // This is a critical error.
-        // The NBR_BRANCH config is too high to fit into routing table.
+        // The NBR_PORT config is too high to fit into routing table.
         while (1)
             ;
     }
@@ -553,14 +490,14 @@ void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_
  * @param route table
  * @return None
  ******************************************************************************/
-void RoutingTB_InsertOnRoutingTable(routing_table_t *entry)
-{
-    memcpy(&routing_table[last_routing_table_entry++], entry, sizeof(routing_table_t));
-    if (entry->mode == CONTAINER)
-    {
-        last_container = entry->id;
-    }
-}
+// void RoutingTB_InsertOnRoutingTable(routing_table_t *entry)
+// {
+//     memcpy(&routing_table[last_routing_table_entry++], entry, sizeof(routing_table_t));
+//     if (entry->mode == CONTAINER)
+//     {
+//         last_container = entry->id;
+//     }
+// }
 /******************************************************************************
  * @brief remove an entry from routing_table
  * @param index of container
@@ -598,16 +535,16 @@ routing_table_t *RoutingTB_Get(void)
  * @param None
  * @return last container ID
  ******************************************************************************/
-int8_t RoutingTB_GetLastContainer(void)
+uint16_t RoutingTB_GetLastContainer(void)
 {
-    return last_container;
+    return (uint16_t)last_container;
 }
 /******************************************************************************
  * @brief return the last ID registered into the routing_table
  * @param index of container
  * @return Last entry
  ******************************************************************************/
-int8_t RoutingTB_GetLastEntry(void)
+uint16_t RoutingTB_GetLastEntry(void)
 {
-    return last_routing_table_entry;
+    return (uint16_t)last_routing_table_entry;
 }

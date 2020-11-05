@@ -4,14 +4,20 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _SYS_MSG_H_
-#define _SYS_MSG_H_
+#ifndef _TRANSMISSION_H_
+#define _TRANSMISSION_H_
 
-#include <robus.h>
+#include <stdint.h>
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+typedef struct
+{
+    uint8_t* data;
+    volatile uint8_t lock;
+    volatile uint8_t collision;
+}
+TxCom_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -23,4 +29,4 @@ void Transmit_SendAck(void);
 uint8_t Transmit_Process(uint8_t *data, uint16_t size);
 void Transmit_WaitUnlockTx(void);
 
-#endif /* _SYS_MSG_H_ */
+#endif /* _TRANSMISSION_H_ */

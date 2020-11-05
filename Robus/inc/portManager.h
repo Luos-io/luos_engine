@@ -1,49 +1,36 @@
 /******************************************************************************
- * @file detection
- * @brief detection state machine.
+ * @file portManager
+ * @brief portManager state machine.
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _DETECTION_H_
-#define _DETECTION_H_
+#ifndef _PORTMANAGER_H_
+#define _PORTMANAGER_H_
 
 #include <robus.h>
-#include <luosHAL.h>
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
 #define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
-typedef enum
-{
-    NO_DETECT,
-    MASTER_DETECT
-} detection_mode_t;
-
-typedef enum
-{
-    POKE,
-    RELEASE
-} expected_detection_t;
-
-typedef struct
-{
-    branch_t keepline;         /*!< last keepline status on PTP lines . */
-    unsigned char detected_vm; /*!< Virtual Container number. */
-    expected_detection_t expect;
-    unsigned char activ_branch;
-} detection_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-
+typedef struct
+{
+    //Port manager
+    volatile uint8_t activ;        //last Port where thereis activity
+    volatile uint8_t keepLine;     //status of the line poked by your node
+}
+PortMng_t;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Detec_PtpHandler(branch_t branch);
-uint8_t Detect_PokeBranch(branch_t branch);
-void Detect_PokeNextBranch(void);
-void Detec_InitDetection(void);
+void PortMng_Init(void);
+void PortMng_PtpHandler(uint8_t PortNbr);
+uint8_t PortMng_PokePort(uint8_t PortNbr);
+error_return_t PortMng_PokeNextPort(void);
+uint8_t PortMng_PortPokedStatus(void);
 
-#endif /* _DETECTION_H_ */
+#endif /* _PORTMANAGER_H_ */

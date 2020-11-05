@@ -40,8 +40,8 @@
 #define MAX_MSG_NB 2 * MAX_VM_NUMBER
 #endif
 
-#ifndef NBR_BRANCH
-#define NBR_BRANCH 2
+#ifndef NBR_PORT
+#define NBR_PORT 2
 #endif
 
 /*******************************************************************************

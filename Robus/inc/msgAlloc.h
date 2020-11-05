@@ -27,6 +27,7 @@ void MsgAlloc_ValidHeader(void);
 void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
+void MsgAlloc_SetMessage(msg_t *msg);
 msg_t *MsgAlloc_GetCurrentMsg(void);
 
 // msg interpretation task stack
