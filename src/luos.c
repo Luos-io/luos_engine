@@ -127,6 +127,8 @@ void Luos_Loop(void)
             }
         }
     }
+    // finish msg used
+    MsgAlloc_UsedMsgEnd();
     // manage timed auto update
     Luos_AutoUpdateManager();
     // save loop date
@@ -202,7 +204,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
                 // set container Id based on received data except for the detector one.
                 base_id = 2;
                 int index = 0;
-                for (int i = 0; i < container_number; i++)
+                for (uint16_t i = 0; i < container_number; i++)
                 {
                     if (container_table[i].vm->id != 1)
                     {
@@ -214,7 +216,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             else
             {
                 // set container Id based on received data
-                for (int i = 0; i < container_number; i++)
+                for (uint16_t i = 0; i < container_number; i++)
                 {
                     container_table[i].vm->id = base_id + i;
                 }
@@ -528,6 +530,7 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
             // This message is for the user, pass it to the user.
             return SUCESS;
         }
+        MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
     }
     return FAIL;
 }
@@ -560,6 +563,7 @@ error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **
                     // This message is for the user, pass it to the user.
                     return SUCESS;
                 }
+                MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
             }
             else
             {
@@ -581,7 +585,7 @@ error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **
  * @param Size of the data to transmit
  * @return error
  ******************************************************************************/
-error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data, unsigned short size)
+error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t size)
 {
     // Compute number of message needed to send this data
     uint16_t msg_number = 1;
@@ -596,11 +600,15 @@ error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data,
     for (volatile uint16_t chunk = 0; chunk < msg_number; chunk++)
     {
         // Compute chunk size
-        int chunk_size = 0;
+        uint16_t chunk_size = 0;
         if ((size - sent_size) > MAX_DATA_MSG_SIZE)
+        {
             chunk_size = MAX_DATA_MSG_SIZE;
+        }
         else
+        {
             chunk_size = size - sent_size;
+        }
 
         // Copy data into message
         memcpy(msg->data, (uint8_t *)bin_data + sent_size, chunk_size);
@@ -631,7 +639,6 @@ static error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void 
     static uint32_t data_size[MAX_VM_NUMBER] = {0};
     static uint16_t last_msg_size = 0;
     uint16_t id = Luos_GetContainerIndex(container);
-
     // check good container index
     if(id == 0xFFFF)
     {
@@ -649,11 +656,15 @@ static error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void 
     }
 
     // Get chunk size
-    unsigned short chunk_size = 0;
+    uint16_t chunk_size = 0;
     if (msg->header.size > MAX_DATA_MSG_SIZE)
+    {
         chunk_size = MAX_DATA_MSG_SIZE;
+    }
     else
+    {
         chunk_size = msg->header.size;
+    }
 
     // Copy data into buffer
     memcpy(bin_data + data_size[id], msg->data, chunk_size);

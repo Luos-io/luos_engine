@@ -94,14 +94,15 @@ void Recep_GetHeader(volatile unsigned char *data)
         }
         if (keep)
         {
-            if (data_size)
+            if(data_size)
             {
-                MsgAlloc_ValidHeader();
+                MsgAlloc_ValidHeader(true, data_size);
             }
         }
         else
         {
-            MsgAlloc_InvalidMsg();
+            keep = false;
+            MsgAlloc_ValidHeader(false, data_size);
         }
         break;
 

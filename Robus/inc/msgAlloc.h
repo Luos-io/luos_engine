@@ -23,12 +23,14 @@ void MsgAlloc_Init(memory_stats_t *memory_stats);
 void MsgAlloc_loop(void);
 
 // msg buffering functions
-void MsgAlloc_ValidHeader(void);
+void MsgAlloc_ValidHeader(uint8_t status, uint16_t data_size);
 void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
 void MsgAlloc_SetMessage(msg_t *msg);
 msg_t *MsgAlloc_GetCurrentMsg(void);
+error_return_t MsgAlloc_IsEmpty(void);
+void MsgAlloc_UsedMsgEnd(void);
 
 // msg interpretation task stack
 error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg);

@@ -42,7 +42,6 @@ static error_return_t Robus_ResetNetworkDetection(vm_t *vm);
 volatile context_t ctx;
 uint32_t baudrate; /*!< System current baudrate. */
 volatile uint16_t last_node = 0;
-
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -252,9 +251,7 @@ uint16_t Robus_TopologyDetection(vm_t *vm)
 redetect:
     // Reset all detection state of containers on the network
     Robus_ResetNetworkDetection(vm);
-    // wait for some us to be sure all previous messages are received and treated
-    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
-        ;
+
     // setup local node
     ctx.node.node_id = 1;
     last_node = 1;
@@ -286,20 +283,34 @@ redetect:
 static error_return_t Robus_ResetNetworkDetection(vm_t *vm)
 {
     msg_t msg;
+    uint8_t try = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
     msg.header.cmd = RESET_DETECTION;
     msg.header.size = 0;
 
-    //we don't have any way to tell every containers to reset their detection do it twice to be sure
-    if (Robus_SendMsg(vm, &msg) == FAIL)
-        return FAIL;
-    if (Robus_SendMsg(vm, &msg) == FAIL)
-        return FAIL;
-    // run Robus_Loop() to manage the 2 previous broadcast msgs.
-    Robus_Loop();
-    return SUCCESS;
+    do
+    {
+        Robus_SendMsg(vm, &msg);
+
+        MsgAlloc_Init(NULL);
+
+        // wait for some 2ms to be sure all previous messages are received and treated
+        uint32_t start_tick = LuosHAL_GetSystick();
+        while (LuosHAL_GetSystick() - start_tick < 2);
+        try++;
+    }
+    while((MsgAlloc_IsEmpty() != SUCESS)||(try > 5));
+
+    ctx.node.node_id = 0;
+    PortMng_Init();
+    if(try < 5)
+    {
+        return SUCESS;
+    }
+
+    return FAIL;
 }
 /******************************************************************************
  * @brief run the procedure allowing to detect the next nodes on the next port
@@ -389,9 +400,8 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         case sizeof(node_bootstrap_t):
             if (ctx.node.node_id != 0)
             {
-                // We should not already have an ID !
-                while (1)
-                    ;
+                ctx.node.node_id = 0;
+                MsgAlloc_Init(NULL);
             }
             // This is a node bootstrap information.
             memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
@@ -405,9 +415,6 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         return SUCCESS;
         break;
     case RESET_DETECTION:
-        last_node = 0;
-        ctx.node.node_id = 0;
-        PortMng_Init();
         return SUCCESS;
         break;
     case SET_BAUDRATE:
