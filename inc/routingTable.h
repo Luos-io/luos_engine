@@ -59,16 +59,16 @@ typedef struct __attribute__((__packed__))
  * Function
  ******************************************************************************/
 // ********************* routing_table search tools ************************
-int8_t RoutingTB_IDFromAlias(char *alias);
-int8_t RoutingTB_IDFromType(luos_type_t type);
-int8_t RoutingTB_IDFromContainer(container_t *container);
+uint16_t RoutingTB_IDFromAlias(char *alias);
+uint16_t RoutingTB_IDFromType(luos_type_t type);
+uint16_t RoutingTB_IDFromContainer(container_t *container);
 char *RoutingTB_AliasFromId(uint16_t id);
 luos_type_t RoutingTB_TypeFromID(uint16_t id);
 luos_type_t RoutingTB_TypeFromAlias(char *alias);
 char *RoutingTB_StringFromType(luos_type_t type);
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type);
-int8_t RoutingTB_GetNodeNB(void);
-int8_t RoutingTB_GetNodeID(unsigned short index);
+uint16_t RoutingTB_GetNodeNB(void);
+uint16_t RoutingTB_GetNodeID(uint16_t index);
 
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);

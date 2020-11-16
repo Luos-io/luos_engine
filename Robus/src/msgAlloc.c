@@ -14,33 +14,29 @@
  *        |hhhhhhhdddd|-------------------------------------------------|
  *        +------^---^--------------------------------------------------+
  *               |   |
- * Alloc_tasks   A   B  msg_pre_tasks        msg_tasks         Luos_tasks
- *  +-------+    |   |   +---------+        +---------+        +---------+
- *  |Alloc A|<---+   +-->|Pre msg B|---C--->|  Msg C  |---D-+->| Task D1 |
- *  |Alloc B|<-------+   |---------|<id     |---------|<id  +->| Task D2 |
- *  |-------|<id         |---------|        |---------|        |---------|<id
- *  |-------|            |---------|        |---------|        |---------|
- *  +-------+            +---------+        +---------+        +---------+
+ *               A   B    msg_tasks          Luos_tasks
+ *                   |   +---------+        +---------+
+ *                   +-->|  Msg B  |---C--->| Task D1 |
+ *                       |---------|<id     | Task D2 |
+ *                       |---------|        |---------|<id
+ *                       |---------|        |---------|
+ *                       +---------+        +---------+
  *
  *  - Event A : This event is called by IT and represent the end of reception of
  *              the header. In this event we get the size of the complete message
- *              so we can check if no validated tasks (msg_tasks or Luos_tasks)
- *              use the memory space needed to receive the complete message.
- *              To do it outside of IT we create an "Alloc A" task. This task
- *              will be executed in alloc_loop.
+ *              so we can check if we are at the end of the msg_buffer and report
+ *              writing pointer to the begin of msg_buffer
  *  - Event B : This event is called by IT and represent the end of a good message.
- *              In this event if we have to save the message into a msg_pre_tasks
- *              called "Pre msg B" on this example. Also we have to prepare the
- *              reception of the next header by creating a, "Alloc B" task on
- *              Alloc_tasks.
- *  - Event C : This event represent alloc_loop and it is executed outside of IT.
- *              To begin this event execute Alloc_tasks. Then check if
- *              "Pre msg B" compromise any data on msg_tasks or Luos_tasks.
- *              If it compromise something we have to remove compromised data before
- *              moving the msg as "Msg C".
- *  - Event D : This event represent robus_loop and it is executed outside of IT.
- *              This event pull msg_tasks tasks and interpreat all messages to
+ *              In this event we have to save the message into a msg_tasks
+ *              called "Msg B" on this example. we have to check if there is validated
+ *              tasks at this space in memory and clear the memory space use by
+ *              msg_tasks or Luos_tasks. Also we have to prepare the reception of
+ *              the next header.
+ *  - Event C : This event represent robus_loop and it is executed outside of IT.
+ *              This event pull msg_tasks tasks and interpret all messages to
  *              create one or more Luos_tasks.
+ *  - Task D  : This is all msg trait by Luos Library interpret in Luos_loop. Msg can be
+ *              for Luos Library or for container. this is executed outside of IT.
  *
  * After all of it Luos_tasks are ready to be managed by luos_loop execution.
  ******************************************************************************/
@@ -65,7 +61,7 @@
 typedef struct __attribute__((__packed__))
 {
     msg_t *msg_pt; /*!< Start pointer of the msg on msg_buffer. */
-    vm_t *vm_pt;   /*!< Pointer to the concerned vm. */
+    ll_container_t *ll_container_pt;   /*!< Pointer to the concerned ll_container. */
 } luos_task_t;
 /*******************************************************************************
  * Variables
@@ -199,7 +195,7 @@ void MsgAlloc_ValidHeader(uint8_t status, uint16_t data_size)
 //******** Prepare the allocator to get data  *********
 // Save the concerned module pointer into the concerned module pointer stack
 #ifdef DEBUG
-    if (module_concerned_stack_pointer >= MAX_VM_NUMBER)
+    if (module_concerned_stack_pointer >= MAX_CONTAINER_NUMBER)
     {
         while (1)
             ;
@@ -499,7 +495,7 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
  * @param module_concerned_by_current_msg concerned msg
  * @return None
  ******************************************************************************/
-void MsgAlloc_LuosTaskAlloc(vm_t *module_concerned_by_current_msg, msg_t *concerned_msg)
+void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, msg_t *concerned_msg)
 {
     // find a free slot
     if (luos_tasks_stack_id == MAX_MSG_NB)
@@ -509,7 +505,7 @@ void MsgAlloc_LuosTaskAlloc(vm_t *module_concerned_by_current_msg, msg_t *concer
     }
     // fill the informations of the message in this slot
     luos_tasks[luos_tasks_stack_id].msg_pt = concerned_msg;
-    luos_tasks[luos_tasks_stack_id].vm_pt = module_concerned_by_current_msg;
+    luos_tasks[luos_tasks_stack_id].ll_container_pt = container_concerned_by_current_msg;
     luos_tasks_stack_id++;
     // luos task memory usage
     uint8_t stat = (uint8_t)(((uint32_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
@@ -529,12 +525,12 @@ void MsgAlloc_LuosTaskAlloc(vm_t *module_concerned_by_current_msg, msg_t *concer
  * @param returned_msg : The message pointer.
  * @return error_return_t
  ******************************************************************************/
-error_return_t MsgAlloc_PullMsg(vm_t *target_module, msg_t **returned_msg)
+error_return_t MsgAlloc_PullMsg(ll_container_t *target_module, msg_t **returned_msg)
 {
     //find the oldest message allocated to this module
     for (uint16_t i = 0; i < luos_tasks_stack_id; i++)
     {
-        if (luos_tasks[i].vm_pt == target_module)
+        if (luos_tasks[i].ll_container_pt == target_module)
         {
             *returned_msg = luos_tasks[i].msg_pt;
 
@@ -574,11 +570,11 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
  * @param luos_task_id : Id of the allocator slot
  * @return error_return_t : Fail is there is no more message available.
  ******************************************************************************/
-error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, vm_t **allocated_module)
+error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_container_t **allocated_module)
 {
     if (luos_task_id < luos_tasks_stack_id)
     {
-        *allocated_module = luos_tasks[luos_task_id].vm_pt;
+        *allocated_module = luos_tasks[luos_task_id].ll_container_pt;
         return SUCESS;
     }
     return FAIL;

@@ -26,8 +26,8 @@ typedef struct
     PortMng_t port;                  /*!< port informations. */
 
     //Virtual container management
-    vm_t vm_table[MAX_VM_NUMBER];    /*!< Virtual Container table. */
-    uint8_t vm_number;         /*!< Virtual Container number. */
+    ll_container_t ll_container_table[MAX_CONTAINER_NUMBER];    /*!< Virtual Container table. */
+    uint16_t ll_container_number;         /*!< Virtual Container number. */
 
 } context_t;
 

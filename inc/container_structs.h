@@ -19,9 +19,9 @@
  */
 typedef struct __attribute__((__packed__)) timed_update_t
 {
-    unsigned long last_update;
+    uint32_t last_update;
     uint16_t time_ms;
-    unsigned short target;
+    uint16_t target;
 } timed_update_t;
 
 /* This structure is used to manage containers
@@ -29,7 +29,7 @@ typedef struct __attribute__((__packed__)) timed_update_t
  */
 typedef struct __attribute__((__packed__)) container_t
 {
-    vm_t *vm;
+    ll_container_t *ll_container;
     // Callback
     void (*cont_cb)(struct container_t *container, msg_t *msg);
     // Variables

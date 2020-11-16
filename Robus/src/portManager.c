@@ -35,10 +35,10 @@ static void PortMng_Reset(void);
 void PortMng_Init(void)
 {
     PortMng_Reset();
-    // Reinit VM id
-    for (uint8_t i = 0; i < ctx.vm_number; i++)
+    // Reinit ll_container id
+    for (uint8_t i = 0; i < ctx.ll_container_number; i++)
     {
-        ctx.vm_table[i].id = DEFAULTID;
+        ctx.ll_container_table[i].id = DEFAULTID;
     }
     // Reinit port table
     for (uint8_t port = 0; port < NBR_PORT; port++)
@@ -84,11 +84,11 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     // push the ptp line
     LuosHAL_PushPTP(PortNbr);
     // wait a little just to be sure everyone can read it
-    for (volatile unsigned int i = 0; i < TIMERVAL; i++)
+    for (volatile uint16_t i = 0; i < TIMERVAL; i++)
         ;
     // release the ptp line
     LuosHAL_SetPTPDefaultState(PortNbr);
-    for (volatile unsigned int i = 0; i < TIMERVAL; i++)
+    for (volatile uint16_t i = 0; i < TIMERVAL; i++)
         ;
     // Save port as empty by default
     ctx.node.port_table[PortNbr] = 0xFFFF;

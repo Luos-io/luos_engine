@@ -11,7 +11,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-typedef void (*DATA_CB)(volatile unsigned char *data);
+typedef void (*DATA_CB)(volatile uint8_t *data);
 
 typedef struct __attribute__((__packed__))
 {
@@ -24,7 +24,7 @@ typedef struct __attribute__((__packed__))
             uint8_t rx_timeout : 1;
             uint8_t rx_framing_error : 1;
         };
-        unsigned char unmap; /*!< Uncmaped form. */
+        uint8_t unmap; /*!< Uncmaped form. */
     };
 } status_t;
 
@@ -42,12 +42,12 @@ RxCom_t;
  * Function
  ******************************************************************************/
 // Callbacks reception
-void Recep_GetHeader(volatile unsigned char *data);
-void Recep_GetData(volatile unsigned char *data);
-void Recep_GetCollision(volatile unsigned char *data);
+void Recep_GetHeader(volatile uint8_t *data);
+void Recep_GetData(volatile uint8_t *data);
+void Recep_GetCollision(volatile uint8_t *data);
 
 // Callbacks send
-void Recep_CatchAck(volatile unsigned char *data);
+void Recep_CatchAck(volatile uint8_t *data);
 
 void Recep_Init(void);
 void Recep_EndMsg(void);
@@ -55,6 +55,6 @@ void Recep_Reset(void);
 void Recep_Timeout(void);
 void Recep_InterpretMsgProtocol(msg_t *msg);
 uint8_t Recep_NodeConcerned(header_t *header);
-vm_t *Recep_GetConcernedVm(header_t *header);
+ll_container_t *Recep_GetConcernedLLContainer(header_t *header);
 
 #endif /* _RECEPTION_H_ */
