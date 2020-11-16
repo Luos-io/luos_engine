@@ -19,7 +19,6 @@
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
-    unsigned char alloc_stack_ratio;
     unsigned char msg_stack_ratio;
     unsigned char luos_stack_ratio;
     unsigned char msg_drop_number;

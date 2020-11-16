@@ -67,18 +67,6 @@ typedef struct __attribute__((__packed__))
     msg_t *msg_pt; /*!< Start pointer of the msg on msg_buffer. */
     vm_t *vm_pt;   /*!< Pointer to the concerned vm. */
 } luos_task_t;
-/******************************************************************************
- * @struct allocator_task_t
- * @brief store information allowing to do somes opération outside of IRQ
- * 
- * This structure is used to link modules and messages into the allocator.
- * 
- ******************************************************************************/
-typedef struct __attribute__((__packed__))
-{
-    void *from;
-    void *to;
-} allocator_task_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -91,12 +79,6 @@ volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able
 
 // Allocator task stack
 volatile header_t *copy_task_pointer = NULL;           /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
-volatile allocator_task_t alloc_tasks[MAX_MSG_NB * 2]; /*!< List of things to do outide of IRQ. */
-volatile uint16_t alloc_tasks_stack_id;                /*!< last writen alloc tasks id. */
-
-// msg preparation task stack
-volatile msg_t *msg_pre_tasks[MAX_MSG_NB]; /*!< received message table. */
-volatile uint16_t msg_pre_tasks_stack_id;  /*!< last writen msg_pre_tasks id. */
 
 // msg interpretation task stack
 volatile msg_t *msg_tasks[MAX_MSG_NB]; /*!< ready message table. */
@@ -115,8 +97,6 @@ volatile uint16_t luos_tasks_stack_id;       /*!< last writen luos_tasks id. */
 static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to);
 
 // Allocator task stack
-static inline void MsgAlloc_CreateMsgSpaceTask(void *from, void *to);
-static inline void MsgAlloc_ClearMsgSpaceTask(void);
 static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to);
 
 // msg interpretation task stack
@@ -139,7 +119,6 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     //******** Init global vars pointers **********
     current_msg = (msg_t *)&msg_buffer[0];
     data_ptr = (uint8_t *)&msg_buffer[0];
-    msg_pre_tasks_stack_id = 0;
     msg_tasks_stack_id = 0;
     luos_tasks_stack_id = 0;
     copy_task_pointer = NULL;
@@ -156,12 +135,13 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
  ******************************************************************************/
 void MsgAlloc_loop(void)
 {
-    // Compute memory stats for allocator task memory usage
+    // Compute memory stats for msg task memory usage
     uint8_t stat = 0;
-    stat = (uint8_t)(((uint32_t)alloc_tasks_stack_id * 100) / (MAX_MSG_NB * 2));
-    if (stat > mem_stat->alloc_stack_ratio)
+    // Compute memory stats for msg task memory usage
+    stat = (uint8_t)(((uint32_t)msg_tasks_stack_id * 100) / (MAX_MSG_NB));
+    if (stat > mem_stat->msg_stack_ratio)
     {
-        mem_stat->alloc_stack_ratio = stat;
+        mem_stat->msg_stack_ratio = stat;
     }
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
@@ -171,57 +151,6 @@ void MsgAlloc_loop(void)
         memcpy((void *)&msg_buffer[0], (void *)copy_task_pointer, sizeof(header_t));
         // reset copy_task_pointer status
         copy_task_pointer = NULL;
-    }
-    // Manage memory clear tasks
-    while (alloc_tasks_stack_id)
-    {
-        // manage clear task
-        MsgAlloc_ClearMsgSpace(alloc_tasks[0].from, alloc_tasks[0].to);
-        // remove clear task
-        MsgAlloc_ClearMsgSpaceTask();
-    }
-    // Manage msg_pre_task
-    while (msg_pre_tasks_stack_id)
-    {
-        // clear the message_space
-        uint16_t data_size = 0;
-        if (msg_pre_tasks[0]->header.size > MAX_DATA_MSG_SIZE)
-        {
-            data_size = MAX_DATA_MSG_SIZE;
-        }
-        else
-        {
-            data_size = msg_pre_tasks[0]->header.size;
-        }
-        MsgAlloc_ClearMsgSpace((void *)msg_pre_tasks[0], (void *)(&msg_pre_tasks[0]->data[data_size]));
-
-        // move msg_pre_task to msg_task
-        if (msg_tasks_stack_id == MAX_MSG_NB)
-        {
-            // There is no more space on the luos_tasks, remove the oldest msg.
-            MsgAlloc_ClearMsgTask();
-            if (mem_stat->msg_drop_number < 0xFF)
-            {
-                mem_stat->msg_drop_number++;
-            }
-        }
-        msg_tasks[msg_tasks_stack_id] = msg_pre_tasks[0];
-        msg_tasks_stack_id++;
-        // remove the msg_pre_task
-        for (int i = 0; i < msg_pre_tasks_stack_id - 1; i++)
-        {
-            LuosHAL_SetIrqState(TRUE);
-            msg_pre_tasks[i] = msg_pre_tasks[i + 1];
-            LuosHAL_SetIrqState(FALSE);
-        }
-        msg_pre_tasks_stack_id--;
-        LuosHAL_SetIrqState(TRUE);
-    }
-    // Compute memory stats for msg task memory usage
-    stat = (uint8_t)(((uint32_t)msg_tasks_stack_id * 100) / (MAX_MSG_NB));
-    if (stat > mem_stat->msg_stack_ratio)
-    {
-        mem_stat->msg_stack_ratio = stat;
     }
 }
 
@@ -477,35 +406,6 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     }
     // if we go here there is no reason to continue because newest messages can't overlap the memory zone.
     return SUCESS;
-}
-/******************************************************************************
- * @brief prepare a task to clear a memory space
- * @param from : start of the memory space to clean
- * @param to : start of the memory space to clean
- * @return None
- ******************************************************************************/
-static inline void MsgAlloc_CreateMsgSpaceTask(void *from, void *to)
-{
-    if (alloc_tasks_stack_id >= (MAX_MSG_NB - 1))
-    {
-        // we are out of buffer, remove a task
-        MsgAlloc_ClearMsgSpaceTask();
-    }
-    alloc_tasks[alloc_tasks_stack_id].from = from;
-    alloc_tasks[alloc_tasks_stack_id].to = to;
-    alloc_tasks_stack_id++;
-}
-static inline void MsgAlloc_ClearMsgSpaceTask(void)
-{
-    // remove clear task
-    for (int i = 0; i < alloc_tasks_stack_id - 1; i++)
-    {
-        LuosHAL_SetIrqState(TRUE);
-        alloc_tasks[i] = alloc_tasks[i + 1];
-        LuosHAL_SetIrqState(FALSE);
-    }
-    alloc_tasks_stack_id--;
-    LuosHAL_SetIrqState(TRUE);
 }
 /*******************************************************************************
  * Functions --> msg interpretation task stack
