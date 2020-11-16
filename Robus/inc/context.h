@@ -10,8 +10,8 @@
 #include <robus.h>
 #include "config.h"
 #include "portManager.h"
-#include "Reception.h"
-#include "Transmission.h"
+#include "reception.h"
+#include "transmission.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
