@@ -267,6 +267,13 @@ void MsgAlloc_EndMsg(void)
     {
         data_ptr = &msg_buffer[0];
     }
+    else
+    {
+        if(*data_ptr % 2 != 1)
+        {
+            data_ptr++;
+        }
+    }
     // update the current_msg
     current_msg = (volatile msg_t *)data_ptr;
     // create a task to clear this space
