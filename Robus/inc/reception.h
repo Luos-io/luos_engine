@@ -22,6 +22,7 @@ typedef struct __attribute__((__packed__))
             uint8_t identifier : 4;
             uint8_t rx_error : 1;
             uint8_t rx_timeout : 1;
+            uint8_t rx_framing_error : 1;
         };
         unsigned char unmap; /*!< Uncmaped form. */
     };

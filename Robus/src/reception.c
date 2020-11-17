@@ -42,6 +42,7 @@ msg_t *current_msg;
 void Recep_Init(void)
 {
     // Initialize the reception state machine
+    ctx.rx.status.unmap = 0;
     ctx.rx.callback = Recep_GetHeader;
     // Get allocation values
     current_msg = MsgAlloc_GetCurrentMsg();
@@ -92,7 +93,8 @@ void Recep_GetHeader(volatile unsigned char *data)
         {
             data_size = current_msg->header.size;
         }
-        if (keep)
+
+        if ((keep)&&(ctx.rx.status.rx_framing_error == false))
         {
             if(data_size)
             {
@@ -215,6 +217,7 @@ void Recep_Reset(void)
     ctx.rx.callback = Recep_GetHeader;
     keep = FALSE;
     data_count = 0;
+    ctx.rx.status.rx_framing_error = false;
     LuosHAL_SetIrqState(true);
 }
 /******************************************************************************
