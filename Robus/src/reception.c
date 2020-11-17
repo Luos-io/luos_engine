@@ -20,8 +20,6 @@
 #include <stdio.h>
 #endif
 
-#define CURRENTMSG ctx.msg[ctx.current_buffer]
-#define CURRENTMODULE ctx.vm_table[ctx.alloc_msg[ctx.current_buffer]]
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -42,6 +40,7 @@ msg_t *current_msg;
 void Recep_Init(void)
 {
     // Initialize the reception state machine
+    ctx.rx.status.unmap = 0;
     ctx.rx.callback = Recep_GetHeader;
     // Get allocation values
     current_msg = MsgAlloc_GetCurrentMsg();
@@ -92,16 +91,18 @@ void Recep_GetHeader(volatile unsigned char *data)
         {
             data_size = current_msg->header.size;
         }
-        if (keep)
+
+        if ((keep)&&(ctx.rx.status.rx_framing_error == false))
         {
-            if (data_size)
+            if(data_size)
             {
-                MsgAlloc_ValidHeader();
+                MsgAlloc_ValidHeader(true, data_size);
             }
         }
         else
         {
-            MsgAlloc_InvalidMsg();
+            keep = false;
+            MsgAlloc_ValidHeader(false, data_size);
         }
         break;
 
@@ -214,6 +215,7 @@ void Recep_Reset(void)
     ctx.rx.callback = Recep_GetHeader;
     keep = FALSE;
     data_count = 0;
+    ctx.rx.status.rx_framing_error = false;
     LuosHAL_SetIrqState(true);
 }
 /******************************************************************************
@@ -229,38 +231,39 @@ void Recep_CatchAck(volatile unsigned char *data)
 /******************************************************************************
  * @brief Parse msg to find a module concerned
  * @param header of message
- * @return vm pointer
+ * @return ll_container pointer
  ******************************************************************************/
-vm_t *Recep_GetConcernedVm(header_t *header)
+ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
 {
+    uint16_t i = 0;
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
     case IDACK:
     case ID:
-        // Check all VM id
-        for (int i = 0; i < ctx.vm_number; i++)
+        // Check all ll_container id
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if ((header->target == ctx.vm_table[i].id))
+            if ((header->target == ctx.ll_container_table[i].id))
             {
-                return (vm_t *)&ctx.vm_table[i];
+                return (ll_container_t *)&ctx.ll_container_table[i];
             }
         }
         break;
     case TYPE:
-        // Check all VM type
-        for (int i = 0; i < ctx.vm_number; i++)
+        // Check all ll_container type
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if (header->target == ctx.vm_table[i].type)
+            if (header->target == ctx.ll_container_table[i].type)
             {
-                return (vm_t *)&ctx.vm_table[i];
+                return (ll_container_t *)&ctx.ll_container_table[i];
             }
         }
         break;
     case BROADCAST:
     case NODEIDACK:
     case NODEID:
-        return (vm_t *)&ctx.vm_table[0];
+        return (ll_container_t *)&ctx.ll_container_table[0];
         break;
     case MULTICAST: // For now Multicast is disabled
     default:
@@ -276,26 +279,27 @@ vm_t *Recep_GetConcernedVm(header_t *header)
  ******************************************************************************/
 uint8_t Recep_NodeConcerned(header_t *header)
 {
+    uint16_t i = 0;
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
     case IDACK:
         ctx.rx.status.rx_error = FALSE;
     case ID:
-        // Check all VM id
-        for (int i = 0; i < ctx.vm_number; i++)
+        // Check all ll_container id
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if ((header->target == ctx.vm_table[i].id))
+            if ((header->target == ctx.ll_container_table[i].id))
             {
                 return true;
             }
         }
         break;
     case TYPE:
-        // Check all VM type
-        for (int i = 0; i < ctx.vm_number; i++)
+        // Check all ll_container type
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if (header->target == ctx.vm_table[i].type)
+            if (header->target == ctx.ll_container_table[i].type)
             {
                 return true;
             }
@@ -336,46 +340,47 @@ uint8_t Recep_NodeConcerned(header_t *header)
  ******************************************************************************/
 void Recep_InterpretMsgProtocol(msg_t *msg)
 {
+    uint16_t i = 0;
     // Find if we are concerned by this message.
     switch (msg->header.target_mode)
     {
     case IDACK:
     case ID:
-        // Check all VM id
-        for (int i = 0; i < ctx.vm_number; i++)
+        // Check all ll_container id
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if (msg->header.target == ctx.vm_table[i].id)
+            if (msg->header.target == ctx.ll_container_table[i].id)
             {
-                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
                 return;
             }
         }
         break;
     case TYPE:
-        // Check all VM type
-        for (int i = 0; i < ctx.vm_number; i++)
+        // Check all ll_container type
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if (msg->header.target == ctx.vm_table[i].type)
+            if (msg->header.target == ctx.ll_container_table[i].type)
             {
-                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
                 return;
             }
         }
         break;
     case BROADCAST:
-        for (int i = 0; i < ctx.vm_number; i++)
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+            MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
         }
         return;
         break;
     case MULTICAST:
-        for (int i = 0; i < ctx.vm_number; i++)
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            if (Trgt_MulticastTargetBank((vm_t *)&ctx.vm_table[i], msg->header.target))
+            if (Trgt_MulticastTargetBank((ll_container_t *)&ctx.ll_container_table[i], msg->header.target))
             {
                 //TODO manage multiple slave concerned
-                MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
                 return;
             }
         }
@@ -384,12 +389,12 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     case NODEID:
         if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
         {
-            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[0], msg);
+            MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[0], msg);
             return;
         }
-        for (int i = 0; i < ctx.vm_number; i++)
+        for (i = 0; i < ctx.ll_container_number; i++)
         {
-            MsgAlloc_LuosTaskAlloc((vm_t *)&ctx.vm_table[i], msg);
+            MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
         }
         return;
         break;

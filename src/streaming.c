@@ -26,7 +26,7 @@
  * @param data_size values size.
  * @return streaming channel
  ******************************************************************************/
-streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, int ring_buffer_size, char data_size)
+streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint16_t ring_buffer_size, uint8_t data_size)
 {
     streaming_channel_t stream;
     if ((ring_buffer == NULL) || (ring_buffer_size < 1) || (data_size < 1))
@@ -61,13 +61,13 @@ void Stream_ResetStreamingChannel(streaming_channel_t *stream)
  * @param size The number of data to copy
  * @return number of available samples
  ******************************************************************************/
-uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, int size)
+uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t size)
 {
     if (((size * stream->data_size) + stream->data_ptr) > stream->end_ring_buffer)
     {
         // our data exceeds ring buffer end, cut it and copy.
-        int chunk1 = stream->end_ring_buffer - stream->data_ptr;
-        int chunk2 = (size * stream->data_size) - chunk1;
+        uint16_t chunk1 = stream->end_ring_buffer - stream->data_ptr;
+        uint16_t chunk2 = (size * stream->data_size) - chunk1;
         // check if we exceed ring buffer capacity
         if (stream->sample_ptr < (stream->ring_buffer + chunk2))
         {
@@ -104,9 +104,9 @@ uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, int size
  * @param size data
  * @return None
  ******************************************************************************/
-uint8_t Stream_GetSample(streaming_channel_t *stream, void *data, int size)
+uint8_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size)
 {
-    int nb_available_samples = Stream_GetAvailableSampleNB(stream);
+    uint16_t nb_available_samples = Stream_GetAvailableSampleNB(stream);
     if (nb_available_samples >= size)
     {
         // check if we need to loop in ring buffer
@@ -143,7 +143,7 @@ uint8_t Stream_GetSample(streaming_channel_t *stream, void *data, int size)
  ******************************************************************************/
 uint8_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
 {
-    int nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
+    uint16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
     if (nb_available_sample < 0)
     {
         // The buffer have looped

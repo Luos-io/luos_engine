@@ -20,7 +20,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-container_t container_table[MAX_VM_NUMBER];
+container_t container_table[MAX_CONTAINER_NUMBER];
 uint16_t container_number;
 volatile routing_table_t *routing_table_pt;
 
@@ -29,7 +29,7 @@ luos_stats_t luos_stats;
  * Function
  ******************************************************************************/
 static error_return_t Luos_MsgHandler(container_t *container, msg_t *input);
-static container_t *Luos_GetContainer(vm_t *vm);
+static container_t *Luos_GetContainer(ll_container_t *ll_container);
 static uint16_t Luos_GetContainerIndex(container_t *container);
 static void Luos_TransmitLocalRoutingTable(container_t *container, msg_t *routeTB_msg);
 static void Luos_AutoUpdateManager(void);
@@ -57,9 +57,9 @@ void Luos_Init(void)
  ******************************************************************************/
 void Luos_Loop(void)
 {
-    static unsigned long last_loop_date;
+    static uint32_t last_loop_date;
     uint16_t remaining_msg_number = 0;
-    vm_t *oldest_vm = NULL;
+    ll_container_t *oldest_ll_container = NULL;
     msg_t *returned_msg = NULL;
 
     // check loop call time stat
@@ -69,10 +69,10 @@ void Luos_Loop(void)
     }
     Robus_Loop();
     // look at all received messages
-    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_vm) != FAIL)
+    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_container) != FAIL)
     {
         // There is a message available find the container linked to it
-        container_t *container = Luos_GetContainer(oldest_vm);
+        container_t *container = Luos_GetContainer(oldest_ll_container);
         // check if this is a Luos Command
         uint8_t cmd = 0;
         uint16_t size = 0;
@@ -127,6 +127,8 @@ void Luos_Loop(void)
             }
         }
     }
+    // finish msg used
+    MsgAlloc_UsedMsgEnd();
     // manage timed auto update
     Luos_AutoUpdateManager();
     // save loop date
@@ -202,11 +204,11 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
                 // set container Id based on received data except for the detector one.
                 base_id = 2;
                 int index = 0;
-                for (int i = 0; i < container_number; i++)
+                for (uint16_t i = 0; i < container_number; i++)
                 {
-                    if (container_table[i].vm->id != 1)
+                    if (container_table[i].ll_container->id != 1)
                     {
-                        container_table[i].vm->id = base_id + index;
+                        container_table[i].ll_container->id = base_id + index;
                         index++;
                     }
                 }
@@ -214,9 +216,9 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             else
             {
                 // set container Id based on received data
-                for (int i = 0; i < container_number; i++)
+                for (uint16_t i = 0; i < container_number; i++)
                 {
-                    container_table[i].vm->id = base_id + i;
+                    container_table[i].ll_container->id = base_id + i;
                 }
             }
         case 0:
@@ -340,14 +342,14 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
 }
 /******************************************************************************
  * @brief get pointer to a container in route table
- * @param vm
+ * @param ll_container
  * @return container from list
  ******************************************************************************/
-static container_t *Luos_GetContainer(vm_t *vm)
+static container_t *Luos_GetContainer(ll_container_t *ll_container)
 {
     for (uint16_t i = 0; i < container_number; i++)
     {
-        if (vm == container_table[i].vm)
+        if (ll_container == container_table[i].ll_container)
         {
             return &container_table[i];
         }
@@ -401,7 +403,7 @@ static void Luos_AutoUpdateManager(void)
     for (uint16_t i = 0; i < container_number; i++)
     {
         // check if containers have an actual ID. If not, we are in detection mode and should reset the auto refresh
-        if (container_table[i].vm->id == DEFAULTID)
+        if (container_table[i].ll_container->id == DEFAULTID)
         {
             // this container have not been detected or is in detection mode. remove auto_refresh parameters
             container_table[i].auto_refresh.target = 0;
@@ -418,7 +420,7 @@ static void Luos_AutoUpdateManager(void)
                     // This container need to send an update
                     // Create a fake message for it from the container asking for update
                     msg_t updt_msg;
-                    updt_msg.header.target = container_table[i].vm->id;
+                    updt_msg.header.target = container_table[i].ll_container->id;
                     updt_msg.header.source = container_table[i].auto_refresh.target;
                     updt_msg.header.target_mode = IDACK;
                     updt_msg.header.cmd = ASK_PUB_CMD;
@@ -461,7 +463,7 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
 {
     uint8_t i = 0;
     container_t *container = &container_table[container_number];
-    container->vm = Robus_ContainerCreate(type);
+    container->ll_container = Robus_ContainerCreate(type);
 
     // Link the container to his callback
     container->cont_cb = cont_cb;
@@ -508,7 +510,7 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
  ******************************************************************************/
 error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
 {
-    return Robus_SendMsg(container->vm, msg);
+    return Robus_SendMsg(container->ll_container, msg);
 }
 /******************************************************************************
  * @brief read last msg from buffer for a container
@@ -521,13 +523,14 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
     error_return_t error = SUCESS;
     while (error == SUCESS)
     {
-        error = MsgAlloc_PullMsg(container->vm, returned_msg);
+        error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
         // check if the content of this message need to be managed by Luos and do it if it is.
         if ((Luos_MsgHandler(container, *returned_msg)==FAIL) & (error == SUCESS))
         {
             // This message is for the user, pass it to the user.
             return SUCESS;
         }
+        MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
     }
     return FAIL;
 }
@@ -541,25 +544,26 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
 error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **returned_msg)
 {
     uint16_t remaining_msg_number = 0;
-    vm_t *oldest_vm = NULL;
+    ll_container_t *oldest_ll_container = NULL;
     error_return_t error = SUCESS;
-    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_vm) != FAIL)
+    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_container) != FAIL)
     {
         // Check the source id
-        if (oldest_vm == container->vm)
+        if (oldest_ll_container == container->ll_container)
         {
             uint16_t source = 0;
             MsgAlloc_GetLuosTaskSourceId(remaining_msg_number, &source);
             if (source == id)
             {
                 // Source id of this message match, get it and treat it.
-                error = MsgAlloc_PullMsg(container->vm, returned_msg);
+                error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
                 // check if the content of this message need to be managed by Luos and do it if it is.
                 if ((Luos_MsgHandler(container, *returned_msg)==FAIL) & (error == SUCESS))
                 {
                     // This message is for the user, pass it to the user.
                     return SUCESS;
                 }
+                MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
             }
             else
             {
@@ -581,7 +585,7 @@ error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **
  * @param Size of the data to transmit
  * @return error
  ******************************************************************************/
-error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data, unsigned short size)
+error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t size)
 {
     // Compute number of message needed to send this data
     uint16_t msg_number = 1;
@@ -596,11 +600,15 @@ error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data,
     for (volatile uint16_t chunk = 0; chunk < msg_number; chunk++)
     {
         // Compute chunk size
-        int chunk_size = 0;
+        uint16_t chunk_size = 0;
         if ((size - sent_size) > MAX_DATA_MSG_SIZE)
+        {
             chunk_size = MAX_DATA_MSG_SIZE;
+        }
         else
+        {
             chunk_size = size - sent_size;
+        }
 
         // Copy data into message
         memcpy(msg->data, (uint8_t *)bin_data + sent_size, chunk_size);
@@ -628,10 +636,9 @@ error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data,
 static error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data)
 {
     // Manage buffer session (one per container)
-    static uint32_t data_size[MAX_VM_NUMBER] = {0};
+    static uint32_t data_size[MAX_CONTAINER_NUMBER] = {0};
     static uint16_t last_msg_size = 0;
     uint16_t id = Luos_GetContainerIndex(container);
-
     // check good container index
     if(id == 0xFFFF)
     {
@@ -649,11 +656,15 @@ static error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void 
     }
 
     // Get chunk size
-    unsigned short chunk_size = 0;
+    uint16_t chunk_size = 0;
     if (msg->header.size > MAX_DATA_MSG_SIZE)
+    {
         chunk_size = MAX_DATA_MSG_SIZE;
+    }
     else
+    {
         chunk_size = msg->header.size;
+    }
 
     // Copy data into buffer
     memcpy(bin_data + data_size[id], msg->data, chunk_size);
@@ -831,7 +842,7 @@ void Luos_SendBaudrate(container_t *container, uint32_t baudrate)
     msg.header.target = BROADCAST_VAL;
     msg.header.cmd = SET_BAUDRATE;
     msg.header.size = sizeof(uint32_t);
-    Robus_SendMsg(container->vm, &msg);
+    Robus_SendMsg(container->ll_container, &msg);
 }
 /******************************************************************************
  * @brief set id of a container trough the network
@@ -850,7 +861,7 @@ error_return_t Luos_SetExternId(container_t *container, target_mode_t target_mod
     msg.header.size = 2;
     msg.data[1] = newid;
     msg.data[0] = (newid << 8);
-    if (Robus_SendMsg(container->vm, &msg)==SUCESS)
+    if (Robus_SendMsg(container->ll_container, &msg)==SUCESS)
     {
         return SUCESS;
     }

@@ -33,8 +33,8 @@ typedef struct __attribute__((__packed__))
 } node_bootstrap_t;
 
 static error_return_t Robus_MsgHandler(msg_t *input);
-static error_return_t Robus_DetectNextNodes(vm_t *vm);
-static error_return_t Robus_ResetNetworkDetection(vm_t *vm);
+static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container);
+static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -42,7 +42,6 @@ static error_return_t Robus_ResetNetworkDetection(vm_t *vm);
 volatile context_t ctx;
 uint32_t baudrate; /*!< System current baudrate. */
 volatile uint16_t last_node = 0;
-
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -55,7 +54,7 @@ volatile uint16_t last_node = 0;
 void Robus_Init(memory_stats_t *memory_stats)
 {
     // Init the number of created  virtual container.
-    ctx.vm_number = 0;
+    ctx.ll_container_number = 0;
     // Set default container id. This id is a void id used if no container is created.
     ctx.node.node_id = DEFAULTID;
     // By default node are not certified.
@@ -106,16 +105,16 @@ void Robus_Loop(void)
  * @param type of container create
  * @return None
  ******************************************************************************/
-vm_t *Robus_ContainerCreate(uint16_t type)
+ll_container_t *Robus_ContainerCreate(uint16_t type)
 {
     // Set the container type
-    ctx.vm_table[ctx.vm_number].type = type;
+    ctx.ll_container_table[ctx.ll_container_number].type = type;
     // Initialise the container id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
-    ctx.vm_table[ctx.vm_number].id = DEFAULTID;
+    ctx.ll_container_table[ctx.ll_container_number].id = DEFAULTID;
     // Initialize dead container detection
-    ctx.vm_table[ctx.vm_number].dead_container_spotted = 0;
-    // Return the freshly initialized vm pointer.
-    return (vm_t *)&ctx.vm_table[ctx.vm_number++];
+    ctx.ll_container_table[ctx.ll_container_number].dead_container_spotted = 0;
+    // Return the freshly initialized ll_container pointer.
+    return (ll_container_t *)&ctx.ll_container_table[ctx.ll_container_number++];
 }
 /******************************************************************************
  * @brief clear container list in route table
@@ -124,10 +123,10 @@ vm_t *Robus_ContainerCreate(uint16_t type)
  ******************************************************************************/
 void Robus_ContainersClear(void)
 {
-    // Clear vm table
-    memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
+    // Clear ll_container table
+    memset((void *)ctx.ll_container_table, 0, sizeof(ll_container_t) * MAX_CONTAINER_NUMBER);
     // Reset the number of created containers
-    ctx.vm_number = 0;
+    ctx.ll_container_number = 0;
 }
 /******************************************************************************
  * @brief Send Msg to a container
@@ -135,22 +134,26 @@ void Robus_ContainersClear(void)
  * @param msg to send
  * @return Error
  ******************************************************************************/
-error_return_t Robus_SendMsg(vm_t *vm, msg_t *msg)
+error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     // Compute the full message size based on the header size info.
-    unsigned short data_size = 0;
+    uint16_t data_size = 0;
     error_return_t fail = SUCCESS;
     if (msg->header.size > MAX_DATA_MSG_SIZE)
+    {
         data_size = MAX_DATA_MSG_SIZE;
+    }
     else
+    {
         data_size = msg->header.size;
-    unsigned short full_size = sizeof(header_t) + data_size;
-    unsigned char nbr_nak_retry = 0;
+    }
+    uint16_t full_size = sizeof(header_t) + data_size;
+    uint8_t nbr_nak_retry = 0;
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
-    if (vm->id != 0)
+    if (ll_container->id != 0)
     {
-        msg->header.source = vm->id;
+        msg->header.source = ll_container->id;
     }
     else
     {
@@ -164,7 +167,7 @@ ack_restart:
     ctx.ack = FALSE;
     LuosHAL_SetIrqState(true);
     // Send message
-    while (Transmit_Process((unsigned char *)msg->stream, full_size))
+    while (Transmit_Process((uint8_t *)msg->stream, full_size))
     {
         // There is a collision
         LuosHAL_SetIrqState(false);
@@ -174,9 +177,9 @@ ack_restart:
         // wait timeout of collided packet
         Transmit_WaitUnlockTx();
         // timer proportional to ID
-        if (vm->id > 1)
+        if (ll_container->id > 1)
         {
-            for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id - 1)); tempo++)
+            for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (ll_container->id - 1)); tempo++)
                 ;
         }
     }
@@ -216,14 +219,14 @@ ack_restart:
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
                     Recep_Timeout();
-                    for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
+                    for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
                         ;
                     goto ack_restart;
                 }
                 else
                 {
-                    // Set the dead container ID into the VM
-                    vm->dead_container_spotted = msg->header.target;
+                    // Set the dead container ID into the ll_container
+                    ll_container->dead_container_spotted = (uint16_t)(msg->header.target);
                     fail = FAIL;
                 }
             }
@@ -243,26 +246,24 @@ ack_restart:
 }
 /******************************************************************************
  * @brief Start a topology detection procedure
- * @param vm pointer to the detecting vm
+ * @param ll_container pointer to the detecting ll_container
  * @return The number of detected node.
  ******************************************************************************/
-uint16_t Robus_TopologyDetection(vm_t *vm)
+uint16_t Robus_TopologyDetection(ll_container_t *ll_container)
 {
     uint8_t redetect_nb = 0;
 redetect:
     // Reset all detection state of containers on the network
-    Robus_ResetNetworkDetection(vm);
-    // wait for some us to be sure all previous messages are received and treated
-    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
-        ;
+    Robus_ResetNetworkDetection(ll_container);
+
     // setup local node
     ctx.node.node_id = 1;
     last_node = 1;
 
-    // setup sending vm
-    vm->id = 1;
+    // setup sending ll_container
+    ll_container->id = 1;
 
-    if (Robus_DetectNextNodes(vm) == FAIL)
+    if (Robus_DetectNextNodes(ll_container) == FAIL)
     {
         // check the number of retry we made
         if (redetect_nb > 4)
@@ -280,33 +281,47 @@ redetect:
 }
 /******************************************************************************
  * @brief reset all module port states
- * @param vm pointer to the detecting vm
+ * @param ll_container pointer to the detecting ll_container
  * @return The number of detected node.
  ******************************************************************************/
-static error_return_t Robus_ResetNetworkDetection(vm_t *vm)
+static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
+    uint8_t try = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
     msg.header.cmd = RESET_DETECTION;
     msg.header.size = 0;
 
-    //we don't have any way to tell every containers to reset their detection do it twice to be sure
-    if (Robus_SendMsg(vm, &msg) == FAIL)
-        return FAIL;
-    if (Robus_SendMsg(vm, &msg) == FAIL)
-        return FAIL;
-    // run Robus_Loop() to manage the 2 previous broadcast msgs.
-    Robus_Loop();
-    return SUCCESS;
+    do
+    {
+        Robus_SendMsg(ll_container, &msg);
+
+        MsgAlloc_Init(NULL);
+
+        // wait for some 2ms to be sure all previous messages are received and treated
+        uint32_t start_tick = LuosHAL_GetSystick();
+        while (LuosHAL_GetSystick() - start_tick < 2);
+        try++;
+    }
+    while((MsgAlloc_IsEmpty() != SUCESS)||(try > 5));
+
+    ctx.node.node_id = 0;
+    PortMng_Init();
+    if(try < 5)
+    {
+        return SUCESS;
+    }
+
+    return FAIL;
 }
 /******************************************************************************
  * @brief run the procedure allowing to detect the next nodes on the next port
- * @param vm pointer to the detecting vm
+ * @param ll_container pointer to the detecting ll_container
  * @return None.
  ******************************************************************************/
-static error_return_t Robus_DetectNextNodes(vm_t *vm)
+static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
 {
     // Lets try to poke other nodes
     while (PortMng_PokeNextPort() == SUCESS)
@@ -318,7 +333,7 @@ static error_return_t Robus_DetectNextNodes(vm_t *vm)
         msg.header.target = 1;
         msg.header.cmd = WRITE_NODE_ID;
         msg.header.size = 0;
-        if (Robus_SendMsg(vm, &msg) == FAIL)
+        if (Robus_SendMsg(ll_container, &msg) == FAIL)
         {
             // Message transmission failure
             // Consider this port unconnected
@@ -352,7 +367,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
     uint32_t baudrate;
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
-    vm_t *vm = Recep_GetConcernedVm(&input->header);
+    ll_container_t *ll_container = Recep_GetConcernedLLContainer(&input->header);
     switch (input->header.cmd)
     {
     case WRITE_NODE_ID:
@@ -368,7 +383,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             output_msg.header.target = input->header.source;
             output_msg.header.target_mode = NODEIDACK;
             memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
-            Robus_SendMsg(vm, &output_msg);
+            Robus_SendMsg(ll_container, &output_msg);
             break;
         case 2:
             // This is a node id for the next node.
@@ -384,30 +399,26 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             output_msg.header.target = 0;
             output_msg.header.target_mode = NODEIDACK;
             memcpy((void *)&output_msg.data[0], (void *)&node_bootstrap.unmap[0], sizeof(node_bootstrap_t));
-            Robus_SendMsg(vm, &output_msg);
+            Robus_SendMsg(ll_container, &output_msg);
             break;
         case sizeof(node_bootstrap_t):
             if (ctx.node.node_id != 0)
             {
-                // We should not already have an ID !
-                while (1)
-                    ;
+                ctx.node.node_id = 0;
+                MsgAlloc_Init(NULL);
             }
             // This is a node bootstrap information.
             memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
             ctx.node.node_id = node_bootstrap.nodeid;
             ctx.node.port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
             // Continue the topology detection on our other ports.
-            Robus_DetectNextNodes(vm);
+            Robus_DetectNextNodes(ll_container);
         default:
             break;
         }
         return SUCCESS;
         break;
     case RESET_DETECTION:
-        last_node = 0;
-        ctx.node.node_id = 0;
-        PortMng_Init();
         return SUCCESS;
         break;
     case SET_BAUDRATE:

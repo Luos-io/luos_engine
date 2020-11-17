@@ -28,8 +28,8 @@
 #define NBR_NAK_RETRY 10
 #endif
 
-#ifndef MAX_VM_NUMBER
-#define MAX_VM_NUMBER 5
+#ifndef MAX_CONTAINER_NUMBER
+#define MAX_CONTAINER_NUMBER 5
 #endif
 
 #ifndef MSG_BUFFER_SIZE
@@ -37,7 +37,7 @@
 #endif
 
 #ifndef MAX_MSG_NB
-#define MAX_MSG_NB 2 * MAX_VM_NUMBER
+#define MAX_MSG_NB 2 * MAX_CONTAINER_NUMBER
 #endif
 
 #ifndef NBR_PORT

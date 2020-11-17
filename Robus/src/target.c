@@ -23,12 +23,12 @@
  * @param multicast bank
  * @return Error
  ******************************************************************************/
-uint8_t Trgt_MulticastTargetBank(vm_t *vm, unsigned short val)
+uint8_t Trgt_MulticastTargetBank(ll_container_t *ll_container, uint16_t val)
 {
     unsigned char i;
-    for (i = 0; i < vm->max_multicast_target; i++)
+    for (i = 0; i < ll_container->max_multicast_target; i++)
     {
-        if (vm->multicast_target_bank[i] == val)
+        if (ll_container->multicast_target_bank[i] == val)
             return TRUE;
     }
     return FALSE;
@@ -39,7 +39,7 @@ uint8_t Trgt_MulticastTargetBank(vm_t *vm, unsigned short val)
  * @param target to add
  * @return Error
  ******************************************************************************/
-void Trgt_AddMulticastTarget(vm_t *vm, unsigned short target)
+void Trgt_AddMulticastTarget(ll_container_t *ll_container, uint16_t target)
 {
-    vm->multicast_target_bank[vm->max_multicast_target++] = target;
+    ll_container->multicast_target_bank[ll_container->max_multicast_target++] = target;
 }

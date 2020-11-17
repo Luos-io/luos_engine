@@ -7,6 +7,7 @@
 #ifndef _ROBUS_STRUCT_H_
 #define _ROBUS_STRUCT_H_
 
+#include "stdint.h"
 #include "config.h"
 
 /*******************************************************************************
@@ -19,10 +20,9 @@
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
-    unsigned char alloc_stack_ratio;
-    unsigned char msg_stack_ratio;
-    unsigned char luos_stack_ratio;
-    unsigned char msg_drop_number;
+    uint8_t msg_stack_ratio;
+    uint8_t luos_stack_ratio;
+    uint8_t msg_drop_number;
 } memory_stats_t;
 
 /*
@@ -48,14 +48,14 @@ typedef struct __attribute__((__packed__))
     {
         struct __attribute__((__packed__))
         {
-            unsigned short protocol : 4;    /*!< Protocol version. */
-            unsigned short target : 12;     /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-            unsigned short target_mode : 4; /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-            unsigned short source : 12;     /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-            unsigned char cmd;              /*!< msg definition. */
-            unsigned short size;            /*!< Size of the data field. */
+            uint16_t protocol : 4;    /*!< Protocol version. */
+            uint16_t target : 12;     /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+            uint16_t target_mode : 4; /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+            uint16_t source : 12;     /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+            uint8_t cmd;              /*!< msg definition. */
+            uint16_t size;            /*!< Size of the data field. */
         };
-        unsigned char unmap[7]; /*!< Unmaped form. */
+        uint8_t unmap[7]; /*!< Unmaped form. */
     };
 } header_t;
 
@@ -70,27 +70,27 @@ typedef struct __attribute__((__packed__))
         struct __attribute__((__packed__))
         {
             header_t header;                       /*!< Header filed. */
-            unsigned char data[MAX_DATA_MSG_SIZE]; /*!< Data with size known. */
+            uint8_t data[MAX_DATA_MSG_SIZE]; /*!< Data with size known. */
         };
-        unsigned char stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
+        uint8_t stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
     };
 } msg_t;
 
 /* This structure is used to manage virtual containers
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) vm_t
+typedef struct __attribute__((__packed__))
 {
 
     // Container infomations
-    unsigned short id;   /*!< Container ID. */
-    unsigned short type; /*!< Container type. */
+    uint16_t id;   /*!< Container ID. */
+    uint16_t type; /*!< Container type. */
 
     // Variables
-    unsigned short max_multicast_target;                         /*!< Position pointer of the last multicast target. */
-    unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
-    unsigned short dead_container_spotted;                       /*!< The ID of a container that don't reply to a lot of ACK msg */
-} vm_t;
+    uint16_t max_multicast_target;                         /*!< Position pointer of the last multicast target. */
+    uint16_t multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
+    uint16_t dead_container_spotted;                       /*!< The ID of a container that don't reply to a lot of ACK msg */
+} ll_container_t;
 
 /******************************************************************************
  * @struct error_return_t
@@ -114,12 +114,12 @@ typedef struct __attribute__((__packed__))
         {
             struct __attribute__((__packed__))
             {
-                unsigned short node_id : 12;  /*!< Node id */
-                unsigned short certified : 4; /*!< True if the node have a certificate */
+                uint16_t node_id : 12;  /*!< Node id */
+                uint16_t certified : 4; /*!< True if the node have a certificate */
             };
-            unsigned short port_table[NBR_PORT]; /*!< Phisical port connections */
+            uint16_t port_table[NBR_PORT]; /*!< Phisical port connections */
         };
-        unsigned char unmap[NBR_PORT + 2]; /*!< Uncmaped form. */
+        uint8_t unmap[NBR_PORT + 2]; /*!< Uncmaped form. */
     };
 } node_t;
 
@@ -132,7 +132,7 @@ typedef enum
     ROBUS_PROTOCOL_NB,
 } robus_cmd_t;
 
-typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
+typedef void (*RX_CB)(ll_container_t *ll_container, msg_t *msg);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
