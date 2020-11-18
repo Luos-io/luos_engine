@@ -28,7 +28,7 @@ typedef enum
     HANDY_MOD,
     IMU_MOD,
     LIGHT_MOD,
-    CONTROLLED_MOTOR_MOD,
+    CONTROLLER_MOTOR_MOD,
     VOID_MOD,
     LOAD_MOD,
     LUOS_LAST_TYPE
@@ -103,7 +103,7 @@ typedef enum
     TORQUE_LIMIT,           // max moment_t (Nm)
 
     // Specific register
-    DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controlled motor
+    DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controller motor
     HANDY_SET_POSITION, // handy_t
     PARAMETERS,         // depend on the container, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
