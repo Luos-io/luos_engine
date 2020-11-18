@@ -8,7 +8,7 @@
 #include "portManager.h"
 #include "transmission.h"
 #include "context.h"
-#include "LuosHAL.h"
+#include "luosHAL.h"
 
 /*******************************************************************************
  * Definitions
