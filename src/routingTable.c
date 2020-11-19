@@ -184,8 +184,8 @@ char *RoutingTB_StringFromType(luos_type_t type)
     case LIGHT_MOD:
         return "LightSensor";
         break;
-    case CONTROLLED_MOTOR_MOD:
-        return "ControlledMotor";
+    case CONTROLLER_MOTOR_MOD:
+        return "ControllerMotor";
     case VOID_MOD:
         return "Void";
         break;
@@ -213,7 +213,7 @@ uint8_t RoutingTB_ContainerIsSensor(luos_type_t type)
         (type == DISTANCE_MOD) ||
         (type == IMU_MOD) ||
         (type == LOAD_MOD) ||
-        (type == CONTROLLED_MOTOR_MOD) ||
+        (type == CONTROLLER_MOTOR_MOD) ||
         (type == VOLTAGE_MOD) ||
         (type == LIGHT_MOD))
     {
