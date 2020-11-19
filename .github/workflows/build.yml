@@ -1,0 +1,93 @@
+name: Build
+
+on: [push]
+
+jobs:
+
+  build:
+    
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+
+    steps:
+        
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio
+
+    - name: Check out Luos repository
+      uses: actions/checkout@v2
+#    - name: Setup tmate session
+#      uses: mxschmitt/action-tmate@v3
+    - name: Create env repo
+      run: |
+        pwd
+        cd ..
+        git clone https://github.com/Luos-io/LuosHAL.git
+        git clone https://github.com/Luos-io/Examples.git
+        pwd
+
+    - name: Run PlatformIO ubuntu or macos
+      if: matrix.os != 'windows-latest'
+      env:
+        PLATFORMIO_LIB_EXTRA_DIRS: ~/work/Luos
+      run: |
+        cd ..
+        platformio run -d Examples/Projects/Button
+        platformio run -d Examples/Projects/Controller_motor
+        platformio run -d Examples/Projects/Dc_motor
+        platformio run -d Examples/Projects/Distance
+        platformio run -d Examples/Projects/Dxl
+        platformio run -d Examples/Projects/Gate
+        platformio run -d Examples/Projects/Gpio  
+        platformio run -d Examples/Projects/Imu
+        platformio run -d Examples/Projects/Led
+        platformio run -d Examples/Projects/Led_strip
+        platformio run -d Examples/Projects/Light_sensor
+        platformio run -d Examples/Projects/Load
+        platformio run -d Examples/Projects/Potentiometer
+        platformio run -d Examples/Projects/Power_switch
+        platformio run -d Examples/Projects/Servo
+        platformio run -d Examples/Projects/Stepper
+        platformio run -d Examples/Projects/Bike_alarm/Alarm_controller
+        platformio run -d Examples/Projects/Bike_alarm/Start_controller
+
+    - name: Run PlatformIO windows
+      if: matrix.os == 'windows-latest'
+      env:
+        PLATFORMIO_LIB_EXTRA_DIRS: D:\a\Luos
+      run: |
+        cd ..
+        platformio run -d Examples/Projects/Button
+        platformio run -d Examples/Projects/Controller_motor
+        platformio run -d Examples/Projects/Dc_motor
+        platformio run -d Examples/Projects/Distance
+        platformio run -d Examples/Projects/Dxl
+        platformio run -d Examples/Projects/Gate
+        platformio run -d Examples/Projects/Gpio  
+        platformio run -d Examples/Projects/Imu
+        platformio run -d Examples/Projects/Led
+        platformio run -d Examples/Projects/Led_strip
+        platformio run -d Examples/Projects/Light_sensor
+        platformio run -d Examples/Projects/Load
+        platformio run -d Examples/Projects/Potentiometer
+        platformio run -d Examples/Projects/Power_switch
+        platformio run -d Examples/Projects/Servo
+        platformio run -d Examples/Projects/Stepper
+        platformio run -d Examples/Projects/Bike_alarm/Alarm_controller
+        platformio run -d Examples/Projects/Bike_alarm/Start_controller
+
+
+        
+
+        
+    
