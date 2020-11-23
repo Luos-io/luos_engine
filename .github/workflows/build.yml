@@ -10,6 +10,13 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+        - os: windows-latest
+          pio_lib_path: D:\a\Luos
+        - os: macos-latest
+          pio_lib_path: ~/work/Luos
+        - os: ubuntu-latest
+          pio_lib_path: ~/work/Luos
 
 
     steps:
@@ -28,18 +35,39 @@ jobs:
       uses: actions/checkout@v2
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
+
     - name: Create env repo
+      shell: bash
       run: |
-        pwd
+        # Save branch name
+        branch_name=$(git branch --show-current)
+        origine_branch_name="origin/${branch_name}"
+        # Step back and get dependancies
         cd ..
+
+        # LuosHAL
         git clone https://github.com/Luos-io/LuosHAL.git
+        cd LuosHAL
+        if [ `git branch -r --list $origine_branch_name` ]
+        then
+          echo A dependant branch have been found on LuosHAL
+          git checkout $branch_name
+        fi
+        cd ..
+
+        # Examples
         git clone https://github.com/Luos-io/Examples.git
-        pwd
+        cd Examples
+        if [ `git branch -r --list $origine_branch_name` ]
+        then
+          echo A dependant branch have been found on Examples
+          git checkout $branch_name
+        fi
+        cd ..
 
-    - name: Run PlatformIO ubuntu or macos
-      if: matrix.os != 'windows-latest'
+    - name: Run PlatformIO
       env:
-        PLATFORMIO_LIB_EXTRA_DIRS: ~/work/Luos
+        PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
       run: |
         cd ..
         platformio run -d Examples/Projects/Button
@@ -60,34 +88,3 @@ jobs:
         platformio run -d Examples/Projects/Stepper
         platformio run -d Examples/Projects/Bike_alarm/Alarm_controller
         platformio run -d Examples/Projects/Bike_alarm/Start_controller
-
-    - name: Run PlatformIO windows
-      if: matrix.os == 'windows-latest'
-      env:
-        PLATFORMIO_LIB_EXTRA_DIRS: D:\a\Luos
-      run: |
-        cd ..
-        platformio run -d Examples/Projects/Button
-        platformio run -d Examples/Projects/Controller_motor
-        platformio run -d Examples/Projects/Dc_motor
-        platformio run -d Examples/Projects/Distance
-        platformio run -d Examples/Projects/Dxl
-        platformio run -d Examples/Projects/Gate
-        platformio run -d Examples/Projects/Gpio  
-        platformio run -d Examples/Projects/Imu
-        platformio run -d Examples/Projects/Led
-        platformio run -d Examples/Projects/Led_strip
-        platformio run -d Examples/Projects/Light_sensor
-        platformio run -d Examples/Projects/Load
-        platformio run -d Examples/Projects/Potentiometer
-        platformio run -d Examples/Projects/Power_switch
-        platformio run -d Examples/Projects/Servo
-        platformio run -d Examples/Projects/Stepper
-        platformio run -d Examples/Projects/Bike_alarm/Alarm_controller
-        platformio run -d Examples/Projects/Bike_alarm/Start_controller
-
-
-        
-
-        
-    
