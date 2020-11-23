@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include "msgAlloc.h"
 #include "robus.h"
-#include "LuosHAL.h"
+#include "luosHAL.h"
 
 /*******************************************************************************
  * Definitions
@@ -37,7 +37,6 @@ static error_return_t Luos_SaveAlias(container_t *container, uint8_t *alias);
 static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size);
-static error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -633,7 +632,7 @@ error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data,
  * @param pointer to data
  * @return error
  ******************************************************************************/
-static error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data)
+error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data)
 {
     // Manage buffer session (one per container)
     static uint32_t data_size[MAX_CONTAINER_NUMBER] = {0};
