@@ -165,9 +165,9 @@ static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
     if ((uint32_t)to > ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
     {
         // We reach msg_buffer end return an error
-        return FAIL;
+        return FAILED;
     }
-    return SUCESS;
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief Invalid the current message header by removing it (data will be ignored).
@@ -197,7 +197,7 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
     // Save the concerned module pointer into the concerned module pointer stack
     if (valid == true)
     {
-        if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + 2])) == FAIL)
+        if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + 2])) == FAILED)
         {
             // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
             // Create a task to copy the header at the begining of msg_buffer
@@ -250,7 +250,7 @@ void MsgAlloc_EndMsg(void)
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= 2;
     // clean space between data_ptr (data_ptr + sizeof(header_t)+2)
-    if (MsgAlloc_DoWeHaveSpace((void *)(data_ptr + sizeof(header_t) + 2)) == FAIL)
+    if (MsgAlloc_DoWeHaveSpace((void *)(data_ptr + sizeof(header_t) + 2)) == FAILED)
     {
         data_ptr = &msg_buffer[0];
     }
@@ -298,7 +298,7 @@ void MsgAlloc_SetMessage(msg_t *msg)
     }
 
     LuosHAL_SetIrqState(false);
-    if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->stream[data_size])) == FAIL)
+    if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->stream[data_size])) == FAILED)
     {
         // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
         // Move current_msg to msg_buffer
@@ -341,11 +341,11 @@ error_return_t MsgAlloc_IsEmpty(void)
 {
     if (data_ptr == &msg_buffer[0])
     {
-        return SUCESS;
+        return SUCCEED;
     }
     else
     {
-        return FAIL;
+        return FAILED;
     }
 }
 
@@ -365,7 +365,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     if ((uint32_t)to > ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
     {
         // We reach msg_buffer end return an error
-        return FAIL;
+        return FAILED;
     }
     //******** Prepare a memory space to be writable **********
 
@@ -399,7 +399,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
         }
     }
     // if we go here there is no reason to continue because newest messages can't overlap the memory zone.
-    return SUCESS;
+    return SUCCEED;
 }
 /*******************************************************************************
  * Functions --> msg interpretation task stack
@@ -439,10 +439,10 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
     {
         *returned_msg = (msg_t *)msg_tasks[0];
         MsgAlloc_ClearMsgTask();
-        return SUCESS;
+        return SUCCEED;
     }
     // At this point we don't find any message for this module
-    return FAIL;
+    return FAILED;
 }
 
 /*******************************************************************************
@@ -530,11 +530,11 @@ error_return_t MsgAlloc_PullMsg(ll_container_t *target_module, msg_t **returned_
             // Clear the slot by sliding others to the left on it
             used_msg = *returned_msg;
             MsgAlloc_ClearLuosTask(i);
-            return SUCESS;
+            return SUCCEED;
         }
     }
     // At this point we don't find any message for this module
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief Pull a message allocated to a specific luos task
@@ -552,10 +552,10 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
         // Clear the slot by sliding others to the left on it
         used_msg = *returned_msg;
         MsgAlloc_ClearLuosTask(luos_task_id);
-        return SUCESS;
+        return SUCCEED;
     }
     // At this point we don't find any message for this module
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief get back the module who received the oldest message 
@@ -568,9 +568,9 @@ error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_container_t **a
     if (luos_task_id < luos_tasks_stack_id)
     {
         *allocated_module = luos_tasks[luos_task_id].ll_container_pt;
-        return SUCESS;
+        return SUCCEED;
     }
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief get back a specific slot message command
@@ -583,9 +583,9 @@ error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd)
     if (luos_task_id < luos_tasks_stack_id)
     {
         *cmd = luos_tasks[luos_task_id].msg_pt->header.cmd;
-        return SUCESS;
+        return SUCCEED;
     }
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief get back a specific slot message command
@@ -598,9 +598,9 @@ error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *sou
     if (luos_task_id < luos_tasks_stack_id)
     {
         *source_id = luos_tasks[luos_task_id].msg_pt->header.source;
-        return SUCESS;
+        return SUCCEED;
     }
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief get back a specific slot message command
@@ -613,9 +613,9 @@ error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size)
     if (luos_task_id < luos_tasks_stack_id)
     {
         *size = luos_tasks[luos_task_id].msg_pt->header.size;
-        return SUCESS;
+        return SUCCEED;
     }
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief return the number of allocated messages

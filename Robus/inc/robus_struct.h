@@ -98,8 +98,8 @@ typedef struct __attribute__((__packed__))
  ******************************************************************************/
 typedef enum
 {
-    SUCESS,     /*!< function work properly. */
-    FAIL = 0xFF /*!< function fail. */
+    SUCCEED,      /*!< function work properly. */
+    FAILED = 0xFF /*!< function fail. */
 } error_return_t;
 
 /******************************************************************************

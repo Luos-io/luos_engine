@@ -120,7 +120,7 @@ error_return_t PortMng_PokeNextPort(void)
             // this port have not been poked
             if (PortMng_PokePort(port))
             {
-                return SUCESS;
+                return SUCCEED;
             }
             else
             {
@@ -130,7 +130,7 @@ error_return_t PortMng_PokeNextPort(void)
         }
     }
     PortMng_Reset();
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief reinit the detection state machine
