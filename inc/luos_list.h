@@ -24,8 +24,6 @@ typedef enum
     DYNAMIXEL_MOD,
     STEPPER_MOD,
     DCMOTOR_MOD,
-    Compatibility_line,
-    HANDY_MOD,
     IMU_MOD,
     LIGHT_MOD,
     CONTROLLER_MOTOR_MOD,

@@ -64,40 +64,6 @@ typedef struct __attribute__((__packed__))
 } luos_uuid_t;
 
 /*
- * Pid
- */
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            float p;
-            float i;
-            float d;
-        };
-        unsigned char unmap[3 * sizeof(float)];
-    };
-} asserv_pid_t;
-
-/*
- * Servo
- */
-typedef struct
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            angular_position_t max_angle;
-            float min_pulse_time;
-            float max_pulse_time;
-        };
-        unsigned char unmap[3 * sizeof(float)];
-    };
-} servo_parameters_t;
-
-/*
  * controle
  */
 typedef struct __attribute__((__packed__))

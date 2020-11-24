@@ -175,9 +175,6 @@ char *RoutingTB_StringFromType(luos_type_t type)
         return "DCMotor";
         break;
         break;
-    case HANDY_MOD:
-        return "Handy";
-        break;
     case IMU_MOD:
         return "Imu";
         break;
@@ -503,7 +500,7 @@ void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_
  * @param index of container
  * @return None
  ******************************************************************************/
-void RoutingTB_RemoveOnRoutingTable(int index)
+void RoutingTB_RemoveOnRoutingTable(uint16_t index)
 {
     routing_table[index].alias[0] = '\0';
     routing_table[index].type = VOID_MOD;

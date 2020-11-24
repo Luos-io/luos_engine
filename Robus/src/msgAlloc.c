@@ -60,8 +60,8 @@
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
-    msg_t *msg_pt; /*!< Start pointer of the msg on msg_buffer. */
-    ll_container_t *ll_container_pt;   /*!< Pointer to the concerned ll_container. */
+    msg_t *msg_pt;                   /*!< Start pointer of the msg on msg_buffer. */
+    ll_container_t *ll_container_pt; /*!< Pointer to the concerned ll_container. */
 } luos_task_t;
 /*******************************************************************************
  * Variables
@@ -74,7 +74,7 @@ volatile msg_t *current_msg;                  /*!< current work in progress msg 
 volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be writen into msgbuffer. */
 
 // Allocator task stack
-volatile header_t *copy_task_pointer = NULL;           /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
+volatile header_t *copy_task_pointer = NULL; /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
 
 // msg interpretation task stack
 volatile msg_t *msg_tasks[MAX_MSG_NB]; /*!< ready message table. */
@@ -180,29 +180,22 @@ void MsgAlloc_InvalidMsg(void)
     //clean the memory zone
     MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
     data_ptr = (uint8_t *)current_msg;
-    if(current_msg == (volatile msg_t *)&msg_buffer[0])
+    if (current_msg == (volatile msg_t *)&msg_buffer[0])
     {
         copy_task_pointer = NULL;
     }
 }
 /******************************************************************************
  * @brief Valid the current message header by preparing the allocator to get the message data
- * @param concerned_module : The module concerned by this message
+ * @param valid : is the header valid or not
+ * @param data_size : size of the data to receive
  * @return None
  ******************************************************************************/
-void MsgAlloc_ValidHeader(uint8_t status, uint16_t data_size)
+void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
 {
-//******** Prepare the allocator to get data  *********
-// Save the concerned module pointer into the concerned module pointer stack
-#ifdef DEBUG
-    if (module_concerned_stack_pointer >= MAX_CONTAINER_NUMBER)
-    {
-        while (1)
-            ;
-    }
-#endif
-
-    if(status == true)
+    //******** Prepare the allocator to get data  *********
+    // Save the concerned module pointer into the concerned module pointer stack
+    if (valid == true)
     {
         if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + 2])) == FAIL)
         {
@@ -215,14 +208,14 @@ void MsgAlloc_ValidHeader(uint8_t status, uint16_t data_size)
             data_ptr = &msg_buffer[sizeof(header_t)];
         }
         // check if there is a msg traitement pending
-        if(((uint32_t)used_msg >= (uint32_t)current_msg) && ((uint32_t)used_msg<= (uint32_t)(&current_msg->data[data_size + 2])))
+        if (((uint32_t)used_msg >= (uint32_t)current_msg) && ((uint32_t)used_msg <= (uint32_t)(&current_msg->data[data_size + 2])))
         {
-           used_msg = NULL;
-           // This message is in the space we want to use, clear the task
-           if (mem_stat->msg_drop_number < 0xFF)
-           {
-               mem_stat->msg_drop_number++;
-           }
+            used_msg = NULL;
+            // This message is in the space we want to use, clear the task
+            if (mem_stat->msg_drop_number < 0xFF)
+            {
+                mem_stat->msg_drop_number++;
+            }
         }
     }
     else
@@ -232,8 +225,6 @@ void MsgAlloc_ValidHeader(uint8_t status, uint16_t data_size)
 }
 /******************************************************************************
  * @brief Finish the current message
- * @param module_concerned_by_current_msg list of concerned modules
- * @param module_concerned_stack_pointer Number of module concerned
  * @return None
  ******************************************************************************/
 void MsgAlloc_EndMsg(void)
@@ -265,7 +256,7 @@ void MsgAlloc_EndMsg(void)
     }
     else
     {
-        if(*data_ptr % 2 != 1)
+        if (*data_ptr % 2 != 1)
         {
             data_ptr++;
         }
@@ -348,7 +339,7 @@ msg_t *MsgAlloc_GetCurrentMsg(void)
  ******************************************************************************/
 error_return_t MsgAlloc_IsEmpty(void)
 {
-    if(data_ptr == &msg_buffer[0])
+    if (data_ptr == &msg_buffer[0])
     {
         return SUCESS;
     }
@@ -379,7 +370,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     //******** Prepare a memory space to be writable **********
 
     // check if there is a msg traitement pending
-    if(((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg<= (uint32_t)to))
+    if (((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to))
     {
         used_msg = NULL;
         // This message is in the space we want to use, clear the task
@@ -423,7 +414,8 @@ static inline void MsgAlloc_ClearMsgTask(void)
 {
     if (msg_tasks_stack_id > MAX_MSG_NB)
     {
-        while(1);
+        while (1)
+            ;
     }
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
@@ -474,9 +466,10 @@ void MsgAlloc_UsedMsgEnd(void)
  ******************************************************************************/
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 {
-    if((luos_task_id > luos_tasks_stack_id)||(luos_tasks_stack_id > MAX_MSG_NB))
+    if ((luos_task_id > luos_tasks_stack_id) || (luos_tasks_stack_id > MAX_MSG_NB))
     {
-        while(1);
+        while (1)
+            ;
     }
     for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
     {
