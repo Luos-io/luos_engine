@@ -9,7 +9,7 @@
 
 #include "luos_list.h"
 #include "container_structs.h"
-#include "routingTable.h"
+#include "routing_table.h"
 #include "luos_od.h"
 #include "streaming.h"
 

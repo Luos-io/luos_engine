@@ -5,10 +5,10 @@
  * @version 0.0.0
  ******************************************************************************/
 #include <stdbool.h>
-#include "portManager.h"
+#include "port_manager.h"
 #include "transmission.h"
 #include "context.h"
-#include "luosHAL.h"
+#include "luos_hal.h"
 
 /*******************************************************************************
  * Definitions

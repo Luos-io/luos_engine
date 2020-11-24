@@ -8,10 +8,10 @@
 
 #include <string.h>
 #include <stdbool.h>
-#include "luosHAL.h"
+#include "luos_hal.h"
 #include "target.h"
 #include "transmission.h"
-#include "msgAlloc.h"
+#include "msg_alloc.h"
 
 /*******************************************************************************
  * Definitions

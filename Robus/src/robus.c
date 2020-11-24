@@ -10,10 +10,10 @@
 #include <stdbool.h>
 #include "transmission.h"
 #include "reception.h"
-#include "portManager.h"
+#include "port_manager.h"
 #include "context.h"
-#include "luosHAL.h"
-#include "msgAlloc.h"
+#include "luos_hal.h"
+#include "msg_alloc.h"
 
 /*******************************************************************************
  * Definitions

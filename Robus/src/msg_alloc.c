@@ -44,8 +44,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include "config.h"
-#include "msgAlloc.h"
-#include "luosHAL.h"
+#include "msg_alloc.h"
+#include "luos_hal.h"
 
 /*******************************************************************************
  * Definitions

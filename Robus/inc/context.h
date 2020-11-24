@@ -9,7 +9,7 @@
 
 #include <robus.h>
 #include "config.h"
-#include "portManager.h"
+#include "port_manager.h"
 #include "reception.h"
 #include "transmission.h"
 /*******************************************************************************

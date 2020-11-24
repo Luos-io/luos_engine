@@ -7,9 +7,9 @@
 #include "luos.h"
 #include <stdio.h>
 #include <stdbool.h>
-#include "msgAlloc.h"
+#include "msg_alloc.h"
 #include "robus.h"
-#include "luosHAL.h"
+#include "luos_hal.h"
 
 /*******************************************************************************
  * Definitions
