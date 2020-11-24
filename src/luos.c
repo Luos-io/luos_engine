@@ -93,7 +93,7 @@ void Luos_Loop(void)
             if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCESS)
             {
                 // be sure the content of this message need to be managed by Luos and do it if it is.
-                if (Luos_MsgHandler((container_t *)container, returned_msg)==FAIL)
+                if (Luos_MsgHandler((container_t *)container, returned_msg) == FAIL)
                 {
                     // we should not go there there is a mistake on Luos_IsALuosCmd or Luos_MsgHandler
                     while (1)
@@ -524,7 +524,7 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
     {
         error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
         // check if the content of this message need to be managed by Luos and do it if it is.
-        if ((Luos_MsgHandler(container, *returned_msg)==FAIL) & (error == SUCESS))
+        if ((Luos_MsgHandler(container, *returned_msg) == FAIL) & (error == SUCESS))
         {
             // This message is for the user, pass it to the user.
             return SUCESS;
@@ -557,7 +557,7 @@ error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **
                 // Source id of this message match, get it and treat it.
                 error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
                 // check if the content of this message need to be managed by Luos and do it if it is.
-                if ((Luos_MsgHandler(container, *returned_msg)==FAIL) & (error == SUCESS))
+                if ((Luos_MsgHandler(container, *returned_msg) == FAIL) & (error == SUCESS))
                 {
                     // This message is for the user, pass it to the user.
                     return SUCESS;
@@ -639,7 +639,7 @@ error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_da
     static uint16_t last_msg_size = 0;
     uint16_t id = Luos_GetContainerIndex(container);
     // check good container index
-    if(id == 0xFFFF)
+    if (id == 0xFFFF)
     {
         return FAIL;
     }
@@ -780,7 +780,7 @@ static error_return_t Luos_SaveAlias(container_t *container, uint8_t *alias)
     // Get container index
     uint16_t i = (uint16_t)(Luos_GetContainerIndex(container));
 
-    if ((i >= 0)&&(i != 0xFFFF))
+    if ((i >= 0) && (i != 0xFFFF))
     {
         Luos_WriteAlias(i, alias);
         return SUCESS;
@@ -860,7 +860,7 @@ error_return_t Luos_SetExternId(container_t *container, target_mode_t target_mod
     msg.header.size = 2;
     msg.data[1] = newid;
     msg.data[0] = (newid << 8);
-    if (Robus_SendMsg(container->ll_container, &msg)==SUCESS)
+    if (Robus_SendMsg(container->ll_container, &msg) == SUCESS)
     {
         return SUCESS;
     }

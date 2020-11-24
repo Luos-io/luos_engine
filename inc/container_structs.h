@@ -35,7 +35,7 @@ typedef struct __attribute__((__packed__)) container_t
     // Variables
     uint8_t default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
-    timed_update_t auto_refresh;        /*!< container auto refresh context. */
+    timed_update_t auto_refresh;           /*!< container auto refresh context. */
     uint8_t firm_version[20];              /*!< container firmware version. */
 } container_t;
 

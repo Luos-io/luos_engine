@@ -92,9 +92,9 @@ void Recep_GetHeader(volatile unsigned char *data)
             data_size = current_msg->header.size;
         }
 
-        if ((keep)&&(ctx.rx.status.rx_framing_error == false))
+        if ((keep) && (ctx.rx.status.rx_framing_error == false))
         {
-            if(data_size)
+            if (data_size)
             {
                 MsgAlloc_ValidHeader(true, data_size);
             }
@@ -143,9 +143,9 @@ void Recep_GetData(volatile unsigned char *data)
                 // Make an exception for reset detection command
                 if (current_msg->header.cmd == RESET_DETECTION)
                 {
-                     ctx.node.node_id = 0;
-                     PortMng_Init();
-                     MsgAlloc_Init(NULL);
+                    ctx.node.node_id = 0;
+                    PortMng_Init();
+                    MsgAlloc_Init(NULL);
                 }
                 else
                 {

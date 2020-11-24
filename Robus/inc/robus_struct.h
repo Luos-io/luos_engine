@@ -69,7 +69,7 @@ typedef struct __attribute__((__packed__))
     {
         struct __attribute__((__packed__))
         {
-            header_t header;                       /*!< Header filed. */
+            header_t header;                 /*!< Header filed. */
             uint8_t data[MAX_DATA_MSG_SIZE]; /*!< Data with size known. */
         };
         uint8_t stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */

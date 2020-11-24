@@ -287,7 +287,9 @@ redetect:
 static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
-    uint8_t try = 0;
+    uint8_t
+    try
+        = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
@@ -302,14 +304,15 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 
         // wait for some 2ms to be sure all previous messages are received and treated
         uint32_t start_tick = LuosHAL_GetSystick();
-        while (LuosHAL_GetSystick() - start_tick < 2);
-        try++;
-    }
-    while((MsgAlloc_IsEmpty() != SUCESS)||(try > 5));
+        while (LuosHAL_GetSystick() - start_tick < 2)
+            ;
+        try
+            ++;
+    } while ((MsgAlloc_IsEmpty() != SUCESS) || (try > 5));
 
     ctx.node.node_id = 0;
     PortMng_Init();
-    if(try < 5)
+    if (try < 5)
     {
         return SUCESS;
     }

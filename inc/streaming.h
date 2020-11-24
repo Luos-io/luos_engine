@@ -26,7 +26,7 @@ typedef struct
     void *end_ring_buffer; // End of the ring buffer
     void *sample_ptr;      // Current sample pointer (pointer always point a fresh data)
     void *data_ptr;        // Current pointer of data
-    uint8_t data_size;        // Size granulariry of the data contained on the ring buffer
+    uint8_t data_size;     // Size granulariry of the data contained on the ring buffer
 } streaming_channel_t;
 /*******************************************************************************
  * Variables
@@ -40,6 +40,5 @@ void Stream_ResetStreamingChannel(streaming_channel_t *stream);
 uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t size);
 uint8_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size);
 uint8_t Stream_GetAvailableSampleNB(streaming_channel_t *stream);
-
 
 #endif /* LUOS_H */
