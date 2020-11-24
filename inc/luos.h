@@ -7,6 +7,7 @@
 #ifndef LUOS_H
 #define LUOS_H
 
+#include "luos_utils.h"
 #include "luos_list.h"
 #include "container_structs.h"
 #include "routing_table.h"

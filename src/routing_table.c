@@ -468,13 +468,8 @@ void RoutingTB_DetectContainers(container_t *container)
  ******************************************************************************/
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
 {
-    if (sizeof(node_t) > (sizeof(routing_table_t) - 1))
-    {
-        // This is a critical error.
-        // The NBR_PORT config is too high to fit into routing table.
-        while (1)
-            ;
-    }
+    // Check if the NBR_PORT config is too high to fit into routing table.
+    LUOS_ASSERT(sizeof(node_t) <= (sizeof(routing_table_t) - 1));
     memset(entry, 0, sizeof(routing_table_t));
     entry->mode = NODE;
     memcpy(entry->unmap_data, node->unmap, sizeof(node_t));
@@ -496,16 +491,43 @@ void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_
     }
 }
 /******************************************************************************
+ * @brief remove an entire node
+ * @param route table
+ * @return None
+ ******************************************************************************/
+void RoutingTB_RemoveNode(uint16_t nodeid)
+{
+    // instead of removing a node just remove all the container in it to make it unusable
+    // We could add a param (CONTROL for example) to declare the node as STOP
+    // find the node
+    for (int i = 0; i < last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == NODE)
+        {
+            if (routing_table[i].node_id == nodeid)
+            {
+                i++;
+                // We find our node remove all containers
+                while (routing_table[i].mode == CONTAINER)
+                {
+                    RoutingTB_RemoveOnRoutingTable(i);
+                }
+                return;
+            }
+        }
+    }
+}
+/******************************************************************************
  * @brief remove an entry from routing_table
  * @param index of container
  * @return None
  ******************************************************************************/
 void RoutingTB_RemoveOnRoutingTable(uint16_t index)
 {
-    routing_table[index].alias[0] = '\0';
-    routing_table[index].type = VOID_MOD;
-    routing_table[index].id = 0;
-    routing_table[index].mode = CLEAR;
+    LUOS_ASSERT(index < last_routing_table_entry);
+    memcpy(&routing_table[index], &routing_table[index + 1], sizeof(routing_table_t) * (last_routing_table_entry - (index + 1)));
+    last_routing_table_entry--;
+    memset(&routing_table[last_routing_table_entry], 0, sizeof(routing_table_t));
 }
 /******************************************************************************
  * @brief eras erouting_table

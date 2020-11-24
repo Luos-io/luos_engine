@@ -36,7 +36,7 @@ static void Luos_AutoUpdateManager(void);
 static error_return_t Luos_SaveAlias(container_t *container, uint8_t *alias);
 static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias);
-static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size);
+static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint16_t size);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -75,35 +75,26 @@ void Luos_Loop(void)
         // check if this is a Luos Command
         uint8_t cmd = 0;
         uint16_t size = 0;
-        if (MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == FAILED)
-        {
-            // this is a critical failure we should never go here
-            while (1)
-                ;
-        }
-        if (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == FAILED)
-        {
-            // this is a critical failure we should never go here
-            while (1)
-                ;
-        }
+        LUOS_ASSERT(MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == SUCCEED);
+        LUOS_ASSERT(MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == SUCCEED);
         //check if this msg cmd should be consumed by Luos_MsgHandler
-        if (Luos_IsALuosCmd(cmd, size) == SUCCEED)
+        if (Luos_IsALuosCmd(container, cmd, size) == SUCCEED)
         {
             if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
             {
                 // be sure the content of this message need to be managed by Luos and do it if it is.
-                if (Luos_MsgHandler((container_t *)container, returned_msg) == FAILED)
+                if (Luos_MsgHandler((container_t *)container, returned_msg) == SUCCEED)
                 {
-                    // we should not go there there is a mistake on Luos_IsALuosCmd or Luos_MsgHandler
-                    while (1)
-                        ;
+                    // Luos CMD are generic for all containers and have to be executed only once
+                    // Clear all luos tasks related to this message (in case of multicast message)
+                    MsgAlloc_ClearMsgFromLuosTasks(returned_msg);
                 }
                 else
                 {
-                    // Luos CMD are generic for all continers and have to be executed only once
-                    // Clear all luos tasks related to this message (in case of multicast message)
-                    MsgAlloc_ClearMsgFromLuosTasks(returned_msg);
+                    // Here we should not have polling modules.
+                    LUOS_ASSERT(container->cont_cb != 0);
+                    // This message is for the user, pass it to the user.
+                    container->cont_cb(container, returned_msg);
                 }
             }
         }
@@ -138,7 +129,7 @@ void Luos_Loop(void)
  * @param cmd The command value
  * @return SUCCEED if the command if for Luos else Fail 
  ******************************************************************************/
-static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size)
+static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint16_t size)
 {
     switch (cmd)
     {
@@ -146,8 +137,17 @@ static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size)
     case RESET_DETECTION:
     case SET_BAUDRATE:
         // ERROR
-        while (1)
-            ;
+        LUOS_ASSERT(0);
+        break;
+    case ASSERT:
+        if (container->cont_cb != 0)
+        {
+            return SUCCEED;
+        }
+        else
+        {
+            return FAILED;
+        }
         break;
     case RTB_CMD:
     case WRITE_ALIAS:
@@ -179,7 +179,7 @@ static error_return_t Luos_IsALuosCmd(uint8_t cmd, uint16_t size)
  ******************************************************************************/
 static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
 {
-    error_return_t error = FAILED;
+    error_return_t consume = FAILED;
     msg_t output_msg;
     routing_table_t *route_tab = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
     time_luos_t time;
@@ -187,6 +187,12 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
 
     switch (input->header.cmd)
     {
+    case ASSERT:
+        // a module assert remove all modules of the asserted node in routing table
+        RoutingTB_RemoveNode(input->header.source);
+        // This assert information could be usefull for containers, do not remove it.
+        consume = FAILED;
+        break;
     case RTB_CMD:
         // Depending on the size of this message we have to make different operations
         // If size is 0 someone ask to get local_route table back
@@ -235,7 +241,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             }
             break;
         }
-        error = SUCCEED;
+        consume = SUCCEED;
         break;
     case REVISION:
         if (input->header.size == 0)
@@ -247,7 +253,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             output.header.size = sizeof(revision_t);
             output.header.target = input->header.source;
             Luos_SendMsg(container, &output);
-            error = SUCCEED;
+            consume = SUCCEED;
         }
         break;
     case LUOS_REVISION:
@@ -260,7 +266,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             output.header.size = sizeof(revision_t);
             output.header.target = input->header.source;
             Luos_SendMsg(container, &output);
-            error = SUCCEED;
+            consume = SUCCEED;
         }
         break;
     case NODE_UUID:
@@ -277,7 +283,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             uuid.uuid[2] = LUOS_UUID[2];
             memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
             Luos_SendMsg(container, &output);
-            error = SUCCEED;
+            consume = SUCCEED;
         }
         break;
     case LUOS_STATISTICS:
@@ -292,7 +298,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             memcpy(&general_stats.container_stat, container->statistic.unmap, sizeof(container_stats_t));
             memcpy(output.data, &general_stats.unmap, sizeof(general_stats_t));
             Luos_SendMsg(container, &output);
-            error = SUCCEED;
+            consume = SUCCEED;
         }
         break;
     case WRITE_ALIAS:
@@ -323,7 +329,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             Luos_SaveAlias(container, '\0');
             memcpy(container->alias, container->default_alias, MAX_ALIAS_SIZE);
         }
-        error = SUCCEED;
+        consume = SUCCEED;
         break;
     case UPDATE_PUB:
         // this container need to be auto updated
@@ -331,12 +337,12 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
         container->auto_refresh.target = input->header.source;
         container->auto_refresh.time_ms = (uint16_t)TimeOD_TimeTo_ms(time);
         container->auto_refresh.last_update = LuosHAL_GetSystick();
-        error = SUCCEED;
+        consume = SUCCEED;
         break;
     default:
         break;
     }
-    return error;
+    return consume;
 }
 /******************************************************************************
  * @brief get pointer to a container in route table
@@ -511,6 +517,11 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
 error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
 {
     error_return_t result = SUCCEED;
+    if (container == 0)
+    {
+        // There is no container specified here, take the first one
+        container = &container_table[0];
+    }
     if (Robus_SendMsg(container->ll_container, msg) != SUCCEED)
     {
         container->ll_container->ll_stat.fail_msg_nbr++;

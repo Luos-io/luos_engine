@@ -4,9 +4,9 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include "streaming.h"
-
 #include <string.h>
+#include "streaming.h"
+#include "luos_utils.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -29,11 +29,7 @@
 streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint16_t ring_buffer_size, uint8_t data_size)
 {
     streaming_channel_t stream;
-    if ((ring_buffer == NULL) || (ring_buffer_size < 1) || (data_size < 1))
-    {
-        while (1)
-            ;
-    }
+    LUOS_ASSERT((ring_buffer != NULL) || (ring_buffer_size >= 1) || (data_size >= 1));
     // Save ring buffer informations
     stream.ring_buffer = (void *)ring_buffer;
     stream.data_size = data_size;
@@ -69,12 +65,7 @@ uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t
         uint16_t chunk1 = stream->end_ring_buffer - stream->data_ptr;
         uint16_t chunk2 = (size * stream->data_size) - chunk1;
         // check if we exceed ring buffer capacity
-        if (stream->sample_ptr < (stream->ring_buffer + chunk2))
-        {
-            // data overwrite unread samples
-            while (1)
-                ;
-        }
+        LUOS_ASSERT(stream->sample_ptr >= (stream->ring_buffer + chunk2));
         // Everything good copy datas.
         memcpy(stream->data_ptr, data, chunk1);
         memcpy(stream->ring_buffer, (char *)data + chunk1, chunk2);
@@ -85,12 +76,7 @@ uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t
     {
         // our data fit before ring buffer end
         // check if we exceed ring buffer capacity
-        if ((stream->data_ptr < stream->sample_ptr) && ((stream->data_ptr + (size * stream->data_size)) > stream->sample_ptr))
-        {
-            // data overwrite unread samples
-            while (1)
-                ;
-        }
+        LUOS_ASSERT((stream->data_ptr >= stream->sample_ptr) && ((stream->data_ptr + (size * stream->data_size)) <= stream->sample_ptr));
         memcpy(stream->data_ptr, data, (size * stream->data_size));
         // Set the new data pointer
         stream->data_ptr = stream->data_ptr + (size * stream->data_size);
