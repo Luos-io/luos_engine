@@ -25,6 +25,13 @@ typedef struct __attribute__((__packed__))
     uint8_t msg_drop_number;
 } memory_stats_t;
 
+typedef struct __attribute__((__packed__))
+{
+    uint8_t msg_nbr;
+    uint8_t fail_msg_nbr;
+    uint8_t *max_collision_retry;
+    uint8_t *max_nak_retry;
+} ll_stats_t;
 /*
  * This structure is used to get the message addressing mode list.
  */
@@ -90,6 +97,9 @@ typedef struct __attribute__((__packed__))
     uint16_t max_multicast_target;                         /*!< Position pointer of the last multicast target. */
     uint16_t multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
     uint16_t dead_container_spotted;                       /*!< The ID of a container that don't reply to a lot of ACK msg */
+
+    //variable stat on robus com for ll_container
+    ll_stats_t ll_stat;
 } ll_container_t;
 
 /******************************************************************************

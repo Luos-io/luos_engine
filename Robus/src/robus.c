@@ -76,6 +76,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Initialize the robus container status
     ctx.rx.status.unmap = 0;
     ctx.rx.status.identifier = 0xF;
+
     // Init hal
     LuosHAL_Init();
 }
@@ -138,7 +139,6 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     // Compute the full message size based on the header size info.
     uint16_t data_size = 0;
-    error_return_t fail = SUCCEED;
     if (msg->header.size > MAX_DATA_MSG_SIZE)
     {
         data_size = MAX_DATA_MSG_SIZE;
@@ -148,7 +148,6 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
         data_size = msg->header.size;
     }
     uint16_t full_size = sizeof(header_t) + data_size;
-    uint8_t nbr_nak_retry = 0;
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     if (ll_container->id != 0)
@@ -161,8 +160,14 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     }
     // Add the CRC to the total size of the message
     full_size += 2;
+
+    //try to send msg computed
+    error_return_t result = SUCCEED;
+    uint8_t nbr_nak_retry = 0;
+    uint8_t RetryCollision = 0;
 ack_restart:
     nbr_nak_retry++;
+    RetryCollision = 0;
     LuosHAL_SetIrqState(false);
     ctx.ack = FALSE;
     LuosHAL_SetIrqState(true);
@@ -176,12 +181,23 @@ ack_restart:
         LuosHAL_SetIrqState(true);
         // wait timeout of collided packet
         Transmit_WaitUnlockTx();
+        //max collision possible
+        RetryCollision++;
+        if(RetryCollision > NBR_NAK_RETRY)
+        {
+            result = FAILED;
+            break;
+        }
         // timer proportional to ID
         if (ll_container->id > 1)
         {
             for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (ll_container->id - 1)); tempo++)
                 ;
         }
+    }
+    if(*ll_container->ll_stat.max_collision_retry < RetryCollision)
+    {
+        *ll_container->ll_stat.max_collision_retry = RetryCollision;
     }
     // Check if ACK needed
     if ((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK))
@@ -226,13 +242,18 @@ ack_restart:
                 else
                 {
                     // Set the dead container ID into the ll_container
+                    result = FAILED;
                     ll_container->dead_container_spotted = (uint16_t)(msg->header.target);
-                    fail = FAILED;
                 }
             }
             ctx.ack = 0;
         }
+        if(*ll_container->ll_stat.max_nak_retry < nbr_nak_retry)
+        {
+            *ll_container->ll_stat.max_nak_retry = nbr_nak_retry;
+        }
     }
+
     // localhost management
     if (Recep_NodeConcerned(&msg->header))
     {
@@ -242,7 +263,7 @@ ack_restart:
         // set message into the allocator
         MsgAlloc_SetMessage(msg);
     }
-    return fail;
+    return result;
 }
 /******************************************************************************
  * @brief Start a topology detection procedure

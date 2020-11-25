@@ -25,6 +25,7 @@ uint16_t container_number;
 volatile routing_table_t *routing_table_pt;
 
 luos_stats_t luos_stats;
+general_stats_t general_stats;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -289,9 +290,11 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             msg_t output;
             output.header.cmd = LUOS_STATISTICS;
             output.header.target_mode = ID;
-            output.header.size = sizeof(luos_stats_t);
+            output.header.size = sizeof(general_stats_t);
             output.header.target = input->header.source;
-            memcpy(output.data, &luos_stats.unmap, sizeof(luos_stats_t));
+            memcpy(&general_stats.node_stat, &luos_stats.unmap, sizeof(luos_stats_t));
+            memcpy(&general_stats.container_stat, &container->statistic.unmap, sizeof(container_stats_t));
+            memcpy(output.data, &general_stats.unmap, sizeof(general_stats_t));
             Luos_SendMsg(container, &output);
             error = SUCCEED;
         }
@@ -498,6 +501,10 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
             break;
     }
 
+    //initiate container statistic
+    container->ll_container->ll_stat.max_collision_retry = &container->statistic.max_collision_retry ;
+    container->ll_container->ll_stat.max_nak_retry = &container->statistic.max_nak_retry;
+
     container_number++;
     return container;
 }
@@ -509,7 +516,22 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
  ******************************************************************************/
 error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
 {
-    return Robus_SendMsg(container->ll_container, msg);
+    error_return_t result = SUCCEED;
+    if(Robus_SendMsg(container->ll_container, msg) != SUCCEED)
+    {
+        container->ll_container->ll_stat.fail_msg_nbr++;
+        result = FAILED;
+    }
+    container->ll_container->ll_stat.msg_nbr++;
+
+    if(container->ll_container->ll_stat.msg_nbr == 0xFF)
+    {
+        container->ll_container->ll_stat.msg_nbr = container->ll_container->ll_stat.msg_nbr>>1;
+    }
+
+    container->statistic.msg_fail_ratio = (uint8_t)(((uint32_t)container->ll_container->ll_stat.fail_msg_nbr * 100) / container->ll_container->ll_stat.msg_nbr);
+
+    return result;
 }
 /******************************************************************************
  * @brief read last msg from buffer for a container

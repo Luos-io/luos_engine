@@ -14,6 +14,23 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/* This structure is used to manage containers statistic
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__)) container_stats_t
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            uint8_t msg_fail_ratio;
+            uint8_t max_collision_retry;
+            uint8_t max_nak_retry;
+        };
+        uint8_t unmap[3]; /*!< streamable form. */
+    };
+} container_stats_t;
+
 /* This structure is used to manage containers timed auto update
  * please refer to the documentation
  */
@@ -37,6 +54,7 @@ typedef struct __attribute__((__packed__)) container_t
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
     timed_update_t auto_refresh;           /*!< container auto refresh context. */
     uint8_t firm_version[20];              /*!< container firmware version. */
+    container_stats_t statistic;
 } container_t;
 
 typedef void (*CONT_CB)(container_t *container, msg_t *msg);

@@ -21,6 +21,7 @@
  * @struct luos_stats_t
  * @brief store informations about luos stats
  ******************************************************************************/
+
 typedef struct __attribute__((__packed__))
 {
     union
@@ -30,10 +31,22 @@ typedef struct __attribute__((__packed__))
             memory_stats_t memory;
             uint8_t max_loop_time_ms;
         };
-        uint8_t unmap[5]; /*!< streamable form. */
+        uint8_t unmap[sizeof(memory_stats_t)+1]; /*!< streamable form. */
     };
 } luos_stats_t;
 
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            luos_stats_t node_stat;
+            container_stats_t container_stat;
+        };
+        uint8_t unmap[sizeof(luos_stats_t)+sizeof(container_stats_t)]; /*!< streamable form. */
+    };
+} general_stats_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
