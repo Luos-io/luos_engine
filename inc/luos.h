@@ -21,7 +21,6 @@
  * @struct luos_stats_t
  * @brief store informations about luos stats
  ******************************************************************************/
-
 typedef struct __attribute__((__packed__))
 {
     union
@@ -31,7 +30,7 @@ typedef struct __attribute__((__packed__))
             memory_stats_t memory;
             uint8_t max_loop_time_ms;
         };
-        uint8_t unmap[sizeof(memory_stats_t)+1]; /*!< streamable form. */
+        uint8_t unmap[sizeof(memory_stats_t) + 1]; /*!< streamable form. */
     };
 } luos_stats_t;
 
@@ -44,7 +43,7 @@ typedef struct __attribute__((__packed__))
             luos_stats_t node_stat;
             container_stats_t container_stat;
         };
-        uint8_t unmap[sizeof(luos_stats_t)+sizeof(container_stats_t)]; /*!< streamable form. */
+        uint8_t unmap[sizeof(luos_stats_t) + sizeof(container_stats_t)]; /*!< streamable form. */
     };
 } general_stats_t;
 /*******************************************************************************
@@ -54,11 +53,10 @@ typedef struct __attribute__((__packed__))
 /*******************************************************************************
  * Function
  ******************************************************************************/
-
 void Luos_Init(void);
 void Luos_Loop(void);
 void Luos_ContainersClear(void);
-container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, char *firm_revision);
+container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, revision_t revision);
 error_return_t Luos_SendMsg(container_t *container, msg_t *msg);
 error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg);
 error_return_t Luos_ReadFromContainer(container_t *container, int16_t id, msg_t **returned_msg);

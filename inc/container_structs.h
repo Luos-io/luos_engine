@@ -14,6 +14,22 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/* This structure is used to create containers version
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            uint8_t Major;
+            uint8_t Minor;
+            uint8_t Build;
+        };
+        uint8_t unmap[3]; /*!< streamable form. */
+    };
+} revision_t;
 /* This structure is used to manage containers statistic
  * please refer to the documentation
  */
@@ -53,7 +69,7 @@ typedef struct __attribute__((__packed__)) container_t
     uint8_t default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
     timed_update_t auto_refresh;           /*!< container auto refresh context. */
-    uint8_t firm_version[20];              /*!< container firmware version. */
+    revision_t revision;                   /*!< container firmware version. */
     container_stats_t statistic;
 } container_t;
 

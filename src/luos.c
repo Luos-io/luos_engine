@@ -14,12 +14,11 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define STRINGIFY(s) STRINGIFY1(s)
-#define STRINGIFY1(s) #s
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+revision_t luos_version = {.Major = 1, .Minor = 0, .Build = 0};
 container_t container_table[MAX_CONTAINER_NUMBER];
 uint16_t container_number;
 volatile routing_table_t *routing_table_pt;
@@ -244,9 +243,8 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             msg_t output;
             output.header.cmd = REVISION;
             output.header.target_mode = ID;
-            sprintf((char *)output.data, "%s", container->firm_version);
-            memcpy(output.data, container->firm_version, sizeof(output.data));
-            output.header.size = strlen((char *)output.data);
+            memcpy(output.data, container->revision.unmap, sizeof(revision_t));
+            output.header.size = sizeof(revision_t);
             output.header.target = input->header.source;
             Luos_SendMsg(container, &output);
             error = SUCCEED;
@@ -258,10 +256,8 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             msg_t output;
             output.header.cmd = LUOS_REVISION;
             output.header.target_mode = ID;
-            const char *luos_version = STRINGIFY(VERSION);
-            sprintf((char *)output.data, "%s", luos_version);
-            memcpy(output.data, luos_version, sizeof(output.data));
-            output.header.size = strlen((char *)output.data);
+            memcpy(output.data, &luos_version.unmap, sizeof(revision_t));
+            output.header.size = sizeof(revision_t);
             output.header.target = input->header.source;
             Luos_SendMsg(container, &output);
             error = SUCCEED;
@@ -293,7 +289,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             output.header.size = sizeof(general_stats_t);
             output.header.target = input->header.source;
             memcpy(&general_stats.node_stat, &luos_stats.unmap, sizeof(luos_stats_t));
-            memcpy(&general_stats.container_stat, &container->statistic.unmap, sizeof(container_stats_t));
+            memcpy(&general_stats.container_stat, container->statistic.unmap, sizeof(container_stats_t));
             memcpy(output.data, &general_stats.unmap, sizeof(general_stats_t));
             Luos_SendMsg(container, &output);
             error = SUCCEED;
@@ -458,10 +454,10 @@ void Luos_ContainersClear(void)
  * @param callback msg handler for the container
  * @param type of container corresponding to object dictionnary
  * @param alias for the container string (15 caracters max).
- * @param version FW for the container
+ * @param version FW for the container (tab[MajorVersion,MinorVersion,Patch])
  * @return container object pointer.
  ******************************************************************************/
-container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, char *firm_revision)
+container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, revision_t revision)
 {
     uint8_t i = 0;
     container_t *container = &container_table[container_number];
@@ -491,18 +487,16 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
         container->alias[i] = '\0';
     }
 
-    //Initialise the container firm_version to 0
-    memset((void *)container->firm_version, 0, sizeof(container->firm_version));
+    //Initialise the container revision to 0
+    memset((void *)container->revision.unmap, 0, sizeof(revision_t));
     // Save firmware version
-    for (i = 0; i < 20; i++)
+    for (i = 0; i < sizeof(revision_t); i++)
     {
-        container->firm_version[i] = firm_revision[i];
-        if (container->firm_version[i] == '\0')
-            break;
+        container->revision.unmap[i] = revision.unmap[i];
     }
 
     //initiate container statistic
-    container->ll_container->ll_stat.max_collision_retry = &container->statistic.max_collision_retry ;
+    container->ll_container->ll_stat.max_collision_retry = &container->statistic.max_collision_retry;
     container->ll_container->ll_stat.max_nak_retry = &container->statistic.max_nak_retry;
 
     container_number++;
@@ -517,16 +511,16 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
 error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
 {
     error_return_t result = SUCCEED;
-    if(Robus_SendMsg(container->ll_container, msg) != SUCCEED)
+    if (Robus_SendMsg(container->ll_container, msg) != SUCCEED)
     {
         container->ll_container->ll_stat.fail_msg_nbr++;
         result = FAILED;
     }
     container->ll_container->ll_stat.msg_nbr++;
 
-    if(container->ll_container->ll_stat.msg_nbr == 0xFF)
+    if (container->ll_container->ll_stat.msg_nbr == 0xFF)
     {
-        container->ll_container->ll_stat.msg_nbr = container->ll_container->ll_stat.msg_nbr>>1;
+        container->ll_container->ll_stat.msg_nbr = container->ll_container->ll_stat.msg_nbr >> 1;
     }
 
     container->statistic.msg_fail_ratio = (uint8_t)(((uint32_t)container->ll_container->ll_stat.fail_msg_nbr * 100) / container->ll_container->ll_stat.msg_nbr);
