@@ -10,10 +10,10 @@
 #include <stdbool.h>
 #include "transmission.h"
 #include "reception.h"
-#include "portManager.h"
+#include "port_manager.h"
 #include "context.h"
-#include "luosHAL.h"
-#include "msgAlloc.h"
+#include "luos_hal.h"
+#include "msg_alloc.h"
 
 /*******************************************************************************
  * Definitions
@@ -76,6 +76,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Initialize the robus container status
     ctx.rx.status.unmap = 0;
     ctx.rx.status.identifier = 0xF;
+
     // Init hal
     LuosHAL_Init();
 }
@@ -90,10 +91,10 @@ void Robus_Loop(void)
     MsgAlloc_loop();
     // Interpreat received messages and create luos task for it.
     msg_t *msg = NULL;
-    while (MsgAlloc_PullMsgToInterpret(&msg) == SUCESS)
+    while (MsgAlloc_PullMsgToInterpret(&msg) == SUCCEED)
     {
         // Check if this message is a protocole one
-        if (Robus_MsgHandler(msg) == FAIL)
+        if (Robus_MsgHandler(msg) == FAILED)
         {
             // If not create luos tasks.
             Recep_InterpretMsgProtocol(msg);
@@ -138,7 +139,6 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     // Compute the full message size based on the header size info.
     uint16_t data_size = 0;
-    error_return_t fail = SUCCESS;
     if (msg->header.size > MAX_DATA_MSG_SIZE)
     {
         data_size = MAX_DATA_MSG_SIZE;
@@ -148,7 +148,6 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
         data_size = msg->header.size;
     }
     uint16_t full_size = sizeof(header_t) + data_size;
-    uint8_t nbr_nak_retry = 0;
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     if (ll_container->id != 0)
@@ -161,8 +160,14 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     }
     // Add the CRC to the total size of the message
     full_size += 2;
+
+    //try to send msg computed
+    error_return_t result = SUCCEED;
+    uint8_t nbr_nak_retry = 0;
+    uint8_t RetryCollision = 0;
 ack_restart:
     nbr_nak_retry++;
+    RetryCollision = 0;
     LuosHAL_SetIrqState(false);
     ctx.ack = FALSE;
     LuosHAL_SetIrqState(true);
@@ -176,12 +181,23 @@ ack_restart:
         LuosHAL_SetIrqState(true);
         // wait timeout of collided packet
         Transmit_WaitUnlockTx();
+        //max collision possible
+        RetryCollision++;
+        if(RetryCollision > NBR_NAK_RETRY)
+        {
+            result = FAILED;
+            break;
+        }
         // timer proportional to ID
         if (ll_container->id > 1)
         {
             for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (ll_container->id - 1)); tempo++)
                 ;
         }
+    }
+    if(*ll_container->ll_stat.max_collision_retry < RetryCollision)
+    {
+        *ll_container->ll_stat.max_collision_retry = RetryCollision;
     }
     // Check if ACK needed
     if ((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK))
@@ -226,13 +242,18 @@ ack_restart:
                 else
                 {
                     // Set the dead container ID into the ll_container
+                    result = FAILED;
                     ll_container->dead_container_spotted = (uint16_t)(msg->header.target);
-                    fail = FAIL;
                 }
             }
             ctx.ack = 0;
         }
+        if(*ll_container->ll_stat.max_nak_retry < nbr_nak_retry)
+        {
+            *ll_container->ll_stat.max_nak_retry = nbr_nak_retry;
+        }
     }
+
     // localhost management
     if (Recep_NodeConcerned(&msg->header))
     {
@@ -242,7 +263,7 @@ ack_restart:
         // set message into the allocator
         MsgAlloc_SetMessage(msg);
     }
-    return fail;
+    return result;
 }
 /******************************************************************************
  * @brief Start a topology detection procedure
@@ -263,7 +284,7 @@ redetect:
     // setup sending ll_container
     ll_container->id = 1;
 
-    if (Robus_DetectNextNodes(ll_container) == FAIL)
+    if (Robus_DetectNextNodes(ll_container) == FAILED)
     {
         // check the number of retry we made
         if (redetect_nb > 4)
@@ -287,7 +308,9 @@ redetect:
 static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
-    uint8_t try = 0;
+    uint8_t
+    try
+        = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
@@ -302,19 +325,20 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 
         // wait for some 2ms to be sure all previous messages are received and treated
         uint32_t start_tick = LuosHAL_GetSystick();
-        while (LuosHAL_GetSystick() - start_tick < 2);
-        try++;
-    }
-    while((MsgAlloc_IsEmpty() != SUCESS)||(try > 5));
+        while (LuosHAL_GetSystick() - start_tick < 2)
+            ;
+        try
+            ++;
+    } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try > 5));
 
     ctx.node.node_id = 0;
     PortMng_Init();
-    if(try < 5)
+    if (try < 5)
     {
-        return SUCESS;
+        return SUCCEED;
     }
 
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief run the procedure allowing to detect the next nodes on the next port
@@ -324,7 +348,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
 {
     // Lets try to poke other nodes
-    while (PortMng_PokeNextPort() == SUCESS)
+    while (PortMng_PokeNextPort() == SUCCEED)
     {
         // There is someone here
         // Ask an ID  to the detector container.
@@ -333,7 +357,7 @@ static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
         msg.header.target = 1;
         msg.header.cmd = WRITE_NODE_ID;
         msg.header.size = 0;
-        if (Robus_SendMsg(ll_container, &msg) == FAIL)
+        if (Robus_SendMsg(ll_container, &msg) == FAILED)
         {
             // Message transmission failure
             // Consider this port unconnected
@@ -351,16 +375,16 @@ static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
             if (LuosHAL_GetSystick() - start_tick > 1000)
             {
                 // topology detection is too long, we should abort it and restart
-                return FAIL;
+                return FAILED;
             }
         }
     }
-    return SUCESS;
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief check if received messages are protocols one and manage it if it is.
  * @param msg pointer to the reeived message
- * @return error_return_t success if the message have been consumed.
+ * @return error_return_t SUCCEED if the message have been consumed.
  ******************************************************************************/
 static error_return_t Robus_MsgHandler(msg_t *input)
 {
@@ -416,22 +440,21 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         default:
             break;
         }
-        return SUCCESS;
+        return SUCCEED;
         break;
     case RESET_DETECTION:
-        return SUCCESS;
+        return SUCCEED;
         break;
     case SET_BAUDRATE:
         memcpy(&baudrate, input->data, sizeof(uint32_t));
         LuosHAL_ComInit(baudrate);
-        return SUCCESS;
+        return SUCCEED;
         break;
-
     default:
-        return FAIL;
+        return FAILED;
         break;
     }
-    return FAIL;
+    return FAILED;
 }
 /******************************************************************************
  * @brief get node structure

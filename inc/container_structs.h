@@ -14,6 +14,39 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/* This structure is used to create containers version
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            uint8_t Major;
+            uint8_t Minor;
+            uint8_t Build;
+        };
+        uint8_t unmap[3]; /*!< streamable form. */
+    };
+} revision_t;
+/* This structure is used to manage containers statistic
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__)) container_stats_t
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            uint8_t msg_fail_ratio;
+            uint8_t max_collision_retry;
+            uint8_t max_nak_retry;
+        };
+        uint8_t unmap[3]; /*!< streamable form. */
+    };
+} container_stats_t;
+
 /* This structure is used to manage containers timed auto update
  * please refer to the documentation
  */
@@ -35,8 +68,9 @@ typedef struct __attribute__((__packed__)) container_t
     // Variables
     uint8_t default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
-    timed_update_t auto_refresh;        /*!< container auto refresh context. */
-    uint8_t firm_version[20];              /*!< container firmware version. */
+    timed_update_t auto_refresh;           /*!< container auto refresh context. */
+    revision_t revision;                   /*!< container firmware version. */
+    container_stats_t statistic;
 } container_t;
 
 typedef void (*CONT_CB)(container_t *container, msg_t *msg);
@@ -62,40 +96,6 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[3 * sizeof(uint32_t)]; /*!< Uncmaped form. */
     };
 } luos_uuid_t;
-
-/*
- * Pid
- */
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            float p;
-            float i;
-            float d;
-        };
-        unsigned char unmap[3 * sizeof(float)];
-    };
-} asserv_pid_t;
-
-/*
- * Servo
- */
-typedef struct
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            angular_position_t max_angle;
-            float min_pulse_time;
-            float max_pulse_time;
-        };
-        unsigned char unmap[3 * sizeof(float)];
-    };
-} servo_parameters_t;
 
 /*
  * controle

@@ -6,7 +6,7 @@
  ******************************************************************************/
 #include <transmission.h>
 
-#include "luosHAL.h"
+#include "luos_hal.h"
 #include <string.h>
 #include <stdbool.h>
 #include "context.h"

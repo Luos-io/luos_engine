@@ -23,7 +23,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats);
 void MsgAlloc_loop(void);
 
 // msg buffering functions
-void MsgAlloc_ValidHeader(uint8_t status, uint16_t data_size);
+void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size);
 void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);

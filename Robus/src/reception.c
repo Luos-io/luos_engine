@@ -8,10 +8,10 @@
 
 #include <string.h>
 #include <stdbool.h>
-#include "luosHAL.h"
+#include "luos_hal.h"
 #include "target.h"
 #include "transmission.h"
-#include "msgAlloc.h"
+#include "msg_alloc.h"
 
 /*******************************************************************************
  * Definitions
@@ -28,6 +28,7 @@ uint16_t data_count = 0;
 uint16_t data_size = 0;
 uint16_t crc_val = 0;
 msg_t *current_msg;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -50,7 +51,7 @@ void Recep_Init(void)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_GetHeader(volatile unsigned char *data)
+void Recep_GetHeader(volatile uint8_t *data)
 {
     // Catch a byte.
     MsgAlloc_SetData(*data);
@@ -92,9 +93,9 @@ void Recep_GetHeader(volatile unsigned char *data)
             data_size = current_msg->header.size;
         }
 
-        if ((keep)&&(ctx.rx.status.rx_framing_error == false))
+        if ((keep) && (ctx.rx.status.rx_framing_error == false))
         {
-            if(data_size)
+            if (data_size)
             {
                 MsgAlloc_ValidHeader(true, data_size);
             }
@@ -116,7 +117,7 @@ void Recep_GetHeader(volatile unsigned char *data)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_GetData(volatile unsigned char *data)
+void Recep_GetData(volatile uint8_t *data)
 {
     if (keep)
     {
@@ -143,9 +144,9 @@ void Recep_GetData(volatile unsigned char *data)
                 // Make an exception for reset detection command
                 if (current_msg->header.cmd == RESET_DETECTION)
                 {
-                     ctx.node.node_id = 0;
-                     PortMng_Init();
-                     MsgAlloc_Init(NULL);
+                    ctx.node.node_id = 0;
+                    PortMng_Init();
+                    MsgAlloc_Init(NULL);
                 }
                 else
                 {
@@ -173,7 +174,7 @@ void Recep_GetData(volatile unsigned char *data)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_GetCollision(volatile unsigned char *data)
+void Recep_GetCollision(volatile uint8_t *data)
 {
     // send all received datas
     Recep_GetHeader(data);
@@ -223,7 +224,7 @@ void Recep_Reset(void)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_CatchAck(volatile unsigned char *data)
+void Recep_CatchAck(volatile uint8_t *data)
 {
     ctx.ack = *data;
     ctx.rx.callback = Recep_GetHeader;

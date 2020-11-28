@@ -75,13 +75,11 @@ void RoutingTB_ComputeRoutingTableEntryNB(void);
 void RoutingTB_DetectContainers(container_t *container);
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
 void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_t *container);
-// void RoutingTB_InsertOnRoutingTable(routing_table_t *entry);
-void RoutingTB_RemoveOnRoutingTable(int id);
+void RoutingTB_RemoveOnRoutingTable(uint16_t id);
 void RoutingTB_Erase(void);
 routing_table_t *RoutingTB_Get(void);
 uint16_t RoutingTB_GetLastContainer(void);
 uint16_t *RoutingTB_GetLastNode(void);
 uint16_t RoutingTB_GetLastEntry(void);
-void RoutingTB_BootstrapNextNodes(container_t *container);
 
 #endif /* TABLE */
