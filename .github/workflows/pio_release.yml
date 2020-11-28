@@ -1,8 +1,11 @@
 name: Upload platformio library
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    description: 'manual upload'
 
 jobs:
   deploy:
@@ -22,4 +25,4 @@ jobs:
         PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
       run: |
         pio package pack
-        pio package publish --owner "Luos"
+        pio package publish --owner luos
