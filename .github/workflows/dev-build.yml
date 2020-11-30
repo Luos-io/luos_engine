@@ -1,8 +1,8 @@
-name: Build
+name: Dev Build
 
 on:
   push:
-    branches:
+    branches-ignore:
       - master
 
 jobs:
@@ -42,11 +42,31 @@ jobs:
     - name: Create env repo
       shell: bash
       run: |
+        # Save branch name
+        branch_name=$(git branch --show-current)
+        origine_branch_name="origin/${branch_name}"
         # Step back and get dependancies
+        cd ..
+
+        # LuosHAL
+        git clone https://github.com/Luos-io/LuosHAL.git
+        cd LuosHAL
+        if [ `git branch -r --list $origine_branch_name` ]
+        then
+          echo A dependant branch have been found on LuosHAL
+          git checkout $branch_name
+        fi
         cd ..
 
         # Examples
         git clone https://github.com/Luos-io/Examples.git
+        cd Examples
+        if [ `git branch -r --list $origine_branch_name` ]
+        then
+          echo A dependant branch have been found on Examples
+          git checkout $branch_name
+        fi
+        cd ..
 
     - name: Run PlatformIO
       env:
