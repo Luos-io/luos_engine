@@ -20,7 +20,8 @@
     },
     "dependencies": [
         {
-            "name": "LuosHAL"
+            "name": "luos/LuosHAL",
+            "version": "~0.1.0"
         }
     ],
     "repository": {
