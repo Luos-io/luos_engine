@@ -20,7 +20,7 @@
     },
     "dependencies": [
         {
-            "name": "luos/LuosHAL",
+            "name": "LuosHAL",
             "version": "~0.1.0"
         }
     ],
