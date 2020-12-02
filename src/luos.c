@@ -18,7 +18,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.Major = 1, .Minor = 0, .Build = 0};
+revision_t luos_version = {.Major = 1, .Minor = 0, .Build = 1};
 container_t container_table[MAX_CONTAINER_NUMBER];
 uint16_t container_number;
 volatile routing_table_t *routing_table_pt;
