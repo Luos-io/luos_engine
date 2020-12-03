@@ -500,7 +500,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
     // instead of removing a node just remove all the container in it to make it unusable
     // We could add a param (CONTROL for example) to declare the node as STOP
     // find the node
-    for (int i = 0; i < last_routing_table_entry; i++)
+    for (uint16_t i = 0; i < last_routing_table_entry; i++)
     {
         if (routing_table[i].mode == NODE)
         {
