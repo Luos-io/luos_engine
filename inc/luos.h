@@ -19,22 +19,9 @@
  ******************************************************************************/
 
 /******************************************************************************
- * @struct luos_stats_t
- * @brief store informations about luos stats
+ * @struct general_stats_t
+ * @brief format all datas to be sent trough msg
  ******************************************************************************/
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            memory_stats_t memory;
-            uint8_t max_loop_time_ms;
-        };
-        uint8_t unmap[sizeof(memory_stats_t) + 1]; /*!< streamable form. */
-    };
-} luos_stats_t;
-
 typedef struct __attribute__((__packed__))
 {
     union

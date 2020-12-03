@@ -295,7 +295,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             output.header.size = sizeof(general_stats_t);
             output.header.target = input->header.source;
             memcpy(&general_stats.node_stat, &luos_stats.unmap, sizeof(luos_stats_t));
-            memcpy(&general_stats.container_stat, container->statistic.unmap, sizeof(container_stats_t));
+            memcpy(&general_stats.container_stat, container->statistics.unmap, sizeof(container_stats_t));
             memcpy(output.data, &general_stats.unmap, sizeof(general_stats_t));
             Luos_SendMsg(container, &output);
             consume = SUCCEED;
@@ -501,9 +501,10 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
         container->revision.unmap[i] = revision.unmap[i];
     }
 
-    //initiate container statistic
-    container->ll_container->ll_stat.max_collision_retry = &container->statistic.max_collision_retry;
-    container->ll_container->ll_stat.max_nak_retry = &container->statistic.max_nak_retry;
+    //initiate container statistics
+    container->node_statistics = &luos_stats;
+    container->ll_container->ll_stat.max_collision_retry = &container->statistics.max_collision_retry;
+    container->ll_container->ll_stat.max_nak_retry = &container->statistics.max_nak_retry;
 
     container_number++;
     return container;
@@ -534,7 +535,7 @@ error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
         container->ll_container->ll_stat.msg_nbr = container->ll_container->ll_stat.msg_nbr >> 1;
     }
 
-    container->statistic.msg_fail_ratio = (uint8_t)(((uint32_t)container->ll_container->ll_stat.fail_msg_nbr * 100) / container->ll_container->ll_stat.msg_nbr);
+    container->statistics.msg_fail_ratio = (uint8_t)(((uint32_t)container->ll_container->ll_stat.fail_msg_nbr * 100) / container->ll_container->ll_stat.msg_nbr);
 
     return result;
 }
