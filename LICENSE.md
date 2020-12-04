@@ -4,7 +4,7 @@
 # LUOS
 Entry into force: April 22, 2020
 
-Digest: Luos is free for open source projects, R&D, and design. Luos becomes chargeable when devices intended to be sold are produced with Luos in it.
+Digest: Luos is free for open source projects, R&D, and design. Luos becomes chargeable when devices intended to be sold are produced with Luos in it. Luos is expected to be fully open-source by early 2022.
 
 # 1. Purpose
 
