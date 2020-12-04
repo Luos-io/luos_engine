@@ -14,6 +14,21 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/* store informations about luos stats
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            memory_stats_t memory;
+            uint8_t max_loop_time_ms;
+        };
+        uint8_t unmap[sizeof(memory_stats_t) + 1]; /*!< streamable form. */
+    };
+} luos_stats_t;
 /* This structure is used to create containers version
  * please refer to the documentation
  */
@@ -70,7 +85,8 @@ typedef struct __attribute__((__packed__)) container_t
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
     timed_update_t auto_refresh;           /*!< container auto refresh context. */
     revision_t revision;                   /*!< container firmware version. */
-    container_stats_t statistic;
+    luos_stats_t *node_statistics;         /*!< Node level statistics. */
+    container_stats_t statistics;          /*!< container level statistics. */
 } container_t;
 
 typedef void (*CONT_CB)(container_t *container, msg_t *msg);

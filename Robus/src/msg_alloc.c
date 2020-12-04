@@ -46,6 +46,7 @@
 #include "config.h"
 #include "msg_alloc.h"
 #include "luos_hal.h"
+#include "luos_utils.h"
 
 /*******************************************************************************
  * Definitions
@@ -412,11 +413,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
  ******************************************************************************/
 static inline void MsgAlloc_ClearMsgTask(void)
 {
-    if (msg_tasks_stack_id > MAX_MSG_NB)
-    {
-        while (1)
-            ;
-    }
+    LUOS_ASSERT(msg_tasks_stack_id <= MAX_MSG_NB);
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
         msg_tasks[rm] = msg_tasks[rm + 1];
@@ -466,11 +463,7 @@ void MsgAlloc_UsedMsgEnd(void)
  ******************************************************************************/
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 {
-    if ((luos_task_id > luos_tasks_stack_id) || (luos_tasks_stack_id > MAX_MSG_NB))
-    {
-        while (1)
-            ;
-    }
+    LUOS_ASSERT((luos_task_id <= luos_tasks_stack_id) || (luos_tasks_stack_id <= MAX_MSG_NB));
     for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
     {
         luos_tasks[rm] = luos_tasks[rm + 1];

@@ -14,6 +14,7 @@
 #include "context.h"
 #include "luos_hal.h"
 #include "msg_alloc.h"
+#include "luos_utils.h"
 
 /*******************************************************************************
  * Definitions
@@ -287,12 +288,7 @@ redetect:
     if (Robus_DetectNextNodes(ll_container) == FAILED)
     {
         // check the number of retry we made
-        if (redetect_nb > 4)
-        {
-            // Too many retry just, there is no hope too succeed.
-            while (1)
-                ;
-        }
+        LUOS_ASSERT((redetect_nb <= 4));
         // Detection fail, restart it
         redetect_nb++;
         goto redetect;

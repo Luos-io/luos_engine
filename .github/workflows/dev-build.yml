@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - master
+  
 
 jobs:
 
@@ -45,6 +46,8 @@ jobs:
         # Save branch name
         branch_name=$(git branch --show-current)
         origine_branch_name="origin/${branch_name}"
+        echo current branch name is ${branch_name}
+
         # Step back and get dependancies
         cd ..
 
@@ -55,6 +58,8 @@ jobs:
         then
           echo A dependant branch have been found on LuosHAL
           git checkout $branch_name
+        else
+          echo use master branch on LuosHAL
         fi
         cd ..
 
@@ -65,6 +70,8 @@ jobs:
         then
           echo A dependant branch have been found on Examples
           git checkout $branch_name
+        else
+          echo use master branch on Examples
         fi
         cd ..
 
