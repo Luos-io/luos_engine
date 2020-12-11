@@ -10,12 +10,14 @@
     "build": {
         "flags": [
             "-I inc",
+            "-I Robus/inc",
             "-I OD",
-            "-I Robus/inc"
+            "-I Templates/State"
         ],
         "srcFilter": [
             "+<*.c>",
-            "+<../Robus/src/*.c>"
+            "+<../Robus/src/*.c>",
+            "+<../Templates/State/*.c>"
         ]
     },
     "dependencies": [

@@ -18,7 +18,8 @@ typedef enum
     SERVO_MOD,
     COLOR_MOD,
     ANGLE_MOD,
-    STATE_MOD,
+    STATE_TYPE,
+    STATE_MOD = STATE_TYPE, // retrocompatibility line
     DISTANCE_MOD,
     VOLTAGE_MOD,
     DYNAMIXEL_MOD,
