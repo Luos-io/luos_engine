@@ -24,7 +24,8 @@ typedef enum
     VOLTAGE_MOD,
     DYNAMIXEL_MOD,
     STEPPER_MOD,
-    DCMOTOR_MOD,
+    MOTOR_TYPE,
+    DCMOTOR_MOD = MOTOR_TYPE, // retrocompatibility line
     IMU_MOD,
     LIGHT_MOD,
     CONTROLLER_MOTOR_MOD,
