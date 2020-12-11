@@ -21,7 +21,8 @@ typedef enum
     STATE_TYPE,
     STATE_MOD = STATE_TYPE, // retrocompatibility line
     DISTANCE_MOD,
-    VOLTAGE_MOD,
+    VOLTAGE_TYPE,
+    VOLTAGE_MOD = VOLTAGE_TYPE,
     DYNAMIXEL_MOD, // To remove
     STEPPER_MOD,   // To remove
     MOTOR_TYPE,
