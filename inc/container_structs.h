@@ -70,6 +70,17 @@ typedef struct __attribute__((__packed__)) timed_update_t
     uint16_t target;
 } timed_update_t;
 
+/* This structure is used to manage read or write access
+ * please refer to the documentation
+ */
+typedef enum
+{
+    READ_WRITE_ACCESS,
+    READ_ONLY_ACCESS,
+    WRITE_ONLY_ACCESS,
+    NO_ACCESS
+} access_t;
+
 /* This structure is used to manage containers
  * please refer to the documentation
  */
@@ -85,6 +96,7 @@ typedef struct __attribute__((__packed__)) container_t
     revision_t revision;                   /*!< container firmware version. */
     luos_stats_t *node_statistics;         /*!< Node level statistics. */
     container_stats_t statistics;          /*!< container level statistics. */
+    access_t access;                       /*!< container read write access. */
 } container_t;
 
 typedef void (*CONT_CB)(container_t *container, msg_t *msg);
