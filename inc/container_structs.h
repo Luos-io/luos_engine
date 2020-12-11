@@ -103,16 +103,6 @@ typedef struct __attribute__((__packed__)) container_t
 typedef void (*CONT_CB)(container_t *container, msg_t *msg);
 
 /*
- * Control modes
- */
-typedef enum
-{
-    PLAY,
-    PAUSE,
-    STOP
-} control_type_t;
-
-/*
  * Luos unic ID => ARM serial number
  */
 typedef struct __attribute__((__packed__))
@@ -123,23 +113,6 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[3 * sizeof(uint32_t)]; /*!< Uncmaped form. */
     };
 } luos_uuid_t;
-
-/*
- * controle
- */
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            // control modes
-            uint8_t mode_control : 2;
-            uint8_t mode_rec : 1;
-        };
-        uint8_t unmap;
-    };
-} control_mode_t;
 
 /*******************************************************************************
  * Variables
