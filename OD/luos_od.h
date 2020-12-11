@@ -15,6 +15,7 @@
 #include "od_temperature.h"
 #include "od_illuminance.h"
 #include "od_time.h"
+#include "od_pid.h"
 
 /*******************************************************************************
  * Definitions
