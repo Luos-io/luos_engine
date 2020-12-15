@@ -13,13 +13,15 @@
             "-I Robus/inc",
             "-I OD",
             "-I Templates/State",
-            "-I Templates/Motor"
+            "-I Templates/Motor",
+            "-I Templates/Servo_motor"
         ],
         "srcFilter": [
             "+<*.c>",
             "+<../Robus/src/*.c>",
             "+<../Templates/State/*.c>",
-            "+<../Templates/Motor/*.c>"
+            "+<../Templates/Motor/*.c>",
+            "+<../Templates/Servo_motor/*.c>"
         ]
     },
     "dependencies": [
