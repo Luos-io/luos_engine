@@ -15,20 +15,21 @@
 typedef enum
 {
     GATE_MOD,
-    SERVO_MOD,
+    SERVO_MOD, // To remove
     COLOR_MOD,
     ANGLE_MOD,
     STATE_TYPE,
     STATE_MOD = STATE_TYPE, // retrocompatibility line
     DISTANCE_MOD,
     VOLTAGE_MOD,
-    DYNAMIXEL_MOD,
-    STEPPER_MOD,
+    DYNAMIXEL_MOD, // To remove
+    STEPPER_MOD,   // To remove
     MOTOR_TYPE,
     DCMOTOR_MOD = MOTOR_TYPE, // retrocompatibility line
     IMU_MOD,
     LIGHT_MOD,
-    CONTROLLER_MOTOR_MOD,
+    SERVO_MOTOR_TYPE,
+    CONTROLLER_MOTOR_MOD = SERVO_MOTOR_TYPE, // retrocompatibility line
     VOID_MOD,
     LOAD_MOD,
     PIPE_MOD,
