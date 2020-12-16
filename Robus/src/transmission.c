@@ -35,7 +35,7 @@ void Transmit_SendAck(void)
     LuosHAL_SetTxState(true);
     LuosHAL_SetRxState(false);
     LuosHAL_ComTransmit((unsigned char *)&ctx.rx.status.unmap, 1);
-    LuosHAL_ComTxTimeout();
+    LuosHAL_ComTxComplete();
     LuosHAL_SetRxState(true);
     LuosHAL_SetTxState(false);
     ctx.rx.status.unmap = 0x0F;
@@ -85,12 +85,12 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
         return 1;
     }
     // No collision occure, stop collision detection mode and continue to transmit
+    LuosHAL_SetRxState(false);
     LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetHeader;
     LuosHAL_SetIrqState(true);
-    LuosHAL_SetRxState(false);
     LuosHAL_ComTransmit(data + col_check_data_num, size - col_check_data_num);
-    LuosHAL_ComTxTimeout();
+    LuosHAL_ComTxComplete();
     // get ready to receive a ack just in case
     // disable TX and Enable RX
     LuosHAL_SetRxState(true);

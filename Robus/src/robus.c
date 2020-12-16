@@ -64,22 +64,22 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.lock = FALSE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-
+    
     // Init reception
     Recep_Init();
-
-    // init detection structure
-    PortMng_Init();
 
     // Clear message allocation buffer table
     MsgAlloc_Init(memory_stats);
 
+    // Init hal
+    LuosHAL_Init();
+
+    // init detection structure
+    PortMng_Init();
+
     // Initialize the robus container status
     ctx.rx.status.unmap = 0;
     ctx.rx.status.identifier = 0xF;
-
-    // Init hal
-    LuosHAL_Init();
 }
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
