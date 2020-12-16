@@ -96,7 +96,7 @@ typedef enum
     LINEAR_POSITION_LIMIT,  // min linear_position_t (m), max linear_position_t (m)
     RATIO_LIMIT,            // float(%)
     CURRENT_LIMIT,          // float(A)
-    ANGULAR_SPEED_lIMIT,    // min angular_speed_t (deg/s), max angular_speed_t (deg/s)
+    ANGULAR_SPEED_LIMIT,    // min angular_speed_t (deg/s), max angular_speed_t (deg/s)
     LINEAR_SPEED_LIMIT,     // min linear_speed_t (m/s), max linear_speed_t (m/s)
     TORQUE_LIMIT,           // max moment_t (Nm)
 
