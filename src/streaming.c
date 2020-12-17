@@ -29,7 +29,7 @@
 streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint16_t ring_buffer_size, uint8_t data_size)
 {
     streaming_channel_t stream;
-    LUOS_ASSERT((ring_buffer != NULL) || (ring_buffer_size >= 1) || (data_size >= 1));
+    LUOS_ASSERT((ring_buffer != NULL) || (ring_buffer_size > 0) || (data_size > 0));
     // Save ring buffer informations
     stream.ring_buffer = (void *)ring_buffer;
     stream.data_size = data_size;
@@ -76,7 +76,7 @@ uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t
     {
         // our data fit before ring buffer end
         // check if we exceed ring buffer capacity
-        LUOS_ASSERT((stream->data_ptr >= stream->sample_ptr) && ((stream->data_ptr + (size * stream->data_size)) <= stream->sample_ptr));
+        LUOS_ASSERT((stream->data_ptr >= stream->sample_ptr) && ((stream->data_ptr + (size * stream->data_size)) <= stream->end_ring_buffer));
         memcpy(stream->data_ptr, data, (size * stream->data_size));
         // Set the new data pointer
         stream->data_ptr = stream->data_ptr + (size * stream->data_size);
