@@ -103,10 +103,11 @@ typedef enum
     ANGULAR_SPEED_LIMIT,    // min angular_speed_t (deg/s), max angular_speed_t (deg/s)
     LINEAR_SPEED_LIMIT,     // min linear_speed_t (m/s), max linear_speed_t (m/s)
     TORQUE_LIMIT,           // max moment_t (Nm)
+    TEMPERATURE_LIMIT,      // Max temperature_t (°C)
 
     // Specific register
-    DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controller motor
-    HANDY_SET_POSITION, // handy_t
+//    DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controller motor
+    HANDY_SET_POSITION, // handy_t to remove
     PARAMETERS,         // depend on the container, can be : servo_parameters_t, imu_report_t, motor_mode_t
 
     // compatibility area
