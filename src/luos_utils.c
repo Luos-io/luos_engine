@@ -8,6 +8,7 @@
 #include "luos.h"
 #include "port_manager.h"
 #include "string.h"
+#include "luos_hal.h"
 
 /*******************************************************************************
  * Function
@@ -32,6 +33,7 @@ void Luos_assert(char *file, uint32_t line)
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
     Luos_SendMsg(0, &msg);
+    LuosHAL_SetIrqState(FALSE);
     while (1)
     {
     }
