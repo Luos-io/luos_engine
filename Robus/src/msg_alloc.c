@@ -117,7 +117,9 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     current_msg = (msg_t *)&msg_buffer[0];
     data_ptr = (uint8_t *)&msg_buffer[0];
     msg_tasks_stack_id = 0;
+    memset((void *)msg_tasks, 0, sizeof(msg_tasks));
     luos_tasks_stack_id = 0;
+    memset((void *)luos_tasks, 0, sizeof(luos_tasks));
     copy_task_pointer = NULL;
     used_msg = NULL;
     if (memory_stats != NULL)
@@ -239,7 +241,6 @@ void MsgAlloc_EndMsg(void)
     {
         // There is no more space on the msg_tasks, remove the oldest msg.
         MsgAlloc_ClearMsgTask();
-
         if (mem_stat->msg_drop_number < 0xFF)
         {
             mem_stat->msg_drop_number++;
@@ -414,15 +415,15 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
 static inline void MsgAlloc_ClearMsgTask(void)
 {
     LUOS_ASSERT(msg_tasks_stack_id <= MAX_MSG_NB);
+
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
+        LuosHAL_SetIrqState(TRUE);
+        LuosHAL_SetIrqState(FALSE);
         msg_tasks[rm] = msg_tasks[rm + 1];
     }
-    LuosHAL_SetIrqState(FALSE);
-    if (msg_tasks_stack_id != 0)
-    {
-        msg_tasks_stack_id--;
-    }
+    msg_tasks_stack_id--;
+    msg_tasks[msg_tasks_stack_id] = 0;
     LuosHAL_SetIrqState(TRUE);
 }
 /******************************************************************************
