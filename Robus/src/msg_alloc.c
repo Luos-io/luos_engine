@@ -316,9 +316,9 @@ void MsgAlloc_SetMessage(msg_t *msg)
      * the reception of the next one in a thread safe code part.
      * Then we can copy it without trouble.
      */
-    // copy the message to copy location
+    // backup the message to copy location allowing current_msg to be used by reception
     cpy_msg = (msg_t *)current_msg;
-    // fake the data_ptr progression
+    // fake the data_ptr progression to be able to receive other messages during the copy
     data_ptr = &current_msg->stream[data_size + 2];
     // finish the message and prepare the next reception
     MsgAlloc_EndMsg();
