@@ -246,6 +246,8 @@ void MsgAlloc_EndMsg(void)
             mem_stat->msg_drop_number++;
         }
     }
+    LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
+    LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
     msg_tasks[msg_tasks_stack_id] = current_msg;
     msg_tasks_stack_id++;
     //******** Prepare the next msg *********
@@ -414,7 +416,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
  ******************************************************************************/
 static inline void MsgAlloc_ClearMsgTask(void)
 {
-    LUOS_ASSERT(msg_tasks_stack_id <= MAX_MSG_NB);
+    LUOS_ASSERT((msg_tasks_stack_id <= MAX_MSG_NB) & (msg_tasks_stack_id > 0));
 
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
@@ -436,6 +438,7 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
     if (msg_tasks_stack_id > 0)
     {
         *returned_msg = (msg_t *)msg_tasks[0];
+        LUOS_ASSERT(((uint32_t)*returned_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)*returned_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
         MsgAlloc_ClearMsgTask();
         return SUCCEED;
     }
