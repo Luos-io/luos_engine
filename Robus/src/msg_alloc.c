@@ -117,7 +117,9 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     current_msg = (msg_t *)&msg_buffer[0];
     data_ptr = (uint8_t *)&msg_buffer[0];
     msg_tasks_stack_id = 0;
+    memset((void *)msg_tasks, 0, sizeof(msg_tasks));
     luos_tasks_stack_id = 0;
+    memset((void *)luos_tasks, 0, sizeof(luos_tasks));
     copy_task_pointer = NULL;
     used_msg = NULL;
     if (memory_stats != NULL)
@@ -239,12 +241,13 @@ void MsgAlloc_EndMsg(void)
     {
         // There is no more space on the msg_tasks, remove the oldest msg.
         MsgAlloc_ClearMsgTask();
-
         if (mem_stat->msg_drop_number < 0xFF)
         {
             mem_stat->msg_drop_number++;
         }
     }
+    LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
+    LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
     msg_tasks[msg_tasks_stack_id] = current_msg;
     msg_tasks_stack_id++;
     //******** Prepare the next msg *********
@@ -313,9 +316,9 @@ void MsgAlloc_SetMessage(msg_t *msg)
      * the reception of the next one in a thread safe code part.
      * Then we can copy it without trouble.
      */
-    // copy the message to copy location
+    // backup the message to copy location allowing current_msg to be used by reception
     cpy_msg = (msg_t *)current_msg;
-    // fake the data_ptr progression
+    // fake the data_ptr progression to be able to receive other messages during the copy
     data_ptr = &current_msg->stream[data_size + 2];
     // finish the message and prepare the next reception
     MsgAlloc_EndMsg();
@@ -413,16 +416,16 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
  ******************************************************************************/
 static inline void MsgAlloc_ClearMsgTask(void)
 {
-    LUOS_ASSERT(msg_tasks_stack_id <= MAX_MSG_NB);
+    LUOS_ASSERT((msg_tasks_stack_id <= MAX_MSG_NB) & (msg_tasks_stack_id > 0));
+
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
+        LuosHAL_SetIrqState(TRUE);
+        LuosHAL_SetIrqState(FALSE);
         msg_tasks[rm] = msg_tasks[rm + 1];
     }
-    LuosHAL_SetIrqState(FALSE);
-    if (msg_tasks_stack_id != 0)
-    {
-        msg_tasks_stack_id--;
-    }
+    msg_tasks_stack_id--;
+    msg_tasks[msg_tasks_stack_id] = 0;
     LuosHAL_SetIrqState(TRUE);
 }
 /******************************************************************************
@@ -435,6 +438,7 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
     if (msg_tasks_stack_id > 0)
     {
         *returned_msg = (msg_t *)msg_tasks[0];
+        LUOS_ASSERT(((uint32_t)*returned_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)*returned_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
         MsgAlloc_ClearMsgTask();
         return SUCCEED;
     }
