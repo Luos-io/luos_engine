@@ -46,5 +46,6 @@ typedef struct __attribute__((__packed__))
  ******************************************************************************/
 
 void Luos_assert(char *file, uint32_t line);
+void node_assert(char *file, uint32_t line);
 
 #endif /* LUOS_UTILS_H */
