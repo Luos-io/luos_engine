@@ -84,11 +84,12 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     // push the ptp line
     LuosHAL_PushPTP(PortNbr);
     // wait a little just to be sure everyone can read it
-    for (volatile uint16_t i = 0; i < TIMERVAL; i++)
+    uint32_t start_tick = LuosHAL_GetSystick();
+    while (LuosHAL_GetSystick() - start_tick < 2)
         ;
     // release the ptp line
     LuosHAL_SetPTPDefaultState(PortNbr);
-    for (volatile uint16_t i = 0; i < TIMERVAL; i++)
+    while (LuosHAL_GetSystick() - start_tick < 3)
         ;
     // Save port as empty by default
     ctx.node.port_table[PortNbr] = 0xFFFF;

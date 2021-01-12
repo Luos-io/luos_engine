@@ -46,7 +46,7 @@ void Transmit_SendAck(void)
  * @param size of data to send
  * @return Error
  ******************************************************************************/
-uint8_t Transmit_Process(uint8_t *data, uint16_t size)
+error_return_t Transmit_Process(uint8_t *data, uint16_t size)
 {
     uint16_t crc_val = 0xFFFF;
     const int col_check_data_num = 5;
@@ -73,7 +73,7 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
         // We receive something during our configuration, stop this transmission
         LuosHAL_SetTxState(false);
         ctx.tx.collision = FALSE;
-        return 1;
+        return FAILED;
     }
     ctx.tx.lock = true;
     LuosHAL_SetTxLockDetecState(false);
@@ -82,7 +82,7 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
     {
         LuosHAL_SetTxState(false);
         ctx.tx.collision = FALSE;
-        return 1;
+        return FAILED;
     }
     // No collision occure, stop collision detection mode and continue to transmit
     LuosHAL_SetRxState(false);
@@ -96,8 +96,8 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
     LuosHAL_SetRxState(true);
     LuosHAL_SetTxState(false);
     // Force Usart Timeout
-    Recep_Timeout();
-    return 0;
+    //Recep_Timeout();
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief wait end of a transmission to be free
@@ -106,11 +106,8 @@ uint8_t Transmit_Process(uint8_t *data, uint16_t size)
  ******************************************************************************/
 void Transmit_WaitUnlockTx(void) // TODO : This function could be in HAL and replace HAL_is_tx_lock. By the way timeout management here is shity
 {
-    volatile int timeout = 0;
-    while (Transmit_GetLockStatus() && (timeout < 64000))
-    {
-        timeout++;
-    }
+    while (Transmit_GetLockStatus())
+        ;
 }
 /******************************************************************************
  * @brief Send ID to others container on network

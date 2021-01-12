@@ -43,6 +43,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container);
 volatile context_t ctx;
 uint32_t baudrate; /*!< System current baudrate. */
 volatile uint16_t last_node = 0;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -170,7 +171,7 @@ ack_restart:
     nbr_nak_retry++;
     RetryCollision = 0;
     LuosHAL_SetIrqState(false);
-    ctx.ack = FALSE;
+    ctx.ack = 0;
     LuosHAL_SetIrqState(true);
     // Send message
     while (Transmit_Process((uint8_t *)msg->stream, full_size))
@@ -192,8 +193,7 @@ ack_restart:
         // timer proportional to ID
         if (ll_container->id > 1)
         {
-            for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (ll_container->id - 1)); tempo++)
-                ;
+            Robus_DelayUs((uint32_t)((ll_container->id - 1)*RetryCollision));
         }
     }
     if(*ll_container->ll_stat.max_collision_retry < RetryCollision)
@@ -215,10 +215,12 @@ ack_restart:
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_CatchAck;
             LuosHAL_SetIrqState(true);
-            volatile int time_out = 0;
-            while (!ctx.ack & (time_out < (120 * (1000000 / baudrate))))
+            while (ctx.tx.lock != false)
             {
-                time_out++;
+                if(ctx.ack != 0)
+                {
+                    break;
+                }
             }
             status_t status;
             status.unmap = ctx.ack;
@@ -236,8 +238,7 @@ ack_restart:
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
                     Recep_Timeout();
-                    for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
-                        ;
+                    Robus_DelayUs((uint32_t)(10*nbr_nak_retry));
                     goto ack_restart;
                 }
                 else
@@ -323,8 +324,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
         uint32_t start_tick = LuosHAL_GetSystick();
         while (LuosHAL_GetSystick() - start_tick < 2)
             ;
-        try
-            ++;
+        try++;
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try > 5));
 
     ctx.node.node_id = 0;
@@ -460,4 +460,18 @@ static error_return_t Robus_MsgHandler(msg_t *input)
 node_t *Robus_GetNode(void)
 {
     return (node_t *)&ctx.node;
+}
+/******************************************************************************
+ * @brief Delay
+ * @param None
+ * @return Node pointer
+ ******************************************************************************/
+void Robus_DelayUs(uint32_t delay)
+{
+    uint32_t timeout = (((MCUFREQ/2)/1000000)*delay)+1;
+    volatile uint32_t i = 0;
+    while(i < timeout)
+    {
+        i++;
+    }
 }
