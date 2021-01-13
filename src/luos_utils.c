@@ -15,7 +15,18 @@
  ******************************************************************************/
 
 /******************************************************************************
- * @brief Robus assertion management
+ * @brief This function can be redefine by users to manage specifi procedure on assert
+ * @param file name as a string
+ * @param line number
+ * @return None
+ ******************************************************************************/
+__attribute__((weak)) void node_assert(char *file, uint32_t line)
+{
+    return;
+}
+
+/******************************************************************************
+ * @brief Luos assertion management
  * @param file name as a string
  * @param line number
  * @return None
@@ -33,6 +44,7 @@ void Luos_assert(char *file, uint32_t line)
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
     Luos_SendMsg(0, &msg);
+    node_assert(file, line);
     LuosHAL_SetIrqState(FALSE);
     while (1)
     {

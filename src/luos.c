@@ -562,7 +562,7 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
     return FAILED;
 }
 /******************************************************************************
- * @brief read last msg from buffer from a special id container
+ * @brief read last msg from buffer from a specific id container
  * @param container who receive the message we are looking for
  * @param id who sent the message we are looking for
  * @param returned_msg oldest message of the container
@@ -575,15 +575,16 @@ error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **
     error_return_t error = SUCCEED;
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_container) != FAILED)
     {
-        // Check the source id
+        // Check if this message is for us
         if (oldest_ll_container == container->ll_container)
         {
+            // Check the source id
             uint16_t source = 0;
-            MsgAlloc_GetLuosTaskSourceId(remaining_msg_number, &source);
+            LUOS_ASSERT(MsgAlloc_GetLuosTaskSourceId(remaining_msg_number, &source) == SUCCEED);
             if (source == id)
             {
                 // Source id of this message match, get it and treat it.
-                error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
+                error = MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, returned_msg);
                 // check if the content of this message need to be managed by Luos and do it if it is.
                 if ((Luos_MsgHandler(container, *returned_msg) == FAILED) & (error == SUCCEED))
                 {
