@@ -307,6 +307,8 @@ void RoutingTB_ComputeRoutingTableEntryNB(void)
             return;
         }
     }
+    // Routing table space is full.
+    last_routing_table_entry = MAX_RTB_ENTRY - 1;
 }
 /******************************************************************************
  * @brief manage container name increment to never have same alias
