@@ -234,6 +234,8 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             Luos_TransmitLocalRoutingTable(container, &output_msg);
             break;
         default:
+            // Check routing table overflow
+            LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
             if (Luos_ReceiveData(container, input, (void *)route_tab) == SUCCEED)
             {
                 // route table section reception complete
