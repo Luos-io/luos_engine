@@ -51,4 +51,9 @@ error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size);
 uint16_t MsgAlloc_LuosTasksNbr(void);
 void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg);
 
+// Tx tasks create, get and consume
+void MsgAlloc_SetTxTask(char *data, uint16_t size);
+void MsgAlloc_PullMsgFromTxTask(void);
+error_return_t MsgAlloc_GetTxTask(char **data, uint16_t *size);
+
 #endif /* _MSGALLOC_H_ */
