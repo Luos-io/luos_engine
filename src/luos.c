@@ -648,13 +648,13 @@ error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data,
         if (Luos_SendMsg(container, msg) == FAILED)
         {
             // This message fail stop transmission and return an error
-            return SUCCEED;
+            return FAILED;
         }
 
         // Save current state
         sent_size = sent_size + chunk_size;
     }
-    return FAILED;
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief receive a multi msg data

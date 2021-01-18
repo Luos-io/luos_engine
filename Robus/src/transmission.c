@@ -49,7 +49,6 @@ void Transmit_SendAck(void)
 error_return_t Transmit_Process(uint8_t *data, uint16_t size)
 {
     uint16_t crc_val = 0xFFFF;
-    const int col_check_data_num = 5;
     // wait tx unlock
     Transmit_WaitUnlockTx();
     // compute the CRC
@@ -59,44 +58,35 @@ error_return_t Transmit_Process(uint8_t *data, uint16_t size)
     }
     data[size - 2] = (uint8_t)(crc_val);
     data[size - 1] = (uint8_t)(crc_val >> 8);
-    ctx.tx.collision = FALSE;
+
+    // lock the transmission
+    if (Transmit_GetLockStatus())
+    {
+        LuosHAL_SetTxLockDetecState(false);
+        return FAILED;
+    }
+    LuosHAL_SetTxLockDetecState(false);
+
     // Enable TX
     LuosHAL_SetTxState(true);
-    LuosHAL_SetIrqState(false);
+    ctx.tx.lock = true;
+
     // switch reception in collision detection mode
+    ctx.tx.collision = FALSE;
+    LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetCollision;
     ctx.tx.data = data;
     LuosHAL_SetIrqState(true);
-    // re-lock the transmission
-    if (ctx.tx.collision | Transmit_GetLockStatus())
+
+    if (LuosHAL_ComTransmit(data, size))
     {
-        // We receive something during our configuration, stop this transmission
-        LuosHAL_SetTxState(false);
+        //collision detected
         ctx.tx.collision = FALSE;
         return FAILED;
     }
-    ctx.tx.lock = true;
-    LuosHAL_SetTxLockDetecState(false);
-    // Try to detect a collision during the "col_check_data_num" first bytes
-    if (LuosHAL_ComTransmit(data, col_check_data_num))
-    {
-        LuosHAL_SetTxState(false);
-        ctx.tx.collision = FALSE;
-        return FAILED;
-    }
-    // No collision occure, stop collision detection mode and continue to transmit
-    LuosHAL_SetRxState(false);
-    LuosHAL_SetIrqState(false);
-    ctx.rx.callback = Recep_GetHeader;
-    LuosHAL_SetIrqState(true);
-    LuosHAL_ComTransmit(data + col_check_data_num, size - col_check_data_num);
     LuosHAL_ComTxComplete();
-    // get ready to receive a ack just in case
-    // disable TX and Enable RX
     LuosHAL_SetRxState(true);
     LuosHAL_SetTxState(false);
-    // Force Usart Timeout
-    //Recep_Timeout();
     return SUCCEED;
 }
 /******************************************************************************
