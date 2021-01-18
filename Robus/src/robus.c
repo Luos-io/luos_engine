@@ -141,6 +141,8 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     // Compute the full message size based on the header size info.
     uint16_t data_size = 0;
+    uint16_t crc_val = 0xFFFF;
+
     if (msg->header.size > MAX_DATA_MSG_SIZE)
     {
         data_size = MAX_DATA_MSG_SIZE;
@@ -162,6 +164,16 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     }
     // Add the CRC to the total size of the message
     full_size += 2;
+
+
+    // compute the CRC
+    for (uint16_t i = 0; i < full_size - 2; i++)
+    {
+        LuosHAL_ComputeCRC(&msg->stream[i], (uint8_t *)&crc_val);
+    }
+    msg->stream[full_size - 2] = (uint8_t)(crc_val);
+    msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
+
 
     //try to send msg computed
     error_return_t result = SUCCEED;

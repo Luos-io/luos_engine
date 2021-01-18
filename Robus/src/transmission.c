@@ -48,23 +48,10 @@ void Transmit_SendAck(void)
  ******************************************************************************/
 error_return_t Transmit_Process(uint8_t *data, uint16_t size)
 {
-    uint16_t crc_val = 0xFFFF;
     // wait tx unlock
     Transmit_WaitUnlockTx();
-    // compute the CRC
-    for (uint16_t i = 0; i < size - 2; i++)
-    {
-        LuosHAL_ComputeCRC(&data[i], (uint8_t *)&crc_val);
-    }
-    data[size - 2] = (uint8_t)(crc_val);
-    data[size - 1] = (uint8_t)(crc_val >> 8);
 
-    // lock the transmission
-    if (Transmit_GetLockStatus())
-    {
-        LuosHAL_SetTxLockDetecState(false);
-        return FAILED;
-    }
+    // Remove IT detection Rx on Pin
     LuosHAL_SetTxLockDetecState(false);
 
     // Enable TX
