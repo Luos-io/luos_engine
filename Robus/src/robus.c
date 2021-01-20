@@ -249,7 +249,6 @@ ack_restart:
                 }
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
-                    Recep_Timeout();
                     Robus_DelayUs((uint32_t)(10*nbr_nak_retry));
                     goto ack_restart;
                 }

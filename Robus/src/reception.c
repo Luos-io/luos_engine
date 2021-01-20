@@ -125,7 +125,6 @@ void Recep_GetHeader(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_GetData(volatile uint8_t *data)
 {
-
     MsgAlloc_SetData(*data);
     if (data_count < data_size)
     {
@@ -243,13 +242,13 @@ void Recep_Timeout(void)
  ******************************************************************************/
 void Recep_Reset(void)
 {
-    LuosHAL_SetIrqState(false);
-    LuosHAL_SetTxLockDetecState(true);
-    ctx.rx.callback = Recep_GetHeader;
     data_count = 0;
     crc_val = 0xFFFF;
     ctx.rx.status.rx_framing_error = false;
+    LuosHAL_SetIrqState(false);
+    ctx.rx.callback = Recep_GetHeader;
     LuosHAL_SetIrqState(true);
+    LuosHAL_SetTxLockDetecState(true);
 }
 /******************************************************************************
  * @brief Catch ack when needed for the sended msg
