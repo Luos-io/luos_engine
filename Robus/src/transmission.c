@@ -32,12 +32,9 @@ static uint8_t Transmit_GetLockStatus(void);
  ******************************************************************************/
 void Transmit_SendAck(void)
 {
-    LuosHAL_SetTxState(true);
-    LuosHAL_SetRxState(false);
+    // Transmit Ack data
     LuosHAL_ComTransmit((unsigned char *)&ctx.rx.status.unmap, 1);
-    LuosHAL_ComTxComplete();
-    LuosHAL_SetRxState(true);
-    LuosHAL_SetTxState(false);
+    // Reset Ack status
     ctx.rx.status.unmap = 0x0F;
 }
 /******************************************************************************
@@ -54,8 +51,6 @@ error_return_t Transmit_Process(uint8_t *data, uint16_t size)
     // Remove IT detection Rx on Pin
     LuosHAL_SetTxLockDetecState(false);
 
-    // Enable TX
-    LuosHAL_SetTxState(true);
     ctx.tx.lock = true;
 
     // switch reception in collision detection mode
@@ -71,9 +66,6 @@ error_return_t Transmit_Process(uint8_t *data, uint16_t size)
         ctx.tx.collision = false;
         return FAILED;
     }
-    LuosHAL_ComTxComplete();
-    LuosHAL_SetRxState(true);
-    LuosHAL_SetTxState(false);
     return SUCCEED;
 }
 /******************************************************************************
