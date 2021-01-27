@@ -62,7 +62,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // By default node are not certified.
     ctx.node.certified = false;
     // no transmission lock
-    ctx.tx.lock = FALSE;
+    ctx.tx.lock = false;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
     

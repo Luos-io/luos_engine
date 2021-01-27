@@ -63,7 +63,7 @@ void Recep_GetHeader(volatile uint8_t *data)
         break;
 
     case 3: //check if message is for the node
-        if(Recep_NodeConcerned((header_t *)&current_msg->header) == false)
+        if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
         {
             MsgAlloc_ValidHeader(false, data_size);
             ctx.rx.callback = Recep_Drop;
@@ -128,7 +128,7 @@ void Recep_GetData(volatile uint8_t *data)
         // Continue CRC computation until the end of data
         LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
     }
-    else if(data_count > data_size)
+    else if (data_count > data_size)
     {
         uint16_t crc = ((uint16_t)current_msg->data[data_size]) |
                        ((uint16_t)current_msg->data[data_size + 1] << 8);
@@ -153,7 +153,7 @@ void Recep_GetData(volatile uint8_t *data)
         }
         else
         {
-            ctx.rx.status.rx_error = TRUE;
+            ctx.rx.status.rx_error = true;
             if ((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK))
             {
                 Transmit_SendAck();
@@ -176,19 +176,21 @@ void Recep_GetCollision(volatile uint8_t *data)
     if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
     {
         //data dont match, or we don't start to send, there is a collision
-        ctx.tx.collision = TRUE;
+        ctx.tx.collision = true;
+        //clear ack
+        ctx.ack_needed = false;
         //Stop TX trying to save input datas
         LuosHAL_SetTxState(false);
         // switch to get header.
-        for(uint8_t i = 0; i < data_count-1; i++)
+        for (uint8_t i = 0; i < data_count - 1; i++)
         {
             MsgAlloc_SetData(*ctx.tx.data + i);
         }
         MsgAlloc_SetData(*data);
         ctx.rx.callback = Recep_GetHeader;
-        if(data_count >= 3)
+        if (data_count >= 3)
         {
-            if(Recep_NodeConcerned((header_t *)&current_msg->header) == false)
+            if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
             {
                 MsgAlloc_ValidHeader(false, data_size);
                 ctx.rx.callback = Recep_Drop;
@@ -198,7 +200,7 @@ void Recep_GetCollision(volatile uint8_t *data)
     }
     else
     {
-        if(data_count == COLLISION_DETECTION_NUMBER)
+        if (data_count == COLLISION_DETECTION_NUMBER)
         {
             LuosHAL_SetRxState(false);
             // switch to get header.
@@ -226,7 +228,7 @@ void Recep_Timeout(void)
 {
     if ((ctx.rx.callback != Recep_GetHeader)&&(ctx.rx.callback != Recep_Drop))
     {
-        ctx.rx.status.rx_timeout = TRUE;
+        ctx.rx.status.rx_timeout = true;
     }
     MsgAlloc_InvalidMsg();
     ctx.tx.lock = false;
@@ -313,7 +315,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
     switch (header->target_mode)
     {
     case IDACK:
-        ctx.rx.status.rx_error = FALSE;
+        ctx.rx.status.rx_error = false;
     case ID:
         // Check all ll_container id
         for (i = 0; i < ctx.ll_container_number; i++)
@@ -341,7 +343,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
         }
         break;
     case NODEIDACK:
-        ctx.rx.status.rx_error = FALSE;
+        ctx.rx.status.rx_error = false;
     case NODEID:
         if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
         {

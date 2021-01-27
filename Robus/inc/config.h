@@ -10,9 +10,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define TRUE 1
-#define FALSE 0
-
 #define DEFAULTID 0x00
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL 0x0FFF

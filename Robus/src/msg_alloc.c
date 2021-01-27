@@ -55,9 +55,9 @@
 /******************************************************************************
  * @struct luos_task_t
  * @brief Message allocator loger structure.
- * 
+ *
  * This structure is used to link modules and messages into the allocator.
- * 
+ *
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
@@ -357,7 +357,7 @@ error_return_t MsgAlloc_IsEmpty(void)
 static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
 {
     //******** Check if there is sufficient space on the buffer **********
-    if ((uint32_t)to > ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
+    if (MsgAlloc_DoWeHaveSpace(to) == FAILED)
     {
         // We reach msg_buffer end return an error
         return FAILED;
@@ -407,17 +407,17 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
  ******************************************************************************/
 static inline void MsgAlloc_ClearMsgTask(void)
 {
-    LUOS_ASSERT((msg_tasks_stack_id <= MAX_MSG_NB) & (msg_tasks_stack_id > 0));
+    LUOS_ASSERT((msg_tasks_stack_id <= MAX_MSG_NB) && (msg_tasks_stack_id > 0));
 
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
-        LuosHAL_SetIrqState(TRUE);
-        LuosHAL_SetIrqState(FALSE);
+        LuosHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(false);
         msg_tasks[rm] = msg_tasks[rm + 1];
     }
     msg_tasks_stack_id--;
     msg_tasks[msg_tasks_stack_id] = 0;
-    LuosHAL_SetIrqState(TRUE);
+    LuosHAL_SetIrqState(true);
 }
 /******************************************************************************
  * @brief Pull a message that is not interpreted by robus yet
@@ -463,12 +463,12 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
     {
         luos_tasks[rm] = luos_tasks[rm + 1];
     }
-    LuosHAL_SetIrqState(FALSE);
+    LuosHAL_SetIrqState(false);
     if (luos_tasks_stack_id != 0)
     {
         luos_tasks_stack_id--;
     }
-    LuosHAL_SetIrqState(TRUE);
+    LuosHAL_SetIrqState(true);
 }
 /******************************************************************************
  * @brief Alloc luos task
@@ -546,7 +546,7 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     return FAILED;
 }
 /******************************************************************************
- * @brief get back the module who received the oldest message 
+ * @brief get back the module who received the oldest message
  * @param allocated_module : Return the module concerned by the oldest message
  * @param luos_task_id : Id of the allocator slot
  * @return error_return_t : Fail is there is no more message available.

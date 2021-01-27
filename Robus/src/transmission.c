@@ -48,7 +48,7 @@ void Transmit_SendAck(void)
  ******************************************************************************/
 error_return_t Transmit_Process(uint8_t *data, uint16_t size)
 {
-    // wait tx unlock
+    // Wait tx unlock
     Transmit_WaitUnlockTx();
 
     // Remove IT detection Rx on Pin
@@ -59,7 +59,7 @@ error_return_t Transmit_Process(uint8_t *data, uint16_t size)
     ctx.tx.lock = true;
 
     // switch reception in collision detection mode
-    ctx.tx.collision = FALSE;
+    ctx.tx.collision = false;
     LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetCollision;
     ctx.tx.data = data;
@@ -67,8 +67,8 @@ error_return_t Transmit_Process(uint8_t *data, uint16_t size)
 
     if (LuosHAL_ComTransmit(data, size))
     {
-        //collision detected
-        ctx.tx.collision = FALSE;
+        // Collision detected
+        ctx.tx.collision = false;
         return FAILED;
     }
     LuosHAL_ComTxComplete();
