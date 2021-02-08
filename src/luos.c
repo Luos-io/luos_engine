@@ -906,3 +906,12 @@ uint16_t Luos_NbrAvailableMsg(void)
 {
     return MsgAlloc_LuosTasksNbr();
 }
+/******************************************************************************
+ * @brief Get tick number
+ * @param None
+ * @return tick
+ ******************************************************************************/
+uint32_t Luos_GetSystick(void)
+{
+    return LuosHAL_GetSystick();
+}
