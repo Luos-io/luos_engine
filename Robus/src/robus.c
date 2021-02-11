@@ -179,6 +179,7 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     error_return_t result = SUCCEED;
     uint8_t nbr_nak_retry = 0;
     uint8_t RetryCollision = 0;
+    uint8_t NodeIsConcerned = (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID));
 ack_restart:
     nbr_nak_retry++;
     RetryCollision = 0;
@@ -216,7 +217,7 @@ ack_restart:
     if ((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK))
     {
         // Check if it is a localhost message
-        if (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID))
+        if (NodeIsConcerned == true)
         {
             Transmit_SendAck();
             ctx.ack = 0;
