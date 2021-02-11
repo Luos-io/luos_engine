@@ -328,15 +328,6 @@ void MsgAlloc_SetMessage(msg_t *msg)
     memcpy((void *)cpy_msg, (void *)msg, data_size);
 }
 /******************************************************************************
- * @brief return the current message
- * @param None
- * @return msg_t* pointer to the current message
- ******************************************************************************/
-msg_t *MsgAlloc_GetCurrentMsg(void)
-{
-    return (msg_t *)current_msg;
-}
-/******************************************************************************
  * @brief No message in buffer receive since initialization
  * @param None
  * @return msg_t* sucess or fail if good init

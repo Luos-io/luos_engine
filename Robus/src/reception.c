@@ -27,7 +27,6 @@
 uint16_t data_count = 0;
 uint16_t data_size = 0;
 uint16_t crc_val = 0;
-msg_t *current_msg;
 
 /*******************************************************************************
  * Function
@@ -43,8 +42,6 @@ void Recep_Init(void)
     // Initialize the reception state machine
     ctx.rx.status.unmap = 0;
     ctx.rx.callback = Recep_GetHeader;
-    // Get allocation values
-    current_msg = MsgAlloc_GetCurrentMsg();
 }
 /******************************************************************************
  * @brief Callback to get a complete header
