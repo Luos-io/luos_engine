@@ -15,6 +15,10 @@
  ******************************************************************************/
 
 /*******************************************************************************
+ * Variables
+ ******************************************************************************/
+extern volatile msg_t *current_msg;
+/*******************************************************************************
  * Functions
  ******************************************************************************/
 
@@ -28,7 +32,6 @@ void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
 void MsgAlloc_SetMessage(msg_t *msg);
-msg_t *MsgAlloc_GetCurrentMsg(void);
 error_return_t MsgAlloc_IsEmpty(void);
 void MsgAlloc_UsedMsgEnd(void);
 

@@ -7,6 +7,7 @@
 #ifndef _TRANSMISSION_H_
 #define _TRANSMISSION_H_
 
+#include "robus_struct.h"
 #include <stdint.h>
 /*******************************************************************************
  * Definitions
@@ -25,7 +26,7 @@ typedef struct
  * Function
  ******************************************************************************/
 void Transmit_SendAck(void);
-uint8_t Transmit_Process(uint8_t *data, uint16_t size);
+error_return_t Transmit_Process(uint8_t *data, uint16_t size);
 void Transmit_WaitUnlockTx(void);
 
 #endif /* _TRANSMISSION_H_ */

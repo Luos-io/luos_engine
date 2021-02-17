@@ -43,6 +43,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container);
 volatile context_t ctx;
 uint32_t baudrate; /*!< System current baudrate. */
 volatile uint16_t last_node = 0;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -140,6 +141,8 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     // Compute the full message size based on the header size info.
     uint16_t data_size = 0;
+    uint16_t crc_val = 0xFFFF;
+
     if (msg->header.size > MAX_DATA_MSG_SIZE)
     {
         data_size = MAX_DATA_MSG_SIZE;
@@ -162,15 +165,26 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     // Add the CRC to the total size of the message
     full_size += 2;
 
+
+    // compute the CRC
+    for (uint16_t i = 0; i < full_size - 2; i++)
+    {
+        LuosHAL_ComputeCRC(&msg->stream[i], (uint8_t *)&crc_val);
+    }
+    msg->stream[full_size - 2] = (uint8_t)(crc_val);
+    msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
+
+
     //try to send msg computed
     error_return_t result = SUCCEED;
     uint8_t nbr_nak_retry = 0;
     uint8_t RetryCollision = 0;
+    uint8_t NodeIsConcerned = (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID));
 ack_restart:
     nbr_nak_retry++;
     RetryCollision = 0;
     LuosHAL_SetIrqState(false);
-    ctx.ack = FALSE;
+    ctx.ack = 0;
     LuosHAL_SetIrqState(true);
     // Send message
     while (Transmit_Process((uint8_t *)msg->stream, full_size))
@@ -192,8 +206,7 @@ ack_restart:
         // timer proportional to ID
         if (ll_container->id > 1)
         {
-            for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (ll_container->id - 1)); tempo++)
-                ;
+            Robus_DelayUs((uint32_t)((ll_container->id - 1)*RetryCollision));
         }
     }
     if(*ll_container->ll_stat.max_collision_retry < RetryCollision)
@@ -204,7 +217,7 @@ ack_restart:
     if ((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK))
     {
         // Check if it is a localhost message
-        if (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID))
+        if (NodeIsConcerned == true)
         {
             Transmit_SendAck();
             ctx.ack = 0;
@@ -215,10 +228,12 @@ ack_restart:
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_CatchAck;
             LuosHAL_SetIrqState(true);
-            volatile int time_out = 0;
-            while (!ctx.ack & (time_out < (120 * (1000000 / baudrate))))
+            while (ctx.tx.lock != false)
             {
-                time_out++;
+                if(ctx.ack != 0)
+                {
+                    break;
+                }
             }
             status_t status;
             status.unmap = ctx.ack;
@@ -235,9 +250,7 @@ ack_restart:
                 }
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
-                    Recep_Timeout();
-                    for (volatile uint16_t tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
-                        ;
+                    Robus_DelayUs((uint32_t)(10*nbr_nak_retry));
                     goto ack_restart;
                 }
                 else
@@ -323,8 +336,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
         uint32_t start_tick = LuosHAL_GetSystick();
         while (LuosHAL_GetSystick() - start_tick < 2)
             ;
-        try
-            ++;
+        try++;
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try > 5));
 
     ctx.node.node_id = 0;
@@ -460,4 +472,18 @@ static error_return_t Robus_MsgHandler(msg_t *input)
 node_t *Robus_GetNode(void)
 {
     return (node_t *)&ctx.node;
+}
+/******************************************************************************
+ * @brief Delay
+ * @param None
+ * @return Node pointer
+ ******************************************************************************/
+void Robus_DelayUs(uint32_t delay)
+{
+    uint32_t timeout = (((MCUFREQ/2)/1000000)*delay)+1;
+    volatile uint32_t i = 0;
+    while(i < timeout)
+    {
+        i++;
+    }
 }

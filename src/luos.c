@@ -648,13 +648,13 @@ error_return_t Luos_SendData(container_t *container, msg_t *msg, void *bin_data,
         if (Luos_SendMsg(container, msg) == FAILED)
         {
             // This message fail stop transmission and return an error
-            return SUCCEED;
+            return FAILED;
         }
 
         // Save current state
         sent_size = sent_size + chunk_size;
     }
-    return FAILED;
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief receive a multi msg data
@@ -905,4 +905,13 @@ error_return_t Luos_SetExternId(container_t *container, target_mode_t target_mod
 uint16_t Luos_NbrAvailableMsg(void)
 {
     return MsgAlloc_LuosTasksNbr();
+}
+/******************************************************************************
+ * @brief Get tick number
+ * @param None
+ * @return tick
+ ******************************************************************************/
+uint32_t Luos_GetSystick(void)
+{
+    return LuosHAL_GetSystick();
 }

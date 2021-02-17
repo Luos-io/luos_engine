@@ -44,6 +44,7 @@ typedef struct
 void Recep_GetHeader(volatile uint8_t *data);
 void Recep_GetData(volatile uint8_t *data);
 void Recep_GetCollision(volatile uint8_t *data);
+void Recep_Drop(volatile uint8_t *data);
 
 // Callbacks send
 void Recep_CatchAck(volatile uint8_t *data);
