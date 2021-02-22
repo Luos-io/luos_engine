@@ -65,7 +65,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.lock = false;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-    
+
     // Init reception
     Recep_Init();
 
@@ -143,19 +143,9 @@ void Robus_ContainersClear(void)
  ******************************************************************************/
 error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
-    // Compute the full message size based on the header size info.
     uint16_t data_size = 0;
     uint16_t crc_val = 0xFFFF;
-
-    if (msg->header.size > MAX_DATA_MSG_SIZE)
-    {
-        data_size = MAX_DATA_MSG_SIZE;
-    }
-    else
-    {
-        data_size = msg->header.size;
-    }
-    uint16_t full_size = sizeof(header_t) + data_size;
+    // Prepare the message
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     if (ll_container->id != 0)
@@ -166,9 +156,19 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     {
         msg->header.source = ctx.node.node_id;
     }
+
+    // Compute the full message size based on the header size info.
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+    {
+        data_size = MAX_DATA_MSG_SIZE;
+    }
+    else
+    {
+        data_size = msg->header.size;
+    }
+    uint16_t full_size = sizeof(header_t) + data_size;
     // Add the CRC to the total size of the message
     full_size += 2;
-
 
     // compute the CRC
     for (uint16_t i = 0; i < full_size - 2; i++)
@@ -177,7 +177,6 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     }
     msg->stream[full_size - 2] = (uint8_t)(crc_val);
     msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
-
 
     //try to send msg computed
     error_return_t result = SUCCEED;
@@ -202,7 +201,7 @@ ack_restart:
         Transmit_WaitUnlockTx();
         //max collision possible
         RetryCollision++;
-        if(RetryCollision > NBR_NAK_RETRY)
+        if (RetryCollision > NBR_NAK_RETRY)
         {
             result = FAILED;
             break;
@@ -210,10 +209,10 @@ ack_restart:
         // timer proportional to ID
         if (ll_container->id > 1)
         {
-            Robus_DelayUs((uint32_t)((ll_container->id - 1)*RetryCollision));
+            Robus_DelayUs((uint32_t)((ll_container->id - 1) * RetryCollision));
         }
     }
-    if(*ll_container->ll_stat.max_collision_retry < RetryCollision)
+    if (*ll_container->ll_stat.max_collision_retry < RetryCollision)
     {
         *ll_container->ll_stat.max_collision_retry = RetryCollision;
     }
@@ -234,7 +233,7 @@ ack_restart:
             LuosHAL_SetIrqState(true);
             while (ctx.tx.lock != false)
             {
-                if(ctx.ack != 0)
+                if (ctx.ack != 0)
                 {
                     break;
                 }
@@ -254,7 +253,7 @@ ack_restart:
                 }
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
-                    Robus_DelayUs((uint32_t)(10*nbr_nak_retry));
+                    Robus_DelayUs((uint32_t)(10 * nbr_nak_retry));
                     goto ack_restart;
                 }
                 else
@@ -266,7 +265,7 @@ ack_restart:
             }
             ctx.ack = 0;
         }
-        if(*ll_container->ll_stat.max_nak_retry < nbr_nak_retry)
+        if (*ll_container->ll_stat.max_nak_retry < nbr_nak_retry)
         {
             *ll_container->ll_stat.max_nak_retry = nbr_nak_retry;
         }
@@ -322,8 +321,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
     uint8_t
-    try
-        = 0;
+        try = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
@@ -484,9 +482,9 @@ node_t *Robus_GetNode(void)
  ******************************************************************************/
 void Robus_DelayUs(uint32_t delay)
 {
-    uint32_t timeout = (((MCUFREQ/2)/1000000)*delay)+1;
+    uint32_t timeout = (((MCUFREQ / 2) / 1000000) * delay) + 1;
     volatile uint32_t i = 0;
-    while(i < timeout)
+    while (i < timeout)
     {
         i++;
     }
