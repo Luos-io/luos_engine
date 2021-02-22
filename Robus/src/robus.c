@@ -178,6 +178,11 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     msg->stream[full_size - 2] = (uint8_t)(crc_val);
     msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
 
+    MsgAlloc_SetTxTask((char *)msg->stream, full_size);
+    // For now we just try to run the "normal" transmission using allocator
+    char *data = 0;
+    MsgAlloc_GetTxTask(&data, &full_size);
+
     //try to send msg computed
     error_return_t result = SUCCEED;
     uint8_t nbr_nak_retry = 0;
@@ -190,7 +195,7 @@ ack_restart:
     ctx.ack = 0;
     LuosHAL_SetIrqState(true);
     // Send message
-    while (Transmit_Process((uint8_t *)msg->stream, full_size))
+    while (Transmit_Process((uint8_t *)data, full_size))
     {
         // There is a collision
         LuosHAL_SetIrqState(false);
@@ -253,6 +258,7 @@ ack_restart:
                 }
                 if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
+                    Recep_Timeout();
                     Robus_DelayUs((uint32_t)(10 * nbr_nak_retry));
                     goto ack_restart;
                 }
@@ -280,6 +286,7 @@ ack_restart:
         // set message into the allocator
         MsgAlloc_SetMessage(msg);
     }
+    MsgAlloc_PullMsgFromTxTask();
     return result;
 }
 /******************************************************************************
