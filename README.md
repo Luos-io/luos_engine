@@ -6,7 +6,7 @@
 
 > If you want to clone this repo, please refer to [cloning repository](#cloning-repository) section.
 
-# Itroduction to Luos? :bulb:
+# Introduction to Luos? :bulb:
 
 We started designing Luos with the conviction that building electronic systems should be made easier than it is today. The majority of development time should be spent on designing the applications and behaviors instead of on complex and time-and-money-eating technicalities. To give a simple example, adding a new sensor (for example a distance sensor) to an electronic device in conception should not take more than a few minutes. So you can try, test and quickly iterate on a project to quickly design what users truly want.
 
