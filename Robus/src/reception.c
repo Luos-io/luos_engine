@@ -261,6 +261,7 @@ void Recep_Reset(void)
     LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetHeader;
     LuosHAL_SetIrqState(true);
+    LuosHAL_SetRxDetecPin(true);
 }
 /******************************************************************************
  * @brief Catch ack when needed for the sent msg

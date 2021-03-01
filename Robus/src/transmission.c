@@ -132,6 +132,7 @@ void Transmit_Process()
         // switch reception in collision detection mode
         if (Transmit_GetLockStatus() == false)
         {
+            LuosHAL_SetRxDetecPin(false);
             ctx.tx.lock = true;
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
