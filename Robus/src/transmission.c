@@ -90,11 +90,10 @@ void Transmit_Process()
     uint16_t size;
     uint8_t localhost;
     ll_container_t *ll_container_pt;
-
-    if ((MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == SUCCEED) && (Transmit_GetLockStatus() == false))
+    if (MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == SUCCEED)
     {
-        // We have a task available and we can use the bus
-        // Check if we already try to send a message multiple times and put it on stats
+        // We have something to send
+        // Check if we already try to send it multiple times and save it on stats if it is
         if ((*ll_container_pt->ll_stat.max_retry < nbrRetry) || (nbrRetry >= NBR_RETRY))
         {
             *ll_container_pt->ll_stat.max_retry = nbrRetry;
@@ -119,26 +118,24 @@ void Transmit_Process()
                 }
             }
         }
-        // We will prepare to transmit something enable tx status as OK
-        ctx.tx.status = TX_OK;
-        // Check if ACK needed
-        if ((((msg_t *)data)->header.target_mode == IDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK))
+        // Check if we will need an ACK for this message and compute the transmit status we will need to manage it
+        transmitStatus_t initial_transmit_status = TX_OK;
+        if (((((msg_t *)data)->header.target_mode == IDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK)) && (!localhost || (((msg_t *)data)->header.target == DEFAULTID)))
         {
-            // Check if it is a localhost message
-            if (!localhost || (((msg_t *)data)->header.target == DEFAULTID))
-            {
-                // We need ta validate the good reception af the ack.
-                // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
-                ctx.tx.status = TX_NOK;
-            }
+            // We will need to validate the good reception of the ack.
+            // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
+            initial_transmit_status = TX_NOK;
         }
-        // Check if the line is free allowing us to send ou message
+        // Now we can try to send something
         if (Transmit_GetLockStatus() == false)
         {
             // We are free to transmit
-            // Switch reception in collision detection mode
-            LuosHAL_SetRxDetecPin(false);
+            // We will prepare to transmit something enable tx status with precomputed value if we need ACK
+            ctx.tx.status = initial_transmit_status;
+            // Lock the bus
             ctx.tx.lock = true;
+            LuosHAL_SetRxDetecPin(false);
+            // Switch reception in collision detection mode
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
             ctx.tx.data = data;
