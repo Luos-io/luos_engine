@@ -208,6 +208,7 @@ void Recep_GetCollision(volatile uint8_t *data)
         {
             // collision detection end
             LuosHAL_SetRxState(false);
+            LuosHAL_ResetTimeout(0);
             if (ctx.tx.status == TX_NOK)
             {
                 // switch to catch Ack.
