@@ -110,6 +110,9 @@ static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to);
 // Allocator task stack
 static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to);
 
+// Allocator task stack TX check space
+static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to);
+
 // msg interpretation task stack
 static inline void MsgAlloc_ClearMsgTask(void);
 
@@ -382,6 +385,23 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     // if we go here there is no reason to continue because newest messages can't overlap the memory zone.
     return SUCCEED;
 }
+/******************************************************************************
+ * @brief Check if there is space in buffer
+ * @param from : start of the memory space to check
+ * @param to : stop of the memory space to check
+ * @return error_return_t
+ ******************************************************************************/
+static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
+{
+    if ((((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to)) ||
+        (((uint32_t)msg_tasks[0] >= (uint32_t)from) && ((uint32_t)msg_tasks[0] <= (uint32_t)to)) ||
+        (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) && ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to)) ||
+        (((uint32_t)tx_tasks[0].data_pt >= (uint32_t)from) && ((uint32_t)tx_tasks[0].data_pt <= (uint32_t)to)))
+    {
+        return FAILED;
+    }
+    return SUCCEED;
+}
 /*******************************************************************************
  * Functions --> msg interpretation task stack
  ******************************************************************************/
@@ -632,7 +652,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  * @param data to transmit
  * @param size of the data to transmit
  ******************************************************************************/
-void MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t size, uint8_t locahost)
+error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t size, uint8_t locahost)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uint32_t)data > 0) && ((uint32_t)current_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uint32_t)current_msg >= (uint32_t)&msg_buffer[0]));
     void *rx_msg_bkp = 0;
@@ -648,32 +668,57 @@ void MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t
     // Check if the message to send size fit into msg buffer
     if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + size)) == FAILED)
     {
-        // message to send don't fit move everything at the begining of the buffer
-        tx_msg = (msg_t *)msg_buffer;
+        // message to send don't fit check at the beginning of buffer
+        // Check space for the TX and RX message
+        if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + size + estimated_size)) == FAILED)
+        {
+            // There is no space available for now
+            LuosHAL_SetIrqState(true);
+            return FAILED;
+        }
+        //move everything at the begining of the buffer
+        tx_msg = (void *)msg_buffer;
         current_msg = (msg_t *)((uint32_t)msg_buffer + size);
         data_ptr = (uint8_t *)((uint32_t)current_msg + progression_size);
         data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
-        MsgAlloc_ClearMsgSpace((void *)tx_msg, (void *)data_end_estimation);
+        // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
     }
     else
     {
         // Message to send fit
         tx_msg = (void *)current_msg;
         // Check if the receiving message size fit into msg buffer
-        if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + size + estimated_size)) == FAILED)
+        if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)tx_msg + size + estimated_size)) == FAILED)
         {
             // receiving message don't fit, move it to the start of the buffer
-            MsgAlloc_ClearMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + size));
+            // Check space for the TX message
+            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + size)) == FAILED)
+            {
+                LuosHAL_SetIrqState(true);
+                return FAILED;
+            }
+            // Check space for the RX message
+            if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + estimated_size)) == FAILED)
+            {
+                LuosHAL_SetIrqState(true);
+                return FAILED;
+            }
             current_msg = (msg_t *)msg_buffer;
             data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
-            MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)data_end_estimation);
+            // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
         else
         {
             // receiving message fit, move receiving message of tx_message size
+            // Check space for the TX and RX message
+            if (MsgAlloc_CheckMsgSpace((void *)((uint32_t)tx_msg), (void *)((uint32_t)tx_msg + size + estimated_size)) == FAILED)
+            {
+                LuosHAL_SetIrqState(true);
+                return FAILED;
+            }
             current_msg = (msg_t *)((uint32_t)current_msg + size);
             data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
-            MsgAlloc_ClearMsgSpace((void *)tx_msg, (void *)data_end_estimation);
+            // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
         data_ptr = (uint8_t *)((uint32_t)current_msg + progression_size);
         LUOS_ASSERT((uint32_t)(data_ptr) < (uint32_t)(&msg_buffer[MSG_BUFFER_SIZE]));
@@ -728,9 +773,12 @@ void MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t
         // This is a localhost message copy it as a message task
         LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
         LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
+        LuosHAL_SetIrqState(false);
         msg_tasks[msg_tasks_stack_id] = tx_msg;
         msg_tasks_stack_id++;
+        LuosHAL_SetIrqState(true);
     }
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief remove a transmit message task

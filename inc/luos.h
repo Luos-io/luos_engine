@@ -45,7 +45,7 @@ void Luos_Init(void);
 void Luos_Loop(void);
 void Luos_ContainersClear(void);
 container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, revision_t revision);
-void Luos_SendMsg(container_t *container, msg_t *msg);
+error_return_t Luos_SendMsg(container_t *container, msg_t *msg);
 error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg);
 error_return_t Luos_ReadFromContainer(container_t *container, int16_t id, msg_t **returned_msg);
 void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t size);

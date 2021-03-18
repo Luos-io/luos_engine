@@ -145,7 +145,7 @@ void Robus_ContainersClear(void)
  * @param msg to send
  * @return none
  ******************************************************************************/
-void Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
+error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     uint16_t data_size = 0;
     uint16_t crc_val = 0xFFFF;
@@ -192,10 +192,14 @@ void Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     }
 
     // ********** Allocate the message ********************
-    MsgAlloc_SetTxTask(ll_container, (uint8_t *)msg->stream, full_size, localhost);
-
+    if(MsgAlloc_SetTxTask(ll_container, (uint8_t *)msg->stream, full_size, localhost) == FAILED)
+    {
+    	return FAILED;
+    }
     // **********Try to send the message********************
     Transmit_Process();
+
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief Start a topology detection procedure

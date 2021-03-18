@@ -130,7 +130,7 @@ void Luos_Loop(void)
 /******************************************************************************
  * @brief Check if this command concern luos
  * @param cmd The command value
- * @return SUCCEED if the command if for Luos else Fail 
+ * @return SUCCEED if the command if for Luos else Fail
  ******************************************************************************/
 static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint16_t size)
 {
@@ -519,14 +519,17 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
  * @param Message to send
  * @return None
  ******************************************************************************/
-void Luos_SendMsg(container_t *container, msg_t *msg)
+error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
 {
     if (container == 0)
     {
         // There is no container specified here, take the first one
         container = &container_table[0];
     }
-    Robus_SendMsg(container->ll_container, msg);
+    if (Robus_SendMsg(container->ll_container, msg) == FAILED)
+    {
+        return FAILED;
+    }
     // Compute some stats
     container->ll_container->ll_stat.msg_nbr++;
 
@@ -537,6 +540,8 @@ void Luos_SendMsg(container_t *container, msg_t *msg)
     }
 
     container->statistics.msg_fail_ratio = (uint8_t)(((uint32_t)container->ll_container->ll_stat.fail_msg_nbr * 100) / container->ll_container->ll_stat.msg_nbr);
+
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief read last msg from buffer for a container
@@ -646,7 +651,10 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
         msg->header.size = size - sent_size;
 
         // Send message
-        Luos_SendMsg(container, msg);
+        while (Luos_SendMsg(container, msg) == FAILED)
+        {
+            Luos_Loop();
+        }
 
         // Save current state
         sent_size = sent_size + chunk_size;
@@ -746,7 +754,10 @@ void Luos_SendStreaming(container_t *container, msg_t *msg, streaming_channel_t 
         Stream_GetSample(stream, msg->data, chunk_size);
 
         // Send message
-        Luos_SendMsg(container, msg);
+        while (Luos_SendMsg(container, msg) == FAILED)
+        {
+            Luos_Loop();
+        }
 
         // check end of data
         if (data_size > max_data_msg_size)

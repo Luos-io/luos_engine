@@ -149,6 +149,7 @@ void Recep_GetData(volatile uint8_t *data)
                 ctx.node.node_id = 0;
                 PortMng_Init();
                 MsgAlloc_Init(NULL);
+                ctx.tx.status = TX_DISABLE;
             }
             else
             {

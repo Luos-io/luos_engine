@@ -47,7 +47,8 @@ void Luos_assert(char *file, uint32_t line)
     msg.header.size = sizeof(line) + strlen(file);
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
-    Luos_SendMsg(0, &msg);
+    while(Luos_SendMsg(0, &msg)!= SUCCEED)
+        ;
     node_assert(file, line);
     // wait for the transmission to finish before killing IRQ
     while (MsgAlloc_TxAllComplete() == FAILED)
