@@ -75,8 +75,11 @@ void Luos_Loop(void)
         // check if this is a Luos Command
         uint8_t cmd = 0;
         uint16_t size = 0;
-        LUOS_ASSERT(MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) == SUCCEED);
-        LUOS_ASSERT(MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) == SUCCEED);
+        // There is a possibility to receive in IT a restet_detection so check task before doing any treatement
+        if ((MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) != SUCCEED) || (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) != SUCCEED))
+        {
+            break;
+        }
         //check if this msg cmd should be consumed by Luos_MsgHandler
         if (Luos_IsALuosCmd(container, cmd, size) == SUCCEED)
         {
@@ -582,7 +585,11 @@ error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **
         {
             // Check the source id
             uint16_t source = 0;
+#ifdef LUOS_ASSERTION
             LUOS_ASSERT(MsgAlloc_GetLuosTaskSourceId(remaining_msg_number, &source) == SUCCEED);
+#else
+            MsgAlloc_GetLuosTaskSourceId(remaining_msg_number, &source);
+#endif
             if (source == id)
             {
                 // Source id of this message match, get it and treat it.
