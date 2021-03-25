@@ -20,8 +20,9 @@
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
-    uint8_t msg_stack_ratio;
+    uint8_t rx_msg_stack_ratio;
     uint8_t luos_stack_ratio;
+    uint8_t tx_msg_stack_ratio;
     uint8_t msg_drop_number;
 } memory_stats_t;
 

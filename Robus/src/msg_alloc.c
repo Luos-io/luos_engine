@@ -156,11 +156,17 @@ void MsgAlloc_loop(void)
 {
     // Compute memory stats for msg task memory usage
     uint8_t stat = 0;
-    // Compute memory stats for msg task memory usage
+    // Compute memory stats for rx msg task memory usage
     stat = (uint8_t)(((uint32_t)msg_tasks_stack_id * 100) / (MAX_MSG_NB));
-    if (stat > mem_stat->msg_stack_ratio)
+    if (stat > mem_stat->rx_msg_stack_ratio)
     {
-        mem_stat->msg_stack_ratio = stat;
+        mem_stat->rx_msg_stack_ratio = stat;
+    }
+    // Compute memory stats for tx msg task memory usage
+    stat = (uint8_t)(((uint32_t)tx_tasks_stack_id * 100) / (MAX_MSG_NB));
+    if (stat > mem_stat->tx_msg_stack_ratio)
+    {
+        mem_stat->tx_msg_stack_ratio = stat;
     }
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
