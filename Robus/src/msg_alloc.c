@@ -432,33 +432,43 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
             mem_stat->msg_drop_number++;
         }
     }
-    while (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) && ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to) && (luos_tasks_stack_id > 0))
+    // check if there is a msg in the space we need
+    // Start by checking if the oldest message is out of scope
+    if (((uint32_t)oldest_msg >= (uint32_t)from) && ((uint32_t)oldest_msg <= (uint32_t)to))
     {
-        // This message is in the space we want to use, clear the task
-        MsgAlloc_ClearLuosTask(0);
-        if (mem_stat->msg_drop_number < 0xFF)
+        // We have to drop some messages for sure
+        mem_stat->buffer_occupation_ratio = 100;
+        while (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) && ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to) && (luos_tasks_stack_id > 0))
         {
-            mem_stat->msg_drop_number++;
+            // This message is in the space we want to use, clear the task
+            MsgAlloc_ClearLuosTask(0);
+            if (mem_stat->msg_drop_number < 0xFF)
+            {
+                mem_stat->msg_drop_number++;
+                mem_stat->buffer_occupation_ratio = 100;
+            }
         }
-    }
-    // check if there is no msg between from and to on msg_tasks
-    while (((uint32_t)msg_tasks[0] >= (uint32_t)from) && ((uint32_t)msg_tasks[0] <= (uint32_t)to) && (msg_tasks_stack_id > 0))
-    {
-        // This message is in the space we want to use, clear the task
-        MsgAlloc_ClearMsgTask();
-        if (mem_stat->msg_drop_number < 0xFF)
+        // check if there is no msg between from and to on msg_tasks
+        while (((uint32_t)msg_tasks[0] >= (uint32_t)from) && ((uint32_t)msg_tasks[0] <= (uint32_t)to) && (msg_tasks_stack_id > 0))
         {
-            mem_stat->msg_drop_number++;
+            // This message is in the space we want to use, clear the task
+            MsgAlloc_ClearMsgTask();
+            if (mem_stat->msg_drop_number < 0xFF)
+            {
+                mem_stat->msg_drop_number++;
+                mem_stat->buffer_occupation_ratio = 100;
+            }
         }
-    }
-    // check if there is no msg between from and to on tx_tasks
-    while (((uint32_t)tx_tasks[0].data_pt >= (uint32_t)from) && ((uint32_t)tx_tasks[0].data_pt <= (uint32_t)to) && (tx_tasks_stack_id > 0))
-    {
-        // This message is in the space we want to use, clear the task
-        MsgAlloc_PullMsgFromTxTask();
-        if (mem_stat->msg_drop_number < 0xFF)
+        // check if there is no msg between from and to on tx_tasks
+        while (((uint32_t)tx_tasks[0].data_pt >= (uint32_t)from) && ((uint32_t)tx_tasks[0].data_pt <= (uint32_t)to) && (tx_tasks_stack_id > 0))
         {
-            mem_stat->msg_drop_number++;
+            // This message is in the space we want to use, clear the task
+            MsgAlloc_PullMsgFromTxTask();
+            if (mem_stat->msg_drop_number < 0xFF)
+            {
+                mem_stat->msg_drop_number++;
+                mem_stat->buffer_occupation_ratio = 100;
+            }
         }
     }
     // if we go here there is no reason to continue because newest messages can't overlap the memory zone.
