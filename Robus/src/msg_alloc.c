@@ -253,17 +253,15 @@ void MsgAlloc_EndMsg(void)
     //******** Prepare the next msg *********
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= 2;
-    // clean space between data_ptr (data_ptr + sizeof(header_t)+2)
+    // Check data ptr alignement
+    if (*data_ptr % 2 != 1)
+    {
+        data_ptr++;
+    }
+    // Check if we have space for the next message
     if (MsgAlloc_DoWeHaveSpace((void *)(data_ptr + sizeof(header_t) + 2)) == FAILED)
     {
         data_ptr = &msg_buffer[0];
-    }
-    else
-    {
-        if (*data_ptr % 2 != 1)
-        {
-            data_ptr++;
-        }
     }
     // update the current_msg
     current_msg = (volatile msg_t *)data_ptr;
