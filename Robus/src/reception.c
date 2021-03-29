@@ -260,9 +260,7 @@ void Recep_Reset(void)
     crc_val = 0xFFFF;
     ctx.tx.lock = false;
     ctx.rx.status.rx_framing_error = false;
-    LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetHeader;
-    LuosHAL_SetIrqState(true);
     LuosHAL_SetRxDetecPin(true);
 }
 /******************************************************************************

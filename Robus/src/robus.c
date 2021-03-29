@@ -177,7 +177,9 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     // compute the CRC
     for (uint16_t i = 0; i < full_size - 2; i++)
     {
+        LuosHAL_SetIrqState(false);
         LuosHAL_ComputeCRC(&msg->stream[i], (uint8_t *)&crc_val);
+        LuosHAL_SetIrqState(true);
     }
     msg->stream[full_size - 2] = (uint8_t)(crc_val);
     msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
@@ -194,7 +196,7 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     // ********** Allocate the message ********************
     if(MsgAlloc_SetTxTask(ll_container, (uint8_t *)msg->stream, full_size, localhost) == FAILED)
     {
-    	return FAILED;
+        return FAILED;
     }
     // **********Try to send the message********************
     Transmit_Process();

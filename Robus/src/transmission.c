@@ -138,8 +138,8 @@ void Transmit_Process()
             // Switch reception in collision detection mode
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
-            ctx.tx.data = data;
             LuosHAL_SetIrqState(true);
+            ctx.tx.data = data;
             // Transmit data
             LuosHAL_ComTransmit(data, size);
         }
