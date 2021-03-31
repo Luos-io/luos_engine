@@ -24,7 +24,6 @@ typedef struct
 {
     volatile uint8_t lock;            // Transmit lock state
     uint8_t *data;                    // data to compare for collision detection
-    ll_container_t llContainer;       // Container sending the message
     volatile transmitStatus_t status; // data to compare for collision detection
     volatile uint8_t collision;       // true is a collision occure during this transmission.
 } TxCom_t;
