@@ -671,6 +671,7 @@ error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_da
 {
     // Manage buffer session (one per container)
     static uint32_t data_size[MAX_CONTAINER_NUMBER] = {0};
+    static uint32_t total_data_size[MAX_CONTAINER_NUMBER] = {0};
     static uint16_t last_msg_size = 0;
     uint16_t id = Luos_GetContainerIndex(container);
     // check good container index
@@ -678,6 +679,14 @@ error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_da
     {
         return FAILED;
     }
+
+    //store total size of a msg
+    if (total_data_size[id] == 0)
+    {
+        total_data_size[id] = msg->header.size;
+    }
+
+    LUOS_ASSERT(msg->header.size <= total_data_size[id]);
 
     // check message integrity
     if ((last_msg_size > 0) && (last_msg_size - MAX_DATA_MSG_SIZE > msg->header.size))
@@ -707,12 +716,16 @@ error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_da
     data_size[id] = data_size[id] + chunk_size;
     last_msg_size = msg->header.size;
 
+    //check
+    LUOS_ASSERT(data_size[id] <= total_data_size[id]);
+
     // Check end of data
-    if (!(msg->header.size > MAX_DATA_MSG_SIZE))
+    if (msg->header.size <= MAX_DATA_MSG_SIZE)
     {
         // Data collection finished, reset buffer session state
         data_size[id] = 0;
         last_msg_size = 0;
+        total_data_size[id] = 0;
         return SUCCEED;
     }
     return FAILED;
