@@ -177,9 +177,15 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     // compute the CRC
     for (uint16_t i = 0; i < full_size - 2; i++)
     {
-        LuosHAL_SetIrqState(false);
-        LuosHAL_ComputeCRC(&msg->stream[i], (uint8_t *)&crc_val);
-        LuosHAL_SetIrqState(true);
+        uint16_t dbyte = msg->stream[i];
+        crc_val ^= dbyte << 8;
+        for (uint8_t j = 0; j < 8; ++j)
+        {
+            uint16_t mix = crc_val & 0x8000;
+            crc_val = (crc_val << 1);
+            if (mix)
+                crc_val = crc_val ^ 0x0007;
+        }
     }
     msg->stream[full_size - 2] = (uint8_t)(crc_val);
     msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
