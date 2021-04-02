@@ -29,8 +29,6 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((__packed__))
 {
-    uint8_t msg_nbr;
-    uint8_t fail_msg_nbr;
     uint8_t *max_retry;
 } ll_stats_t;
 /*

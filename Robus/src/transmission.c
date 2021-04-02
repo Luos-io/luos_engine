@@ -105,7 +105,6 @@ void Transmit_Process()
                 {
                     ll_container_pt->dead_container_spotted = (uint16_t)(((msg_t *)data)->header.target);
                 }
-                ll_container_pt->ll_stat.fail_msg_nbr++;
                 nbrRetry = 0;
                 ctx.tx.collision = false;
                 // Remove all transmist messages of this specific target

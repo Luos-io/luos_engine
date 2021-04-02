@@ -530,16 +530,6 @@ error_return_t Luos_SendMsg(container_t *container, msg_t *msg)
     {
         return FAILED;
     }
-    // Compute some stats
-    container->ll_container->ll_stat.msg_nbr++;
-
-    if (container->ll_container->ll_stat.msg_nbr == 0xFF)
-    {
-        container->ll_container->ll_stat.msg_nbr = container->ll_container->ll_stat.msg_nbr >> 1;
-        container->ll_container->ll_stat.fail_msg_nbr = container->ll_container->ll_stat.fail_msg_nbr >> 1;
-    }
-
-    container->statistics.msg_fail_ratio = (uint8_t)(((uint32_t)container->ll_container->ll_stat.fail_msg_nbr * 100) / container->ll_container->ll_stat.msg_nbr);
 
     return SUCCEED;
 }
