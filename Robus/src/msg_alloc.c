@@ -120,6 +120,9 @@ static inline void MsgAlloc_ClearMsgTask(void);
 // Luos task stack
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id);
 
+// Available buffer space evaluation
+static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void);
+
 // Check if this message is the oldest
 static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
 
@@ -176,6 +179,12 @@ void MsgAlloc_loop(void)
     {
         mem_stat->tx_msg_stack_ratio = stat;
     }
+    // Compute buffer occupation rate
+    stat = (uint8_t)(((MSG_BUFFER_SIZE - MsgAlloc_BufferAvailableSpaceComputation()) * 100) / (MSG_BUFFER_SIZE));
+    if (stat > mem_stat->buffer_occupation_ratio)
+    {
+        mem_stat->buffer_occupation_ratio = stat;
+    }
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
     {
@@ -185,6 +194,35 @@ void MsgAlloc_loop(void)
         // reset copy_task_pointer status
         copy_task_pointer = NULL;
     }
+}
+/******************************************************************************
+ * @brief compute remaing space on msg_buffer.
+ * @param None
+ * @return Available space in bytes
+ ******************************************************************************/
+static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
+{
+    uint32_t stack_free_space = 0;
+    if ((uint32_t)oldest_msg != 0xFFFFFFFF)
+    {
+        LUOS_ASSERT(((uint32_t)oldest_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)oldest_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
+        // There is some rx_msg task
+        if ((uint32_t)oldest_msg > (uint32_t)data_end_estimation)
+        {
+            // The oldest task is between `data_end_estimation` and the end of the buffer
+            stack_free_space = (uint32_t)oldest_msg - (uint32_t)data_end_estimation;
+        }
+        else
+        {
+            // The oldest task is between the begin of the buffer and `current_msg`
+            stack_free_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)data_end_estimation);
+        }
+    }
+    else
+    {
+        stack_free_space = MSG_BUFFER_SIZE - ((uint32_t)data_end_estimation - (uint32_t)current_msg);
+    }
+    return stack_free_space;
 }
 /******************************************************************************
  * @brief save the given msg as oldest if it is
@@ -430,6 +468,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
         if (mem_stat->msg_drop_number < 0xFF)
         {
             mem_stat->msg_drop_number++;
+            mem_stat->buffer_occupation_ratio = 100;
         }
     }
     // check if there is a msg in the space we need
