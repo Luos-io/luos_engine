@@ -588,8 +588,11 @@ static inline void MsgAlloc_ClearMsgTask(void)
         LuosHAL_SetIrqState(false);
         msg_tasks[rm] = msg_tasks[rm + 1];
     }
-    msg_tasks_stack_id--;
-    msg_tasks[msg_tasks_stack_id] = 0;
+    if (msg_tasks_stack_id != 0)
+    {
+        msg_tasks_stack_id--;
+        msg_tasks[msg_tasks_stack_id] = 0;
+    }
     LuosHAL_SetIrqState(true);
     MsgAlloc_FindNewOldestMsg();
 }
