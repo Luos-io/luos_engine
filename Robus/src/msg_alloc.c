@@ -218,6 +218,7 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
             if (mem_stat->msg_drop_number < 0xFF)
             {
                 mem_stat->msg_drop_number++;
+                mem_stat->buffer_occupation_ratio = 100;
             }
         }
     }
@@ -244,6 +245,7 @@ void MsgAlloc_EndMsg(void)
         if (mem_stat->msg_drop_number < 0xFF)
         {
             mem_stat->msg_drop_number++;
+            mem_stat->rx_msg_stack_ratio = 100;
         }
     }
     LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
@@ -481,6 +483,11 @@ void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, 
     {
         // There is no more space on the luos_tasks, remove the oldest msg.
         MsgAlloc_ClearLuosTask(0);
+        if (mem_stat->msg_drop_number < 0xFF)
+        {
+            mem_stat->msg_drop_number++;
+            mem_stat->luos_stack_ratio = 100;
+        }
     }
     // fill the informations of the message in this slot
     luos_tasks[luos_tasks_stack_id].msg_pt = concerned_msg;

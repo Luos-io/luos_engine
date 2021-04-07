@@ -116,6 +116,10 @@ ll_container_t *Robus_ContainerCreate(uint16_t type)
     ctx.ll_container_table[ctx.ll_container_number].id = DEFAULTID;
     // Initialize dead container detection
     ctx.ll_container_table[ctx.ll_container_number].dead_container_spotted = 0;
+    // Clear stats
+    ctx.ll_container_table[ctx.ll_container_number].ll_stat.fail_msg_nbr = 0;
+    ctx.ll_container_table[ctx.ll_container_number].ll_stat.max_retry = 0;
+    ctx.ll_container_table[ctx.ll_container_number].ll_stat.msg_nbr = 0;
     // Return the freshly initialized ll_container pointer.
     return (ll_container_t *)&ctx.ll_container_table[ctx.ll_container_number++];
 }
