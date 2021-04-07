@@ -831,7 +831,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  * @param data to transmit
  * @param size of the data to transmit
  ******************************************************************************/
-error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t size, uint8_t locahost)
+error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t crc, uint16_t size, uint8_t locahost, uint8_t ack)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uint32_t)data > 0) && ((uint32_t)current_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uint32_t)current_msg >= (uint32_t)&msg_buffer[0]));
     void *rx_msg_bkp = 0;
@@ -949,9 +949,24 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
         }
     }
     LuosHAL_SetIrqState(true);
-    // Finish the copy of the message to transmit
-    memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 3);
-    // The copy of the message is finish, manage localhost
+
+    //finish the copy
+    if (ack != 0)
+    {
+        // Finish the copy of the message to transmit
+        memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 6); // 3 bytes already copied - 2 bytes CRC - 1 byte ack
+        ((char *)tx_msg)[size - 3] = (uint8_t)(crc);
+        ((char *)tx_msg)[size - 2] = (uint8_t)(crc >> 8);
+        ((char *)tx_msg)[size - 1] = ack;
+    }
+    else
+    {
+        // Finish the copy of the message to transmit
+        memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 5); // 3 bytes already copied - 2 bytes CRC
+        ((char *)tx_msg)[size - 2] = (uint8_t)(crc);
+        ((char *)tx_msg)[size - 1] = (uint8_t)(crc >> 8);
+    }
+    //manage localhost
     if (locahost)
     {
         // This is a localhost message copy it as a message task

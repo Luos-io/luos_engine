@@ -147,6 +147,7 @@ void Robus_ContainersClear(void)
  ******************************************************************************/
 error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
+    uint8_t ack = 0;
     uint16_t data_size = 0;
     uint16_t crc_val = 0xFFFF;
     // ********** Prepare the message ********************
@@ -170,9 +171,8 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     {
         data_size = msg->header.size;
     }
-    uint16_t full_size = sizeof(header_t) + data_size;
     // Add the CRC to the total size of the message
-    full_size += 2;
+    uint16_t full_size = sizeof(header_t) + data_size + 2;
 
     // compute the CRC
     for (uint16_t i = 0; i < full_size - 2; i++)
@@ -187,8 +187,6 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
                 crc_val = crc_val ^ 0x0007;
         }
     }
-    msg->stream[full_size - 2] = (uint8_t)(crc_val);
-    msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
 
     // Check the localhost situation
     uint8_t localhost = Recep_NodeConcerned(&msg->header);
@@ -196,11 +194,12 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && (localhost && (msg->header.target != DEFAULTID)))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
-        msg->stream[full_size++] = ctx.rx.status.unmap;
+        ack = ctx.rx.status.unmap;
+        full_size++;
     }
 
     // ********** Allocate the message ********************
-    if(MsgAlloc_SetTxTask(ll_container, (uint8_t *)msg->stream, full_size, localhost) == FAILED)
+    if (MsgAlloc_SetTxTask(ll_container, (uint8_t *)msg->stream, crc_val, full_size, localhost, ack) == FAILED)
     {
         return FAILED;
     }
@@ -260,7 +259,8 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
         //msg send not blocking
         Robus_SendMsg(ll_container, &msg);
         //need to wait until tx msg before clear msg alloc
-        while(MsgAlloc_TxAllComplete() != SUCCEED);
+        while (MsgAlloc_TxAllComplete() != SUCCEED)
+            ;
 
         MsgAlloc_Init(NULL);
 
