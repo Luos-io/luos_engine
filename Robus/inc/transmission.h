@@ -14,9 +14,12 @@
  ******************************************************************************/
 typedef struct
 {
-    uint8_t *data;
-    volatile uint8_t lock;
-    volatile uint8_t collision;
+    volatile uint8_t lock;                // Transmit lock state
+    uint8_t *data;                        // data to compare for collision detection
+    volatile uint8_t collision;           // collision flag
+    volatile uint16_t additionalDelay_us; // Aditional delay due to collision or Nak
+    ll_container_t llContainer;           // Container sending the message
+    uint8_t transmitComplete;             // A flag to know if a transmission have been completed
 } TxCom_t;
 /*******************************************************************************
  * Variables
@@ -26,7 +29,7 @@ typedef struct
  * Function
  ******************************************************************************/
 void Transmit_SendAck(void);
-error_return_t Transmit_Process(uint8_t *data, uint16_t size);
-void Transmit_WaitUnlockTx(void);
+void Transmit_Process(void);
+void Transmit_End(void);
 
 #endif /* _TRANSMISSION_H_ */

@@ -68,8 +68,10 @@ typedef struct __attribute__((__packed__))
 
 typedef struct
 {
-    char *data_pt; /*!< Start pointer of the data on msg_buffer. */
-    uint16_t size; /*!< size of the data. */
+    uint8_t *data_pt;                /*!< Start pointer of the data on msg_buffer. */
+    uint16_t size;                   /*!< size of the data. */
+    ll_container_t *ll_container_pt; /*!< Pointer to the transmitting ll_container. */
+    uint8_t localhost;               /*!< is this message a localhost one? */
 } tx_task_t;
 /*******************************************************************************
  * Variables
@@ -631,7 +633,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  * @param data to transmit
  * @param size of the data to transmit
  ******************************************************************************/
-void MsgAlloc_SetTxTask(char *data, uint16_t size, uint8_t locahost)
+void MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t size, uint8_t locahost)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uint32_t)data > 0) && ((uint32_t)current_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uint32_t)current_msg >= (uint32_t)&msg_buffer[0]));
     void *rx_msg_bkp = 0;
@@ -705,7 +707,9 @@ void MsgAlloc_SetTxTask(char *data, uint16_t size, uint8_t locahost)
 
     LuosHAL_SetIrqState(false);
     tx_tasks[tx_tasks_stack_id].size = size;
-    tx_tasks[tx_tasks_stack_id].data_pt = (char *)tx_msg;
+    tx_tasks[tx_tasks_stack_id].data_pt = (uint8_t *)tx_msg;
+    tx_tasks[tx_tasks_stack_id].ll_container_pt = ll_container_pt;
+    tx_tasks[tx_tasks_stack_id].localhost = locahost;
     tx_tasks_stack_id++;
     if (tx_tasks_stack_id == MAX_MSG_NB)
     {
@@ -755,18 +759,34 @@ void MsgAlloc_PullMsgFromTxTask(void)
 }
 /******************************************************************************
  * @brief return a message to transmit
+ * @param ll_container_pt container sending this data
  * @param data to send
  * @param size of the data to send
+ * @param localhost is this message a localhost one
  * @return error_return_t : Fail is there is no more message available.
  ******************************************************************************/
-error_return_t MsgAlloc_GetTxTask(char **data, uint16_t *size)
+error_return_t MsgAlloc_GetTxTask(ll_container_t **ll_container_pt, uint8_t **data, uint16_t *size, uint8_t *locahost)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB));
     if (tx_tasks_stack_id > 0)
     {
         *data = tx_tasks[0].data_pt;
         *size = tx_tasks[0].size;
+        *ll_container_pt = tx_tasks[0].ll_container_pt;
+        *locahost = tx_tasks[0].localhost;
         return SUCCEED;
     }
     return FAILED;
+}
+/******************************************************************************
+ * @brief check if there is uncomplete tx_tasks
+ * @return error_return_t : Fail is there is untransmitted message.
+ ******************************************************************************/
+error_return_t MsgAlloc_TxAllComplete(void)
+{
+    if (tx_tasks_stack_id > 0)
+    {
+        return FAILED;
+    }
+    return SUCCEED;
 }

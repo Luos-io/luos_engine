@@ -19,11 +19,11 @@ typedef struct
 {
 
     // Variables
-    node_t node;    /*!< Node informations. */
-    RxCom_t rx;     /*!< Receiver informations. */
-    TxCom_t tx;     /*!< Transmitter informations. */
-    uint8_t ack;    /*!< Ack informations. */
-    PortMng_t port; /*!< port informations. */
+    node_t node;        /*!< Node informations. */
+    RxCom_t rx;         /*!< Receiver informations. */
+    TxCom_t tx;         /*!< Transmitter informations. */
+    volatile uint8_t ack_needed; /*!< Ack needed flag. */
+    PortMng_t port;     /*!< port informations. */
 
     //Virtual container management
     ll_container_t ll_container_table[MAX_CONTAINER_NUMBER]; /*!< Virtual Container table. */

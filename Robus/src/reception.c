@@ -12,6 +12,7 @@
 #include "target.h"
 #include "transmission.h"
 #include "msg_alloc.h"
+#include "luos_utils.h"
 
 /*******************************************************************************
  * Definitions
@@ -202,9 +203,18 @@ void Recep_GetCollision(volatile uint8_t *data)
     {
         if (data_count == COLLISION_DETECTION_NUMBER)
         {
+            // collision detection end
             LuosHAL_SetRxState(false);
-            // switch to get header.
-            ctx.rx.callback = Recep_GetHeader;
+            if (ctx.ack_needed)
+            {
+                // switch to catch Ack.
+                ctx.rx.callback = Recep_CatchAck;
+            }
+            else
+            {
+                // switch to get header.
+                ctx.rx.callback = Recep_GetHeader;
+            }
             return;
         }
     }
@@ -226,13 +236,16 @@ void Recep_Drop(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_Timeout(void)
 {
-    if ((ctx.rx.callback != Recep_GetHeader)&&(ctx.rx.callback != Recep_Drop))
+    if ((ctx.rx.callback != Recep_GetHeader) && (ctx.rx.callback != Recep_Drop))
     {
         ctx.rx.status.rx_timeout = true;
     }
     MsgAlloc_InvalidMsg();
     ctx.tx.lock = false;
     Recep_Reset();
+    ctx.tx.additionalDelay_us = 0;
+    // This is possibly the end of a transmission, check it.
+    Transmit_End();
 }
 /******************************************************************************
  * @brief reset the reception state machine
@@ -247,16 +260,64 @@ void Recep_Reset(void)
     LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetHeader;
     LuosHAL_SetIrqState(true);
-    LuosHAL_SetTxLockDetecState(true);
 }
 /******************************************************************************
- * @brief Catch ack when needed for the sended msg
+ * @brief Catch ack when needed for the sent msg
  * @param data come from RX
  * @return None
  ******************************************************************************/
 void Recep_CatchAck(volatile uint8_t *data)
 {
-    ctx.ack = *data;
+    static uint8_t nbrNakRetry = 0; // Number of Ack retry
+    LUOS_ASSERT(ctx.ack_needed == true);
+    // Ack validation
+    status_t status;
+    status.unmap = *data;
+    if ((status.rx_error) | (status.identifier != 0x0F))
+    {
+        ll_container_t *ll_container;
+        // Get the message
+        msg_t *msg = 0;
+        uint16_t size;
+        uint8_t localhost;
+        MsgAlloc_GetTxTask(&ll_container, (uint8_t **)&msg->stream, &size, &localhost);
+        // There is a failure on Ack
+        if ((status.unmap) && (status.identifier != 0x0F))
+        {
+            // This is probably a part of another message
+            // Send it to header
+            ctx.rx.callback = Recep_GetHeader;
+            Recep_GetHeader((volatile uint8_t *)&status.unmap);
+        }
+        ctx.tx.nbrNakRetry++;
+        if (ctx.tx.nbrNakRetry < NBR_NAK_RETRY)
+        {
+            // retry
+            ctx.tx.additionalDelay_us = (uint16_t)(10 * ctx.tx.nbrNakRetry);
+            if (*ll_container->ll_stat.max_nak_retry < ctx.tx.nbrNakRetry)
+            {
+                *ll_container->ll_stat.max_nak_retry = ctx.tx.nbrNakRetry;
+            }
+        }
+        else
+        {
+            // We failed to transmit this message.
+            // Save the target as dead container into the sending ll_container
+            ll_container->dead_container_spotted = (uint16_t)(msg->header.target);
+            // Remove this tx task
+            MsgAlloc_PullMsgFromTxTask(); //TODO remove all TX tasks of this target
+            *ll_container->ll_stat.max_nak_retry = NBR_NAK_RETRY;
+            ll_container->ll_stat.fail_msg_nbr++;
+            ctx.tx.nbrNakRetry = 0;
+        }
+    }
+    else
+    {
+        // Ack is ok
+        // We don't need ack anymore
+        ctx.ack_needed = false;
+        ctx.tx.nbrNakRetry = 0;
+    }
     ctx.rx.callback = Recep_GetHeader;
 }
 /******************************************************************************
