@@ -53,6 +53,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg);
 // Tx tasks create, get and consume
 void MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t size, uint8_t locahost);
 void MsgAlloc_PullMsgFromTxTask(void);
+void MsgAlloc_PullContainerFromTxTask(uint16_t container_id);
 error_return_t MsgAlloc_GetTxTask(ll_container_t **ll_container_pt, uint8_t **data, uint16_t *size, uint8_t *locahost);
 error_return_t MsgAlloc_TxAllComplete(void);
 

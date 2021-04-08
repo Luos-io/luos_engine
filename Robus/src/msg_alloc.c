@@ -757,6 +757,42 @@ void MsgAlloc_PullMsgFromTxTask(void)
     LuosHAL_SetIrqState(true);
 }
 /******************************************************************************
+ * @brief remove all transmit task of a specific container
+ * @param None
+ ******************************************************************************/
+void MsgAlloc_PullContainerFromTxTask(uint16_t container_id)
+{
+    LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id < MAX_MSG_NB));
+    uint8_t task_id = 0;
+    // check all task
+    while (task_id < tx_tasks_stack_id)
+    {
+        if (((msg_t *)tx_tasks[task_id].data_pt)->header.target == container_id)
+        {
+            // Decay tasks
+            for (uint8_t i = task_id; i < tx_tasks_stack_id; i++)
+            {
+                LuosHAL_SetIrqState(false);
+                tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
+                tx_tasks[i].size = tx_tasks[i + 1].size;
+                LuosHAL_SetIrqState(true);
+            }
+            LuosHAL_SetIrqState(false);
+            if (tx_tasks_stack_id != 0)
+            {
+                tx_tasks_stack_id--;
+                tx_tasks[tx_tasks_stack_id].data_pt = 0;
+                tx_tasks[tx_tasks_stack_id].size = 0;
+            }
+            LuosHAL_SetIrqState(true);
+        }
+        else
+        {
+            task_id++;
+        }
+    }
+}
+/******************************************************************************
  * @brief return a message to transmit
  * @param ll_container_pt container sending this data
  * @param data to send

@@ -95,7 +95,7 @@ void Transmit_Process()
     {
         // We have a task available and we can use the bus
         // Check if we already try to send a message multiple times and put it on stats
-        if (*ll_container_pt->ll_stat.max_retry < nbrRetry)
+        if ((*ll_container_pt->ll_stat.max_retry < nbrRetry) || (nbrRetry >= NBR_RETRY))
         {
             *ll_container_pt->ll_stat.max_retry = nbrRetry;
             if (*ll_container_pt->ll_stat.max_retry >= NBR_RETRY)
@@ -109,9 +109,12 @@ void Transmit_Process()
                 ll_container_pt->ll_stat.fail_msg_nbr++;
                 nbrRetry = 0;
                 ctx.tx.collision = false;
-                MsgAlloc_PullMsgFromTxTask(); //TODO remove all TX tasks of this target
+                // Remove all transmist messages of this specific target
+                MsgAlloc_PullContainerFromTxTask((uint16_t)(((msg_t *)data)->header.target));
+                // Try to get a tx_task for another container
                 if (MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == FAILED)
                 {
+                    // Nothing to transmit anymore, just exit.
                     return;
                 }
             }
@@ -124,20 +127,23 @@ void Transmit_Process()
             // Check if it is a localhost message
             if (!localhost || (((msg_t *)data)->header.target == DEFAULTID))
             {
-                // We need ta validate the good reception af the ack, change the state of state machine after the end of collision detection to wait a ACK
+                // We need ta validate the good reception af the ack.
+                // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
                 ctx.tx.status = TX_NOK;
             }
         }
-
-        // switch reception in collision detection mode
+        // Check if the line is free allowing us to send ou message
         if (Transmit_GetLockStatus() == false)
         {
+            // We are free to transmit
+            // Switch reception in collision detection mode
             LuosHAL_SetRxDetecPin(false);
             ctx.tx.lock = true;
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
             ctx.tx.data = data;
             LuosHAL_SetIrqState(true);
+            // Transmit data
             LuosHAL_ComTransmit(data, size);
         }
     }
