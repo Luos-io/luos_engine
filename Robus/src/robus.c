@@ -145,7 +145,7 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
     uint16_t data_size = 0;
     uint16_t crc_val = 0xFFFF;
-    // Prepare the message
+    // **********Prepare the message********************
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     if (ll_container->id != 0)
@@ -178,7 +178,8 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     msg->stream[full_size - 2] = (uint8_t)(crc_val);
     msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
 
-    MsgAlloc_SetTxTask((char *)msg->stream, full_size);
+    // **********Allocate the message********************
+    MsgAlloc_SetTxTask((char *)msg->stream, full_size, Recep_NodeConcerned(&msg->header));
     // For now we just try to run the "normal" transmission using allocator
     char *data = 0;
     MsgAlloc_GetTxTask(&data, &full_size);
@@ -275,16 +276,6 @@ ack_restart:
         {
             *ll_container->ll_stat.max_nak_retry = nbr_nak_retry;
         }
-    }
-
-    // localhost management
-    if (Recep_NodeConcerned(&msg->header))
-    {
-        // Reset potential residue of collision detection
-        Recep_Reset();
-        MsgAlloc_InvalidMsg();
-        // set message into the allocator
-        MsgAlloc_SetMessage(msg);
     }
     MsgAlloc_PullMsgFromTxTask();
     return result;

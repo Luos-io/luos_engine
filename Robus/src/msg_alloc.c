@@ -302,52 +302,6 @@ void MsgAlloc_SetData(uint8_t data)
     data_ptr++;
 }
 /******************************************************************************
- * @brief write a complete message from localhost management.
- * @param msg_t* msg to write in the allocator
- * @return None
- ******************************************************************************/
-void MsgAlloc_SetMessage(msg_t *msg)
-{
-    //******** Clean the message space **********
-    // Be sure that the end of msg_buffer is after data_ptr + header_t.size + header_t
-    uint16_t data_size = 0;
-    msg_t *cpy_msg;
-    if (msg->header.size > MAX_DATA_MSG_SIZE)
-    {
-        data_size = MAX_DATA_MSG_SIZE + sizeof(header_t);
-    }
-    else
-    {
-        data_size = msg->header.size + sizeof(header_t);
-    }
-
-    LuosHAL_SetIrqState(false);
-    if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->stream[data_size])) == FAILED)
-    {
-        // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
-        // Move current_msg to msg_buffer
-        current_msg = (volatile msg_t *)&msg_buffer[0];
-    }
-    MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(&current_msg->stream[data_size]));
-
-    //******** finish the message**********
-    /* 
-     * To prevent reception concurency, before copying any data we have to prepare
-     * the reception of the next one in a thread safe code part.
-     * Then we can copy it without trouble.
-     */
-    // backup the message to copy location allowing current_msg to be used by reception
-    cpy_msg = (msg_t *)current_msg;
-    // fake the data_ptr progression to be able to receive other messages during the copy
-    data_ptr = &current_msg->stream[data_size + 2];
-    // finish the message and prepare the next reception
-    MsgAlloc_EndMsg();
-    LuosHAL_SetIrqState(true);
-
-    //******** Write data *********
-    memcpy((void *)cpy_msg, (void *)msg, data_size);
-}
-/******************************************************************************
  * @brief No message in buffer receive since initialization
  * @param None
  * @return msg_t* sucess or fail if good init
@@ -677,7 +631,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  * @param data to transmit
  * @param size of the data to transmit
  ******************************************************************************/
-void MsgAlloc_SetTxTask(char *data, uint16_t size)
+void MsgAlloc_SetTxTask(char *data, uint16_t size, uint8_t locahost)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uint32_t)data > 0) && ((uint32_t)current_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uint32_t)current_msg >= (uint32_t)&msg_buffer[0]));
     void *rx_msg_bkp = 0;
@@ -765,6 +719,15 @@ void MsgAlloc_SetTxTask(char *data, uint16_t size)
     LuosHAL_SetIrqState(true);
     // Finish the copy of the message to transmit
     memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 3);
+    // The copy of the message is finish, manage localhost
+    if (locahost)
+    {
+        // This is a localhost message copy it as a message task
+        LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
+        LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
+        msg_tasks[msg_tasks_stack_id] = tx_msg;
+        msg_tasks_stack_id++;
+    }
 }
 /******************************************************************************
  * @brief remove a transmit message task

@@ -31,7 +31,6 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size);
 void MsgAlloc_InvalidMsg(void);
 void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
-void MsgAlloc_SetMessage(msg_t *msg);
 error_return_t MsgAlloc_IsEmpty(void);
 void MsgAlloc_UsedMsgEnd(void);
 
@@ -52,7 +51,7 @@ uint16_t MsgAlloc_LuosTasksNbr(void);
 void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg);
 
 // Tx tasks create, get and consume
-void MsgAlloc_SetTxTask(char *data, uint16_t size);
+void MsgAlloc_SetTxTask(char *data, uint16_t size, uint8_t locahost);
 void MsgAlloc_PullMsgFromTxTask(void);
 error_return_t MsgAlloc_GetTxTask(char **data, uint16_t *size);
 
