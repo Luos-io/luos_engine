@@ -83,6 +83,7 @@ volatile uint8_t msg_buffer[MSG_BUFFER_SIZE]; /*!< Memory space used to save and
 volatile msg_t *current_msg;                  /*!< current work in progress msg pointer. */
 volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be writen into msgbuffer. */
 volatile uint8_t *data_end_estimation;        /*!< Estimated end of the current receiving message. */
+volatile msg_t *oldest_msg = NULL;            /*!< The oldest message among all the stacks. */
 volatile msg_t *used_msg = NULL;              /*!< Message curently used by luos loop. */
 
 // Allocator task stack
@@ -119,6 +120,12 @@ static inline void MsgAlloc_ClearMsgTask(void);
 // Luos task stack
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id);
 
+// Check if this message is the oldest
+static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
+
+// Find the oldest message curretly stored
+static inline void MsgAlloc_FindNewOldestMsg(void);
+
 /*******************************************************************************
  * Functions --> generic
  ******************************************************************************/
@@ -142,6 +149,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     memset((void *)tx_tasks, 0, sizeof(tx_tasks));
     copy_task_pointer = NULL;
     used_msg = NULL;
+    oldest_msg = (msg_t *)0xFFFFFFFF;
     if (memory_stats != NULL)
     {
         mem_stat = memory_stats;
@@ -177,6 +185,67 @@ void MsgAlloc_loop(void)
         // reset copy_task_pointer status
         copy_task_pointer = NULL;
     }
+}
+/******************************************************************************
+ * @brief save the given msg as oldest if it is
+ * @param oldest_stack_msg_pt : the oldest message of a stack
+ * @return None
+ ******************************************************************************/
+static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
+{
+    if ((uint32_t)oldest_stack_msg_pt > 0)
+    {
+        LUOS_ASSERT(((uint32_t)oldest_stack_msg_pt >= (uint32_t)&msg_buffer[0]) && ((uint32_t)oldest_stack_msg_pt < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
+        // recompute oldest_stack_msg_pt into delta byte from current message
+        uint32_t stack_delta_space;
+        if ((uint32_t)oldest_stack_msg_pt > (uint32_t)current_msg)
+        {
+            // The oldest task is between `data_end_estimation` and the end of the buffer
+            stack_delta_space = (uint32_t)oldest_stack_msg_pt - (uint32_t)current_msg;
+        }
+        else
+        {
+            // The oldest task is between the begin of the buffer and `data_end_estimation`
+            // we have to decay it to be able to define delta
+            stack_delta_space = ((uint32_t)oldest_stack_msg_pt - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
+        }
+        // recompute oldest_msg into delta byte from current message
+        uint32_t oldest_msg_delta_space;
+        if ((uint32_t)oldest_msg > (uint32_t)current_msg)
+        {
+            // The oldest msg is between `data_end_estimation` and the end of the buffer
+            oldest_msg_delta_space = (uint32_t)oldest_msg - (uint32_t)current_msg;
+        }
+        else
+        {
+            // The oldest msg is between the begin of the buffer and `data_end_estimation`
+            // we have to decay it to be able to define delta
+            oldest_msg_delta_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
+        }
+        // Compare deltas
+        if (stack_delta_space < oldest_msg_delta_space)
+        {
+            // This one is the new oldest message
+            oldest_msg = oldest_stack_msg_pt;
+        }
+    }
+}
+/******************************************************************************
+ * @brief update the new oldest message if we need to
+ * @param removed_msg : the freshly oldest removed message of the stack
+ * @return None
+ ******************************************************************************/
+static inline void MsgAlloc_FindNewOldestMsg(void)
+{
+    // Reinit the value
+    oldest_msg = (msg_t *)0xFFFFFFFF;
+    // start parsing tasks to find the oldest message
+    // check it on msg_tasks
+    MsgAlloc_OldestMsgCandidate((msg_t *)msg_tasks[0]);
+    // check it on luos_tasks
+    MsgAlloc_OldestMsgCandidate(luos_tasks[0].msg_pt);
+    // check it on tx_tasks
+    MsgAlloc_OldestMsgCandidate((msg_t *)tx_tasks[0].data_pt);
 }
 
 /*******************************************************************************
@@ -280,6 +349,10 @@ void MsgAlloc_EndMsg(void)
     LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
     LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
     msg_tasks[msg_tasks_stack_id] = current_msg;
+    if (msg_tasks_stack_id == 0)
+    {
+        MsgAlloc_OldestMsgCandidate((msg_t *)msg_tasks[0]);
+    }
     msg_tasks_stack_id++;
     //******** Prepare the next msg *********
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
@@ -430,6 +503,7 @@ static inline void MsgAlloc_ClearMsgTask(void)
     msg_tasks_stack_id--;
     msg_tasks[msg_tasks_stack_id] = 0;
     LuosHAL_SetIrqState(true);
+    MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
  * @brief Pull a message that is not interpreted by robus yet
@@ -479,6 +553,7 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
         luos_tasks_stack_id--;
     }
     LuosHAL_SetIrqState(true);
+    MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
  * @brief Alloc luos task
@@ -502,6 +577,10 @@ void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, 
     // fill the informations of the message in this slot
     luos_tasks[luos_tasks_stack_id].msg_pt = concerned_msg;
     luos_tasks[luos_tasks_stack_id].ll_container_pt = container_concerned_by_current_msg;
+    if (luos_tasks_stack_id == 0)
+    {
+        MsgAlloc_OldestMsgCandidate(luos_tasks[0].msg_pt);
+    }
     luos_tasks_stack_id++;
     // luos task memory usage
     uint8_t stat = (uint8_t)(((uint32_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
@@ -529,7 +608,6 @@ error_return_t MsgAlloc_PullMsg(ll_container_t *target_module, msg_t **returned_
         if (luos_tasks[i].ll_container_pt == target_module)
         {
             *returned_msg = luos_tasks[i].msg_pt;
-
             // Clear the slot by sliding others to the left on it
             used_msg = *returned_msg;
             MsgAlloc_ClearLuosTask(i);
@@ -551,7 +629,6 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     if (luos_task_id < luos_tasks_stack_id)
     {
         *returned_msg = luos_tasks[luos_task_id].msg_pt;
-
         // Clear the slot by sliding others to the left on it
         used_msg = *returned_msg;
         MsgAlloc_ClearLuosTask(luos_task_id);
@@ -760,6 +837,11 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     tx_tasks[tx_tasks_stack_id].data_pt = (uint8_t *)tx_msg;
     tx_tasks[tx_tasks_stack_id].ll_container_pt = ll_container_pt;
     tx_tasks[tx_tasks_stack_id].localhost = locahost;
+    // Check if last tx task is the oldest msg of the buffer
+    if (tx_tasks_stack_id == 0)
+    {
+        MsgAlloc_OldestMsgCandidate((msg_t *)tx_tasks[0].data_pt);
+    }
     tx_tasks_stack_id++;
     if (tx_tasks_stack_id == MAX_MSG_NB)
     {
@@ -793,6 +875,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
 void MsgAlloc_PullMsgFromTxTask(void)
 {
     LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
+
     // Decay tasks
     for (int i = 0; i < tx_tasks_stack_id; i++)
     {
@@ -809,6 +892,7 @@ void MsgAlloc_PullMsgFromTxTask(void)
         tx_tasks[tx_tasks_stack_id].size = 0;
     }
     LuosHAL_SetIrqState(true);
+    MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
  * @brief remove all transmit task of a specific container
@@ -845,6 +929,7 @@ void MsgAlloc_PullContainerFromTxTask(uint16_t container_id)
             task_id++;
         }
     }
+    MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
  * @brief return a message to transmit
