@@ -2,7 +2,7 @@
     "name": "Luos",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,module,ST",
     "description": "Luos turns your embedded system into modules like microservices architecture does it in software.",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "authors": {
         "name": "Luos",
         "url": "https://luos.io"
@@ -21,7 +21,7 @@
     "dependencies": [
         {
             "name": "LuosHAL",
-            "version": "~0.2.0"
+            "version": "~0.3.0"
         }
     ],
     "repository": {
