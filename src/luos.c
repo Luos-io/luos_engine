@@ -508,8 +508,7 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
 
     //initiate container statistics
     container->node_statistics = &luos_stats;
-    container->ll_container->ll_stat.max_collision_retry = &container->statistics.max_collision_retry;
-    container->ll_container->ll_stat.max_nak_retry = &container->statistics.max_nak_retry;
+    container->ll_container->ll_stat.max_retry = &container->statistics.max_retry;
 
     container_number++;
     return container;

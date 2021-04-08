@@ -29,8 +29,7 @@ typedef struct __attribute__((__packed__))
 {
     uint8_t msg_nbr;
     uint8_t fail_msg_nbr;
-    uint8_t *max_collision_retry;
-    uint8_t *max_nak_retry;
+    uint8_t *max_retry;
 } ll_stats_t;
 /*
  * This structure is used to get the message addressing mode list.

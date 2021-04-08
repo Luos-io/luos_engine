@@ -22,7 +22,6 @@ typedef struct
     node_t node;        /*!< Node informations. */
     RxCom_t rx;         /*!< Receiver informations. */
     TxCom_t tx;         /*!< Transmitter informations. */
-    volatile uint8_t ack_needed; /*!< Ack needed flag. */
     PortMng_t port;     /*!< port informations. */
 
     //Virtual container management

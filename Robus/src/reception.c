@@ -60,6 +60,8 @@ void Recep_GetHeader(volatile uint8_t *data)
     {
     case 1: //reset CRC computation
         ctx.tx.lock = true;
+        // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
+        ctx.tx.status = TX_DISABLE;
         crc_val = 0xFFFF;
         break;
 
@@ -84,7 +86,8 @@ void Recep_GetHeader(volatile uint8_t *data)
 #endif
         // Reset the catcher.
         data_count = 0;
-        // Switch state machiine to data reception
+
+        // Switch state machine to data reception
         ctx.rx.callback = Recep_GetData;
         // Cap size for big messages
         if (current_msg->header.size > MAX_DATA_MSG_SIZE)
@@ -173,22 +176,22 @@ void Recep_GetData(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_GetCollision(volatile uint8_t *data)
 {
-    // send all received datas
+    // Check data integrity
     if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
     {
-        //data dont match, or we don't start to send, there is a collision
+        // Data dont match, or we don't start to send the message, there is a collision
         ctx.tx.collision = true;
-        //clear ack
-        ctx.ack_needed = false;
-        //Stop TX trying to save input datas
+        // Stop TX trying to save input datas
         LuosHAL_SetTxState(false);
-        // switch to get header.
+        // Save the received data into the allocator to be able to continue the reception
         for (uint8_t i = 0; i < data_count - 1; i++)
         {
             MsgAlloc_SetData(*ctx.tx.data + i);
         }
         MsgAlloc_SetData(*data);
+        // Switch to get header.
         ctx.rx.callback = Recep_GetHeader;
+        ctx.tx.status = TX_NOK;
         if (data_count >= 3)
         {
             if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
@@ -205,7 +208,7 @@ void Recep_GetCollision(volatile uint8_t *data)
         {
             // collision detection end
             LuosHAL_SetRxState(false);
-            if (ctx.ack_needed)
+            if (ctx.tx.status == TX_NOK)
             {
                 // switch to catch Ack.
                 ctx.rx.callback = Recep_CatchAck;
@@ -241,11 +244,8 @@ void Recep_Timeout(void)
         ctx.rx.status.rx_timeout = true;
     }
     MsgAlloc_InvalidMsg();
-    ctx.tx.lock = false;
     Recep_Reset();
-    ctx.tx.additionalDelay_us = 0;
-    // This is possibly the end of a transmission, check it.
-    Transmit_End();
+    Transmit_End(); // This is possibly the end of a transmission, check it.
 }
 /******************************************************************************
  * @brief reset the reception state machine
@@ -256,6 +256,7 @@ void Recep_Reset(void)
 {
     data_count = 0;
     crc_val = 0xFFFF;
+    ctx.tx.lock = false;
     ctx.rx.status.rx_framing_error = false;
     LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetHeader;
@@ -268,57 +269,16 @@ void Recep_Reset(void)
  ******************************************************************************/
 void Recep_CatchAck(volatile uint8_t *data)
 {
-    static uint8_t nbrNakRetry = 0; // Number of Ack retry
-    LUOS_ASSERT(ctx.ack_needed == true);
-    // Ack validation
-    status_t status;
+    volatile status_t status;
     status.unmap = *data;
-    if ((status.rx_error) | (status.identifier != 0x0F))
+    if ((!status.rx_error) && (status.identifier == 0x0F))
     {
-        ll_container_t *ll_container;
-        // Get the message
-        msg_t *msg = 0;
-        uint16_t size;
-        uint8_t localhost;
-        MsgAlloc_GetTxTask(&ll_container, (uint8_t **)&msg->stream, &size, &localhost);
-        // There is a failure on Ack
-        if ((status.unmap) && (status.identifier != 0x0F))
-        {
-            // This is probably a part of another message
-            // Send it to header
-            ctx.rx.callback = Recep_GetHeader;
-            Recep_GetHeader((volatile uint8_t *)&status.unmap);
-        }
-        ctx.tx.nbrNakRetry++;
-        if (ctx.tx.nbrNakRetry < NBR_NAK_RETRY)
-        {
-            // retry
-            ctx.tx.additionalDelay_us = (uint16_t)(10 * ctx.tx.nbrNakRetry);
-            if (*ll_container->ll_stat.max_nak_retry < ctx.tx.nbrNakRetry)
-            {
-                *ll_container->ll_stat.max_nak_retry = ctx.tx.nbrNakRetry;
-            }
-        }
-        else
-        {
-            // We failed to transmit this message.
-            // Save the target as dead container into the sending ll_container
-            ll_container->dead_container_spotted = (uint16_t)(msg->header.target);
-            // Remove this tx task
-            MsgAlloc_PullMsgFromTxTask(); //TODO remove all TX tasks of this target
-            *ll_container->ll_stat.max_nak_retry = NBR_NAK_RETRY;
-            ll_container->ll_stat.fail_msg_nbr++;
-            ctx.tx.nbrNakRetry = 0;
-        }
+        ctx.tx.status = TX_OK;
     }
     else
     {
-        // Ack is ok
-        // We don't need ack anymore
-        ctx.ack_needed = false;
-        ctx.tx.nbrNakRetry = 0;
+        ctx.tx.status = TX_NOK;
     }
-    ctx.rx.callback = Recep_GetHeader;
 }
 /******************************************************************************
  * @brief Parse msg to find a module concerned

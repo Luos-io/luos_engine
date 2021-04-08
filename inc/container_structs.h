@@ -55,8 +55,7 @@ typedef struct __attribute__((__packed__)) container_stats_t
         struct __attribute__((__packed__))
         {
             uint8_t msg_fail_ratio;
-            uint8_t max_collision_retry;
-            uint8_t max_nak_retry;
+            uint8_t max_retry;
         };
         uint8_t unmap[3]; /*!< streamable form. */
     };

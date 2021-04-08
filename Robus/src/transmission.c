@@ -57,7 +57,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint8_t ack_transmission = false;
+uint8_t nbrRetry = 0;
 
 /*******************************************************************************
  * Function
@@ -65,18 +65,18 @@ uint8_t ack_transmission = false;
 static uint8_t Transmit_GetLockStatus(void);
 
 /******************************************************************************
- * @brief detect network topologie
+ * @brief Transmit an ACK
  * @param None
  * @return None
  ******************************************************************************/
 void Transmit_SendAck(void)
 {
+    // Info : We don't consider this transmission as a complete message transmission but as a complete message reception.
     LuosHAL_SetRxState(false);
     // Transmit Ack data
     LuosHAL_ComTransmit((unsigned char *)&ctx.rx.status.unmap, 1);
     // Reset Ack status
     ctx.rx.status.unmap = 0x0F;
-    ack_transmission = true;
 }
 /******************************************************************************
  * @brief transmission process
@@ -93,29 +93,52 @@ void Transmit_Process()
 
     if ((MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == SUCCEED) && (Transmit_GetLockStatus() == false))
     {
+        // We have a task available and we can use the bus
+        // Check if we already try to send a message multiple times and put it on stats
+        if (*ll_container_pt->ll_stat.max_retry < nbrRetry)
+        {
+            *ll_container_pt->ll_stat.max_retry = nbrRetry;
+            if (*ll_container_pt->ll_stat.max_retry >= NBR_RETRY)
+            {
+                // We failed to transmit this message. We can't allow it, there is a issue on this target.
+                // If it was an ACK issue, save the target as dead container into the sending ll_container
+                if (ctx.tx.collision)
+                {
+                    ll_container_pt->dead_container_spotted = (uint16_t)(((msg_t *)data)->header.target);
+                }
+                ll_container_pt->ll_stat.fail_msg_nbr++;
+                nbrRetry = 0;
+                ctx.tx.collision = false;
+                MsgAlloc_PullMsgFromTxTask(); //TODO remove all TX tasks of this target
+                if (MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == FAILED)
+                {
+                    return;
+                }
+            }
+        }
+        // We will prepare to transmit something enable tx status as OK
+        ctx.tx.status = TX_OK;
         // Check if ACK needed
         if ((((msg_t *)data)->header.target_mode == IDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK))
         {
             // Check if it is a localhost message
-            if (localhost && (((msg_t *)data)->header.target != DEFAULTID))
-            {
-                // We don't need to validate the good reception af the ack
-                ctx.ack_needed = false;
-            }
-            else
+            if (!localhost || (((msg_t *)data)->header.target == DEFAULTID))
             {
                 // We need ta validate the good reception af the ack, change the state of state machine after the end of collision detection to wait a ACK
-                ctx.ack_needed = true;
+                ctx.tx.status = TX_NOK;
             }
         }
-        ctx.tx.lock = true;
+
         // switch reception in collision detection mode
-        ctx.tx.collision = false;
-        LuosHAL_SetIrqState(false);
-        ctx.rx.callback = Recep_GetCollision;
-        ctx.tx.data = data;
-        LuosHAL_SetIrqState(true);
-        LuosHAL_ComTransmit(data, size);
+        if (Transmit_GetLockStatus() == false)
+        {
+            ctx.tx.lock = true;
+            LuosHAL_SetIrqState(false);
+            ctx.rx.callback = Recep_GetCollision;
+            ctx.tx.data = data;
+            LuosHAL_SetIrqState(true);
+            LuosHAL_ComTransmit(data, size);
+        }
     }
 }
 /******************************************************************************
@@ -138,18 +161,25 @@ static uint8_t Transmit_GetLockStatus(void)
  ******************************************************************************/
 void Transmit_End(void)
 {
-    if ((ctx.tx.transmitComplete) && (ack_transmission == false))
+    if (ctx.tx.status == TX_OK)
     {
-        // We previously complete a transmission and it was not a ACK
-        // Check the Ack status
-        if (!ctx.ack_needed)
-        {
-            // we don't needed Ack or we received one
-            // we can remove the task
-            MsgAlloc_PullMsgFromTxTask();
-        }
+        // A tx_task have been sucessfully transmitted
+        nbrRetry = 0;
+        ctx.tx.collision = false;
+        // Remove the task
+        MsgAlloc_PullMsgFromTxTask();
     }
-    ctx.tx.transmitComplete = false;
-    ack_transmission = false;
+    else if (ctx.tx.status == TX_NOK)
+    {
+        // A tx_task failed
+        nbrRetry++;
+        // compute a delay before retry
+        LuosHAL_ResetTimeout(20 * nbrRetry * (ctx.node.node_id + 1));
+        // Lock the trasmission to be sure no one can send something from this node.
+        ctx.tx.lock = true;
+        ctx.tx.status = TX_DISABLE;
+        return;
+    }
+    // Try to send something if we need to.
     Transmit_Process();
 }

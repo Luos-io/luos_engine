@@ -63,8 +63,10 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.node.certified = false;
     // no transmission lock
     ctx.tx.lock = false;
-    // no additional delay
-    ctx.tx.additionalDelay_us = 0;
+    // Init collision state
+    ctx.tx.collision = false;
+    // Init Tx status
+    ctx.tx.status = TX_DISABLE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
 

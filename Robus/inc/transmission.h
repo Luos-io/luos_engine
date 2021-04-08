@@ -12,14 +12,21 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+typedef enum
+{
+    TX_DISABLE, /*!< transmission with ack */
+    TX_OK,      /*!< transmission ok */
+    TX_NOK      /*!< transmission fail */
+
+} transmitStatus_t;
+
 typedef struct
 {
-    volatile uint8_t lock;                // Transmit lock state
-    uint8_t *data;                        // data to compare for collision detection
-    volatile uint8_t collision;           // collision flag
-    volatile uint16_t additionalDelay_us; // Aditional delay due to collision or Nak
-    ll_container_t llContainer;           // Container sending the message
-    uint8_t transmitComplete;             // A flag to know if a transmission have been completed
+    volatile uint8_t lock;            // Transmit lock state
+    uint8_t *data;                    // data to compare for collision detection
+    ll_container_t llContainer;       // Container sending the message
+    volatile transmitStatus_t status; // data to compare for collision detection
+    volatile uint8_t collision;       // true is a collision occure during this transmission.
 } TxCom_t;
 /*******************************************************************************
  * Variables

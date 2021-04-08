@@ -20,8 +20,8 @@
 #define MAX_DATA_MSG_SIZE 128
 #define MAX_MULTICAST_ADDRESS 1
 
-#ifndef NBR_NAK_RETRY
-#define NBR_NAK_RETRY 10
+#ifndef NBR_RETRY
+#define NBR_RETRY 10
 #endif
 
 #ifndef MAX_CONTAINER_NUMBER
