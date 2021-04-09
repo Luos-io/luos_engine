@@ -52,7 +52,6 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
 error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data);
 void Luos_SendStreaming(container_t *container, msg_t *msg, streaming_channel_t *stream);
 error_return_t Luos_ReceiveStreaming(container_t *container, msg_t *msg, streaming_channel_t *stream);
-void Luos_SetBaudrate(uint32_t baudrate);
 void Luos_SendBaudrate(container_t *container, uint32_t baudrate);
 void Luos_SetExternId(container_t *container, target_mode_t target_mode, uint16_t target, uint16_t newid);
 uint16_t Luos_NbrAvailableMsg(void);

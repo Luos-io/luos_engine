@@ -850,15 +850,6 @@ static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias)
     }
 }
 /******************************************************************************
- * @brief set serial baudrate
- * @param baudrate
- * @return None
- ******************************************************************************/
-void Luos_SetBaudrate(uint32_t baudrate)
-{
-    LuosHAL_ComInit(baudrate);
-}
-/******************************************************************************
  * @brief send network bauderate
  * @param container sending request
  * @param baudrate
