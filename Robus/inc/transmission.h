@@ -12,11 +12,20 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+typedef enum
+{
+    TX_DISABLE, /*!< transmission with ack */
+    TX_OK,      /*!< transmission ok */
+    TX_NOK      /*!< transmission fail */
+
+} transmitStatus_t;
+
 typedef struct
 {
-    uint8_t *data;
-    volatile uint8_t lock;
-    volatile uint8_t collision;
+    volatile uint8_t lock;            // Transmit lock state
+    uint8_t *data;                    // data to compare for collision detection
+    volatile transmitStatus_t status; // data to compare for collision detection
+    volatile uint8_t collision;       // true is a collision occure during this transmission.
 } TxCom_t;
 /*******************************************************************************
  * Variables
@@ -26,7 +35,7 @@ typedef struct
  * Function
  ******************************************************************************/
 void Transmit_SendAck(void);
-error_return_t Transmit_Process(uint8_t *data, uint16_t size);
-void Transmit_WaitUnlockTx(void);
+void Transmit_Process(void);
+void Transmit_End(void);
 
 #endif /* _TRANSMISSION_H_ */

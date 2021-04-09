@@ -9,6 +9,8 @@
 #include "port_manager.h"
 #include "string.h"
 #include "luos_hal.h"
+#include "msg_alloc.h"
+#include "stdbool.h"
 
 /*******************************************************************************
  * Function
@@ -36,6 +38,8 @@ void Luos_assert(char *file, uint32_t line)
     // prepare a message as a node.
     // To do that we have to reset the container ID and clear PTP states to unlock others.
     PortMng_Init();
+    // completely reinit the allocator
+    MsgAlloc_Init(NULL);
     msg_t msg;
     msg.header.target_mode = BROADCAST;
     msg.header.target = BROADCAST_VAL;
@@ -43,9 +47,13 @@ void Luos_assert(char *file, uint32_t line)
     msg.header.size = sizeof(line) + strlen(file);
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
-    Luos_SendMsg(0, &msg);
+    while(Luos_SendMsg(0, &msg)!= SUCCEED)
+        ;
     node_assert(file, line);
-    LuosHAL_SetIrqState(FALSE);
+    // wait for the transmission to finish before killing IRQ
+    while (MsgAlloc_TxAllComplete() == FAILED)
+        ;
+    LuosHAL_SetIrqState(false);
     while (1)
     {
     }

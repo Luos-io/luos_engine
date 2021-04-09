@@ -27,6 +27,6 @@ void Robus_ContainersClear(void);
 error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg);
 uint16_t Robus_TopologyDetection(ll_container_t *ll_container);
 node_t *Robus_GetNode(void);
-void Robus_DelayUs(uint32_t delay);
+void Robus_Flush(void);
 
 #endif /* _ROBUS_H_ */

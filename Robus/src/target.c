@@ -5,6 +5,7 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "target.h"
+#include "stdbool.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -29,9 +30,9 @@ uint8_t Trgt_MulticastTargetBank(ll_container_t *ll_container, uint16_t val)
     for (i = 0; i < ll_container->max_multicast_target; i++)
     {
         if (ll_container->multicast_target_bank[i] == val)
-            return TRUE;
+            return true;
     }
-    return FALSE;
+    return false;
 }
 /******************************************************************************
  * @brief add a target to the bank
