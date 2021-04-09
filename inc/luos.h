@@ -57,5 +57,6 @@ void Luos_SetExternId(container_t *container, target_mode_t target_mode, uint16_
 uint16_t Luos_NbrAvailableMsg(void);
 uint32_t Luos_GetSystick(void);
 error_return_t Luos_TxComplete(void);
+void Luos_Flush(void);
 
 #endif /* LUOS_H */

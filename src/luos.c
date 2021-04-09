@@ -915,3 +915,12 @@ error_return_t Luos_TxComplete(void)
 {
     return MsgAlloc_TxAllComplete();
 }
+/******************************************************************************
+ * @brief Flush the entire Luos msg buffer
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_Flush(void)
+{
+    Robus_Flush();
+}
