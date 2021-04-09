@@ -641,9 +641,13 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
         msg->header.size = size - sent_size;
 
         // Send message
+        uint32_t tickstart = Luos_GetSystick();
         while (Luos_SendMsg(container, msg) == FAILED)
         {
+            // No more memory space available
             Luos_Loop();
+            // 500 here represent 500ms of timeout after start trying to load our data in memory.
+            LUOS_ASSERT(((volatile uint32_t)Luos_GetSystick() - tickstart) < 500);
         }
 
         // Save current state
