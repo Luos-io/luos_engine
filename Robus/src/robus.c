@@ -392,6 +392,9 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         return SUCCEED;
         break;
     case SET_BAUDRATE:
+        // We have to wait the end of transmission of all the messages we have to transmit
+        while (MsgAlloc_TxAllComplete() == FAILED)
+            ;
         memcpy(&baudrate, input->data, sizeof(uint32_t));
         LuosHAL_ComInit(baudrate);
         return SUCCEED;
