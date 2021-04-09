@@ -90,7 +90,7 @@ void Transmit_Process()
     uint16_t size;
     uint8_t localhost;
     ll_container_t *ll_container_pt;
-    if (MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == SUCCEED)
+    if ((MsgAlloc_GetTxTask(&ll_container_pt, &data, &size, &localhost) == SUCCEED) && (Transmit_GetLockStatus() == false))
     {
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
