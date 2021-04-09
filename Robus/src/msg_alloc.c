@@ -841,6 +841,11 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     void *tx_msg = 0;
     uint16_t progression_size = 0;
     uint16_t estimated_size = 0;
+    // Start by validating if we have space into the TX_message buffer stack
+    if (tx_tasks_stack_id >= MAX_MSG_NB - 1)
+    {
+        return FAILED;
+    }
     // Stop it
     LuosHAL_SetIrqState(false);
     // compute RX progression
@@ -942,15 +947,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
         MsgAlloc_OldestMsgCandidate((msg_t *)tx_tasks[0].data_pt);
     }
     tx_tasks_stack_id++;
-    if (tx_tasks_stack_id == MAX_MSG_NB)
-    {
-        MsgAlloc_PullMsgFromTxTask();
-        if (mem_stat->msg_drop_number < 0xFF)
-        {
-            mem_stat->msg_drop_number++;
-            mem_stat->tx_msg_stack_ratio = 100;
-        }
-    }
+    LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     LuosHAL_SetIrqState(true);
 
     //finish the copy
