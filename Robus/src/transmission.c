@@ -145,8 +145,8 @@ void Transmit_Process() {
  * @return lock status
  ******************************************************************************/
 static uint8_t Transmit_GetLockStatus(void) {
-    if (!ctx.tx.lock) {
-        ctx.tx.lock |= LuosHAL_GetTxLockState();
+    if (ctx.tx.lock != true) {
+        return ctx.tx.lock |= LuosHAL_GetTxLockState();
     }
 
     return ctx.tx.lock;
@@ -159,23 +159,24 @@ static uint8_t Transmit_GetLockStatus(void) {
  ******************************************************************************/
 void Transmit_End(void) {
     if (ctx.tx.status == TX_NOK) {
-        // A tx_task failed
+        // A tx_task failed.
         nbrRetry++;
-        // compute a delay before retry
+        // compute a delay before retry.
         LuosHAL_ResetTimeout(20 * nbrRetry * (ctx.node.node_id + 1));
-        // Lock the trasmission to be sure no one can send something from this node.
+        // Lock the transmission to be sure no one can send something from this node.
         ctx.tx.lock = true;
         ctx.tx.status = TX_DISABLE;
         return;
     }
 
     if (ctx.tx.status == TX_OK) {
-        // A tx_task have been sucessfully transmitted
+        // A tx_task have been sucessfully transmitted.
         nbrRetry = 0;
         ctx.tx.collision = false;
         // Remove the task
         MsgAlloc_PullMsgFromTxTask();
     }
+
     // Try to send something if we need to.
     Transmit_Process();
 }

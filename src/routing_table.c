@@ -15,7 +15,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+#define ALIAS_SIZE 15
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -324,17 +324,17 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
         // The string size of num is 2
         intsize = 2;
     }
-    if (num > 99)
+    if (num > 99) //only 2 digit are alowed when add alias number
     {
         // This is probably a mistake, put an error into the alias
-        memset(alias, 0, 15);
+        memset(alias, 0, ALIAS_SIZE);
         memcpy(alias, "error", strlen("error"));
         return;
     }
     // Change size to fit into 15 characters
-    if (strlen(alias) > (15 - intsize))
+    if (strlen(alias) > (ALIAS_SIZE - intsize))
     {
-        alias[(15 - intsize)] = '\0';
+        alias[(ALIAS_SIZE - intsize)] = '\0';
     }
     else
     {

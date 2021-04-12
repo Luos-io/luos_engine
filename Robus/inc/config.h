@@ -10,9 +10,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define TRUE 1
-#define FALSE 0
-
 #define DEFAULTID 0x00
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL 0x0FFF
@@ -23,8 +20,8 @@
 #define MAX_DATA_MSG_SIZE 128
 #define MAX_MULTICAST_ADDRESS 1
 
-#ifndef NBR_NAK_RETRY
-#define NBR_NAK_RETRY 10
+#ifndef NBR_RETRY
+#define NBR_RETRY 10
 #endif
 
 #ifndef MAX_CONTAINER_NUMBER

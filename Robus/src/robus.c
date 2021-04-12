@@ -62,10 +62,14 @@ void Robus_Init(memory_stats_t *memory_stats)
     // By default node are not certified.
     ctx.node.certified = false;
     // no transmission lock
-    ctx.tx.lock = FALSE;
+    ctx.tx.lock = false;
+    // Init collision state
+    ctx.tx.collision = false;
+    // Init Tx status
+    ctx.tx.status = TX_DISABLE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-    
+
     // Init reception
     Recep_Init();
 
@@ -116,6 +120,8 @@ ll_container_t *Robus_ContainerCreate(uint16_t type)
     ctx.ll_container_table[ctx.ll_container_number].id = DEFAULTID;
     // Initialize dead container detection
     ctx.ll_container_table[ctx.ll_container_number].dead_container_spotted = 0;
+    // Clear stats
+    ctx.ll_container_table[ctx.ll_container_number].ll_stat.max_retry = 0;
     // Return the freshly initialized ll_container pointer.
     return (ll_container_t *)&ctx.ll_container_table[ctx.ll_container_number++];
 }
@@ -135,23 +141,14 @@ void Robus_ContainersClear(void)
  * @brief Send Msg to a container
  * @param container to send
  * @param msg to send
- * @return Error
+ * @return none
  ******************************************************************************/
 error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
-    // Compute the full message size based on the header size info.
+    uint8_t ack = 0;
     uint16_t data_size = 0;
     uint16_t crc_val = 0xFFFF;
-
-    if (msg->header.size > MAX_DATA_MSG_SIZE)
-    {
-        data_size = MAX_DATA_MSG_SIZE;
-    }
-    else
-    {
-        data_size = msg->header.size;
-    }
-    uint16_t full_size = sizeof(header_t) + data_size;
+    // ********** Prepare the message ********************
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     if (ll_container->id != 0)
@@ -162,122 +159,52 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
     {
         msg->header.source = ctx.node.node_id;
     }
-    // Add the CRC to the total size of the message
-    full_size += 2;
 
+    // Compute the full message size based on the header size info.
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+    {
+        data_size = MAX_DATA_MSG_SIZE;
+    }
+    else
+    {
+        data_size = msg->header.size;
+    }
+    // Add the CRC to the total size of the message
+    uint16_t full_size = sizeof(header_t) + data_size + 2;
 
     // compute the CRC
     for (uint16_t i = 0; i < full_size - 2; i++)
     {
-        LuosHAL_ComputeCRC(&msg->stream[i], (uint8_t *)&crc_val);
-    }
-    msg->stream[full_size - 2] = (uint8_t)(crc_val);
-    msg->stream[full_size - 1] = (uint8_t)(crc_val >> 8);
-
-
-    //try to send msg computed
-    error_return_t result = SUCCEED;
-    uint8_t nbr_nak_retry = 0;
-    uint8_t RetryCollision = 0;
-    uint8_t NodeIsConcerned = (Recep_NodeConcerned(&msg->header) && (msg->header.target != DEFAULTID));
-ack_restart:
-    nbr_nak_retry++;
-    RetryCollision = 0;
-    LuosHAL_SetIrqState(false);
-    ctx.ack = 0;
-    LuosHAL_SetIrqState(true);
-    // Send message
-    while (Transmit_Process((uint8_t *)msg->stream, full_size))
-    {
-        // There is a collision
-        LuosHAL_SetIrqState(false);
-        // switch reception in header mode
-        ctx.rx.callback = Recep_GetHeader;
-        LuosHAL_SetIrqState(true);
-        // wait timeout of collided packet
-        Transmit_WaitUnlockTx();
-        //max collision possible
-        RetryCollision++;
-        if(RetryCollision > NBR_NAK_RETRY)
+        uint16_t dbyte = msg->stream[i];
+        crc_val ^= dbyte << 8;
+        for (uint8_t j = 0; j < 8; ++j)
         {
-            result = FAILED;
-            break;
-        }
-        // timer proportional to ID
-        if (ll_container->id > 1)
-        {
-            Robus_DelayUs((uint32_t)((ll_container->id - 1)*RetryCollision));
+            uint16_t mix = crc_val & 0x8000;
+            crc_val = (crc_val << 1);
+            if (mix)
+                crc_val = crc_val ^ 0x0007;
         }
     }
-    if(*ll_container->ll_stat.max_collision_retry < RetryCollision)
-    {
-        *ll_container->ll_stat.max_collision_retry = RetryCollision;
-    }
+
+    // Check the localhost situation
+    uint8_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if ((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK))
+    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && (localhost && (msg->header.target != DEFAULTID)))
     {
-        // Check if it is a localhost message
-        if (NodeIsConcerned == true)
-        {
-            Transmit_SendAck();
-            ctx.ack = 0;
-        }
-        else
-        {
-            // ACK needed, change the state of state machine for wait a ACK
-            LuosHAL_SetIrqState(false);
-            ctx.rx.callback = Recep_CatchAck;
-            LuosHAL_SetIrqState(true);
-            while (ctx.tx.lock != false)
-            {
-                if(ctx.ack != 0)
-                {
-                    break;
-                }
-            }
-            status_t status;
-            status.unmap = ctx.ack;
-            if ((status.rx_error) | (status.identifier != 0x0F))
-            {
-                if ((ctx.ack) && (status.identifier != 0x0F))
-                {
-                    // This is probably a part of another message
-                    // Send it to header
-                    LuosHAL_SetIrqState(false);
-                    ctx.rx.callback = Recep_GetHeader;
-                    LuosHAL_SetIrqState(true);
-                    Recep_GetHeader(&ctx.ack);
-                }
-                if (nbr_nak_retry < NBR_NAK_RETRY)
-                {
-                    Robus_DelayUs((uint32_t)(10*nbr_nak_retry));
-                    goto ack_restart;
-                }
-                else
-                {
-                    // Set the dead container ID into the ll_container
-                    result = FAILED;
-                    ll_container->dead_container_spotted = (uint16_t)(msg->header.target);
-                }
-            }
-            ctx.ack = 0;
-        }
-        if(*ll_container->ll_stat.max_nak_retry < nbr_nak_retry)
-        {
-            *ll_container->ll_stat.max_nak_retry = nbr_nak_retry;
-        }
+        // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
+        ack = ctx.rx.status.unmap;
+        full_size++;
     }
 
-    // localhost management
-    if (Recep_NodeConcerned(&msg->header))
+    // ********** Allocate the message ********************
+    if (MsgAlloc_SetTxTask(ll_container, (uint8_t *)msg->stream, crc_val, full_size, localhost, ack) == FAILED)
     {
-        // Reset potential residue of collision detection
-        Recep_Reset();
-        MsgAlloc_InvalidMsg();
-        // set message into the allocator
-        MsgAlloc_SetMessage(msg);
+        return FAILED;
     }
-    return result;
+    // **********Try to send the message********************
+    Transmit_Process();
+
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief Start a topology detection procedure
@@ -318,8 +245,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
     uint8_t
-    try
-        = 0;
+        try = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
@@ -328,7 +254,11 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 
     do
     {
+        //msg send not blocking
         Robus_SendMsg(ll_container, &msg);
+        //need to wait until tx msg before clear msg alloc
+        while (MsgAlloc_TxAllComplete() != SUCCEED)
+            ;
 
         MsgAlloc_Init(NULL);
 
@@ -359,13 +289,20 @@ static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
     while (PortMng_PokeNextPort() == SUCCEED)
     {
         // There is someone here
+        // Clear spotted dead container detection
+        ll_container->dead_container_spotted = 0;
         // Ask an ID  to the detector container.
         msg_t msg;
         msg.header.target_mode = IDACK;
         msg.header.target = 1;
         msg.header.cmd = WRITE_NODE_ID;
         msg.header.size = 0;
-        if (Robus_SendMsg(ll_container, &msg) == FAILED)
+        Robus_SendMsg(ll_container, &msg);
+        // Wait the end of transmission
+        while (MsgAlloc_TxAllComplete() == FAILED)
+            ;
+        // Check if there is a failure on transmission
+        if (ll_container->dead_container_spotted != 0)
         {
             // Message transmission failure
             // Consider this port unconnected
@@ -374,6 +311,7 @@ static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
             ctx.port.keepLine = false;
             continue;
         }
+
         // when Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
         // We just have to wait the end of the treatment of the entire branch
         uint32_t start_tick = LuosHAL_GetSystick();
@@ -454,6 +392,9 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         return SUCCEED;
         break;
     case SET_BAUDRATE:
+        // We have to wait the end of transmission of all the messages we have to transmit
+        while (MsgAlloc_TxAllComplete() == FAILED)
+            ;
         memcpy(&baudrate, input->data, sizeof(uint32_t));
         LuosHAL_ComInit(baudrate);
         return SUCCEED;
@@ -474,16 +415,15 @@ node_t *Robus_GetNode(void)
     return (node_t *)&ctx.node;
 }
 /******************************************************************************
- * @brief Delay
+ * @brief Flush the entire msg buffer
  * @param None
- * @return Node pointer
+ * @return None
  ******************************************************************************/
-void Robus_DelayUs(uint32_t delay)
+void Robus_Flush(void)
 {
-    uint32_t timeout = (((MCUFREQ/2)/1000000)*delay)+1;
-    volatile uint32_t i = 0;
-    while(i < timeout)
-    {
-        i++;
-    }
+    while (ctx.tx.lock != false)
+        ;
+    LuosHAL_SetIrqState(false);
+    MsgAlloc_Init(NULL);
+    LuosHAL_SetIrqState(true);
 }

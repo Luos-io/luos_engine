@@ -12,6 +12,7 @@
 #include "target.h"
 #include "transmission.h"
 #include "msg_alloc.h"
+#include "luos_utils.h"
 
 /*******************************************************************************
  * Definitions
@@ -59,11 +60,13 @@ void Recep_GetHeader(volatile uint8_t *data)
     {
     case 1: //reset CRC computation
         ctx.tx.lock = true;
+        // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
+        ctx.tx.status = TX_DISABLE;
         crc_val = 0xFFFF;
         break;
 
     case 3: //check if message is for the node
-        if(Recep_NodeConcerned((header_t *)&current_msg->header) == false)
+        if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
         {
             MsgAlloc_ValidHeader(false, data_size);
             ctx.rx.callback = Recep_Drop;
@@ -83,7 +86,8 @@ void Recep_GetHeader(volatile uint8_t *data)
 #endif
         // Reset the catcher.
         data_count = 0;
-        // Switch state machiine to data reception
+
+        // Switch state machine to data reception
         ctx.rx.callback = Recep_GetData;
         // Cap size for big messages
         if (current_msg->header.size > MAX_DATA_MSG_SIZE)
@@ -128,7 +132,7 @@ void Recep_GetData(volatile uint8_t *data)
         // Continue CRC computation until the end of data
         LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
     }
-    else if(data_count > data_size)
+    else if (data_count > data_size)
     {
         uint16_t crc = ((uint16_t)current_msg->data[data_size]) |
                        ((uint16_t)current_msg->data[data_size + 1] << 8);
@@ -145,6 +149,7 @@ void Recep_GetData(volatile uint8_t *data)
                 ctx.node.node_id = 0;
                 PortMng_Init();
                 MsgAlloc_Init(NULL);
+                ctx.tx.status = TX_DISABLE;
             }
             else
             {
@@ -153,7 +158,7 @@ void Recep_GetData(volatile uint8_t *data)
         }
         else
         {
-            ctx.rx.status.rx_error = TRUE;
+            ctx.rx.status.rx_error = true;
             if ((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK))
             {
                 Transmit_SendAck();
@@ -172,23 +177,25 @@ void Recep_GetData(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_GetCollision(volatile uint8_t *data)
 {
-    // send all received datas
+    // Check data integrity
     if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
     {
-        //data dont match, or we don't start to send, there is a collision
-        ctx.tx.collision = TRUE;
-        //Stop TX trying to save input datas
+        // Data dont match, or we don't start to send the message, there is a collision
+        ctx.tx.collision = true;
+        // Stop TX trying to save input datas
         LuosHAL_SetTxState(false);
-        // switch to get header.
-        for(uint8_t i = 0; i < data_count-1; i++)
+        // Save the received data into the allocator to be able to continue the reception
+        for (uint8_t i = 0; i < data_count - 1; i++)
         {
             MsgAlloc_SetData(*ctx.tx.data + i);
         }
         MsgAlloc_SetData(*data);
+        // Switch to get header.
         ctx.rx.callback = Recep_GetHeader;
-        if(data_count >= 3)
+        ctx.tx.status = TX_NOK;
+        if (data_count >= 3)
         {
-            if(Recep_NodeConcerned((header_t *)&current_msg->header) == false)
+            if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
             {
                 MsgAlloc_ValidHeader(false, data_size);
                 ctx.rx.callback = Recep_Drop;
@@ -198,11 +205,21 @@ void Recep_GetCollision(volatile uint8_t *data)
     }
     else
     {
-        if(data_count == COLLISION_DETECTION_NUMBER)
+        if (data_count == COLLISION_DETECTION_NUMBER)
         {
+            // collision detection end
             LuosHAL_SetRxState(false);
-            // switch to get header.
-            ctx.rx.callback = Recep_GetHeader;
+            LuosHAL_ResetTimeout(0);
+            if (ctx.tx.status == TX_NOK)
+            {
+                // switch to catch Ack.
+                ctx.rx.callback = Recep_CatchAck;
+            }
+            else
+            {
+                // switch to get header.
+                ctx.rx.callback = Recep_GetHeader;
+            }
             return;
         }
     }
@@ -224,13 +241,13 @@ void Recep_Drop(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_Timeout(void)
 {
-    if ((ctx.rx.callback != Recep_GetHeader)&&(ctx.rx.callback != Recep_Drop))
+    if ((ctx.rx.callback != Recep_GetHeader) && (ctx.rx.callback != Recep_Drop))
     {
-        ctx.rx.status.rx_timeout = TRUE;
+        ctx.rx.status.rx_timeout = true;
     }
     MsgAlloc_InvalidMsg();
-    ctx.tx.lock = false;
     Recep_Reset();
+    Transmit_End(); // This is possibly the end of a transmission, check it.
 }
 /******************************************************************************
  * @brief reset the reception state machine
@@ -241,21 +258,28 @@ void Recep_Reset(void)
 {
     data_count = 0;
     crc_val = 0xFFFF;
+    ctx.tx.lock = false;
     ctx.rx.status.rx_framing_error = false;
-    LuosHAL_SetIrqState(false);
     ctx.rx.callback = Recep_GetHeader;
-    LuosHAL_SetIrqState(true);
-    LuosHAL_SetTxLockDetecState(true);
+    LuosHAL_SetRxDetecPin(true);
 }
 /******************************************************************************
- * @brief Catch ack when needed for the sended msg
+ * @brief Catch ack when needed for the sent msg
  * @param data come from RX
  * @return None
  ******************************************************************************/
 void Recep_CatchAck(volatile uint8_t *data)
 {
-    ctx.ack = *data;
-    ctx.rx.callback = Recep_GetHeader;
+    volatile status_t status;
+    status.unmap = *data;
+    if ((!status.rx_error) && (status.identifier == 0x0F))
+    {
+        ctx.tx.status = TX_OK;
+    }
+    else
+    {
+        ctx.tx.status = TX_NOK;
+    }
 }
 /******************************************************************************
  * @brief Parse msg to find a module concerned
@@ -313,7 +337,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
     switch (header->target_mode)
     {
     case IDACK:
-        ctx.rx.status.rx_error = FALSE;
+        ctx.rx.status.rx_error = false;
     case ID:
         // Check all ll_container id
         for (i = 0; i < ctx.ll_container_number; i++)
@@ -341,7 +365,7 @@ uint8_t Recep_NodeConcerned(header_t *header)
         }
         break;
     case NODEIDACK:
-        ctx.rx.status.rx_error = FALSE;
+        ctx.rx.status.rx_error = false;
     case NODEID:
         if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
         {
