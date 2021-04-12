@@ -145,11 +145,11 @@ void Transmit_Process() {
  * @return lock status
  ******************************************************************************/
 static uint8_t Transmit_GetLockStatus(void) {
-    if (ctx.tx.lock) {
-        return ctx.tx.lock;
+    if (!ctx.tx.lock) {
+        ctx.tx.lock |= LuosHAL_GetTxLockState();
     }
 
-    return ctx.tx.lock |= LuosHAL_GetTxLockState();
+    return ctx.tx.lock;
 }
 
 /******************************************************************************
@@ -166,7 +166,7 @@ void Transmit_End(void) {
         // Lock the trasmission to be sure no one can send something from this node.
         ctx.tx.lock = true;
         ctx.tx.status = TX_DISABLE;
-        return ;
+        return;
     }
 
     if (ctx.tx.status == TX_OK) {
