@@ -244,8 +244,7 @@ redetect:
 static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
-    uint8_t
-        try = 0;
+    uint8_t try = 0;
 
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
@@ -387,10 +386,8 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             break;
         }
         return SUCCEED;
-        break;
     case RESET_DETECTION:
         return SUCCEED;
-        break;
     case SET_BAUDRATE:
         // We have to wait the end of transmission of all the messages we have to transmit
         while (MsgAlloc_TxAllComplete() == FAILED)
@@ -398,9 +395,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         memcpy(&baudrate, input->data, sizeof(uint32_t));
         LuosHAL_ComInit(baudrate);
         return SUCCEED;
-        break;
     default:
-        return FAILED;
         break;
     }
     return FAILED;

@@ -317,11 +317,9 @@ ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
     case NODEIDACK:
     case NODEID:
         return (ll_container_t *)&ctx.ll_container_table[0];
-        break;
     case MULTICAST: // For now Multicast is disabled
     default:
         return NULL;
-        break;
     }
     return NULL;
 }
