@@ -10,6 +10,7 @@
 #include "msg_alloc.h"
 #include "robus.h"
 #include "luos_hal.h"
+#include "bootloader.h"
 
 /*******************************************************************************
  * Definitions
@@ -176,6 +177,9 @@ static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint1
             {
                 return SUCCEED;
             }
+            break;
+        case BOOTLOADER_CMD:
+            return SUCCEED;
             break;
         default:
             return FAILED;
@@ -353,6 +357,11 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             container->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
             container->auto_refresh.last_update = LuosHAL_GetSystick();
             consume                             = SUCCEED;
+            break;
+        case BOOTLOADER_CMD:
+            // send data to the bootloader
+            LuosBootloader_MsgHandler(input->data);
+            consume = SUCCEED;
             break;
         default:
             break;
