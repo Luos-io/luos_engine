@@ -29,4 +29,8 @@ uint16_t Robus_TopologyDetection(ll_container_t *ll_container);
 node_t *Robus_GetNode(void);
 void Robus_Flush(void);
 
+// bootloader functions
+uint16_t Robus_GetNodeID(void);
+void Robus_SetNodeID(uint16_t);
+
 #endif /* _ROBUS_H_ */
