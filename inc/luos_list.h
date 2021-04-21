@@ -34,6 +34,7 @@ typedef enum
     VOID_MOD,
     LOAD_MOD,
     PIPE_MOD,
+    SNIFFER_MOD,
     LUOS_LAST_TYPE
 } luos_type_t;
 
