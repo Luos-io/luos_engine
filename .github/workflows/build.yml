@@ -44,6 +44,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Check for code format
+      if: ${{ runner.os != 'Windows' }}
       run: python .github/workflows/run-clang-format.py -r .
 
     - name: Create env repo
