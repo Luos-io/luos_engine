@@ -38,7 +38,12 @@ void PortMng_Init(void)
     // Reinit ll_container id
     for (uint8_t i = 0; i < ctx.ll_container_number; i++)
     {
+#ifdef SNIFFER_H //do not change the sniffer's id
+        if (ctx.ll_container_table[i].id != 0xFFFF)
+            ctx.ll_container_table[i].id = DEFAULTID;
+#else
         ctx.ll_container_table[i].id = DEFAULTID;
+#endif /* SNIFFER_H */
     }
     // Reinit port table
     for (uint8_t port = 0; port < NBR_PORT; port++)
