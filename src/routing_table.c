@@ -20,7 +20,7 @@
  * Variables
  ******************************************************************************/
 routing_table_t routing_table[MAX_RTB_ENTRY];
-volatile uint16_t last_container = 0;
+volatile uint16_t last_container           = 0;
 volatile uint16_t last_routing_table_entry = 0;
 /*******************************************************************************
  * Function
@@ -147,54 +147,54 @@ char *RoutingTB_StringFromType(luos_type_t type)
 {
     switch (type)
     {
-    case STATE_MOD:
-        return "State";
-        break;
-    case COLOR_MOD:
-        return "Color";
-        break;
-    case SERVO_MOD:
-        return "Servo";
-        break;
-    case ANGLE_MOD:
-        return "Angle";
-        break;
-    case DISTANCE_MOD:
-        return "DistanceSensor";
-        break;
-    case GATE_MOD:
-        return "Gate";
-        break;
-    case DYNAMIXEL_MOD:
-        return "DynamixelMotor";
-        break;
-    case STEPPER_MOD:
-        return "Stepper";
-        break;
-    case DCMOTOR_MOD:
-        return "DCMotor";
-        break;
-        break;
-    case IMU_MOD:
-        return "Imu";
-        break;
-    case LIGHT_MOD:
-        return "LightSensor";
-        break;
-    case CONTROLLER_MOTOR_MOD:
-        return "ControllerMotor";
-    case VOID_MOD:
-        return "Void";
-        break;
-    case LOAD_MOD:
-        return "Load";
-        break;
-    case VOLTAGE_MOD:
-        return "Voltage";
-        break;
-    default:
-        return "Unknown";
-        break;
+        case STATE_MOD:
+            return "State";
+            break;
+        case COLOR_MOD:
+            return "Color";
+            break;
+        case SERVO_MOD:
+            return "Servo";
+            break;
+        case ANGLE_MOD:
+            return "Angle";
+            break;
+        case DISTANCE_MOD:
+            return "DistanceSensor";
+            break;
+        case GATE_MOD:
+            return "Gate";
+            break;
+        case DYNAMIXEL_MOD:
+            return "DynamixelMotor";
+            break;
+        case STEPPER_MOD:
+            return "Stepper";
+            break;
+        case DCMOTOR_MOD:
+            return "DCMotor";
+            break;
+            break;
+        case IMU_MOD:
+            return "Imu";
+            break;
+        case LIGHT_MOD:
+            return "LightSensor";
+            break;
+        case CONTROLLER_MOTOR_MOD:
+            return "ControllerMotor";
+        case VOID_MOD:
+            return "Void";
+            break;
+        case LOAD_MOD:
+            return "Load";
+            break;
+        case VOLTAGE_MOD:
+            return "Voltage";
+            break;
+        default:
+            return "Unknown";
+            break;
     }
 }
 /******************************************************************************
@@ -204,15 +204,7 @@ char *RoutingTB_StringFromType(luos_type_t type)
  ******************************************************************************/
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type)
 {
-    if ((type == ANGLE_MOD) ||
-        (type == STATE_MOD) ||
-        (type == DYNAMIXEL_MOD) ||
-        (type == DISTANCE_MOD) ||
-        (type == IMU_MOD) ||
-        (type == LOAD_MOD) ||
-        (type == CONTROLLER_MOTOR_MOD) ||
-        (type == VOLTAGE_MOD) ||
-        (type == LIGHT_MOD))
+    if ((type == ANGLE_MOD) || (type == STATE_MOD) || (type == DYNAMIXEL_MOD) || (type == DISTANCE_MOD) || (type == IMU_MOD) || (type == LOAD_MOD) || (type == CONTROLLER_MOTOR_MOD) || (type == VOLTAGE_MOD) || (type == LIGHT_MOD))
     {
         return 1;
     }
@@ -351,7 +343,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
  ******************************************************************************/
 static bool RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_msg)
 {
-    const uint8_t timeout = 15; // timeout in ms
+    const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;
     Luos_SendMsg(container, intro_msg);
     uint32_t timestamp = LuosHAL_GetSystick();
@@ -375,20 +367,20 @@ static bool RoutingTB_WaitRoutingTable(container_t *container, msg_t *intro_msg)
 static void RoutingTB_Generate(container_t *container, uint16_t nb_node)
 {
     // Asks for introduction for every found node (even the one detecting).
-    uint16_t try_nb = 0;
+    uint16_t try_nb       = 0;
     uint16_t last_node_id = RoutingTB_BigestNodeID();
     uint16_t last_cont_id = 0;
     msg_t intro_msg;
     while ((last_node_id < nb_node) && (try_nb < nb_node))
     {
         try_nb++;
-        intro_msg.header.cmd = RTB_CMD;
+        intro_msg.header.cmd         = RTB_CMD;
         intro_msg.header.target_mode = NODEIDACK;
         // Target next unknown node
         intro_msg.header.target = last_node_id + 1;
         // set the first container id it can use
         intro_msg.header.size = 2;
-        last_cont_id = RoutingTB_BigestID() + 1;
+        last_cont_id          = RoutingTB_BigestID() + 1;
         memcpy(intro_msg.data, &last_cont_id, sizeof(uint16_t));
         // Ask to introduce and wait for a reply
         if (!RoutingTB_WaitRoutingTable(container, &intro_msg))
@@ -408,7 +400,7 @@ static void RoutingTB_Generate(container_t *container, uint16_t nb_node)
         {
             // The found_id don't match with the actual ID of the container because the alias already exist
             // Find the new alias to give him
-            uint8_t annotation = 1;
+            uint8_t annotation              = 1;
             char base_alias[MAX_ALIAS_SIZE] = {0};
             memcpy(base_alias, RoutingTB_AliasFromId(id), MAX_ALIAS_SIZE);
             // Add a number after alias in routing table
@@ -434,7 +426,7 @@ static void RoutingTB_Share(container_t *container, uint16_t nb_node)
 {
     // send route table to each nodes. Routing tables are commonly usable for each containers of a node.
     msg_t intro_msg;
-    intro_msg.header.cmd = RTB_CMD;
+    intro_msg.header.cmd         = RTB_CMD;
     intro_msg.header.target_mode = NODEIDACK;
 
     for (uint16_t i = 2; i <= nb_node; i++) //don't send to ourself
@@ -485,7 +477,7 @@ void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
 void RoutingTB_ConvertContainerToRoutingTable(routing_table_t *entry, container_t *container)
 {
     entry->type = container->ll_container->type;
-    entry->id = container->ll_container->id;
+    entry->id   = container->ll_container->id;
     entry->mode = CONTAINER;
     for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
     {
@@ -539,7 +531,7 @@ void RoutingTB_RemoveOnRoutingTable(uint16_t index)
 void RoutingTB_Erase(void)
 {
     memset(routing_table, 0, sizeof(routing_table));
-    last_container = 0;
+    last_container           = 0;
     last_routing_table_entry = 0;
 }
 /******************************************************************************

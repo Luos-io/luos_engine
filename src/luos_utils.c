@@ -42,12 +42,12 @@ void Luos_assert(char *file, uint32_t line)
     MsgAlloc_Init(NULL);
     msg_t msg;
     msg.header.target_mode = BROADCAST;
-    msg.header.target = BROADCAST_VAL;
-    msg.header.cmd = ASSERT;
-    msg.header.size = sizeof(line) + strlen(file);
+    msg.header.target      = BROADCAST_VAL;
+    msg.header.cmd         = ASSERT;
+    msg.header.size        = sizeof(line) + strlen(file);
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
-    while(Luos_SendMsg(0, &msg)!= SUCCEED)
+    while (Luos_SendMsg(0, &msg) != SUCCEED)
         ;
     node_assert(file, line);
     // wait for the transmission to finish before killing IRQ

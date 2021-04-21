@@ -83,7 +83,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     PortMng_Init();
 
     // Initialize the robus container status
-    ctx.rx.status.unmap = 0;
+    ctx.rx.status.unmap      = 0;
     ctx.rx.status.identifier = 0xF;
 }
 /******************************************************************************
@@ -145,9 +145,9 @@ void Robus_ContainersClear(void)
  ******************************************************************************/
 error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 {
-    uint8_t ack = 0;
+    uint8_t ack        = 0;
     uint16_t data_size = 0;
-    uint16_t crc_val = 0xFFFF;
+    uint16_t crc_val   = 0xFFFF;
     // ********** Prepare the message ********************
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
@@ -180,7 +180,7 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
         for (uint8_t j = 0; j < 8; ++j)
         {
             uint16_t mix = crc_val & 0x8000;
-            crc_val = (crc_val << 1);
+            crc_val      = (crc_val << 1);
             if (mix)
                 crc_val = crc_val ^ 0x0007;
         }
@@ -220,7 +220,7 @@ redetect:
 
     // setup local node
     ctx.node.node_id = 1;
-    last_node = 1;
+    last_node        = 1;
 
     // setup sending ll_container
     ll_container->id = 1;
@@ -244,13 +244,12 @@ redetect:
 static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
 {
     msg_t msg;
-    uint8_t
-        try = 0;
+    uint8_t try_nbr = 0;
 
-    msg.header.target = BROADCAST_VAL;
+    msg.header.target      = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
-    msg.header.cmd = RESET_DETECTION;
-    msg.header.size = 0;
+    msg.header.cmd         = RESET_DETECTION;
+    msg.header.size        = 0;
 
     do
     {
@@ -266,12 +265,12 @@ static error_return_t Robus_ResetNetworkDetection(ll_container_t *ll_container)
         uint32_t start_tick = LuosHAL_GetSystick();
         while (LuosHAL_GetSystick() - start_tick < 2)
             ;
-        try++;
-    } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try > 5));
+        try_nbr++;
+    } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
 
     ctx.node.node_id = 0;
     PortMng_Init();
-    if (try < 5)
+    if (try_nbr < 5)
     {
         return SUCCEED;
     }
@@ -294,9 +293,9 @@ static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
         // Ask an ID  to the detector container.
         msg_t msg;
         msg.header.target_mode = IDACK;
-        msg.header.target = 1;
-        msg.header.cmd = WRITE_NODE_ID;
-        msg.header.size = 0;
+        msg.header.target      = 1;
+        msg.header.cmd         = WRITE_NODE_ID;
+        msg.header.size        = 0;
         Robus_SendMsg(ll_container, &msg);
         // Wait the end of transmission
         while (MsgAlloc_TxAllComplete() == FAILED)
@@ -307,8 +306,8 @@ static error_return_t Robus_DetectNextNodes(ll_container_t *ll_container)
             // Message transmission failure
             // Consider this port unconnected
             ctx.node.port_table[ctx.port.activ] = 0xFFFF;
-            ctx.port.activ = NBR_PORT;
-            ctx.port.keepLine = false;
+            ctx.port.activ                      = NBR_PORT;
+            ctx.port.keepLine                   = false;
             continue;
         }
 
@@ -340,68 +339,68 @@ static error_return_t Robus_MsgHandler(msg_t *input)
     ll_container_t *ll_container = Recep_GetConcernedLLContainer(&input->header);
     switch (input->header.cmd)
     {
-    case WRITE_NODE_ID:
-        // Depending on the size of the received data we have to do different things
-        switch (input->header.size)
-        {
-        case 0:
-            // Someone asking us a new node id (we are the detecting module)
-            // Increase the number of node_nb and send it back
-            last_node++;
-            output_msg.header.cmd = WRITE_NODE_ID;
-            output_msg.header.size = sizeof(uint16_t);
-            output_msg.header.target = input->header.source;
-            output_msg.header.target_mode = NODEIDACK;
-            memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
-            Robus_SendMsg(ll_container, &output_msg);
-            break;
-        case 2:
-            // This is a node id for the next node.
-            // This is a reply to our request to generate the next node id.
-            // This node_id is the one after the currently poked branch.
-            // We need to save this ID as a connection on a port
-            memcpy((void *)&ctx.node.port_table[ctx.port.activ], (void *)&input->data[0], sizeof(uint16_t));
-            // Now we can send it to the next node
-            memcpy((void *)&node_bootstrap.nodeid, (void *)&input->data[0], sizeof(uint16_t));
-            node_bootstrap.prev_nodeid = ctx.node.node_id;
-            output_msg.header.cmd = WRITE_NODE_ID;
-            output_msg.header.size = sizeof(node_bootstrap_t);
-            output_msg.header.target = 0;
-            output_msg.header.target_mode = NODEIDACK;
-            memcpy((void *)&output_msg.data[0], (void *)&node_bootstrap.unmap[0], sizeof(node_bootstrap_t));
-            Robus_SendMsg(ll_container, &output_msg);
-            break;
-        case sizeof(node_bootstrap_t):
-            if (ctx.node.node_id != 0)
+        case WRITE_NODE_ID:
+            // Depending on the size of the received data we have to do different things
+            switch (input->header.size)
             {
-                ctx.node.node_id = 0;
-                MsgAlloc_Init(NULL);
+                case 0:
+                    // Someone asking us a new node id (we are the detecting module)
+                    // Increase the number of node_nb and send it back
+                    last_node++;
+                    output_msg.header.cmd         = WRITE_NODE_ID;
+                    output_msg.header.size        = sizeof(uint16_t);
+                    output_msg.header.target      = input->header.source;
+                    output_msg.header.target_mode = NODEIDACK;
+                    memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
+                    Robus_SendMsg(ll_container, &output_msg);
+                    break;
+                case 2:
+                    // This is a node id for the next node.
+                    // This is a reply to our request to generate the next node id.
+                    // This node_id is the one after the currently poked branch.
+                    // We need to save this ID as a connection on a port
+                    memcpy((void *)&ctx.node.port_table[ctx.port.activ], (void *)&input->data[0], sizeof(uint16_t));
+                    // Now we can send it to the next node
+                    memcpy((void *)&node_bootstrap.nodeid, (void *)&input->data[0], sizeof(uint16_t));
+                    node_bootstrap.prev_nodeid    = ctx.node.node_id;
+                    output_msg.header.cmd         = WRITE_NODE_ID;
+                    output_msg.header.size        = sizeof(node_bootstrap_t);
+                    output_msg.header.target      = 0;
+                    output_msg.header.target_mode = NODEIDACK;
+                    memcpy((void *)&output_msg.data[0], (void *)&node_bootstrap.unmap[0], sizeof(node_bootstrap_t));
+                    Robus_SendMsg(ll_container, &output_msg);
+                    break;
+                case sizeof(node_bootstrap_t):
+                    if (ctx.node.node_id != 0)
+                    {
+                        ctx.node.node_id = 0;
+                        MsgAlloc_Init(NULL);
+                    }
+                    // This is a node bootstrap information.
+                    memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
+                    ctx.node.node_id                    = node_bootstrap.nodeid;
+                    ctx.node.port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
+                    // Continue the topology detection on our other ports.
+                    Robus_DetectNextNodes(ll_container);
+                default:
+                    break;
             }
-            // This is a node bootstrap information.
-            memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
-            ctx.node.node_id = node_bootstrap.nodeid;
-            ctx.node.port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
-            // Continue the topology detection on our other ports.
-            Robus_DetectNextNodes(ll_container);
-        default:
+            return SUCCEED;
             break;
-        }
-        return SUCCEED;
-        break;
-    case RESET_DETECTION:
-        return SUCCEED;
-        break;
-    case SET_BAUDRATE:
-        // We have to wait the end of transmission of all the messages we have to transmit
-        while (MsgAlloc_TxAllComplete() == FAILED)
-            ;
-        memcpy(&baudrate, input->data, sizeof(uint32_t));
-        LuosHAL_ComInit(baudrate);
-        return SUCCEED;
-        break;
-    default:
-        return FAILED;
-        break;
+        case RESET_DETECTION:
+            return SUCCEED;
+            break;
+        case SET_BAUDRATE:
+            // We have to wait the end of transmission of all the messages we have to transmit
+            while (MsgAlloc_TxAllComplete() == FAILED)
+                ;
+            memcpy(&baudrate, input->data, sizeof(uint32_t));
+            LuosHAL_ComInit(baudrate);
+            return SUCCEED;
+            break;
+        default:
+            return FAILED;
+            break;
     }
     return FAILED;
 }

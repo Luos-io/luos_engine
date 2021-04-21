@@ -49,7 +49,8 @@ static inline void IlluminanceOD_IlluminanceFromMsg(illuminance_t *const self, c
 // GPIO struct
 typedef struct __attribute__((__packed__))
 {
-    union {
+    union
+    {
         struct __attribute__((__packed__))
         {
             uint8_t r;
