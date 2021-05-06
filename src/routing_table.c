@@ -204,7 +204,15 @@ char *RoutingTB_StringFromType(luos_type_t type)
  ******************************************************************************/
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type)
 {
-    if ((type == ANGLE_MOD) || (type == STATE_MOD) || (type == DYNAMIXEL_MOD) || (type == DISTANCE_MOD) || (type == IMU_MOD) || (type == LOAD_MOD) || (type == CONTROLLER_MOTOR_MOD) || (type == VOLTAGE_MOD) || (type == LIGHT_MOD))
+    if ((type == ANGLE_MOD)
+        || (type == STATE_MOD)
+        || (type == DYNAMIXEL_MOD)
+        || (type == DISTANCE_MOD)
+        || (type == IMU_MOD)
+        || (type == LOAD_MOD)
+        || (type == CONTROLLER_MOTOR_MOD)
+        || (type == VOLTAGE_MOD)
+        || (type == LIGHT_MOD))
     {
         return 1;
     }
