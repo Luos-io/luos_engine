@@ -98,6 +98,7 @@ void LuosBootloader_SetNodeID(void)
  * @param None 
  * @return None
  ******************************************************************************/
+inline void LuosBootloader_ProcessData(void);
 void LuosBootloader_ProcessData(void)
 {
     if (residual_space >= bootloader_data_size)
@@ -118,7 +119,7 @@ void LuosBootloader_ProcessData(void)
         // save the completed page in flash memory
         LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
 
-        // Prepare next page buffer
+        // prepare next page buffer
         page_addr += PAGE_SIZE;
         page_id += 1;
         data_index = 0;
@@ -131,6 +132,17 @@ void LuosBootloader_ProcessData(void)
         data_index     = bootloader_data_size - residual_space;
         residual_space = (uint16_t)PAGE_SIZE - data_index;
     }
+}
+
+/******************************************************************************
+ * @brief Save the current page when BIN_END command is received 
+ * @param None 
+ * @return None
+ ******************************************************************************/
+inline void LuosBootloader_SaveLastData(void);
+void LuosBootloader_SaveLastData(void)
+{
+    LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
 }
 
 /******************************************************************************
@@ -210,21 +222,21 @@ void LuosBootloader_Task(void)
                 bootloader_cmd = BOOTLOADER_IDLE;
                 // handle binary data
                 LuosBootloader_ProcessData();
+                // send ack to the Host
+                LuosBootloader_SendResponse(BOOTLOADER_BIN_CHUNK_RESP);
             }
 
             if (bootloader_cmd == BOOTLOADER_BIN_END)
             {
                 // save the current page in flash memory
-                LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
+                LuosBootloader_SaveLastData();
+
+                // send ack to the Host
+                LuosBootloader_SendResponse(BOOTLOADER_BIN_END_RESP);
 
                 // go to BIN_END state
-                LuosBootloader_SetState(BOOTLOADER_BIN_END_STATE);
+                LuosBootloader_SetState(BOOTLOADER_CRC_TEST_STATE);
             }
-            break;
-
-        case BOOTLOADER_BIN_END_STATE:
-            // go to CRC_TEST state
-            LuosBootloader_SetState(BOOTLOADER_CRC_TEST_STATE);
             break;
 
         case BOOTLOADER_CRC_TEST_STATE:
