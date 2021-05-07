@@ -12,11 +12,9 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define BOOTLOADER_MODE         0x00
-#define APPLICATION_MODE        0x01
 
-#define BOOTLOADER_RCV_COMMAND      0x01
-#define BOOTLOADER_SND_COMMAND      0x10
+#define BOOTLOADER_RCV_COMMAND 0x01
+#define BOOTLOADER_SND_COMMAND 0x10
 typedef enum
 {
     BOOTLOADER_IDLE,
