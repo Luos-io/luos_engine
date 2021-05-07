@@ -31,12 +31,12 @@ streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint1
     streaming_channel_t stream;
     LUOS_ASSERT((ring_buffer != NULL) || (ring_buffer_size > 0) || (data_size > 0));
     // Save ring buffer informations
-    stream.ring_buffer = (void *)ring_buffer;
-    stream.data_size = data_size;
+    stream.ring_buffer     = (void *)ring_buffer;
+    stream.data_size       = data_size;
     stream.end_ring_buffer = (void *)ring_buffer + (stream.data_size * ring_buffer_size);
 
     // Set data pointers to 0
-    stream.data_ptr = stream.ring_buffer;
+    stream.data_ptr   = stream.ring_buffer;
     stream.sample_ptr = stream.ring_buffer;
     return stream;
 }
@@ -47,7 +47,7 @@ streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint1
  ******************************************************************************/
 void Stream_ResetStreamingChannel(streaming_channel_t *stream)
 {
-    stream->data_ptr = stream->ring_buffer;
+    stream->data_ptr   = stream->ring_buffer;
     stream->sample_ptr = stream->ring_buffer;
 }
 /******************************************************************************

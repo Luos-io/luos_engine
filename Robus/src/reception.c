@@ -26,8 +26,8 @@
  * Variables
  ******************************************************************************/
 uint16_t data_count = 0;
-uint16_t data_size = 0;
-uint16_t crc_val = 0;
+uint16_t data_size  = 0;
+uint16_t crc_val    = 0;
 
 /*******************************************************************************
  * Function
@@ -42,7 +42,7 @@ void Recep_Init(void)
 {
     // Initialize the reception state machine
     ctx.rx.status.unmap = 0;
-    ctx.rx.callback = Recep_GetHeader;
+    ctx.rx.callback     = Recep_GetHeader;
 }
 /******************************************************************************
  * @brief Callback to get a complete header
@@ -58,64 +58,64 @@ void Recep_GetHeader(volatile uint8_t *data)
     // Check if we have all we need.
     switch (data_count)
     {
-    case 1: //reset CRC computation
-        ctx.tx.lock = true;
-        // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
-        ctx.tx.status = TX_DISABLE;
-        crc_val = 0xFFFF;
-        break;
+        case 1: //reset CRC computation
+            ctx.tx.lock = true;
+            // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
+            ctx.tx.status = TX_DISABLE;
+            crc_val       = 0xFFFF;
+            break;
 
-    case 3: //check if message is for the node
-        if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
-        {
-            MsgAlloc_ValidHeader(false, data_size);
-            ctx.rx.callback = Recep_Drop;
-            return;
-        }
-        break;
-
-    case (sizeof(header_t)): //Process at the header
-#ifdef DEBUG
-        printf("*******header data*******\n");
-        printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
-        printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-        printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-        printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-        printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
-        printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
-#endif
-        // Reset the catcher.
-        data_count = 0;
-
-        // Switch state machine to data reception
-        ctx.rx.callback = Recep_GetData;
-        // Cap size for big messages
-        if (current_msg->header.size > MAX_DATA_MSG_SIZE)
-        {
-            data_size = MAX_DATA_MSG_SIZE;
-        }
-        else
-        {
-            data_size = current_msg->header.size;
-        }
-
-        if ((ctx.rx.status.rx_framing_error == false))
-        {
-            if (data_size)
+        case 3: //check if message is for the node
+            if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
             {
-                MsgAlloc_ValidHeader(true, data_size);
+                MsgAlloc_ValidHeader(false, data_size);
+                ctx.rx.callback = Recep_Drop;
+                return;
             }
-        }
-        else
-        {
-            MsgAlloc_ValidHeader(false, data_size);
-            ctx.rx.callback = Recep_Drop;
-            return;
-        }
-        break;
+            break;
 
-    default:
-        break;
+        case (sizeof(header_t)): //Process at the header
+#ifdef DEBUG
+            printf("*******header data*******\n");
+            printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
+            printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+            printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
+            printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
+#endif
+            // Reset the catcher.
+            data_count = 0;
+
+            // Switch state machine to data reception
+            ctx.rx.callback = Recep_GetData;
+            // Cap size for big messages
+            if (current_msg->header.size > MAX_DATA_MSG_SIZE)
+            {
+                data_size = MAX_DATA_MSG_SIZE;
+            }
+            else
+            {
+                data_size = current_msg->header.size;
+            }
+
+            if ((ctx.rx.status.rx_framing_error == false))
+            {
+                if (data_size)
+                {
+                    MsgAlloc_ValidHeader(true, data_size);
+                }
+            }
+            else
+            {
+                MsgAlloc_ValidHeader(false, data_size);
+                ctx.rx.callback = Recep_Drop;
+                return;
+            }
+            break;
+
+        default:
+            break;
     }
     LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
 }
@@ -134,8 +134,7 @@ void Recep_GetData(volatile uint8_t *data)
     }
     else if (data_count > data_size)
     {
-        uint16_t crc = ((uint16_t)current_msg->data[data_size]) |
-                       ((uint16_t)current_msg->data[data_size + 1] << 8);
+        uint16_t crc = ((uint16_t)current_msg->data[data_size]) | ((uint16_t)current_msg->data[data_size + 1] << 8);
         if (crc == crc_val)
         {
             if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)))
@@ -192,7 +191,7 @@ void Recep_GetCollision(volatile uint8_t *data)
         MsgAlloc_SetData(*data);
         // Switch to get header.
         ctx.rx.callback = Recep_GetHeader;
-        ctx.tx.status = TX_NOK;
+        ctx.tx.status   = TX_NOK;
         if (data_count >= 3)
         {
             if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
@@ -256,11 +255,11 @@ void Recep_Timeout(void)
  ******************************************************************************/
 void Recep_Reset(void)
 {
-    data_count = 0;
-    crc_val = 0xFFFF;
-    ctx.tx.lock = false;
+    data_count                     = 0;
+    crc_val                        = 0xFFFF;
+    ctx.tx.lock                    = false;
     ctx.rx.status.rx_framing_error = false;
-    ctx.rx.callback = Recep_GetHeader;
+    ctx.rx.callback                = Recep_GetHeader;
     LuosHAL_SetRxDetecPin(true);
 }
 /******************************************************************************
@@ -292,36 +291,36 @@ ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
-    case IDACK:
-    case ID:
-        // Check all ll_container id
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if ((header->target == ctx.ll_container_table[i].id))
+        case IDACK:
+        case ID:
+            // Check all ll_container id
+            for (i = 0; i < ctx.ll_container_number; i++)
             {
-                return (ll_container_t *)&ctx.ll_container_table[i];
+                if ((header->target == ctx.ll_container_table[i].id))
+                {
+                    return (ll_container_t *)&ctx.ll_container_table[i];
+                }
             }
-        }
-        break;
-    case TYPE:
-        // Check all ll_container type
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if (header->target == ctx.ll_container_table[i].type)
+            break;
+        case TYPE:
+            // Check all ll_container type
+            for (i = 0; i < ctx.ll_container_number; i++)
             {
-                return (ll_container_t *)&ctx.ll_container_table[i];
+                if (header->target == ctx.ll_container_table[i].type)
+                {
+                    return (ll_container_t *)&ctx.ll_container_table[i];
+                }
             }
-        }
-        break;
-    case BROADCAST:
-    case NODEIDACK:
-    case NODEID:
-        return (ll_container_t *)&ctx.ll_container_table[0];
-        break;
-    case MULTICAST: // For now Multicast is disabled
-    default:
-        return NULL;
-        break;
+            break;
+        case BROADCAST:
+        case NODEIDACK:
+        case NODEID:
+            return (ll_container_t *)&ctx.ll_container_table[0];
+            break;
+        case MULTICAST: // For now Multicast is disabled
+        default:
+            return NULL;
+            break;
     }
     return NULL;
 }
@@ -336,53 +335,53 @@ uint8_t Recep_NodeConcerned(header_t *header)
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
-    case IDACK:
-        ctx.rx.status.rx_error = false;
-    case ID:
-        // Check all ll_container id
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if ((header->target == ctx.ll_container_table[i].id))
+        case IDACK:
+            ctx.rx.status.rx_error = false;
+        case ID:
+            // Check all ll_container id
+            for (i = 0; i < ctx.ll_container_number; i++)
+            {
+                if ((header->target == ctx.ll_container_table[i].id))
+                {
+                    return true;
+                }
+            }
+            break;
+        case TYPE:
+            // Check all ll_container type
+            for (i = 0; i < ctx.ll_container_number; i++)
+            {
+                if (header->target == ctx.ll_container_table[i].type)
+                {
+                    return true;
+                }
+            }
+            break;
+        case BROADCAST:
+            if (header->target == BROADCAST_VAL)
             {
                 return true;
             }
-        }
-        break;
-    case TYPE:
-        // Check all ll_container type
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if (header->target == ctx.ll_container_table[i].type)
+            break;
+        case NODEIDACK:
+            ctx.rx.status.rx_error = false;
+        case NODEID:
+            if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
             {
-                return true;
+                return true; // discard message if ID = 0 and no Port activ
             }
-        }
-        break;
-    case BROADCAST:
-        if (header->target == BROADCAST_VAL)
-        {
-            return true;
-        }
-        break;
-    case NODEIDACK:
-        ctx.rx.status.rx_error = false;
-    case NODEID:
-        if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
-        {
-            return true; // discard message if ID = 0 and no Port activ
-        }
-        else
-        {
-            if ((header->target == ctx.node.node_id) && (header->target != 0))
+            else
             {
-                return true;
+                if ((header->target == ctx.node.node_id) && (header->target != 0))
+                {
+                    return true;
+                }
             }
-        }
-        break;
-    case MULTICAST: // For now Multicast is disabled
-    default:
-        return false;
-        break;
+            break;
+        case MULTICAST: // For now Multicast is disabled
+        default:
+            return false;
+            break;
     }
     return false;
 }
@@ -397,61 +396,61 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     // Find if we are concerned by this message.
     switch (msg->header.target_mode)
     {
-    case IDACK:
-    case ID:
-        // Check all ll_container id
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if (msg->header.target == ctx.ll_container_table[i].id)
+        case IDACK:
+        case ID:
+            // Check all ll_container id
+            for (i = 0; i < ctx.ll_container_number; i++)
+            {
+                if (msg->header.target == ctx.ll_container_table[i].id)
+                {
+                    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                    return;
+                }
+            }
+            break;
+        case TYPE:
+            // Check all ll_container type
+            for (i = 0; i < ctx.ll_container_number; i++)
+            {
+                if (msg->header.target == ctx.ll_container_table[i].type)
+                {
+                    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                    return;
+                }
+            }
+            break;
+        case BROADCAST:
+            for (i = 0; i < ctx.ll_container_number; i++)
             {
                 MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
-                return;
             }
-        }
-        break;
-    case TYPE:
-        // Check all ll_container type
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if (msg->header.target == ctx.ll_container_table[i].type)
-            {
-                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
-                return;
-            }
-        }
-        break;
-    case BROADCAST:
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
-        }
-        return;
-        break;
-    case MULTICAST:
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            if (Trgt_MulticastTargetBank((ll_container_t *)&ctx.ll_container_table[i], msg->header.target))
-            {
-                //TODO manage multiple slave concerned
-                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
-                return;
-            }
-        }
-        break;
-    case NODEIDACK:
-    case NODEID:
-        if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
-        {
-            MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[0], msg);
             return;
-        }
-        for (i = 0; i < ctx.ll_container_number; i++)
-        {
-            MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
-        }
-        return;
-        break;
-    default:
-        break;
+            break;
+        case MULTICAST:
+            for (i = 0; i < ctx.ll_container_number; i++)
+            {
+                if (Trgt_MulticastTargetBank((ll_container_t *)&ctx.ll_container_table[i], msg->header.target))
+                {
+                    //TODO manage multiple slave concerned
+                    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                    return;
+                }
+            }
+            break;
+        case NODEIDACK:
+        case NODEID:
+            if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
+            {
+                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[0], msg);
+                return;
+            }
+            for (i = 0; i < ctx.ll_container_number; i++)
+            {
+                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+            }
+            return;
+            break;
+        default:
+            break;
     }
 }

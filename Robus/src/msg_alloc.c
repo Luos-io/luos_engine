@@ -84,7 +84,7 @@ volatile msg_t *current_msg;                  /*!< current work in progress msg 
 volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be writen into msgbuffer. */
 volatile uint8_t *data_end_estimation;        /*!< Estimated end of the current receiving message. */
 volatile msg_t *oldest_msg = NULL;            /*!< The oldest message among all the stacks. */
-volatile msg_t *used_msg = NULL;              /*!< Message curently used by luos loop. */
+volatile msg_t *used_msg   = NULL;            /*!< Message curently used by luos loop. */
 volatile uint8_t mem_clear_needed;            /*!< A flag allowing to spot some msg space cleaning opérations to do. */
 
 // Allocator task stack
@@ -145,19 +145,19 @@ static inline void MsgAlloc_ValidDataIntegrity(void);
 void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
-    current_msg = (msg_t *)&msg_buffer[0];
-    data_ptr = (uint8_t *)&msg_buffer[0];
+    current_msg         = (msg_t *)&msg_buffer[0];
+    data_ptr            = (uint8_t *)&msg_buffer[0];
     data_end_estimation = (uint8_t *)&current_msg->data[2];
-    msg_tasks_stack_id = 0;
+    msg_tasks_stack_id  = 0;
     memset((void *)msg_tasks, 0, sizeof(msg_tasks));
     luos_tasks_stack_id = 0;
     memset((void *)luos_tasks, 0, sizeof(luos_tasks));
     tx_tasks_stack_id = 0;
     memset((void *)tx_tasks, 0, sizeof(tx_tasks));
     copy_task_pointer = NULL;
-    used_msg = NULL;
-    oldest_msg = (msg_t *)0xFFFFFFFF;
-    mem_clear_needed = false;
+    used_msg          = NULL;
+    oldest_msg        = (msg_t *)0xFFFFFFFF;
+    mem_clear_needed  = false;
     if (memory_stats != NULL)
     {
         mem_stat = memory_stats;
@@ -212,7 +212,7 @@ static inline void MsgAlloc_ValidDataIntegrity(void)
     LuosHAL_SetIrqState(false);
     if (mem_clear_needed == true)
     {
-        mem_clear_needed = false;
+        mem_clear_needed           = false;
         error_return_t clear_state = MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)data_end_estimation);
         LUOS_ASSERT(clear_state == SUCCEED);
     }
@@ -348,7 +348,7 @@ void MsgAlloc_InvalidMsg(void)
         mem_clear_needed = false;
         MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
     }
-    data_ptr = (uint8_t *)current_msg;
+    data_ptr            = (uint8_t *)current_msg;
     data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + 2]);
     LUOS_ASSERT((uint32_t)data_end_estimation < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]);
     if (current_msg == (volatile msg_t *)&msg_buffer[0])
@@ -562,8 +562,8 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
  ******************************************************************************/
 static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
 {
-    if ((((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to)) ||
-        (((uint32_t)oldest_msg >= (uint32_t)from) && ((uint32_t)oldest_msg <= (uint32_t)to)))
+    if ((((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to))
+        || (((uint32_t)oldest_msg >= (uint32_t)from) && ((uint32_t)oldest_msg <= (uint32_t)to)))
     {
         return FAILED;
     }
@@ -670,7 +670,7 @@ void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, 
     }
     // fill the informations of the message in this slot
     LuosHAL_SetIrqState(false);
-    luos_tasks[luos_tasks_stack_id].msg_pt = concerned_msg;
+    luos_tasks[luos_tasks_stack_id].msg_pt          = concerned_msg;
     luos_tasks[luos_tasks_stack_id].ll_container_pt = container_concerned_by_current_msg;
     if (luos_tasks_stack_id == 0)
     {
@@ -837,10 +837,10 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
 error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data, uint16_t crc, uint16_t size, uint8_t locahost, uint8_t ack)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uint32_t)data > 0) && ((uint32_t)current_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uint32_t)current_msg >= (uint32_t)&msg_buffer[0]));
-    void *rx_msg_bkp = 0;
-    void *tx_msg = 0;
+    void *rx_msg_bkp          = 0;
+    void *tx_msg              = 0;
     uint16_t progression_size = 0;
-    uint16_t estimated_size = 0;
+    uint16_t estimated_size   = 0;
     // Start by validating if we have space into the TX_message buffer stack
     if (tx_tasks_stack_id >= MAX_MSG_NB - 1)
     {
@@ -850,8 +850,8 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     LuosHAL_SetIrqState(false);
     // compute RX progression
     progression_size = (uint32_t)data_ptr - (uint32_t)current_msg;
-    estimated_size = (uint32_t)data_end_estimation - (uint32_t)current_msg;
-    rx_msg_bkp = (void *)current_msg;
+    estimated_size   = (uint32_t)data_end_estimation - (uint32_t)current_msg;
+    rx_msg_bkp       = (void *)current_msg;
     // Check if the message to send size fit into msg buffer
     if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + size)) == FAILED)
     {
@@ -864,9 +864,9 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
             return FAILED;
         }
         //move everything at the begining of the buffer
-        tx_msg = (void *)msg_buffer;
-        current_msg = (msg_t *)((uint32_t)msg_buffer + size);
-        data_ptr = (uint8_t *)((uint32_t)current_msg + progression_size);
+        tx_msg              = (void *)msg_buffer;
+        current_msg         = (msg_t *)((uint32_t)msg_buffer + size);
+        data_ptr            = (uint8_t *)((uint32_t)current_msg + progression_size);
         data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
         // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
     }
@@ -890,7 +890,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
-            current_msg = (msg_t *)msg_buffer;
+            current_msg         = (msg_t *)msg_buffer;
             data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
             // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
@@ -903,7 +903,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
-            current_msg = (msg_t *)((uint32_t)current_msg + size);
+            current_msg         = (msg_t *)((uint32_t)current_msg + size);
             data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
             // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
@@ -937,10 +937,10 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     // Now we are ready to transmit, we can create the tx task
 
     LuosHAL_SetIrqState(false);
-    tx_tasks[tx_tasks_stack_id].size = size;
-    tx_tasks[tx_tasks_stack_id].data_pt = (uint8_t *)tx_msg;
+    tx_tasks[tx_tasks_stack_id].size            = size;
+    tx_tasks[tx_tasks_stack_id].data_pt         = (uint8_t *)tx_msg;
     tx_tasks[tx_tasks_stack_id].ll_container_pt = ll_container_pt;
-    tx_tasks[tx_tasks_stack_id].localhost = locahost;
+    tx_tasks[tx_tasks_stack_id].localhost       = locahost;
     // Check if last tx task is the oldest msg of the buffer
     if (tx_tasks_stack_id == 0)
     {
@@ -992,7 +992,7 @@ void MsgAlloc_PullMsgFromTxTask(void)
     {
         LuosHAL_SetIrqState(false);
         tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
-        tx_tasks[i].size = tx_tasks[i + 1].size;
+        tx_tasks[i].size    = tx_tasks[i + 1].size;
         LuosHAL_SetIrqState(true);
     }
     LuosHAL_SetIrqState(false);
@@ -1000,7 +1000,7 @@ void MsgAlloc_PullMsgFromTxTask(void)
     {
         tx_tasks_stack_id--;
         tx_tasks[tx_tasks_stack_id].data_pt = 0;
-        tx_tasks[tx_tasks_stack_id].size = 0;
+        tx_tasks[tx_tasks_stack_id].size    = 0;
     }
     LuosHAL_SetIrqState(true);
     MsgAlloc_FindNewOldestMsg();
@@ -1023,7 +1023,7 @@ void MsgAlloc_PullContainerFromTxTask(uint16_t container_id)
             {
                 LuosHAL_SetIrqState(false);
                 tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
-                tx_tasks[i].size = tx_tasks[i + 1].size;
+                tx_tasks[i].size    = tx_tasks[i + 1].size;
                 LuosHAL_SetIrqState(true);
             }
             LuosHAL_SetIrqState(false);
@@ -1031,7 +1031,7 @@ void MsgAlloc_PullContainerFromTxTask(uint16_t container_id)
             {
                 tx_tasks_stack_id--;
                 tx_tasks[tx_tasks_stack_id].data_pt = 0;
-                tx_tasks[tx_tasks_stack_id].size = 0;
+                tx_tasks[tx_tasks_stack_id].size    = 0;
             }
             LuosHAL_SetIrqState(true);
         }
@@ -1056,10 +1056,10 @@ error_return_t MsgAlloc_GetTxTask(ll_container_t **ll_container_pt, uint8_t **da
     MsgAlloc_ValidDataIntegrity();
     if (tx_tasks_stack_id > 0)
     {
-        *data = tx_tasks[0].data_pt;
-        *size = tx_tasks[0].size;
+        *data            = tx_tasks[0].data_pt;
+        *size            = tx_tasks[0].size;
         *ll_container_pt = tx_tasks[0].ll_container_pt;
-        *locahost = tx_tasks[0].localhost;
+        *locahost        = tx_tasks[0].localhost;
         return SUCCEED;
     }
     return FAILED;

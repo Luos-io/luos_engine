@@ -105,7 +105,7 @@ void Transmit_Process()
                 {
                     ll_container_pt->dead_container_spotted = (uint16_t)(((msg_t *)data)->header.target);
                 }
-                nbrRetry = 0;
+                nbrRetry         = 0;
                 ctx.tx.collision = false;
                 // Remove all transmist messages of this specific target
                 MsgAlloc_PullContainerFromTxTask((uint16_t)(((msg_t *)data)->header.target));
@@ -167,7 +167,7 @@ void Transmit_End(void)
     if (ctx.tx.status == TX_OK)
     {
         // A tx_task have been sucessfully transmitted
-        nbrRetry = 0;
+        nbrRetry         = 0;
         ctx.tx.collision = false;
         // Remove the task
         MsgAlloc_PullMsgFromTxTask();
@@ -179,7 +179,7 @@ void Transmit_End(void)
         // compute a delay before retry
         LuosHAL_ResetTimeout(20 * nbrRetry * (ctx.node.node_id + 1));
         // Lock the trasmission to be sure no one can send something from this node.
-        ctx.tx.lock = true;
+        ctx.tx.lock   = true;
         ctx.tx.status = TX_DISABLE;
         return;
     }

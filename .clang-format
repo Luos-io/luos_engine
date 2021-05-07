@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+BreakBeforeBraces: Allman
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: true
+ColumnLimit: 0
+AccessModifierOffset: -4
+NamespaceIndentation: All
+FixNamespaceComments: false
+SortIncludes: false
+AlignOperands: true
+BreakBeforeBinaryOperators: All
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true

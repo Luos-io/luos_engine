@@ -57,9 +57,9 @@ void Luos_Init(void)
 void Luos_Loop(void)
 {
     static uint32_t last_loop_date;
-    uint16_t remaining_msg_number = 0;
+    uint16_t remaining_msg_number       = 0;
     ll_container_t *oldest_ll_container = NULL;
-    msg_t *returned_msg = NULL;
+    msg_t *returned_msg                 = NULL;
 
     // check loop call time stat
     if ((LuosHAL_GetSystick() - last_loop_date) > luos_stats.max_loop_time_ms)
@@ -73,7 +73,7 @@ void Luos_Loop(void)
         // There is a message available find the container linked to it
         container_t *container = Luos_GetContainer(oldest_ll_container);
         // check if this is a Luos Command
-        uint8_t cmd = 0;
+        uint8_t cmd   = 0;
         uint16_t size = 0;
         // There is a possibility to receive in IT a restet_detection so check task before doing any treatement
         if ((MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) != SUCCEED) || (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) != SUCCEED))
@@ -136,40 +136,40 @@ static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint1
 {
     switch (cmd)
     {
-    case WRITE_NODE_ID:
-    case RESET_DETECTION:
-    case SET_BAUDRATE:
-        // ERROR
-        LUOS_ASSERT(0);
-        break;
-    case ASSERT:
-        if (container->cont_cb != 0)
-        {
+        case WRITE_NODE_ID:
+        case RESET_DETECTION:
+        case SET_BAUDRATE:
+            // ERROR
+            LUOS_ASSERT(0);
+            break;
+        case ASSERT:
+            if (container->cont_cb != 0)
+            {
+                return SUCCEED;
+            }
+            else
+            {
+                return FAILED;
+            }
+            break;
+        case RTB_CMD:
+        case WRITE_ALIAS:
+        case UPDATE_PUB:
             return SUCCEED;
-        }
-        else
-        {
-            return FAILED;
-        }
-        break;
-    case RTB_CMD:
-    case WRITE_ALIAS:
-    case UPDATE_PUB:
-        return SUCCEED;
-        break;
+            break;
 
-    case REVISION:
-    case LUOS_REVISION:
-    case NODE_UUID:
-    case LUOS_STATISTICS:
-        if (size == 0)
-        {
-            return SUCCEED;
-        }
-        break;
-    default:
-        return FAILED;
-        break;
+        case REVISION:
+        case LUOS_REVISION:
+        case NODE_UUID:
+        case LUOS_STATISTICS:
+            if (size == 0)
+            {
+                return SUCCEED;
+            }
+            break;
+        default:
+            return FAILED;
+            break;
     }
     return FAILED;
 }
@@ -190,162 +190,162 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
 
     switch (input->header.cmd)
     {
-    case ASSERT:
-        // a module assert remove all modules of the asserted node in routing table
-        RoutingTB_RemoveNode(input->header.source);
-        // This assert information could be usefull for containers, do not remove it.
-        consume = FAILED;
-        break;
-    case RTB_CMD:
-        // Depending on the size of this message we have to make different operations
-        // If size is 0 someone ask to get local_route table back
-        // If size is 2 someone ask us to generate a local route table based on the given container ID then send local route table back.
-        // If size is bigger than 2 this is a complete routing table comming. We have to save it.
-        switch (input->header.size)
-        {
-        case 2:
-            // generate local ID
-            RoutingTB_Erase();
-            memcpy(&base_id, &input->data[0], sizeof(uint16_t));
-            if (base_id == 1)
+        case ASSERT:
+            // a module assert remove all modules of the asserted node in routing table
+            RoutingTB_RemoveNode(input->header.source);
+            // This assert information could be usefull for containers, do not remove it.
+            consume = FAILED;
+            break;
+        case RTB_CMD:
+            // Depending on the size of this message we have to make different operations
+            // If size is 0 someone ask to get local_route table back
+            // If size is 2 someone ask us to generate a local route table based on the given container ID then send local route table back.
+            // If size is bigger than 2 this is a complete routing table comming. We have to save it.
+            switch (input->header.size)
             {
-                // set container Id based on received data except for the detector one.
-                base_id = 2;
-                int index = 0;
-                for (uint16_t i = 0; i < container_number; i++)
-                {
-                    if (container_table[i].ll_container->id != 1)
+                case 2:
+                    // generate local ID
+                    RoutingTB_Erase();
+                    memcpy(&base_id, &input->data[0], sizeof(uint16_t));
+                    if (base_id == 1)
                     {
-                        container_table[i].ll_container->id = base_id + index;
-                        index++;
+                        // set container Id based on received data except for the detector one.
+                        base_id   = 2;
+                        int index = 0;
+                        for (uint16_t i = 0; i < container_number; i++)
+                        {
+                            if (container_table[i].ll_container->id != 1)
+                            {
+                                container_table[i].ll_container->id = base_id + index;
+                                index++;
+                            }
+                        }
                     }
+                    else
+                    {
+                        // set container Id based on received data
+                        for (uint16_t i = 0; i < container_number; i++)
+                        {
+                            container_table[i].ll_container->id = base_id + i;
+                        }
+                    }
+                case 0:
+                    // send back a local routing table
+                    output_msg.header.cmd         = RTB_CMD;
+                    output_msg.header.target_mode = IDACK;
+                    output_msg.header.target      = input->header.source;
+                    Luos_TransmitLocalRoutingTable(container, &output_msg);
+                    break;
+                default:
+                    // Check routing table overflow
+                    LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
+                    if (Luos_ReceiveData(container, input, (void *)route_tab) == SUCCEED)
+                    {
+                        // route table section reception complete
+                        RoutingTB_ComputeRoutingTableEntryNB();
+                    }
+                    break;
+            }
+            consume = SUCCEED;
+            break;
+        case REVISION:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd         = REVISION;
+                output.header.target_mode = ID;
+                memcpy(output.data, container->revision.unmap, sizeof(revision_t));
+                output.header.size   = sizeof(revision_t);
+                output.header.target = input->header.source;
+                Luos_SendMsg(container, &output);
+                consume = SUCCEED;
+            }
+            break;
+        case LUOS_REVISION:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd         = LUOS_REVISION;
+                output.header.target_mode = ID;
+                memcpy(output.data, &luos_version.unmap, sizeof(revision_t));
+                output.header.size   = sizeof(revision_t);
+                output.header.target = input->header.source;
+                Luos_SendMsg(container, &output);
+                consume = SUCCEED;
+            }
+            break;
+        case NODE_UUID:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd         = NODE_UUID;
+                output.header.target_mode = ID;
+                output.header.size        = sizeof(luos_uuid_t);
+                output.header.target      = input->header.source;
+                luos_uuid_t uuid;
+                uuid.uuid[0] = LUOS_UUID[0];
+                uuid.uuid[1] = LUOS_UUID[1];
+                uuid.uuid[2] = LUOS_UUID[2];
+                memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
+                Luos_SendMsg(container, &output);
+                consume = SUCCEED;
+            }
+            break;
+        case LUOS_STATISTICS:
+            if (input->header.size == 0)
+            {
+                msg_t output;
+                output.header.cmd         = LUOS_STATISTICS;
+                output.header.target_mode = ID;
+                output.header.size        = sizeof(general_stats_t);
+                output.header.target      = input->header.source;
+                memcpy(&general_stats.node_stat, &luos_stats.unmap, sizeof(luos_stats_t));
+                memcpy(&general_stats.container_stat, container->statistics.unmap, sizeof(container_stats_t));
+                memcpy(output.data, &general_stats.unmap, sizeof(general_stats_t));
+                Luos_SendMsg(container, &output);
+                consume = SUCCEED;
+            }
+            break;
+        case WRITE_ALIAS:
+            // Make a clean copy with full \0 at the end.
+            memset(container->alias, '\0', MAX_ALIAS_SIZE);
+            if (input->header.size > 16)
+            {
+                input->header.size = 16;
+            }
+            // check if there is no forbiden character
+            uint8_t wrong = false;
+            for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
+            {
+                if (input->data[i] == '\r')
+                {
+                    wrong = true;
+                    break;
                 }
+            }
+            if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z'))) & (input->header.size != 0) & (wrong == false))
+            {
+                memcpy(container->alias, input->data, input->header.size);
+                Luos_SaveAlias(container, container->alias);
             }
             else
             {
-                // set container Id based on received data
-                for (uint16_t i = 0; i < container_number; i++)
-                {
-                    container_table[i].ll_container->id = base_id + i;
-                }
+                // This is a wrong alias or an erase instruction, get back to default one
+                Luos_SaveAlias(container, '\0');
+                memcpy(container->alias, container->default_alias, MAX_ALIAS_SIZE);
             }
-        case 0:
-            // send back a local routing table
-            output_msg.header.cmd = RTB_CMD;
-            output_msg.header.target_mode = IDACK;
-            output_msg.header.target = input->header.source;
-            Luos_TransmitLocalRoutingTable(container, &output_msg);
+            consume = SUCCEED;
+            break;
+        case UPDATE_PUB:
+            // this container need to be auto updated
+            TimeOD_TimeFromMsg(&time, input);
+            container->auto_refresh.target      = input->header.source;
+            container->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
+            container->auto_refresh.last_update = LuosHAL_GetSystick();
+            consume                             = SUCCEED;
             break;
         default:
-            // Check routing table overflow
-            LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
-            if (Luos_ReceiveData(container, input, (void *)route_tab) == SUCCEED)
-            {
-                // route table section reception complete
-                RoutingTB_ComputeRoutingTableEntryNB();
-            }
             break;
-        }
-        consume = SUCCEED;
-        break;
-    case REVISION:
-        if (input->header.size == 0)
-        {
-            msg_t output;
-            output.header.cmd = REVISION;
-            output.header.target_mode = ID;
-            memcpy(output.data, container->revision.unmap, sizeof(revision_t));
-            output.header.size = sizeof(revision_t);
-            output.header.target = input->header.source;
-            Luos_SendMsg(container, &output);
-            consume = SUCCEED;
-        }
-        break;
-    case LUOS_REVISION:
-        if (input->header.size == 0)
-        {
-            msg_t output;
-            output.header.cmd = LUOS_REVISION;
-            output.header.target_mode = ID;
-            memcpy(output.data, &luos_version.unmap, sizeof(revision_t));
-            output.header.size = sizeof(revision_t);
-            output.header.target = input->header.source;
-            Luos_SendMsg(container, &output);
-            consume = SUCCEED;
-        }
-        break;
-    case NODE_UUID:
-        if (input->header.size == 0)
-        {
-            msg_t output;
-            output.header.cmd = NODE_UUID;
-            output.header.target_mode = ID;
-            output.header.size = sizeof(luos_uuid_t);
-            output.header.target = input->header.source;
-            luos_uuid_t uuid;
-            uuid.uuid[0] = LUOS_UUID[0];
-            uuid.uuid[1] = LUOS_UUID[1];
-            uuid.uuid[2] = LUOS_UUID[2];
-            memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
-            Luos_SendMsg(container, &output);
-            consume = SUCCEED;
-        }
-        break;
-    case LUOS_STATISTICS:
-        if (input->header.size == 0)
-        {
-            msg_t output;
-            output.header.cmd = LUOS_STATISTICS;
-            output.header.target_mode = ID;
-            output.header.size = sizeof(general_stats_t);
-            output.header.target = input->header.source;
-            memcpy(&general_stats.node_stat, &luos_stats.unmap, sizeof(luos_stats_t));
-            memcpy(&general_stats.container_stat, container->statistics.unmap, sizeof(container_stats_t));
-            memcpy(output.data, &general_stats.unmap, sizeof(general_stats_t));
-            Luos_SendMsg(container, &output);
-            consume = SUCCEED;
-        }
-        break;
-    case WRITE_ALIAS:
-        // Make a clean copy with full \0 at the end.
-        memset(container->alias, '\0', MAX_ALIAS_SIZE);
-        if (input->header.size > 16)
-        {
-            input->header.size = 16;
-        }
-        // check if there is no forbiden character
-        uint8_t wrong = false;
-        for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
-        {
-            if (input->data[i] == '\r')
-            {
-                wrong = true;
-                break;
-            }
-        }
-        if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z'))) & (input->header.size != 0) & (wrong == false))
-        {
-            memcpy(container->alias, input->data, input->header.size);
-            Luos_SaveAlias(container, container->alias);
-        }
-        else
-        {
-            // This is a wrong alias or an erase instruction, get back to default one
-            Luos_SaveAlias(container, '\0');
-            memcpy(container->alias, container->default_alias, MAX_ALIAS_SIZE);
-        }
-        consume = SUCCEED;
-        break;
-    case UPDATE_PUB:
-        // this container need to be auto updated
-        TimeOD_TimeFromMsg(&time, input);
-        container->auto_refresh.target = input->header.source;
-        container->auto_refresh.time_ms = (uint16_t)TimeOD_TimeTo_ms(time);
-        container->auto_refresh.last_update = LuosHAL_GetSystick();
-        consume = SUCCEED;
-        break;
-    default:
-        break;
     }
     return consume;
 }
@@ -415,8 +415,8 @@ static void Luos_AutoUpdateManager(void)
         if (container_table[i].ll_container->id == DEFAULTID)
         {
             // this container have not been detected or is in detection mode. remove auto_refresh parameters
-            container_table[i].auto_refresh.target = 0;
-            container_table[i].auto_refresh.time_ms = 0;
+            container_table[i].auto_refresh.target      = 0;
+            container_table[i].auto_refresh.time_ms     = 0;
             container_table[i].auto_refresh.last_update = 0;
         }
         else
@@ -429,11 +429,11 @@ static void Luos_AutoUpdateManager(void)
                     // This container need to send an update
                     // Create a fake message for it from the container asking for update
                     msg_t updt_msg;
-                    updt_msg.header.target = container_table[i].ll_container->id;
-                    updt_msg.header.source = container_table[i].auto_refresh.target;
+                    updt_msg.header.target      = container_table[i].ll_container->id;
+                    updt_msg.header.source      = container_table[i].auto_refresh.target;
                     updt_msg.header.target_mode = IDACK;
-                    updt_msg.header.cmd = ASK_PUB_CMD;
-                    updt_msg.header.size = 0;
+                    updt_msg.header.cmd         = ASK_PUB_CMD;
+                    updt_msg.header.size        = 0;
                     if ((container_table[i].cont_cb != 0))
                     {
                         container_table[i].cont_cb(&container_table[i], &updt_msg);
@@ -470,8 +470,8 @@ void Luos_ContainersClear(void)
  ******************************************************************************/
 container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *alias, revision_t revision)
 {
-    uint8_t i = 0;
-    container_t *container = &container_table[container_number];
+    uint8_t i               = 0;
+    container_t *container  = &container_table[container_number];
     container->ll_container = Robus_ContainerCreate(type);
 
     // Link the container to his callback
@@ -507,7 +507,7 @@ container_t *Luos_CreateContainer(CONT_CB cont_cb, uint8_t type, const char *ali
     }
 
     //initiate container statistics
-    container->node_statistics = &luos_stats;
+    container->node_statistics                 = &luos_stats;
     container->ll_container->ll_stat.max_retry = &container->statistics.max_retry;
 
     container_number++;
@@ -564,9 +564,9 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
  ******************************************************************************/
 error_return_t Luos_ReadFromContainer(container_t *container, short id, msg_t **returned_msg)
 {
-    uint16_t remaining_msg_number = 0;
+    uint16_t remaining_msg_number       = 0;
     ll_container_t *oldest_ll_container = NULL;
-    error_return_t error = SUCCEED;
+    error_return_t error                = SUCCEED;
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_container) != FAILED)
     {
         // Check if this message is for us
@@ -615,7 +615,7 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
 {
     // Compute number of message needed to send this data
     uint16_t msg_number = 1;
-    uint16_t sent_size = 0;
+    uint16_t sent_size  = 0;
     if (size > MAX_DATA_MSG_SIZE)
     {
         msg_number = (size / MAX_DATA_MSG_SIZE);
@@ -664,10 +664,10 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
 error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_data)
 {
     // Manage buffer session (one per container)
-    static uint32_t data_size[MAX_CONTAINER_NUMBER] = {0};
+    static uint32_t data_size[MAX_CONTAINER_NUMBER]       = {0};
     static uint32_t total_data_size[MAX_CONTAINER_NUMBER] = {0};
-    static uint16_t last_msg_size = 0;
-    uint16_t id = Luos_GetContainerIndex(container);
+    static uint16_t last_msg_size                         = 0;
+    uint16_t id                                           = Luos_GetContainerIndex(container);
     // check good container index
     if (id == 0xFFFF)
     {
@@ -717,8 +717,8 @@ error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_da
     if (msg->header.size <= MAX_DATA_MSG_SIZE)
     {
         // Data collection finished, reset buffer session state
-        data_size[id] = 0;
-        last_msg_size = 0;
+        data_size[id]       = 0;
+        last_msg_size       = 0;
         total_data_size[id] = 0;
         return SUCCEED;
     }
@@ -734,8 +734,8 @@ error_return_t Luos_ReceiveData(container_t *container, msg_t *msg, void *bin_da
 void Luos_SendStreaming(container_t *container, msg_t *msg, streaming_channel_t *stream)
 {
     // Compute number of message needed to send available datas on ring buffer
-    int msg_number = 1;
-    int data_size = Stream_GetAvailableSampleNB(stream);
+    int msg_number              = 1;
+    int data_size               = Stream_GetAvailableSampleNB(stream);
     const int max_data_msg_size = (MAX_DATA_MSG_SIZE / stream->data_size);
     if (data_size > max_data_msg_size)
     {
@@ -864,9 +864,9 @@ void Luos_SendBaudrate(container_t *container, uint32_t baudrate)
     msg_t msg;
     memcpy(msg.data, &baudrate, sizeof(uint32_t));
     msg.header.target_mode = BROADCAST;
-    msg.header.target = BROADCAST_VAL;
-    msg.header.cmd = SET_BAUDRATE;
-    msg.header.size = sizeof(uint32_t);
+    msg.header.target      = BROADCAST_VAL;
+    msg.header.cmd         = SET_BAUDRATE;
+    msg.header.size        = sizeof(uint32_t);
     Robus_SendMsg(container->ll_container, &msg);
 }
 /******************************************************************************
@@ -880,12 +880,12 @@ void Luos_SendBaudrate(container_t *container, uint32_t baudrate)
 void Luos_SetExternId(container_t *container, target_mode_t target_mode, uint16_t target, uint16_t newid)
 {
     msg_t msg;
-    msg.header.target = target;
+    msg.header.target      = target;
     msg.header.target_mode = target_mode;
-    msg.header.cmd = WRITE_NODE_ID;
-    msg.header.size = 2;
-    msg.data[1] = newid;
-    msg.data[0] = (newid << 8);
+    msg.header.cmd         = WRITE_NODE_ID;
+    msg.header.size        = 2;
+    msg.data[1]            = newid;
+    msg.data[0]            = (newid << 8);
     Robus_SendMsg(container->ll_container, &msg);
 }
 /******************************************************************************

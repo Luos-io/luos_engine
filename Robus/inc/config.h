@@ -10,14 +10,14 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define DEFAULTID 0x00
+#define DEFAULTID         0x00
 #define PROTOCOL_REVISION 0
-#define BROADCAST_VAL 0x0FFF
-#define DEFAULTBAUDRATE 1000000
+#define BROADCAST_VAL     0x0FFF
+#define DEFAULTBAUDRATE   1000000
 
-#define TIMEOUT_VAL 2
-#define MAX_ALIAS_SIZE 16
-#define MAX_DATA_MSG_SIZE 128
+#define TIMEOUT_VAL           2
+#define MAX_ALIAS_SIZE        16
+#define MAX_DATA_MSG_SIZE     128
 #define MAX_MULTICAST_ADDRESS 1
 
 #ifndef NBR_RETRY

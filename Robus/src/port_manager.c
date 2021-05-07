@@ -56,7 +56,7 @@ void PortMng_PtpHandler(uint8_t PortNbr)
     if (Port_ExpectedState == RELEASE)
     {
         Port_ExpectedState = POKE;
-        ctx.port.keepLine = false;
+        ctx.port.keepLine  = false;
         // Check if every line have been poked and poke it if not
         for (uint8_t port = 0; port < NBR_PORT; port++)
         {
@@ -100,7 +100,7 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
         LuosHAL_SetPTPReverseState(PortNbr);
         Port_ExpectedState = RELEASE;
         // Port poked by node
-        ctx.port.activ = PortNbr;
+        ctx.port.activ    = PortNbr;
         ctx.port.keepLine = true;
         return 1;
     }
@@ -140,8 +140,8 @@ error_return_t PortMng_PokeNextPort(void)
  ******************************************************************************/
 void PortMng_Reset(void)
 {
-    ctx.port.keepLine = false;
-    ctx.port.activ = NBR_PORT;
+    ctx.port.keepLine  = false;
+    ctx.port.activ     = NBR_PORT;
     Port_ExpectedState = POKE;
     // if it is finished reset all lines
     for (uint8_t port = 0; port < NBR_PORT; port++)
