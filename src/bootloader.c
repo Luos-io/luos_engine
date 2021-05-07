@@ -94,6 +94,46 @@ void LuosBootloader_SetNodeID(void)
 }
 
 /******************************************************************************
+ * @brief process binary data received from the gate
+ * @param None 
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_ProcessData(void)
+{
+    if (residual_space >= bootloader_data_size)
+    {
+        // there is enough space in the current page
+        // fill the current page with data
+        memcpy(&page_buff[data_index], bootloader_data, bootloader_data_size);
+
+        // update data_index and residual_space
+        data_index += bootloader_data_size;
+        residual_space -= bootloader_data_size;
+    }
+    else
+    {
+        // complete the current page buffer
+        memcpy(&page_buff[data_index], bootloader_data, residual_space);
+
+        // save the completed page in flash memory
+        LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
+
+        // Prepare next page buffer
+        page_addr += PAGE_SIZE;
+        page_id += 1;
+        data_index = 0;
+        memset(page_buff, 0xFF, (uint16_t)PAGE_SIZE);
+
+        // copy the remaining data in the new page buffer
+        memcpy(&page_buff[data_index], &bootloader_data[residual_space], bootloader_data_size - residual_space);
+
+        // update data_index and residual_space
+        data_index     = bootloader_data_size - residual_space;
+        residual_space = (uint16_t)PAGE_SIZE - data_index;
+    }
+}
+
+/******************************************************************************
  * @brief Send response to the gate
  * @param None
  * @return None
@@ -168,39 +208,8 @@ void LuosBootloader_Task(void)
             {
                 // reset bootloader cmd to avoid looping in this portion of the code
                 bootloader_cmd = BOOTLOADER_IDLE;
-
                 // handle binary data
-                if (residual_space >= bootloader_data_size)
-                {
-                    // there is enough space in the current page
-                    // fill the current page with data
-                    memcpy(&page_buff[data_index], bootloader_data, bootloader_data_size);
-
-                    // update data_index and residual_space
-                    data_index += bootloader_data_size;
-                    residual_space -= bootloader_data_size;
-                }
-                else
-                {
-                    // complete the current page buffer
-                    memcpy(&page_buff[data_index], bootloader_data, residual_space);
-
-                    // save the completed page in flash memory
-                    LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
-
-                    // Prepare next page buffer
-                    page_addr += PAGE_SIZE;
-                    page_id += 1;
-                    data_index = 0;
-                    memset(page_buff, 0xFF, (uint16_t)PAGE_SIZE);
-
-                    // copy the remaining data in the new page buffer
-                    memcpy(&page_buff[data_index], &bootloader_data[residual_space], bootloader_data_size - residual_space);
-
-                    // update data_index and residual_space
-                    data_index     = bootloader_data_size - residual_space;
-                    residual_space = (uint16_t)PAGE_SIZE - data_index;
-                }
+                LuosBootloader_ProcessData();
             }
 
             if (bootloader_cmd == BOOTLOADER_BIN_END)
