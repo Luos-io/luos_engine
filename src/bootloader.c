@@ -17,7 +17,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define MAX_FRAME_SIZE      127
+#define MAX_FRAME_SIZE 127
 
 /*******************************************************************************
  * Variables
@@ -31,9 +31,9 @@ uint16_t bootloader_data_size = 0;
 
 uint32_t page_addr = APP_ADDRESS;
 uint8_t page_buff[(uint16_t)PAGE_SIZE];
-uint16_t data_index = 0;
+uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)PAGE_SIZE;
-uint16_t page_id = APP_FLASH_PAGE;
+uint16_t page_id        = APP_FLASH_PAGE;
 
 /*******************************************************************************
  * Function
@@ -46,24 +46,7 @@ uint16_t page_id = APP_FLASH_PAGE;
  ******************************************************************************/
 uint8_t LuosBootloader_GetMode(void)
 {
-    uint32_t* p_start = (uint32_t*)SHARED_MEMORY_ADDRESS;
-    uint8_t boot_mode = 0x00;
-
-    uint32_t data = *p_start & BOOT_MODE_MASK;
-    
-    switch(data)
-    {
-        case 0:
-            boot_mode = BOOTLOADER_MODE;
-            break;
-        case 1:
-            boot_mode = APPLICATION_MODE;
-            break;
-        default:
-            break;
-    }        
-
-    return boot_mode;
+    return LuosHAL_GetMode();
 }
 
 /******************************************************************************
@@ -118,11 +101,11 @@ void LuosBootloader_SetNodeID(void)
 void LuosBootloader_SendResponse(bootloader_cmd_t response)
 {
     msg_t ready_msg;
-    ready_msg.header.cmd = BOOTLOADER_RESP;
+    ready_msg.header.cmd         = BOOTLOADER_RESP;
     ready_msg.header.target_mode = NODEIDACK;
-    ready_msg.header.target = 1;    // always send to the gate wich launched the detection
-    ready_msg.header.size = sizeof(uint8_t);
-    ready_msg.data[0] = response;
+    ready_msg.header.target      = 1; // always send to the gate wich launched the detection
+    ready_msg.header.size        = sizeof(uint8_t);
+    ready_msg.data[0]            = response;
     Luos_SendMsg(0, &ready_msg);
 }
 
@@ -143,7 +126,7 @@ void LuosBootloader_SetState(bootloader_state_t state)
  ******************************************************************************/
 void LuosBootloader_Task(void)
 {
-    switch(bootloader_state)
+    switch (bootloader_state)
     {
         case BOOTLOADER_START_STATE:
             // set ID node saved in flash
@@ -154,12 +137,12 @@ void LuosBootloader_Task(void)
 
         case BOOTLOADER_READY_STATE:
             // if STOP_CMD, restart the node
-            if(bootloader_cmd == BOOTLOADER_STOP)
+            if (bootloader_cmd == BOOTLOADER_STOP)
             {
                 LuosBootloader_SetState(BOOTLOADER_STOP_STATE);
             }
             // if READY_CMD, continue BOOTLOADER process
-            if(bootloader_cmd == BOOTLOADER_READY)
+            if (bootloader_cmd == BOOTLOADER_READY)
             {
                 // send READY response
                 LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
@@ -170,7 +153,7 @@ void LuosBootloader_Task(void)
 
         case BOOTLOADER_BIN_HEADER_STATE:
 
-            if(bootloader_cmd == BOOTLOADER_BIN_HEADER)
+            if (bootloader_cmd == BOOTLOADER_BIN_HEADER)
             {
                 // handle header data
                 LuosBootloader_SendResponse(BOOTLOADER_BIN_HEADER_RESP);
@@ -181,13 +164,13 @@ void LuosBootloader_Task(void)
 
         case BOOTLOADER_BIN_CHUNK_STATE:
 
-            if(bootloader_cmd == BOOTLOADER_BIN_CHUNK)
+            if (bootloader_cmd == BOOTLOADER_BIN_CHUNK)
             {
                 // reset bootloader cmd to avoid looping in this portion of the code
                 bootloader_cmd = BOOTLOADER_IDLE;
 
                 // handle binary data
-                if(residual_space >= bootloader_data_size)
+                if (residual_space >= bootloader_data_size)
                 {
                     // there is enough space in the current page
                     // fill the current page with data
@@ -215,12 +198,12 @@ void LuosBootloader_Task(void)
                     memcpy(&page_buff[data_index], &bootloader_data[residual_space], bootloader_data_size - residual_space);
 
                     // update data_index and residual_space
-                    data_index = bootloader_data_size-residual_space;
+                    data_index     = bootloader_data_size - residual_space;
                     residual_space = (uint16_t)PAGE_SIZE - data_index;
                 }
             }
 
-            if(bootloader_cmd == BOOTLOADER_BIN_END)
+            if (bootloader_cmd == BOOTLOADER_BIN_END)
             {
                 // save the current page in flash memory
                 LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
@@ -261,7 +244,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
 {
     bootloader_cmd = input->data[0];
 
-    switch(bootloader_cmd)
+    switch (bootloader_cmd)
     {
         case BOOTLOADER_START:
             // We're in the app,
@@ -277,7 +260,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_BIN_CHUNK:
         case BOOTLOADER_BIN_END:
         case BOOTLOADER_CRC_TEST:
-            // we're in the bootloader, 
+            // we're in the bootloader,
             // process cmd and data
             bootloader_data_size = input->header.size - sizeof(char);
             memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
@@ -295,7 +278,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
  ******************************************************************************/
 void LuosBootloader_Run(void)
 {
-    switch(LuosBootloader_GetMode())    
+    switch (LuosBootloader_GetMode())
     {
         case BOOTLOADER_MODE:
             Luos_Init();
