@@ -225,7 +225,7 @@ void LuosBootloader_Task(void)
 
         case BOOTLOADER_STOP_STATE:
             // save boot_mode in flash
-            LuosHAL_SetApplicationMode();
+            LuosHAL_SetMode(APPLICATION_MODE);
             // reboot the node
             LuosHAL_Reboot();
             break;
@@ -249,7 +249,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
-            LuosHAL_SetBootloaderMode();
+            LuosHAL_SetMode(BOOTLOADER_MODE);
             LuosBootloader_SaveNodeID();
             LuosHAL_Reboot();
             break;
