@@ -78,7 +78,7 @@ void LuosBootloader_SaveNodeID(void)
 {
     uint16_t node_id = Robus_GetNodeID();
 
-    LuosHAL_SaveNodeID(SHARED_MEMORY_ADDRESS, node_id);
+    LuosHAL_SaveNodeID(node_id);
 }
 
 /******************************************************************************
@@ -88,7 +88,7 @@ void LuosBootloader_SaveNodeID(void)
  ******************************************************************************/
 void LuosBootloader_SetNodeID(void)
 {
-    uint16_t node_id = LuosHAL_GetNodeID(SHARED_MEMORY_ADDRESS);
+    uint16_t node_id = LuosHAL_GetNodeID();
 
     Robus_SetNodeID(node_id);
 }
