@@ -26,8 +26,8 @@ static bootloader_state_t bootloader_state = BOOTLOADER_START_STATE;
 static bootloader_cmd_t bootloader_cmd;
 
 // variables use to save binary data in flash
-uint8_t bootloader_data[MAX_FRAME_SIZE];
-uint16_t bootloader_data_size = 0;
+static uint8_t bootloader_data[MAX_FRAME_SIZE];
+static uint16_t bootloader_data_size = 0;
 
 uint32_t page_addr = APP_ADDRESS;
 uint8_t page_buff[(uint16_t)PAGE_SIZE];
@@ -38,6 +38,16 @@ uint16_t page_id        = APP_FLASH_PAGE;
 /*******************************************************************************
  * Function
  ******************************************************************************/
+static uint8_t LuosBootloader_GetMode(void);
+static void LuosBootloader_DeInit(void);
+static void LuosBootloader_JumpToApp(void);
+static void LuosBootloader_SaveNodeID(void);
+static void LuosBootloader_SetNodeID(void);
+static inline void LuosBootloader_ProcessData(void);
+static inline void LuosBootloader_SaveLastData(void);
+static void LuosBootloader_SendResponse(bootloader_cmd_t);
+static void LuosBootloader_SetState(bootloader_state_t);
+static void LuosBootloader_Task(void);
 
 /******************************************************************************
  * @brief read the boot mode in flash memory
@@ -98,7 +108,6 @@ void LuosBootloader_SetNodeID(void)
  * @param None 
  * @return None
  ******************************************************************************/
-inline void LuosBootloader_ProcessData(void);
 void LuosBootloader_ProcessData(void)
 {
     if (residual_space >= bootloader_data_size)
@@ -139,7 +148,6 @@ void LuosBootloader_ProcessData(void)
  * @param None 
  * @return None
  ******************************************************************************/
-inline void LuosBootloader_SaveLastData(void);
 void LuosBootloader_SaveLastData(void)
 {
     LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
