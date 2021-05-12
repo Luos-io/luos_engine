@@ -34,6 +34,7 @@ uint8_t page_buff[(uint16_t)PAGE_SIZE];
 uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)PAGE_SIZE;
 uint16_t page_id        = APP_FLASH_PAGE;
+uint32_t nb_bytes       = 0;
 
 /*******************************************************************************
  * Function
@@ -46,6 +47,7 @@ static void LuosBootloader_SetNodeID(void);
 static inline void LuosBootloader_ProcessData(void);
 static inline void LuosBootloader_SaveLastData(void);
 static void LuosBootloader_SendResponse(bootloader_cmd_t);
+static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t, uint8_t);
 static void LuosBootloader_SetState(bootloader_state_t);
 static void LuosBootloader_Task(void);
 
@@ -154,6 +156,90 @@ void LuosBootloader_SaveLastData(void)
 }
 
 /******************************************************************************
+ * @brief compute crc 8 for each data
+ * @param data pointer, data len 
+ * @return crc
+ ******************************************************************************/
+void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
+{
+    uint16_t dbyte = 0;
+    uint16_t mix   = 0;
+
+    // zero padding data
+    dbyte = (uint16_t)*data << 8;
+    // add initial value
+    dbyte ^= (uint16_t)*crc << 8;
+    // right shift polynomial key
+    polynome = polynome << 8;
+    // shift and xor if necessary
+    for (uint8_t j = 0; j < 8; ++j)
+    {
+        mix   = dbyte & 0x8000;
+        dbyte = (dbyte << 1);
+        if (mix)
+            dbyte ^= polynome;
+    }
+
+    *crc = (uint8_t)(dbyte >> 8);
+}
+
+/******************************************************************************
+ * @brief compute crc for the whole binary
+ * @param data pointer, data len 
+ * @return crc
+ ******************************************************************************/
+uint8_t compute_crc(void)
+{
+    uint8_t crc   = 0x00; // initial crc value
+    uint8_t data  = 0x00;
+    uint16_t poly = 0x0007;
+
+    uint32_t data_counter  = 0;
+    uint8_t data_index     = 0;
+    uint32_t *data_address = (uint32_t *)APP_ADDRESS;
+    uint32_t data_flash    = 0;
+
+    while (data_counter < nb_bytes)
+    {
+        // read 1 word in flash memory
+        data_flash = *data_address;
+        // read 4 bytes in flash memory
+        for (data_index = 0; data_index < 4; data_index++)
+        {
+            if (data_counter < nb_bytes)
+            {
+                data = (uint8_t)(data_flash >> (8 * data_index));
+                // compute crc
+                crc8(&data, &crc, poly);
+                data_counter += 1;
+            }
+        }
+        // update data address
+        data_address += 1;
+    }
+
+    return crc;
+}
+
+/******************************************************************************
+ * @brief Send response to the gate
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data, uint8_t size)
+{
+    msg_t ready_msg;
+    ready_msg.header.cmd         = BOOTLOADER_RESP;
+    ready_msg.header.target_mode = NODEIDACK;
+    ready_msg.header.target      = 1; // always send to the gate wich launched the detection
+    ready_msg.header.size        = 2 * sizeof(uint8_t);
+    ready_msg.data[0]            = response;
+    ready_msg.data[1]            = data;
+
+    Luos_SendMsg(0, &ready_msg);
+}
+
+/******************************************************************************
  * @brief Send response to the gate
  * @param None
  * @return None
@@ -204,6 +290,8 @@ void LuosBootloader_Task(void)
             // if READY_CMD, continue BOOTLOADER process
             if (bootloader_cmd == BOOTLOADER_READY)
             {
+                // save binary length
+                memcpy(&nb_bytes, &bootloader_data, sizeof(uint32_t));
                 // send READY response
                 LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
                 // go to HEADER state
@@ -248,8 +336,16 @@ void LuosBootloader_Task(void)
             break;
 
         case BOOTLOADER_CRC_TEST_STATE:
-            // go to IDLE state
-            LuosBootloader_SetState(BOOTLOADER_READY_STATE);
+
+            if (bootloader_cmd == BOOTLOADER_CRC_TEST)
+            {
+                uint8_t crc = compute_crc();
+                // send ack to the Host
+                LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc, sizeof(uint16_t));
+
+                // go to READY state
+                LuosBootloader_SetState(BOOTLOADER_READY_STATE);
+            }
             break;
 
         case BOOTLOADER_STOP_STATE:
