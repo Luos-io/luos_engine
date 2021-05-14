@@ -24,21 +24,21 @@ Watch this video for additional details:
 
 → You can start by reading the [Basics](https://docs.luos.io/pages/overview/general-basics.html) page.
 
-## You want to make your own board with [Luos modules](https://docs.luos.io/pages/low/modules/create-modules.html)?
+## You want to make your own board with [Luos modules](https://docs.luos.io/pages/low/containers/create-containers.html)?
 
 → Start reading how to integrate Luos in your [Development environment](https://docs.luos.io/pages/low/dev-env.html).
 
-→ Then learn how to [Create a Luos project](https://docs.luos.io/pages/low/modules/create-project.html).
+→ Then learn how to [Create a Luos project](https://docs.luos.io/pages/low/containers/create-project.html).
 
 ## You want to tune your device's behavior?
 
-→ Luos provides a sets of [Prototyping boards](https://docs.luos.io/pages/prototyping_boards/boards-list.html) you can use as example or to develop your own project.
+→ Luos provides a sets of [Prototyping boards](https://docs.luos.io/pages/demo_boards/boards-list.html) you can use as example or to develop your own project.
 
-→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/modules/create-modules.html).
+→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/containers/create-containers.html).
 
-→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/modules_list/gate.html) module using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
+→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/containers_list/gate.html) module using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
 
-If you have questions about a specific topic, you can refer or ask it on the [Luos' Forum](https://community.luos.io/). And if you have suggestions about this documentation, don't hesitate to create pull requests.
+If you have questions about a specific topic, you can refer or ask it on the [Luos' subreddit](https://www.reddit.com/r/Luos). And if you have suggestions about this documentation, don't hesitate to create pull requests.
 
 ## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' subreddit](https://www.reddit.com/r/Luos/). :books:
 
