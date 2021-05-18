@@ -645,6 +645,8 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
     if (luos_tasks_stack_id != 0)
     {
         luos_tasks_stack_id--;
+        luos_tasks[luos_tasks_stack_id].msg_pt          = 0;
+        luos_tasks[luos_tasks_stack_id].ll_container_pt = 0;
     }
     LuosHAL_SetIrqState(true);
     MsgAlloc_FindNewOldestMsg();
