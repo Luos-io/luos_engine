@@ -546,10 +546,13 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
     {
         error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
         // check if the content of this message need to be managed by Luos and do it if it is.
-        if ((Luos_MsgHandler(container, *returned_msg) == FAILED) & (error == SUCCEED))
+        if (error == SUCCEED)
         {
-            // This message is for the user, pass it to the user.
-            return SUCCEED;
+            if (Luos_MsgHandler(container, *returned_msg) == FAILED)
+            {
+                // This message is for the user, pass it to the user.
+                return SUCCEED;
+            }
         }
         MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
     }
