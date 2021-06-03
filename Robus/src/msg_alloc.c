@@ -851,7 +851,11 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     void *tx_msg              = 0;
     uint16_t progression_size = 0;
     uint16_t estimated_size   = 0;
-    // Start by validating if we have space into the TX_message buffer stack
+
+    // Start by cleaning the memory
+    MsgAlloc_ValidDataIntegrity();
+
+    // Then compute if we have space into the TX_message buffer stack
     if (tx_tasks_stack_id >= MAX_MSG_NB - 1)
     {
         return FAILED;
@@ -994,6 +998,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
         msg_tasks_stack_id++;
         LuosHAL_SetIrqState(true);
     }
+    MsgAlloc_FindNewOldestMsg();
     return SUCCEED;
 }
 /******************************************************************************
