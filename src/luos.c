@@ -626,7 +626,7 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
     }
 
     // Send messages one by one
-    for (volatile uint16_t chunk = 0; chunk < msg_number; chunk++)
+    for (uint16_t chunk = 0; chunk < msg_number; chunk++)
     {
         // Compute chunk size
         uint16_t chunk_size = 0;
