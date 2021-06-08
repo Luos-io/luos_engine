@@ -991,9 +991,9 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     if (localhost != EXTERNALHOST)
     {
         // This is a localhost message copy it as a message task
-        LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
         LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
         LuosHAL_SetIrqState(false);
+        LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
         msg_tasks[msg_tasks_stack_id] = tx_msg;
         msg_tasks_stack_id++;
         LuosHAL_SetIrqState(true);
