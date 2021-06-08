@@ -66,9 +66,13 @@ char *RoutingTB_AliasFromId(uint16_t id);
 luos_type_t RoutingTB_TypeFromID(uint16_t id);
 luos_type_t RoutingTB_TypeFromAlias(char *alias);
 char *RoutingTB_StringFromType(luos_type_t type);
+uint16_t RoutingTB_NodeIDFromID(uint16_t id);
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type);
 uint16_t RoutingTB_GetNodeNB(void);
 uint16_t RoutingTB_GetNodeID(uint16_t index);
+uint16_t RoutingTB_GetContainerNB(void);
+uint16_t RoutingTB_GetContainerID(uint16_t index);
+entry_mode_t RoutingTB_GetMode(uint16_t index);
 
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);
