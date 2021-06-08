@@ -59,13 +59,13 @@ void Stream_ResetStreamingChannel(streaming_channel_t *stream)
  ******************************************************************************/
 uint16_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t size)
 {
-    if (((size * stream->data_size) + stream->data_ptr) > stream->end_ring_buffer)
+    // check if we exceed ring buffer capacity
+    LUOS_ASSERT((Stream_GetAvailableSampleNB(stream) + size) <= (stream->end_ring_buffer - stream->ring_buffer));
+    if (((size * stream->data_size) + stream->data_ptr) >= stream->end_ring_buffer)
     {
         // our data exceeds ring buffer end, cut it and copy.
         uint16_t chunk1 = stream->end_ring_buffer - stream->data_ptr;
         uint16_t chunk2 = (size * stream->data_size) - chunk1;
-        // check if we exceed ring buffer capacity
-        LUOS_ASSERT(stream->sample_ptr >= (stream->ring_buffer + chunk2));
         // Everything good copy datas.
         memcpy(stream->data_ptr, data, chunk1);
         memcpy(stream->ring_buffer, (char *)data + chunk1, chunk2);
@@ -75,8 +75,6 @@ uint16_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_
     else
     {
         // our data fit before ring buffer end
-        // check if we exceed ring buffer capacity
-        LUOS_ASSERT((stream->data_ptr >= stream->sample_ptr) && ((stream->data_ptr + (size * stream->data_size)) <= stream->end_ring_buffer));
         memcpy(stream->data_ptr, data, (size * stream->data_size));
         // Set the new data pointer
         stream->data_ptr = stream->data_ptr + (size * stream->data_size);
