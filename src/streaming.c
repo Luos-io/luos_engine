@@ -57,7 +57,7 @@ void Stream_ResetStreamingChannel(streaming_channel_t *stream)
  * @param size The number of data to copy
  * @return number of available samples
  ******************************************************************************/
-uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t size)
+uint16_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t size)
 {
     if (((size * stream->data_size) + stream->data_ptr) > stream->end_ring_buffer)
     {
@@ -90,7 +90,7 @@ uint8_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t
  * @param size data
  * @return None
  ******************************************************************************/
-uint8_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size)
+uint16_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size)
 {
     uint16_t nb_available_samples = Stream_GetAvailableSampleNB(stream);
     if (nb_available_samples >= size)
@@ -127,15 +127,16 @@ uint8_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size)
  * @param stream streaming channel pointer
  * @return number of available samples
  ******************************************************************************/
-uint8_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
+uint16_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
 {
-    uint16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
+    int16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
     if (nb_available_sample < 0)
     {
         // The buffer have looped
         nb_available_sample = ((stream->end_ring_buffer - stream->sample_ptr) + (stream->data_ptr - stream->ring_buffer)) / stream->data_size;
     }
-    return nb_available_sample;
+    LUOS_ASSERT(nb_available_sample >= 0);
+    return (uint16_t)nb_available_sample;
 }
 /******************************************************************************
  * @brief set a number of sample available in buffer
@@ -143,15 +144,16 @@ uint8_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
  * @param size The number of data to copy
  * @return number of available samples
  ******************************************************************************/
-uint8_t Stream_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
+uint16_t Stream_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
 {
-    volatile uint16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
+    int16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
     if (nb_available_sample < 0)
     {
         // The buffer have looped
         nb_available_sample = (stream->end_ring_buffer - stream->sample_ptr) / stream->data_size;
     }
-    return nb_available_sample;
+    LUOS_ASSERT(nb_available_sample >= 0);
+    return (uint16_t)nb_available_sample;
 }
 /******************************************************************************
  * @brief set a number of sample available in buffer
@@ -159,7 +161,7 @@ uint8_t Stream_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
  * @param size The number of data to copy
  * @return number of available samples
  ******************************************************************************/
-uint8_t Stream_AddAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
+uint16_t Stream_AddAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
 {
     if (((size * stream->data_size) + stream->data_ptr) > stream->end_ring_buffer)
     {
@@ -179,7 +181,7 @@ uint8_t Stream_AddAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
  * @param size The number of data to copy
  * @return number of available samples
  ******************************************************************************/
-uint8_t Stream_RmvAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
+uint16_t Stream_RmvAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
 {
     if (((size * stream->data_size) + stream->sample_ptr) > stream->end_ring_buffer)
     {
