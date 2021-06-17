@@ -762,6 +762,7 @@ void Luos_SendStreaming(container_t *container, msg_t *msg, streaming_channel_t 
 
         // Copy data into message
         Stream_GetSample(stream, msg->data, chunk_size);
+        msg->header.size = data_size;
 
         // Send message
         while (Luos_SendMsg(container, msg) == FAILED)
