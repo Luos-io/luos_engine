@@ -57,7 +57,7 @@ void Robus_Init(memory_stats_t *memory_stats)
 {
     // Init the number of created  virtual container.
     ctx.ll_container_number = 0;
-    
+
 #ifndef SNIFFER_H
     // Set default container id. This id is a void id used if no container is created.
     ctx.node.node_id = DEFAULTID;
@@ -120,9 +120,8 @@ ll_container_t *Robus_ContainerCreate(uint16_t type)
 {
     // Set the container type
     ctx.ll_container_table[ctx.ll_container_number].type = type;
-    
 
-#ifdef SNIFFER_H    //initialization of sniffer's container fixed ID
+#ifdef SNIFFER_H //initialization of sniffer's container fixed ID
     ctx.ll_container_table[ctx.ll_container_number].id = 0xFFFF;
 #else
     // Initialise the container id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
@@ -361,7 +360,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
 
-#ifdef SNIFFER_H    //the messages should always be treated by the sniffer and not by robus
+#ifdef SNIFFER_H //the messages should always be treated by the sniffer and not by robus
     return FAILED;
 #endif /* SNIFFER_H */
 

@@ -57,5 +57,10 @@ void Recep_Timeout(void);
 void Recep_InterpretMsgProtocol(msg_t *msg);
 luos_localhost_t Recep_NodeConcerned(header_t *header);
 ll_container_t *Recep_GetConcernedLLContainer(header_t *header);
+#ifdef SNIFFER_H
+uint64_t Recep_GetCrcErrorNum(void);
+uint64_t Recep_GetCorruptionNum(void);
+uint64_t Recep_GetSystick(void);
+#endif /* SNIFFER_H */
 
 #endif /* _RECEPTION_H_ */
