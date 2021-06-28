@@ -268,26 +268,34 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
         if ((uint32_t)oldest_stack_msg_pt > (uint32_t)current_msg)
         {
             // The oldest task is between `data_end_estimation` and the end of the buffer
+            LuosHAL_SetIrqState(false);
             stack_delta_space = (uint32_t)oldest_stack_msg_pt - (uint32_t)current_msg;
+            LuosHAL_SetIrqState(true);
         }
         else
         {
             // The oldest task is between the begin of the buffer and `data_end_estimation`
             // we have to decay it to be able to define delta
+            LuosHAL_SetIrqState(false);
             stack_delta_space = ((uint32_t)oldest_stack_msg_pt - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
+            LuosHAL_SetIrqState(true);
         }
         // recompute oldest_msg into delta byte from current message
         uint32_t oldest_msg_delta_space;
         if ((uint32_t)oldest_msg > (uint32_t)current_msg)
         {
             // The oldest msg is between `data_end_estimation` and the end of the buffer
+            LuosHAL_SetIrqState(false);
             oldest_msg_delta_space = (uint32_t)oldest_msg - (uint32_t)current_msg;
+            LuosHAL_SetIrqState(true);
         }
         else
         {
             // The oldest msg is between the begin of the buffer and `data_end_estimation`
             // we have to decay it to be able to define delta
+            LuosHAL_SetIrqState(false);
             oldest_msg_delta_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
+            LuosHAL_SetIrqState(true);
         }
         // Compare deltas
         if (stack_delta_space < oldest_msg_delta_space)
