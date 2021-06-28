@@ -81,26 +81,26 @@ memory_stats_t *mem_stat = NULL;
 // msg buffering
 volatile uint8_t msg_buffer[MSG_BUFFER_SIZE]; /*!< Memory space used to save and alloc messages. */
 volatile msg_t *current_msg;                  /*!< current work in progress msg pointer. */
-volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be writen into msgbuffer. */
+volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be written into msgbuffer. */
 volatile uint8_t *data_end_estimation;        /*!< Estimated end of the current receiving message. */
 volatile msg_t *oldest_msg = NULL;            /*!< The oldest message among all the stacks. */
 volatile msg_t *used_msg   = NULL;            /*!< Message curently used by luos loop. */
-volatile uint8_t mem_clear_needed;            /*!< A flag allowing to spot some msg space cleaning opérations to do. */
+volatile uint8_t mem_clear_needed;            /*!< A flag allowing to spot some msg space cleaning operations to do. */
 
 // Allocator task stack
 volatile header_t *copy_task_pointer = NULL; /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
 
 // msg interpretation task stack
 volatile msg_t *msg_tasks[MAX_MSG_NB]; /*!< ready message table. */
-volatile uint16_t msg_tasks_stack_id;  /*!< last writen msg_tasks id. */
+volatile uint16_t msg_tasks_stack_id;  /*!< Next writen msg_tasks id. */
 
 // Luos task stack
 volatile luos_task_t luos_tasks[MAX_MSG_NB]; /*!< Message allocation table. */
-volatile uint16_t luos_tasks_stack_id;       /*!< last writen luos_tasks id. */
+volatile uint16_t luos_tasks_stack_id;       /*!< Next writen luos_tasks id. */
 
 // Tx task stack
 volatile tx_task_t tx_tasks[MAX_MSG_NB]; /*!< Message to transmit allocation table. */
-volatile uint16_t tx_tasks_stack_id;     /*!< last writen tx_tasks id. */
+volatile uint16_t tx_tasks_stack_id;     /*!< Next writen tx_tasks id. */
 
 /*******************************************************************************
  * Functions
