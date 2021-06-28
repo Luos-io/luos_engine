@@ -1052,7 +1052,7 @@ void MsgAlloc_PullContainerFromTxTask(uint16_t container_id)
  * @param localhost is this message a localhost one
  * @return error_return_t : Fail is there is no more message available.
  ******************************************************************************/
-error_return_t MsgAlloc_GetTxTask(ll_container_t **ll_container_pt, uint8_t **data, uint16_t *size, uint8_t *locahost)
+error_return_t MsgAlloc_GetTxTask(ll_container_t **ll_container_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
@@ -1061,7 +1061,7 @@ error_return_t MsgAlloc_GetTxTask(ll_container_t **ll_container_pt, uint8_t **da
         *data            = tx_tasks[0].data_pt;
         *size            = tx_tasks[0].size;
         *ll_container_pt = tx_tasks[0].ll_container_pt;
-        *locahost        = tx_tasks[0].localhost;
+        *localhost       = tx_tasks[0].localhost;
         return SUCCEED;
     }
     return FAILED;

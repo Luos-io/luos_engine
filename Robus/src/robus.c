@@ -99,7 +99,7 @@ void Robus_Loop(void)
     msg_t *msg = NULL;
     while (MsgAlloc_PullMsgToInterpret(&msg) == SUCCEED)
     {
-        // Check if this message is a protocole one
+        // Check if this message is a protocol one
         if (Robus_MsgHandler(msg) == FAILED)
         {
             // If not create luos tasks.
