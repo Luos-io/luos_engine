@@ -642,7 +642,7 @@ void MsgAlloc_UsedMsgEnd(void)
  ******************************************************************************/
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 {
-    LUOS_ASSERT((luos_task_id <= luos_tasks_stack_id) || (luos_tasks_stack_id <= MAX_MSG_NB));
+    LUOS_ASSERT((luos_task_id < luos_tasks_stack_id) && (luos_tasks_stack_id <= MAX_MSG_NB));
     for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
     {
         LuosHAL_SetIrqState(false);
@@ -680,6 +680,7 @@ void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, 
     }
     // fill the informations of the message in this slot
     LuosHAL_SetIrqState(false);
+    LUOS_ASSERT(luos_tasks_stack_id < MAX_MSG_NB);
     luos_tasks[luos_tasks_stack_id].msg_pt          = concerned_msg;
     luos_tasks[luos_tasks_stack_id].ll_container_pt = container_concerned_by_current_msg;
     if (luos_tasks_stack_id == 0)
@@ -1021,7 +1022,7 @@ void MsgAlloc_PullMsgFromTxTask(void)
  ******************************************************************************/
 void MsgAlloc_PullContainerFromTxTask(uint16_t container_id)
 {
-    LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id < MAX_MSG_NB));
+    LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
     uint8_t task_id = 0;
     // check all task
     while (task_id < tx_tasks_stack_id)
