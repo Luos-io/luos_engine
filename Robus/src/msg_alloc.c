@@ -147,7 +147,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     //******** Init global vars pointers **********
     current_msg         = (msg_t *)&msg_buffer[0];
     data_ptr            = (uint8_t *)&msg_buffer[0];
-    data_end_estimation = (uint8_t *)&current_msg->data[2];
+    data_end_estimation = (uint8_t *)&current_msg->data[CRC_SIZE];
     msg_tasks_stack_id  = 0;
     memset((void *)msg_tasks, 0, sizeof(msg_tasks));
     luos_tasks_stack_id = 0;
@@ -349,7 +349,7 @@ void MsgAlloc_InvalidMsg(void)
         MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
     }
     data_ptr            = (uint8_t *)current_msg;
-    data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + 2]);
+    data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + CRC_SIZE]);
     LUOS_ASSERT((uint32_t)data_end_estimation < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]);
     if (current_msg == (volatile msg_t *)&msg_buffer[0])
     {
@@ -368,7 +368,7 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
     // Save the concerned module pointer into the concerned module pointer stack
     if (valid == true)
     {
-        if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + 2])) == FAILED)
+        if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + CRC_SIZE])) == FAILED)
         {
             // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
             // Create a task to copy the header at the begining of msg_buffer
@@ -379,9 +379,9 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
             data_ptr = &msg_buffer[sizeof(header_t)];
         }
         // Save the end position of our message
-        data_end_estimation = (uint8_t *)&current_msg->data[data_size + 2];
+        data_end_estimation = (uint8_t *)&current_msg->data[data_size + CRC_SIZE];
         // check if there is a msg treatment pending
-        if (((uint32_t)used_msg >= (uint32_t)current_msg) && ((uint32_t)used_msg <= (uint32_t)(&current_msg->data[data_size + 2])))
+        if (((uint32_t)used_msg >= (uint32_t)current_msg) && ((uint32_t)used_msg <= (uint32_t)(&current_msg->data[data_size + CRC_SIZE])))
         {
             used_msg = NULL;
             // This message is in the space we want to use, clear the task
@@ -435,21 +435,21 @@ void MsgAlloc_EndMsg(void)
     msg_tasks_stack_id++;
     //******** Prepare the next msg *********
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
-    data_ptr -= 2;
+    data_ptr -= CRC_SIZE;
     // Check data ptr alignement
     if (*data_ptr % 2 != 1)
     {
         data_ptr++;
     }
     // Check if we have space for the next message
-    if (MsgAlloc_DoWeHaveSpace((void *)(data_ptr + sizeof(header_t) + 2)) == FAILED)
+    if (MsgAlloc_DoWeHaveSpace((void *)(data_ptr + sizeof(header_t) + CRC_SIZE)) == FAILED)
     {
         data_ptr = &msg_buffer[0];
     }
     // update the current_msg
     current_msg = (volatile msg_t *)data_ptr;
     // Save the estimated end of the next message
-    data_end_estimation = (uint8_t *)&current_msg->data[2];
+    data_end_estimation = (uint8_t *)&current_msg->data[CRC_SIZE];
     // Raise the clear flag allowing to perform a clear
     mem_clear_needed = true;
 }
