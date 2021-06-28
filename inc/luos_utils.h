@@ -15,15 +15,15 @@
 #define LUOS_ASSERTION
 
 #ifdef LUOS_ASSERTION
-    #ifndef UNIT_TEST
-    #define LUOS_ASSERT(expr) \
-        if (!(expr))          \
-        Luos_assert(__FILE__, __LINE__)
-    #else
-    #define LUOS_ASSERT(expr) \
-        if (!(expr))          \
-        Luos_unittest_assert(__FILE__, __LINE__)
-    #endif
+#ifndef UNIT_TEST
+#define LUOS_ASSERT(expr) \
+    if (!(expr))          \
+    Luos_assert(__FILE__, __LINE__)
+#else
+#define LUOS_ASSERT(expr) \
+    if (!(expr))          \
+    Luos_unittest_assert(__FILE__, __LINE__)
+#endif
 #else
 #define LUOS_ASSERT(expr)
 #endif
@@ -42,7 +42,6 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[100 + sizeof(uint32_t)];
     };
 } luos_assert_t;
-
 
 #ifdef UNIT_TEST
 #include "robus_struct.h"
