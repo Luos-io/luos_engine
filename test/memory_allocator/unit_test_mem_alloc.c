@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "unity.h"
-#include "../Robus/inc/robus_struct.h"
 #include "../test/unit_test.h"
+#include "../Robus/inc/robus_struct.h"
 #include "../src/msg_alloc.c"
 
 void unittest_MsgAlloc_loop()
