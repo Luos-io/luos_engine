@@ -353,7 +353,7 @@ void MsgAlloc_InvalidMsg(void)
     //clean the memory zone
     if (mem_clear_needed == true)
     {
-        mem_clear_needed = false;
+        mem_clear_needed           = false;
         error_return_t clear_state = MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
         LUOS_ASSERT(clear_state == SUCCEED);
     }
@@ -738,9 +738,9 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     //find the oldest message allocated to this module
     if (luos_task_id < luos_tasks_stack_id)
     {
-        *returned_msg = luos_tasks[luos_task_id].msg_pt;
+        used_msg      = luos_tasks[luos_task_id].msg_pt;
+        *returned_msg = (msg_t *)used_msg;
         // Clear the slot by sliding others to the left on it
-        used_msg = *returned_msg;
         MsgAlloc_ClearLuosTask(luos_task_id);
         return SUCCEED;
     }
