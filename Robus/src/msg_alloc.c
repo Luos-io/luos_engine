@@ -871,8 +871,15 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     // Check if the message to send size fit into msg buffer
     if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + size)) == FAILED)
     {
-        // message to send don't fit check at the beginning of buffer
-        // Check space for the TX and RX message
+        // message to send don't fit
+        // check at the end of buffer if there is a task
+        if (MsgAlloc_CheckMsgSpace((void *)current_msg, (void *)(uint32_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
+        {
+            // There is no space available for now
+            LuosHAL_SetIrqState(true);
+            return FAILED;
+        }
+        // Check at the beginning of buffer if there is a task
         if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + size + estimated_size)) == FAILED)
         {
             // There is no space available for now
@@ -897,12 +904,21 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
             // Check space for the TX message
             if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + size)) == FAILED)
             {
+                // There is no space available for now
+                LuosHAL_SetIrqState(true);
+                return FAILED;
+            }
+            // Check if there is a task between tx and end of buffer
+            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)(uint32_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
+            {
+                // There is no space available for now
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
             // Check space for the RX message
             if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + estimated_size)) == FAILED)
             {
+                // There is no space available for now
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
@@ -916,6 +932,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
             // Check space for the TX and RX message
             if (MsgAlloc_CheckMsgSpace((void *)((uint32_t)tx_msg), (void *)((uint32_t)tx_msg + size + estimated_size)) == FAILED)
             {
+                // There is no space available for now
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
