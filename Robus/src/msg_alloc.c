@@ -354,7 +354,8 @@ void MsgAlloc_InvalidMsg(void)
     if (mem_clear_needed == true)
     {
         mem_clear_needed = false;
-        MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
+        error_return_t clear_state = MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
+        LUOS_ASSERT(clear_state == SUCCEED);
     }
     data_ptr            = (uint8_t *)current_msg;
     data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + CRC_SIZE]);
@@ -418,7 +419,8 @@ void MsgAlloc_EndMsg(void)
     if (mem_clear_needed == true)
     {
         // No luos_loop make it for us outside of IRQ, we have to make it
-        MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)data_ptr);
+        error_return_t clear_state = MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)data_ptr);
+        LUOS_ASSERT(clear_state == SUCCEED);
         mem_clear_needed = false;
     }
 
