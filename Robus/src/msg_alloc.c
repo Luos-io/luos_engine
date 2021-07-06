@@ -437,7 +437,7 @@ void MsgAlloc_EndMsg(void)
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= 2;
     // Check data ptr alignement
-    if (*data_ptr % 2 != 1)
+    if ((uint32_t)data_ptr % 2 == 1)
     {
         data_ptr++;
     }
