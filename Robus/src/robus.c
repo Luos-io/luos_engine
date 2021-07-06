@@ -214,24 +214,30 @@ error_return_t Robus_SendMsg(ll_container_t *ll_container, msg_t *msg)
 uint16_t Robus_TopologyDetection(ll_container_t *ll_container)
 {
     uint8_t redetect_nb = 0;
-redetect:
-    // Reset all detection state of containers on the network
-    Robus_ResetNetworkDetection(ll_container);
+    bool detect_enabled = true;
 
-    // setup local node
-    ctx.node.node_id = 1;
-    last_node        = 1;
-
-    // setup sending ll_container
-    ll_container->id = 1;
-
-    if (Robus_DetectNextNodes(ll_container) == FAILED)
+    while (detect_enabled)
     {
-        // check the number of retry we made
-        LUOS_ASSERT((redetect_nb <= 4));
-        // Detection fail, restart it
-        redetect_nb++;
-        goto redetect;
+        detect_enabled = false;
+
+        // Reset all detection state of containers on the network
+        Robus_ResetNetworkDetection(ll_container);
+
+        // setup local node
+        ctx.node.node_id = 1;
+        last_node        = 1;
+
+        // setup sending ll_container
+        ll_container->id = 1;
+
+        if (Robus_DetectNextNodes(ll_container) == FAILED)
+        {
+            // check the number of retry we made
+            LUOS_ASSERT((redetect_nb <= 4));
+            // Detection fail, restart it
+            redetect_nb++;
+            detect_enabled = true;
+        }
     }
 
     return last_node;
