@@ -853,6 +853,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     void *tx_msg              = 0;
     uint16_t progression_size = 0;
     uint16_t estimated_size   = 0;
+    uint16_t decay_size       = 0;
 
     // Start by cleaning the memory
     MsgAlloc_ValidDataIntegrity();
@@ -868,8 +869,17 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
     progression_size = (uint32_t)data_ptr - (uint32_t)current_msg;
     estimated_size   = (uint32_t)data_end_estimation - (uint32_t)current_msg;
     rx_msg_bkp       = (void *)current_msg;
+    // We have to consider the biggest size between progression_size and size to be able to make a clean copy without stopping IRQ
+    if (progression_size > size)
+    {
+        decay_size = progression_size;
+    }
+    else
+    {
+        decay_size = size;
+    }
     // Check if the message to send size fit into msg buffer
-    if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + size)) == FAILED)
+    if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + decay_size)) == FAILED)
     {
         // message to send don't fit
         // check at the end of buffer if there is a task
@@ -880,7 +890,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
             return FAILED;
         }
         // Check at the beginning of buffer if there is a task
-        if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + size + estimated_size)) == FAILED)
+        if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + decay_size + estimated_size)) == FAILED)
         {
             // There is no space available for now
             LuosHAL_SetIrqState(true);
@@ -888,7 +898,7 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
         }
         //move everything at the begining of the buffer
         tx_msg              = (void *)msg_buffer;
-        current_msg         = (msg_t *)((uint32_t)msg_buffer + size);
+        current_msg         = (msg_t *)((uint32_t)msg_buffer + decay_size);
         data_ptr            = (uint8_t *)((uint32_t)current_msg + progression_size);
         data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
         // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
@@ -898,11 +908,11 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
         // Message to send fit
         tx_msg = (void *)current_msg;
         // Check if the receiving message size fit into msg buffer
-        if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)tx_msg + size + estimated_size)) == FAILED)
+        if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)tx_msg + decay_size + estimated_size)) == FAILED)
         {
             // receiving message don't fit, move it to the start of the buffer
             // Check space for the TX message
-            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + size)) == FAILED)
+            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + decay_size)) == FAILED)
             {
                 // There is no space available for now
                 LuosHAL_SetIrqState(true);
@@ -930,13 +940,13 @@ error_return_t MsgAlloc_SetTxTask(ll_container_t *ll_container_pt, uint8_t *data
         {
             // receiving message fit, move receiving message of tx_message size
             // Check space for the TX and RX message
-            if (MsgAlloc_CheckMsgSpace((void *)((uint32_t)tx_msg), (void *)((uint32_t)tx_msg + size + estimated_size)) == FAILED)
+            if (MsgAlloc_CheckMsgSpace((void *)((uint32_t)tx_msg), (void *)((uint32_t)tx_msg + decay_size + estimated_size)) == FAILED)
             {
                 // There is no space available for now
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
-            current_msg         = (msg_t *)((uint32_t)current_msg + size);
+            current_msg         = (msg_t *)((uint32_t)current_msg + decay_size);
             data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
             // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
