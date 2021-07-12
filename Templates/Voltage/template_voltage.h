@@ -1,26 +1,29 @@
 /******************************************************************************
- * @file luos_OD
- * @brief object dictionnary for luos library
+ * @file Template voltage
+ * @brief voltage container template
+ * WARING : This h file should be only included by user code or profile_*.h codes
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef OD_LUOS_OD_H_
-#define OD_LUOS_OD_H_
+#ifndef TEMPLATE_TEMPLATE_VOLTAGE_H_
+#define TEMPLATE_TEMPLATE_VOLTAGE_H_
 
-#include "od_linear.h"
-#include "od_angular.h"
-#include "od_force.h"
-#include "od_electric.h"
-#include "od_ratio.h"
-#include "od_temperature.h"
-#include "od_illuminance.h"
-#include "od_time.h"
-#include "od_pid.h"
-#include "od_control.h"
+#include <stdbool.h>
+#include "luos.h"
+#include "struct_voltage.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+
+/*
+ * voltage object
+ */
+typedef struct
+{
+    CONT_CB self;
+    profile_voltage_t profile;
+} template_voltage_t;
 
 /*******************************************************************************
  * Variables
@@ -30,4 +33,6 @@
  * Function
  ******************************************************************************/
 
-#endif /* OD_LUOS_OD_H_ */
+container_t *TemplateVoltage_CreateContainer(CONT_CB cont_cb, template_voltage_t *var, const char *alias, revision_t revision);
+
+#endif /* TEMPLATE_TEMPLATE_VOLTAGE_H_ */

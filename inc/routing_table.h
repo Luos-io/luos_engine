@@ -36,6 +36,7 @@ typedef struct __attribute__((__packed__))
         {                               // CONTAINER mode entry
             uint16_t id;                // Container ID.
             uint16_t type;              // Container type.
+            access_t access;            // Container Access
             char alias[MAX_ALIAS_SIZE]; // Container alias.
         };
         struct __attribute__((__packed__))
@@ -49,9 +50,9 @@ typedef struct __attribute__((__packed__))
                 uint16_t node_id : 12;  // Node id
                 uint16_t certified : 4; // True if the node have a certificate
             };
-            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 - 2) / 2]; // Node link table
+            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 + sizeof(access_t) - 2) / 2]; // Node link table
         };
-        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2];
+        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2 + sizeof(access_t)];
     };
 } routing_table_t;
 
@@ -66,9 +67,13 @@ char *RoutingTB_AliasFromId(uint16_t id);
 luos_type_t RoutingTB_TypeFromID(uint16_t id);
 luos_type_t RoutingTB_TypeFromAlias(char *alias);
 char *RoutingTB_StringFromType(luos_type_t type);
+uint16_t RoutingTB_NodeIDFromID(uint16_t id);
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type);
 uint16_t RoutingTB_GetNodeNB(void);
 uint16_t RoutingTB_GetNodeID(uint16_t index);
+uint16_t RoutingTB_GetContainerNB(void);
+uint16_t RoutingTB_GetContainerID(uint16_t index);
+entry_mode_t RoutingTB_GetMode(uint16_t index);
 
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);

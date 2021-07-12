@@ -1,26 +1,27 @@
 /******************************************************************************
- * @file luos_OD
- * @brief object dictionnary for luos library
+ * @file Template servo motor
+ * @brief servo motor container template
+ * WARING : This h file should be only included by user code or profile_*.h codes
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef OD_LUOS_OD_H_
-#define OD_LUOS_OD_H_
+#ifndef TEMPLATE_TEMPLATE_SERVO_MOTOR_H_
+#define TEMPLATE_TEMPLATE_SERVO_MOTOR_H_
 
-#include "od_linear.h"
-#include "od_angular.h"
-#include "od_force.h"
-#include "od_electric.h"
-#include "od_ratio.h"
-#include "od_temperature.h"
-#include "od_illuminance.h"
-#include "od_time.h"
-#include "od_pid.h"
-#include "od_control.h"
+#include "luos.h"
+#include "struct_servo_motor.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/*
+ * motor object structure
+ */
+typedef struct
+{
+    CONT_CB self;
+    profile_servo_motor_t profile;
+} template_servo_motor_t;
 
 /*******************************************************************************
  * Variables
@@ -30,4 +31,6 @@
  * Function
  ******************************************************************************/
 
-#endif /* OD_LUOS_OD_H_ */
+container_t *TemplateServoMotor_CreateContainer(CONT_CB cont_cb, template_servo_motor_t *var, const char *alias, revision_t revision);
+
+#endif /* TEMPLATE_TEMPLATE_SERVO_MOTOR_H_ */

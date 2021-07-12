@@ -18,7 +18,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.Major = 1, .Minor = 2, .Build = 0};
+revision_t luos_version = {.Major = 1, .Minor = 3, .Build = 0};
 container_t container_table[MAX_CONTAINER_NUMBER];
 uint16_t container_number;
 volatile routing_table_t *routing_table_pt;
@@ -546,10 +546,13 @@ error_return_t Luos_ReadMsg(container_t *container, msg_t **returned_msg)
     {
         error = MsgAlloc_PullMsg(container->ll_container, returned_msg);
         // check if the content of this message need to be managed by Luos and do it if it is.
-        if ((Luos_MsgHandler(container, *returned_msg) == FAILED) & (error == SUCCEED))
+        if (error == SUCCEED)
         {
-            // This message is for the user, pass it to the user.
-            return SUCCEED;
+            if (Luos_MsgHandler(container, *returned_msg) == FAILED)
+            {
+                // This message is for the user, pass it to the user.
+                return SUCCEED;
+            }
         }
         MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
     }
@@ -623,7 +626,7 @@ void Luos_SendData(container_t *container, msg_t *msg, void *bin_data, uint16_t 
     }
 
     // Send messages one by one
-    for (volatile uint16_t chunk = 0; chunk < msg_number; chunk++)
+    for (uint16_t chunk = 0; chunk < msg_number; chunk++)
     {
         // Compute chunk size
         uint16_t chunk_size = 0;
@@ -759,6 +762,7 @@ void Luos_SendStreaming(container_t *container, msg_t *msg, streaming_channel_t 
 
         // Copy data into message
         Stream_GetSample(stream, msg->data, chunk_size);
+        msg->header.size = data_size;
 
         // Send message
         while (Luos_SendMsg(container, msg) == FAILED)

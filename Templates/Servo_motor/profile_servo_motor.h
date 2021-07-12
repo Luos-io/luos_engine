@@ -1,22 +1,14 @@
 /******************************************************************************
- * @file luos_OD
- * @brief object dictionnary for luos library
+ * @file Profile servo motor
+ * @brief servo motor profile
+ * WARING : This h file should be only included by profile_*.c codes
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef OD_LUOS_OD_H_
-#define OD_LUOS_OD_H_
+#ifndef TEMPLATE_CLASS_SERVO_MOTOR_H_
+#define TEMPLATE_CLASS_SERVO_MOTOR_H_
 
-#include "od_linear.h"
-#include "od_angular.h"
-#include "od_force.h"
-#include "od_electric.h"
-#include "od_ratio.h"
-#include "od_temperature.h"
-#include "od_illuminance.h"
-#include "od_time.h"
-#include "od_pid.h"
-#include "od_control.h"
+#include "struct_servo_motor.h"
 
 /*******************************************************************************
  * Definitions
@@ -30,4 +22,6 @@
  * Function
  ******************************************************************************/
 
-#endif /* OD_LUOS_OD_H_ */
+void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo_motor_t *profile_servo_motor);
+
+#endif /* TEMPLATE_CLASS_SERVO_MOTOR_H_ */

@@ -57,7 +57,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint8_t nbrRetry = 0;
+volatile uint8_t nbrRetry = 0;
 
 /*******************************************************************************
  * Function
@@ -97,7 +97,7 @@ void Transmit_Process()
         if ((*ll_container_pt->ll_stat.max_retry < nbrRetry) || (nbrRetry >= NBR_RETRY))
         {
             *ll_container_pt->ll_stat.max_retry = nbrRetry;
-            if (*ll_container_pt->ll_stat.max_retry >= NBR_RETRY)
+            if (nbrRetry >= NBR_RETRY)
             {
                 // We failed to transmit this message. We can't allow it, there is a issue on this target.
                 // If it was an ACK issue, save the target as dead container into the sending ll_container

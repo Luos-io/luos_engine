@@ -77,6 +77,22 @@ uint16_t RoutingTB_IDFromType(luos_type_t type)
     return 0xFFFF;
 }
 /******************************************************************************
+ * @brief  Return a Nodeid from container id
+ * @param id of container
+ * @return NODEID or Error
+ ******************************************************************************/
+uint16_t RoutingTB_NodeIDFromID(uint16_t id)
+{
+    for (uint16_t i = RoutingTB_GetContainerID(id); i >= 0; i--)
+    {
+        if (routing_table[i].mode == NODE)
+        {
+            return routing_table[i].node_id;
+        }
+    }
+    return 0;
+}
+/******************************************************************************
  * @brief  Return an id from container
  * @param container look at
  * @return ID or Error
@@ -262,7 +278,7 @@ static uint16_t RoutingTB_BigestNodeID(void)
 /******************************************************************************
  * @brief  get number of a node on network
  * @param None
- * @return Error
+ * @return number of node
  ******************************************************************************/
 uint16_t RoutingTB_GetNodeNB(void)
 {
@@ -279,11 +295,48 @@ uint16_t RoutingTB_GetNodeNB(void)
 /******************************************************************************
  * @brief  get ID of node on network
  * @param pointer to index of Node
- * @return None
+ * @return node_id
  ******************************************************************************/
 uint16_t RoutingTB_GetNodeID(uint16_t index)
 {
-    return routing_table[index + 1].id;
+    return routing_table[index].node_id;
+}
+
+/******************************************************************************
+ * @brief  get number of a container on the network
+ * @param None
+ * @return container number
+ ******************************************************************************/
+uint16_t RoutingTB_GetContainerNB(void)
+{
+    uint16_t container_nb = 0;
+    for (uint16_t i = 0; i <= last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == CONTAINER)
+        {
+            container_nb++;
+        }
+    }
+    return container_nb - 1;
+}
+/******************************************************************************
+ * @brief  get ID of container on the network
+ * @param routing table index
+ * @return ID
+ ******************************************************************************/
+uint16_t RoutingTB_GetContainerID(uint16_t index)
+{
+    return routing_table[index].id;
+}
+
+/******************************************************************************
+ * @brief  get mode of a routing table entry
+ * @param routing table index
+ * @return mode
+ ******************************************************************************/
+entry_mode_t RoutingTB_GetMode(uint16_t index)
+{
+    return routing_table[index].mode;
 }
 
 // ********************* routing_table management tools ************************
@@ -512,7 +565,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
                 // We find our node remove all containers
                 while (routing_table[i].mode == CONTAINER)
                 {
-                    RoutingTB_RemoveOnRoutingTable(i);
+                    RoutingTB_RemoveOnRoutingTable(RoutingTB_GetContainerID(i));
                 }
                 return;
             }
@@ -521,15 +574,23 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
 }
 /******************************************************************************
  * @brief remove an entry from routing_table
- * @param index of container
+ * @param id of container
  * @return None
  ******************************************************************************/
-void RoutingTB_RemoveOnRoutingTable(uint16_t index)
+void RoutingTB_RemoveOnRoutingTable(uint16_t id)
 {
-    LUOS_ASSERT(index < last_routing_table_entry);
-    memcpy(&routing_table[index], &routing_table[index + 1], sizeof(routing_table_t) * (last_routing_table_entry - (index + 1)));
-    last_routing_table_entry--;
-    memset(&routing_table[last_routing_table_entry], 0, sizeof(routing_table_t));
+    // find the container
+    for (uint16_t i = 0; i < last_routing_table_entry; i++)
+    {
+        if ((routing_table[i].mode == CONTAINER) && (routing_table[i].id == id))
+        {
+            LUOS_ASSERT(i < last_routing_table_entry);
+            memcpy(&routing_table[i], &routing_table[i + 1], sizeof(routing_table_t) * (last_routing_table_entry - (i + 1)));
+            last_routing_table_entry--;
+            memset(&routing_table[last_routing_table_entry], 0, sizeof(routing_table_t));
+            return;
+        }
+    }
 }
 /******************************************************************************
  * @brief eras erouting_table
