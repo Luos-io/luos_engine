@@ -439,23 +439,3 @@ void Robus_Flush(void)
     MsgAlloc_Init(NULL);
     LuosHAL_SetIrqState(true);
 }
-
-/******************************************************************************
- * @brief Return node ID
- * @param None
- * @return node id
- ******************************************************************************/
-uint16_t Robus_GetNodeID(void)
-{
-    return ctx.node.node_id;
-}
-
-/******************************************************************************
- * @brief Set node id
- * @param node id
- * @return None
- ******************************************************************************/
-void Robus_SetNodeID(uint16_t node_id)
-{
-    ctx.node.node_id = node_id;
-}
