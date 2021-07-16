@@ -44,6 +44,8 @@ static void LuosBootloader_DeInit(void);
 static void LuosBootloader_JumpToApp(void);
 static void LuosBootloader_SaveNodeID(void);
 static void LuosBootloader_SetNodeID(void);
+static inline uint8_t LuosBootloader_IsEnoughSpace(uint32_t);
+static inline void LuosBootloader_EraseMemory(void);
 static inline void LuosBootloader_ProcessData(void);
 static inline void LuosBootloader_SaveLastData(void);
 static void LuosBootloader_SendResponse(bootloader_cmd_t);
@@ -104,6 +106,34 @@ void LuosBootloader_SetNodeID(void)
 
     Robus_SetNodeID(node_id);
 }
+
+/******************************************************************************
+ * @brief Set node id with data saved in flash
+ * @param None
+ * @return None
+ ******************************************************************************/
+uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
+{
+    uint32_t free_space = FLASH_END - APP_ADDRESS;
+    if (free_space > binary_size)
+    {
+        return 0x01;
+    }
+    else
+    {
+        return 0x00;
+    }
+}
+/******************************************************************************
+ * @brief process binary data received from the gate
+ * @param None 
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_EraseMemory(void)
+{
+    LuosHAL_EraseMemory(APP_ADDRESS, nb_bytes);
+}
+#endif
 
 /******************************************************************************
  * @brief process binary data received from the gate
@@ -292,20 +322,31 @@ void LuosBootloader_Task(void)
             {
                 // save binary length
                 memcpy(&nb_bytes, &bootloader_data, sizeof(uint32_t));
-                // send READY response
-                LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
-                // go to HEADER state
-                LuosBootloader_SetState(BOOTLOADER_BIN_HEADER_STATE);
+                // check free space in flash
+                if (LuosBootloader_IsEnoughSpace(nb_bytes))
+                {
+                    // send READY response
+                    LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
+                    // go to HEADER state
+                    LuosBootloader_SetState(BOOTLOADER_ERASE_STATE);
+                }
+                else
+                {
+                    // send READY response
+                    LuosBootloader_SendResponse(BOOTLOADER_ERROR_SIZE);
+                }
             }
             break;
 
-        case BOOTLOADER_BIN_HEADER_STATE:
+        case BOOTLOADER_ERASE_STATE:
 
-            if (bootloader_cmd == BOOTLOADER_BIN_HEADER)
+            if (bootloader_cmd == BOOTLOADER_ERASE)
             {
-                // handle header data
-                LuosBootloader_SendResponse(BOOTLOADER_BIN_HEADER_RESP);
-                // go to BIN_CHUNK state
+                // erase flash memory
+                LuosBootloader_EraseMemory();
+                // send READY response
+                LuosBootloader_SendResponse(BOOTLOADER_ERASE_RESP);
+                // go to HEADER state
                 LuosBootloader_SetState(BOOTLOADER_BIN_CHUNK_STATE);
             }
             break;
@@ -381,7 +422,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
 
         case BOOTLOADER_STOP:
         case BOOTLOADER_READY:
-        case BOOTLOADER_BIN_HEADER:
         case BOOTLOADER_BIN_CHUNK:
         case BOOTLOADER_BIN_END:
         case BOOTLOADER_CRC_TEST:
