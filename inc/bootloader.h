@@ -7,6 +7,8 @@
 #ifndef BOOTLOADER_H
 #define BOOTLOADER_H
 
+#include "robus_struct.h"
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -64,6 +66,6 @@ void LuosBootloader_Run(void);
 /******************************************************************************
  * @brief function used by Luos to send message to the bootloader
  ******************************************************************************/
-void LuosBootloader_MsgHandler(uint8_t*);
+void LuosBootloader_MsgHandler(msg_t *);
 
 #endif /* BOOTLOADER_H */
