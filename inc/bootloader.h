@@ -12,12 +12,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define SHARED_MEMORY_ADDRESS   0x0800C000
-#define SHARED_FLASH_PAGE       25
-#define APP_ADDRESS             (uint32_t)0x0800C800
-
-#define BOOT_MODE_MASK          0x000000FF
-
 #define BOOTLOADER_MODE         0x00
 #define APPLICATION_MODE        0x01
 
