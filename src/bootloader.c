@@ -12,19 +12,28 @@
 #include "luos_hal.h"
 #include "luos.h"
 
-// TODO : juste pour le debug
 #include "boot.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#define MAX_FRAME_SIZE      127
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
 static bootloader_state_t bootloader_state = BOOTLOADER_START_STATE;
-static uint8_t* bootloader_data;
 static bootloader_cmd_t bootloader_cmd;
+
+// variables use to save binary data in flash
+uint8_t bootloader_data[MAX_FRAME_SIZE];
+uint16_t bootloader_data_size = 0;
+
+uint32_t page_addr = APP_ADDRESS;
+uint8_t page_buff[(uint16_t)PAGE_SIZE];
+uint16_t data_index = 0;
+uint16_t residual_space = (uint16_t)PAGE_SIZE;
+uint16_t page_id = 26;
 
 /*******************************************************************************
  * Function
@@ -174,11 +183,48 @@ void LuosBootloader_Task(void)
 
             if(bootloader_cmd == BOOTLOADER_BIN_CHUNK)
             {
+                // reset bootloader cmd to avoid turning in this state
+                bootloader_cmd = BOOTLOADER_IDLE;
+
                 // handle binary data
+                if(residual_space >= bootloader_data_size)
+                {
+                    // there is enough space in the current page
+                    // fill the current page with data
+                    memcpy(&page_buff[data_index], bootloader_data, bootloader_data_size);
+
+                    // update data_index and residual_space
+                    data_index += bootloader_data_size;
+                    residual_space -= bootloader_data_size;
+                }
+                else
+                {
+                    // complete the current page buffer
+                    memcpy(&page_buff[data_index], bootloader_data, residual_space);
+
+                    // save the completed page in flash memory
+                    LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
+
+                    // Prepare next page buffer
+                    page_addr += PAGE_SIZE;
+                    page_id += 1;
+                    data_index = 0;
+                    memset(page_buff, 0xFF, (uint16_t)PAGE_SIZE);
+
+                    // copy the remaining data in the new page buffer
+                    memcpy(&page_buff[data_index], &bootloader_data[residual_space], bootloader_data_size - residual_space);
+
+                    // update data_index and residual_space
+                    data_index = bootloader_data_size-residual_space;
+                    residual_space = (uint16_t)PAGE_SIZE - data_index;
+                }
             }
 
             if(bootloader_cmd == BOOTLOADER_BIN_END)
             {
+                // save the current page in flash memory
+                LuosHAL_ProgramFlash(page_addr, page_id, (uint16_t)PAGE_SIZE, page_buff);
+
                 // go to BIN_END state
                 LuosBootloader_SetState(BOOTLOADER_BIN_END_STATE);
             }
@@ -211,9 +257,9 @@ void LuosBootloader_Task(void)
  * @param data received from luos network
  * @return None
  ******************************************************************************/
-void LuosBootloader_MsgHandler(uint8_t* data)
+void LuosBootloader_MsgHandler(msg_t *input)
 {
-    bootloader_cmd = data[0];
+    bootloader_cmd = input->data[0];
 
     switch(bootloader_cmd)
     {
@@ -233,7 +279,8 @@ void LuosBootloader_MsgHandler(uint8_t* data)
         case BOOTLOADER_CRC_TEST:
             // we're in the bootloader, 
             // process cmd and data
-            bootloader_data = &data[1];
+            bootloader_data_size = input->header.size - sizeof(char);
+            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
             break;
 
         default:
