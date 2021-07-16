@@ -8,11 +8,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "bootloader.h"
+#include "bootloader_core.h"
 #include "luos_hal.h"
 #include "luos.h"
-
-#include "boot.h"
 
 /*******************************************************************************
  * Definitions
@@ -103,7 +101,8 @@ void LuosBootloader_JumpToApp(void)
  ******************************************************************************/
 void LuosBootloader_SaveNodeID(void)
 {
-    uint16_t node_id = Robus_GetNodeID();
+    node_t *node     = Robus_GetNode();
+    uint16_t node_id = node->node_id;
 
     LuosHAL_SaveNodeID(node_id);
 }
@@ -117,8 +116,9 @@ void LuosBootloader_SaveNodeID(void)
 void LuosBootloader_SetNodeID(void)
 {
     uint16_t node_id = LuosHAL_GetNodeID();
+    node_t *node     = Robus_GetNode();
 
-    Robus_SetNodeID(node_id);
+    node->node_id = node_id;
 }
 #endif
 
@@ -456,11 +456,9 @@ void LuosBootloader_Run(void)
 
         case BOOTLOADER_MODE:
         default:
-            Luos_Init();
-            Boot_Init(); // pour le debug
             while (1)
             {
-                Luos_Loop();
+                LUOS_RUN()
                 LuosBootloader_Task();
             }
             break;
