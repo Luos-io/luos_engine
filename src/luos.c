@@ -10,7 +10,7 @@
 #include "msg_alloc.h"
 #include "robus.h"
 #include "luos_hal.h"
-#include "bootloader.h"
+#include "bootloader_core.h"
 
 /*******************************************************************************
  * Definitions
