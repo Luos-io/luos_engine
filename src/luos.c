@@ -14,6 +14,11 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+typedef enum
+{
+    NODE_INIT,
+    NODE_RUN
+} node_state_t;
 
 /*******************************************************************************
  * Variables
@@ -40,6 +45,8 @@ static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint16_t size);
 static inline void Luos_EmptyNode(void);
+static inline void Luos_PackageInit(void);
+static inline void Luos_PackageLoop(void);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -51,20 +58,6 @@ void Luos_Init(void)
     container_number = 0;
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     Robus_Init(&luos_stats.memory);
-
-    uint16_t package_index = 0;
-    if (package_number)
-    {
-        while (package_index < package_number)
-        {
-            package_table[package_index].Init();
-            package_index += 1;
-        }
-    }
-    else
-    {
-        Luos_EmptyNode();
-    }
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -143,13 +136,6 @@ void Luos_Loop(void)
     Luos_AutoUpdateManager();
     // save loop date
     last_loop_date = LuosHAL_GetSystick();
-
-    uint16_t package_index = 0;
-    while (package_index < package_number)
-    {
-        package_table[package_index].Loop();
-        package_index += 1;
-    }
 }
 /******************************************************************************
  * @brief Check if this command concern luos
@@ -976,3 +962,66 @@ void Luos_EmptyNode(void)
     Luos_CreateContainer(0, VOID_MOD, "empty_node", luos_version);
 }
 
+/******************************************************************************
+ * @brief Run each package Init()
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_PackageInit(void)
+{
+    uint16_t package_index = 0;
+    if (package_number)
+    {
+        while (package_index < package_number)
+        {
+            package_table[package_index].Init();
+            package_index += 1;
+        }
+    }
+    else
+    {
+        Luos_EmptyNode();
+    }
+}
+
+/******************************************************************************
+ * @brief Run each package Loop()
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_PackageLoop(void)
+{
+    uint16_t package_index = 0;
+    while (package_index < package_number)
+    {
+        package_table[package_index].Loop();
+        package_index += 1;
+    }
+}
+
+/******************************************************************************
+ * @brief Luos high level state machine
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_Run(void)
+{
+    static node_state_t node_state = NODE_INIT;
+    switch (node_state)
+    {
+        case NODE_INIT:
+            Luos_Init();
+            Luos_PackageInit();
+            // go to run state after initialization
+            node_state = NODE_RUN;
+            break;
+        case NODE_RUN:
+            Luos_Loop();
+            Luos_PackageLoop();
+            break;
+        default:
+            Luos_Loop();
+            Luos_PackageLoop();
+            break;
+    }
+}
