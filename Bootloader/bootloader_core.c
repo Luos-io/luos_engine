@@ -456,11 +456,7 @@ void LuosBootloader_Run(void)
 
         case BOOTLOADER_MODE:
         default:
-            while (1)
-            {
-                LUOS_RUN()
-                LuosBootloader_Task();
-            }
+            LuosBootloader_Task();
             break;
     }
 }
@@ -500,4 +496,15 @@ void LuosBootloader_MsgHandler(msg_t *input)
         default:
             break;
     }
+}
+
+/******************************************************************************
+ * @brief Create a service to signal a bootloader node
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_Init(void)
+{
+    revision_t version = {.Major = 1, .Minor = 3, .Build = 0};
+    Luos_CreateContainer(0, VOID_MOD, "boot_service", version);
 }
