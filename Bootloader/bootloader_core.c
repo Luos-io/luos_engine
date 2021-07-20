@@ -36,6 +36,8 @@ uint8_t data_buff[(uint16_t)BUFFER_SIZE];
 uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)BUFFER_SIZE;
 uint32_t nb_bytes       = 0;
+
+uint32_t tickstart = 0;
 #endif
 
 /*******************************************************************************
@@ -427,7 +429,9 @@ void LuosBootloader_Task(void)
             // save boot_mode in flash
             LuosHAL_SetMode(APPLICATION_MODE);
             // wait for the command to be send to all nodes
-            LuosHAL_Delay(1000);
+            tickstart = LuosHAL_GetSystick();
+            while ((LuosHAL_GetSystick() - tickstart) < 1000)
+                ;
             // reboot the node
             LuosHAL_Reboot();
             break;
