@@ -33,6 +33,7 @@ volatile routing_table_t *routing_table_pt;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -1016,17 +1017,26 @@ void Luos_PackageLoop(void)
 void Luos_Run(void)
 {
     static node_state_t node_state = NODE_INIT;
+
     switch (node_state)
     {
         case NODE_INIT:
             Luos_Init();
+#ifdef BOOTLOADER_CONFIG
+            LuosBootloader_Init();
+#else
             Luos_PackageInit();
+#endif
             // go to run state after initialization
             node_state = NODE_RUN;
             break;
         case NODE_RUN:
             Luos_Loop();
+#ifdef BOOTLOADER_CONFIG
+            LuosBootloader_Run();
+#else
             Luos_PackageLoop();
+#endif
             break;
         default:
             Luos_Loop();
