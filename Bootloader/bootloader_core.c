@@ -11,6 +11,7 @@
 #include "bootloader_core.h"
 #include "luos_hal.h"
 #include "luos.h"
+#include "routing_table.h"
 
 /*******************************************************************************
  * Definitions
@@ -36,6 +37,8 @@ uint8_t data_buff[(uint16_t)BUFFER_SIZE];
 uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)BUFFER_SIZE;
 uint32_t nb_bytes       = 0;
+
+uint16_t source_id = 0; // used to save source_id, ie gate_id
 
 uint32_t tickstart = 0;
 #endif
@@ -289,8 +292,8 @@ void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data, uint8_t siz
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
-    ready_msg.header.target_mode = NODEIDACK;
-    ready_msg.header.target      = 1; // always send to the gate wich launched the detection
+    ready_msg.header.target_mode = IDACK;
+    ready_msg.header.target      = source_id;
     ready_msg.header.size        = 2 * sizeof(uint8_t);
     ready_msg.data[0]            = response;
     ready_msg.data[1]            = data;
@@ -309,8 +312,8 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
-    ready_msg.header.target_mode = NODEIDACK;
-    ready_msg.header.target      = 1; // always send to the gate wich launched the detection
+    ready_msg.header.target_mode = IDACK;
+    ready_msg.header.target      = source_id;
     ready_msg.header.size        = sizeof(uint8_t);
     ready_msg.data[0]            = response;
     Luos_SendMsg(0, &ready_msg);
@@ -486,13 +489,14 @@ void LuosBootloader_MsgHandler(msg_t *input)
             LuosHAL_Reboot();
             break;
 #else
-        case BOOTLOADER_STOP:
         case BOOTLOADER_READY:
+        case BOOTLOADER_STOP:
         case BOOTLOADER_BIN_CHUNK:
         case BOOTLOADER_BIN_END:
         case BOOTLOADER_CRC_TEST:
             // we're in the bootloader,
             // process cmd and data
+            source_id            = input->header.source;
             bootloader_data_size = input->header.size - sizeof(char);
             memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
             break;
