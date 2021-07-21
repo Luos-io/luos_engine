@@ -451,7 +451,7 @@ void LuosBootloader_Task(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosBootloader_Run(void)
+void LuosBootloader_Loop(void)
 {
     switch (LuosBootloader_GetMode())
     {
