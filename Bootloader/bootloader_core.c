@@ -135,11 +135,11 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
     uint32_t free_space = FLASH_END - APP_ADDRESS;
     if (free_space > binary_size)
     {
-        return 0x01;
+        return SUCCEED;
     }
     else
     {
-        return 0x00;
+        return FAILED;
     }
 }
 #endif
@@ -358,7 +358,7 @@ void LuosBootloader_Task(void)
                 // save binary length
                 memcpy(&nb_bytes, &bootloader_data, sizeof(uint32_t));
                 // check free space in flash
-                if (LuosBootloader_IsEnoughSpace(nb_bytes))
+                if (LuosBootloader_IsEnoughSpace(nb_bytes) == SUCCEED)
                 {
                     // send READY response
                     LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
