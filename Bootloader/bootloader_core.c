@@ -352,12 +352,12 @@ void LuosBootloader_Task(void)
                 {
                     // send READY response
                     LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
-                    // go to HEADER state
+                    // go to ERASE state
                     bootloader_state = BOOTLOADER_ERASE_STATE;
                 }
                 else
                 {
-                    // send READY response
+                    // send ERROR response
                     LuosBootloader_SendResponse(BOOTLOADER_ERROR_SIZE);
                 }
             }
@@ -369,9 +369,9 @@ void LuosBootloader_Task(void)
             {
                 // erase flash memory
                 LuosBootloader_EraseMemory();
-                // send READY response
+                // send ERASE response
                 LuosBootloader_SendResponse(BOOTLOADER_ERASE_RESP);
-                // go to HEADER state
+                // go to BIN_CHUNK state
                 bootloader_state = BOOTLOADER_BIN_CHUNK_STATE;
             }
 
@@ -397,7 +397,7 @@ void LuosBootloader_Task(void)
                 // send ack to the Host
                 LuosBootloader_SendResponse(BOOTLOADER_BIN_END_RESP);
 
-                // go to BIN_END state
+                // go to CRC state
                 bootloader_state = BOOTLOADER_CRC_TEST_STATE;
             }
             break;
