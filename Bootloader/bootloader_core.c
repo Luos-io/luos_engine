@@ -59,42 +59,6 @@ static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t);
 static void LuosBootloader_SaveNodeID(void);
 #endif
 
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
- * @brief read the boot mode in flash memory
- * @param None
- * @return boot_mode
- ******************************************************************************/
-uint8_t LuosBootloader_GetMode(void)
-{
-    return LuosHAL_GetMode();
-}
-#endif
-
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
- * @brief DeInit peripherals in bootloader
- * @param None
- * @return None
- ******************************************************************************/
-void LuosBootloader_DeInit(void)
-{
-    LuosHAL_DeInit();
-}
-#endif
-
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
- * @brief launch application from the bootloader
- * @param None
- * @return None
- ******************************************************************************/
-void LuosBootloader_JumpToApp(void)
-{
-    LuosHAL_JumpToApp(APP_ADDRESS);
-}
-#endif
-
 /******************************************************************************
  * @brief Save node id in flash
  * @param None
@@ -108,7 +72,51 @@ void LuosBootloader_SaveNodeID(void)
     LuosHAL_SaveNodeID(node_id);
 }
 
+/******************************************************************************
+ * @brief Create a service to signal a bootloader node
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_Init(void)
+{
+    revision_t version = {.Major = 1, .Minor = 3, .Build = 0};
+    Luos_CreateContainer(0, VOID_MOD, "boot_service", version);
+
+    // set ID node saved in flash
+    LuosBootloader_SetNodeID();
+}
+
 #ifdef BOOTLOADER_CONFIG
+/******************************************************************************
+ * @brief read the boot mode in flash memory
+ * @param None
+ * @return boot_mode
+ ******************************************************************************/
+uint8_t LuosBootloader_GetMode(void)
+{
+    return LuosHAL_GetMode();
+}
+
+/******************************************************************************
+ * @brief DeInit peripherals in bootloader
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_DeInit(void)
+{
+    LuosHAL_DeInit();
+}
+
+/******************************************************************************
+ * @brief launch application from the bootloader
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosBootloader_JumpToApp(void)
+{
+    LuosHAL_JumpToApp(APP_ADDRESS);
+}
+
 /******************************************************************************
  * @brief Set node id with data saved in flash
  * @param None
@@ -121,9 +129,7 @@ void LuosBootloader_SetNodeID(void)
 
     node->node_id = node_id;
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief Set node id with data saved in flash
  * @param None
@@ -141,9 +147,7 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
         return FAILED;
     }
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief process binary data received from the gate
  * @param None 
@@ -153,9 +157,7 @@ void LuosBootloader_EraseMemory(void)
 {
     LuosHAL_EraseMemory(APP_ADDRESS, nb_bytes);
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief process binary data received from the gate
  * @param None 
@@ -194,9 +196,7 @@ void LuosBootloader_ProcessData(void)
         residual_space = (uint16_t)BUFFER_SIZE - data_index;
     }
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief Save the current page when BIN_END command is received 
  * @param None 
@@ -206,9 +206,7 @@ void LuosBootloader_SaveLastData(void)
 {
     LuosHAL_ProgramFlash(flash_addr, (uint16_t)BUFFER_SIZE, data_buff);
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief compute crc 8 for each data
  * @param data pointer, data len 
@@ -236,9 +234,7 @@ void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
 
     *crc = (uint8_t)(dbyte >> 8);
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief compute crc for the whole binary
  * @param data pointer, data len 
@@ -276,9 +272,7 @@ uint8_t compute_crc(void)
 
     return crc;
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief Send response to the gate
  * @param None
@@ -296,9 +290,7 @@ void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
 
     Luos_SendMsg(0, &ready_msg);
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief Send response to the gate
  * @param None
@@ -314,9 +306,7 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
     ready_msg.data[0]            = response;
     Luos_SendMsg(0, &ready_msg);
 }
-#endif
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief bootloader app
  * @param None
@@ -438,18 +428,4 @@ void LuosBootloader_MsgHandler(msg_t *input)
         default:
             break;
     }
-}
-
-/******************************************************************************
- * @brief Create a service to signal a bootloader node
- * @param None
- * @return None
- ******************************************************************************/
-void LuosBootloader_Init(void)
-{
-    revision_t version = {.Major = 1, .Minor = 3, .Build = 0};
-    Luos_CreateContainer(0, VOID_MOD, "boot_service", version);
-
-    // set ID node saved in flash
-    LuosBootloader_SetNodeID();
 }
