@@ -427,7 +427,7 @@ void LuosBootloader_Task(void)
 
         case BOOTLOADER_STOP_STATE:
             // save boot_mode in flash
-            LuosHAL_SetMode(APPLICATION_MODE);
+            LuosHAL_SetMode((uint8_t)APPLICATION_MODE);
             // wait for the command to be send to all nodes
             tickstart = LuosHAL_GetSystick();
             while ((LuosHAL_GetSystick() - tickstart) < 1000)
@@ -481,7 +481,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
-            LuosHAL_SetMode(BOOTLOADER_MODE);
+            LuosHAL_SetMode((uint8_t)BOOTLOADER_MODE);
             LuosBootloader_SaveNodeID();
             LuosHAL_Reboot();
             break;
