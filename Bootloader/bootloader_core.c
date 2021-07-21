@@ -346,7 +346,7 @@ void LuosBootloader_Task(void)
             if (bootloader_cmd == BOOTLOADER_READY)
             {
                 // save binary length
-                memcpy(&nb_bytes, &bootloader_data, sizeof(uint32_t));
+                memcpy(&nb_bytes, &bootloader_data[0], sizeof(uint32_t));
                 // check free space in flash
                 if (LuosBootloader_IsEnoughSpace(nb_bytes) == SUCCEED)
                 {
