@@ -27,7 +27,6 @@
 static bootloader_cmd_t bootloader_cmd;
 
 #ifdef BOOTLOADER_CONFIG
-static bootloader_state_t bootloader_state = BOOTLOADER_START_STATE;
 // variables use to save binary data in flash
 static uint8_t bootloader_data[MAX_FRAME_SIZE];
 static uint16_t bootloader_data_size = 0;
@@ -57,7 +56,6 @@ static inline void LuosBootloader_ProcessData(void);
 static inline void LuosBootloader_SaveLastData(void);
 static void LuosBootloader_SendResponse(bootloader_cmd_t);
 static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t, uint8_t);
-static void LuosBootloader_SetState(bootloader_state_t);
 static void LuosBootloader_Task(void);
 #else
 static void LuosBootloader_SaveNodeID(void);
@@ -322,38 +320,27 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
 
 #ifdef BOOTLOADER_CONFIG
 /******************************************************************************
- * @brief set state of the bootloader
- * @param state 
- * @return None
- ******************************************************************************/
-void LuosBootloader_SetState(bootloader_state_t state)
-{
-    bootloader_state = state;
-}
-#endif
-
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
  * @brief Bootloader machine state
  * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_Task(void)
 {
+    static bootloader_state_t bootloader_state = BOOTLOADER_START_STATE;
     switch (bootloader_state)
     {
         case BOOTLOADER_START_STATE:
             // set ID node saved in flash
             LuosBootloader_SetNodeID();
             // go to ready state
-            LuosBootloader_SetState(BOOTLOADER_READY_STATE);
+            bootloader_state = BOOTLOADER_READY_STATE;
             break;
 
         case BOOTLOADER_READY_STATE:
             // if STOP_CMD, restart the node
             if (bootloader_cmd == BOOTLOADER_STOP)
             {
-                LuosBootloader_SetState(BOOTLOADER_STOP_STATE);
+                bootloader_state = BOOTLOADER_STOP_STATE;
             }
             // if READY_CMD, continue BOOTLOADER process
             if (bootloader_cmd == BOOTLOADER_READY)
@@ -366,7 +353,7 @@ void LuosBootloader_Task(void)
                     // send READY response
                     LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
                     // go to HEADER state
-                    LuosBootloader_SetState(BOOTLOADER_ERASE_STATE);
+                    bootloader_state = BOOTLOADER_ERASE_STATE;
                 }
                 else
                 {
@@ -385,7 +372,7 @@ void LuosBootloader_Task(void)
                 // send READY response
                 LuosBootloader_SendResponse(BOOTLOADER_ERASE_RESP);
                 // go to HEADER state
-                LuosBootloader_SetState(BOOTLOADER_BIN_CHUNK_STATE);
+                bootloader_state = BOOTLOADER_BIN_CHUNK_STATE;
             }
 
             break;
@@ -411,7 +398,7 @@ void LuosBootloader_Task(void)
                 LuosBootloader_SendResponse(BOOTLOADER_BIN_END_RESP);
 
                 // go to BIN_END state
-                LuosBootloader_SetState(BOOTLOADER_CRC_TEST_STATE);
+                bootloader_state = BOOTLOADER_CRC_TEST_STATE;
             }
             break;
 
@@ -424,7 +411,7 @@ void LuosBootloader_Task(void)
                 LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc, sizeof(uint16_t));
 
                 // go to READY state
-                LuosBootloader_SetState(BOOTLOADER_READY_STATE);
+                bootloader_state = BOOTLOADER_READY_STATE;
             }
             break;
 
