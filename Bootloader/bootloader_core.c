@@ -55,7 +55,7 @@ static inline void LuosBootloader_EraseMemory(void);
 static inline void LuosBootloader_ProcessData(void);
 static inline void LuosBootloader_SaveLastData(void);
 static void LuosBootloader_SendResponse(bootloader_cmd_t);
-static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t, uint8_t);
+static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t);
 static void LuosBootloader_Task(void);
 #else
 static void LuosBootloader_SaveNodeID(void);
@@ -286,7 +286,7 @@ uint8_t compute_crc(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data, uint8_t size)
+void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
@@ -408,7 +408,7 @@ void LuosBootloader_Task(void)
             {
                 uint8_t crc = compute_crc();
                 // send ack to the Host
-                LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc, sizeof(uint16_t));
+                LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc);
 
                 // go to READY state
                 bootloader_state = BOOTLOADER_READY_STATE;
