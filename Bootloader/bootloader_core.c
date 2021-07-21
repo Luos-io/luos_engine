@@ -36,10 +36,9 @@ uint8_t data_buff[(uint16_t)BUFFER_SIZE];
 uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)BUFFER_SIZE;
 uint32_t nb_bytes       = 0;
-
-uint16_t source_id = 0; // used to save source_id, ie gate_id
-
-uint32_t tickstart = 0;
+uint8_t crc             = 0;
+uint16_t source_id      = 0; // used to save source_id, ie gate_id
+uint32_t tickstart      = 0;
 #endif
 
 /*******************************************************************************
@@ -56,7 +55,6 @@ static inline void LuosBootloader_ProcessData(void);
 static inline void LuosBootloader_SaveLastData(void);
 static void LuosBootloader_SendResponse(bootloader_cmd_t);
 static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t);
-static void LuosBootloader_Task(void);
 #else
 static void LuosBootloader_SaveNodeID(void);
 #endif
@@ -320,120 +318,6 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
 
 #ifdef BOOTLOADER_CONFIG
 /******************************************************************************
- * @brief Bootloader machine state
- * @param None
- * @return None
- ******************************************************************************/
-void LuosBootloader_Task(void)
-{
-    static bootloader_state_t bootloader_state = BOOTLOADER_START_STATE;
-    switch (bootloader_state)
-    {
-        case BOOTLOADER_START_STATE:
-            // set ID node saved in flash
-            LuosBootloader_SetNodeID();
-            // go to ready state
-            bootloader_state = BOOTLOADER_READY_STATE;
-            break;
-
-        case BOOTLOADER_READY_STATE:
-            // if STOP_CMD, restart the node
-            if (bootloader_cmd == BOOTLOADER_STOP)
-            {
-                bootloader_state = BOOTLOADER_STOP_STATE;
-            }
-            // if READY_CMD, continue BOOTLOADER process
-            if (bootloader_cmd == BOOTLOADER_READY)
-            {
-                // save binary length
-                memcpy(&nb_bytes, &bootloader_data[0], sizeof(uint32_t));
-                // check free space in flash
-                if (LuosBootloader_IsEnoughSpace(nb_bytes) == SUCCEED)
-                {
-                    // send READY response
-                    LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
-                    // go to ERASE state
-                    bootloader_state = BOOTLOADER_ERASE_STATE;
-                }
-                else
-                {
-                    // send ERROR response
-                    LuosBootloader_SendResponse(BOOTLOADER_ERROR_SIZE);
-                }
-            }
-            break;
-
-        case BOOTLOADER_ERASE_STATE:
-
-            if (bootloader_cmd == BOOTLOADER_ERASE)
-            {
-                // erase flash memory
-                LuosBootloader_EraseMemory();
-                // send ERASE response
-                LuosBootloader_SendResponse(BOOTLOADER_ERASE_RESP);
-                // go to BIN_CHUNK state
-                bootloader_state = BOOTLOADER_BIN_CHUNK_STATE;
-            }
-
-            break;
-
-        case BOOTLOADER_BIN_CHUNK_STATE:
-
-            if (bootloader_cmd == BOOTLOADER_BIN_CHUNK)
-            {
-                // reset bootloader cmd to avoid looping in this portion of the code
-                bootloader_cmd = BOOTLOADER_IDLE;
-                // handle binary data
-                LuosBootloader_ProcessData();
-                // send ack to the Host
-                LuosBootloader_SendResponse(BOOTLOADER_BIN_CHUNK_RESP);
-            }
-
-            if (bootloader_cmd == BOOTLOADER_BIN_END)
-            {
-                // save the current page in flash memory
-                LuosBootloader_SaveLastData();
-
-                // send ack to the Host
-                LuosBootloader_SendResponse(BOOTLOADER_BIN_END_RESP);
-
-                // go to CRC state
-                bootloader_state = BOOTLOADER_CRC_TEST_STATE;
-            }
-            break;
-
-        case BOOTLOADER_CRC_TEST_STATE:
-
-            if (bootloader_cmd == BOOTLOADER_CRC_TEST)
-            {
-                uint8_t crc = compute_crc();
-                // send ack to the Host
-                LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc);
-
-                // go to READY state
-                bootloader_state = BOOTLOADER_READY_STATE;
-            }
-            break;
-
-        case BOOTLOADER_STOP_STATE:
-            // save boot_mode in flash
-            LuosHAL_SetMode((uint8_t)APPLICATION_MODE);
-            // wait for the command to be send to all nodes
-            tickstart = LuosHAL_GetSystick();
-            while ((LuosHAL_GetSystick() - tickstart) < 1000)
-                ;
-            // reboot the node
-            LuosHAL_Reboot();
-            break;
-
-        default:
-            break;
-    }
-}
-#endif
-
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
  * @brief bootloader app
  * @param None
  * @return None
@@ -450,7 +334,6 @@ void LuosBootloader_Loop(void)
 
         case BOOTLOADER_MODE:
         default:
-            LuosBootloader_Task();
             break;
     }
 }
@@ -476,16 +359,80 @@ void LuosBootloader_MsgHandler(msg_t *input)
             LuosHAL_Reboot();
             break;
 #else
-        case BOOTLOADER_READY:
-        case BOOTLOADER_STOP:
-        case BOOTLOADER_BIN_CHUNK:
-        case BOOTLOADER_BIN_END:
-        case BOOTLOADER_CRC_TEST:
             // we're in the bootloader,
             // process cmd and data
+        case BOOTLOADER_READY:
             source_id            = input->header.source;
             bootloader_data_size = input->header.size - sizeof(char);
             memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+
+            // save binary length
+            memcpy(&nb_bytes, &bootloader_data[0], sizeof(uint32_t));
+            // check free space in flash
+            if (LuosBootloader_IsEnoughSpace(nb_bytes) == SUCCEED)
+            {
+                // send READY response
+                LuosBootloader_SendResponse(BOOTLOADER_READY_RESP);
+            }
+            else
+            {
+                // send ERROR response
+                LuosBootloader_SendResponse(BOOTLOADER_ERROR_SIZE);
+            }
+            break;
+
+        case BOOTLOADER_ERASE:
+            source_id            = input->header.source;
+            bootloader_data_size = input->header.size - sizeof(char);
+            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+
+            // erase flash memory
+            LuosBootloader_EraseMemory();
+            // send ERASE response
+            LuosBootloader_SendResponse(BOOTLOADER_ERASE_RESP);
+            break;
+
+        case BOOTLOADER_BIN_CHUNK:
+            source_id            = input->header.source;
+            bootloader_data_size = input->header.size - sizeof(char);
+            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+
+            // handle binary data
+            LuosBootloader_ProcessData();
+            // send ack to the Host
+            LuosBootloader_SendResponse(BOOTLOADER_BIN_CHUNK_RESP);
+            break;
+
+        case BOOTLOADER_BIN_END:
+            source_id            = input->header.source;
+            bootloader_data_size = input->header.size - sizeof(char);
+            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+
+            // save the current page in flash memory
+            LuosBootloader_SaveLastData();
+            // send ack to the Host
+            LuosBootloader_SendResponse(BOOTLOADER_BIN_END_RESP);
+            break;
+
+        case BOOTLOADER_CRC_TEST:
+            crc = compute_crc();
+            // send ack to the Host
+            LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc);
+            break;
+
+        case BOOTLOADER_STOP:
+            source_id            = input->header.source;
+            bootloader_data_size = input->header.size - sizeof(char);
+            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+
+            // save boot_mode in flash
+            LuosHAL_SetMode((uint8_t)APPLICATION_MODE);
+            // wait for the command to be send to all nodes
+            tickstart = LuosHAL_GetSystick();
+            while ((LuosHAL_GetSystick() - tickstart) < 1000)
+                ;
+            // reboot the node
+            LuosHAL_Reboot();
             break;
 #endif
         default:
@@ -502,4 +449,7 @@ void LuosBootloader_Init(void)
 {
     revision_t version = {.Major = 1, .Minor = 3, .Build = 0};
     Luos_CreateContainer(0, VOID_MOD, "boot_service", version);
+
+    // set ID node saved in flash
+    LuosBootloader_SetNodeID();
 }
