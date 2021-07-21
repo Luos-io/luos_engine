@@ -66,7 +66,7 @@ void LuosBootloader_Init(void);
 /******************************************************************************
  * @brief Main function used by the bootloader app
  ******************************************************************************/
-void LuosBootloader_Run(void);
+void LuosBootloader_Loop(void);
 
 /******************************************************************************
  * @brief function used by Luos to send message to the bootloader

@@ -1033,7 +1033,7 @@ void Luos_Run(void)
         case NODE_RUN:
             Luos_Loop();
 #ifdef BOOTLOADER_CONFIG
-            LuosBootloader_Run();
+            LuosBootloader_Loop();
 #else
             Luos_PackageLoop();
 #endif
