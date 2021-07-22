@@ -394,6 +394,11 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
 {
     uint16_t i = 0;
     // Find if we are concerned by this message.
+#ifdef SNIFFER_H //always allocate msg for the sniffer_container
+
+    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[0], msg);
+    return;
+#endif /*  SNIFFER_H */
     switch (msg->header.target_mode)
     {
         case IDACK:
