@@ -10,6 +10,7 @@
 #include "msg_alloc.h"
 #include "robus.h"
 #include "luos_hal.h"
+#include "bootloader_core.h"
 
 /*******************************************************************************
  * Definitions
@@ -32,6 +33,7 @@ volatile routing_table_t *routing_table_pt;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -176,6 +178,9 @@ static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint1
             {
                 return SUCCEED;
             }
+            break;
+        case BOOTLOADER_CMD:
+            return SUCCEED;
             break;
         default:
             return FAILED;
@@ -353,6 +358,11 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
             container->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
             container->auto_refresh.last_update = LuosHAL_GetSystick();
             consume                             = SUCCEED;
+            break;
+        case BOOTLOADER_CMD:
+            // send data to the bootloader
+            LuosBootloader_MsgHandler(input);
+            consume = SUCCEED;
             break;
         default:
             break;
@@ -1007,17 +1017,26 @@ void Luos_PackageLoop(void)
 void Luos_Run(void)
 {
     static node_state_t node_state = NODE_INIT;
+
     switch (node_state)
     {
         case NODE_INIT:
             Luos_Init();
+#ifdef BOOTLOADER_CONFIG
+            LuosBootloader_Init();
+#else
             Luos_PackageInit();
+#endif
             // go to run state after initialization
             node_state = NODE_RUN;
             break;
         case NODE_RUN:
             Luos_Loop();
+#ifdef BOOTLOADER_CONFIG
+            LuosBootloader_Loop();
+#else
             Luos_PackageLoop();
+#endif
             break;
         default:
             Luos_Loop();
