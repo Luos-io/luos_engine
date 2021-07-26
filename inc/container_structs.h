@@ -38,9 +38,9 @@ typedef struct __attribute__((__packed__))
     {
         struct __attribute__((__packed__))
         {
-            uint8_t Major;
-            uint8_t Minor;
-            uint8_t Build;
+            uint8_t major;
+            uint8_t minor;
+            uint8_t build;
         };
         uint8_t unmap[3]; /*!< streamable form. */
     };
