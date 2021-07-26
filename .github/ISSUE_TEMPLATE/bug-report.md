@@ -11,7 +11,7 @@ assignees: nicolas-rabault
 A clear and concise description of what the bug is.
 
 **Network configuration**
-- Add the routing table or list the nodes and their modules
+- Add the routing table or list the nodes and their services
 - Power input configuration
 
 **How to reproduce the bug**

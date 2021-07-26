@@ -108,7 +108,7 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     return 0;
 }
 /******************************************************************************
- * @brief detect the next module by poke ptp line
+ * @brief detect the next service by poke ptp line
  * @param None
  * @return true if a port have been poke else false
  ******************************************************************************/

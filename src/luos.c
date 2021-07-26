@@ -106,7 +106,7 @@ void Luos_Loop(void)
                 }
                 else
                 {
-                    // Here we should not have polling modules.
+                    // Here we should not have polling services.
                     LUOS_ASSERT(container->cont_cb != 0);
                     // This message is for the user, pass it to the user.
                     container->cont_cb(container, returned_msg);
@@ -206,7 +206,7 @@ static error_return_t Luos_MsgHandler(container_t *container, msg_t *input)
     switch (input->header.cmd)
     {
         case ASSERT:
-            // a module assert remove all modules of the asserted node in routing table
+            // a service assert remove all services of the asserted node in routing table
             RoutingTB_RemoveNode(input->header.source);
             // This assert information could be usefull for containers, do not remove it.
             consume = FAILED;
