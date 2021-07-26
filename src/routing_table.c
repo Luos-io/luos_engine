@@ -453,8 +453,8 @@ static void RoutingTB_Generate(container_t *container, uint16_t nb_node)
         last_node_id = RoutingTB_BigestNodeID();
     }
     // Check Alias duplication.
-    uint16_t nb_mod = RoutingTB_BigestID();
-    for (uint16_t id = 1; id <= nb_mod; id++)
+    uint16_t nb_service = RoutingTB_BigestID();
+    for (uint16_t id = 1; id <= nb_service; id++)
     {
         uint16_t found_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
         if ((found_id != id) & (found_id != -1))

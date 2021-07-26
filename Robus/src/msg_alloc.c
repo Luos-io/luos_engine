@@ -57,7 +57,7 @@
  * @struct luos_task_t
  * @brief Message allocator loger structure.
  *
- * This structure is used to link modules and messages into the allocator.
+ * This structure is used to link services and messages into the allocator.
  *
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
@@ -374,7 +374,7 @@ void MsgAlloc_InvalidMsg(void)
 void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
 {
     //******** Prepare the allocator to get data  *********
-    // Save the concerned module pointer into the concerned module pointer stack
+    // Save the concerned service pointer into the concerned service pointer stack
     if (valid == true)
     {
         if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + CRC_SIZE])) == FAILED)
@@ -620,7 +620,7 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
         MsgAlloc_ClearMsgTask();
         return SUCCEED;
     }
-    // At this point we don't find any message for this module
+    // At this point we don't find any message for this service
     return FAILED;
 }
 
@@ -662,8 +662,8 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 }
 /******************************************************************************
  * @brief Alloc luos task
- * @param module_concerned_by_current_msg concerned modules
- * @param module_concerned_by_current_msg concerned msg
+ * @param service_concerned_by_current_msg concerned services
+ * @param service_concerned_by_current_msg concerned msg
  * @return None
  ******************************************************************************/
 void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, msg_t *concerned_msg)
@@ -703,18 +703,18 @@ void MsgAlloc_LuosTaskAlloc(ll_container_t *container_concerned_by_current_msg, 
  ******************************************************************************/
 
 /******************************************************************************
- * @brief Pull a message allocated to a specific module
- * @param target_module : The module concerned by this message
+ * @brief Pull a message allocated to a specific service
+ * @param target_service : The service concerned by this message
  * @param returned_msg : The message pointer.
  * @return error_return_t
  ******************************************************************************/
-error_return_t MsgAlloc_PullMsg(ll_container_t *target_module, msg_t **returned_msg)
+error_return_t MsgAlloc_PullMsg(ll_container_t *target_service, msg_t **returned_msg)
 {
     MsgAlloc_ValidDataIntegrity();
-    //find the oldest message allocated to this module
+    //find the oldest message allocated to this service
     for (uint16_t i = 0; i < luos_tasks_stack_id; i++)
     {
-        if (luos_tasks[i].ll_container_pt == target_module)
+        if (luos_tasks[i].ll_container_pt == target_service)
         {
             *returned_msg = luos_tasks[i].msg_pt;
             // Clear the slot by sliding others to the left on it
@@ -723,7 +723,7 @@ error_return_t MsgAlloc_PullMsg(ll_container_t *target_module, msg_t **returned_
             return SUCCEED;
         }
     }
-    // At this point we don't find any message for this module
+    // At this point we don't find any message for this service
     return FAILED;
 }
 /******************************************************************************
@@ -735,7 +735,7 @@ error_return_t MsgAlloc_PullMsg(ll_container_t *target_module, msg_t **returned_
 error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **returned_msg)
 {
     MsgAlloc_ValidDataIntegrity();
-    //find the oldest message allocated to this module
+    //find the oldest message allocated to this service
     if (luos_task_id < luos_tasks_stack_id)
     {
         used_msg      = luos_tasks[luos_task_id].msg_pt;
@@ -744,21 +744,21 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
         MsgAlloc_ClearLuosTask(luos_task_id);
         return SUCCEED;
     }
-    // At this point we don't find any message for this module
+    // At this point we don't find any message for this service
     return FAILED;
 }
 /******************************************************************************
- * @brief get back the module who received the oldest message
- * @param allocated_module : Return the module concerned by the oldest message
+ * @brief get back the service who received the oldest message
+ * @param allocated_service : Return the service concerned by the oldest message
  * @param luos_task_id : Id of the allocator slot
  * @return error_return_t : Fail is there is no more message available.
  ******************************************************************************/
-error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_container_t **allocated_module)
+error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_container_t **allocated_service)
 {
     MsgAlloc_ValidDataIntegrity();
     if (luos_task_id < luos_tasks_stack_id)
     {
-        *allocated_module = luos_tasks[luos_task_id].ll_container_pt;
+        *allocated_service = luos_tasks[luos_task_id].ll_container_pt;
         return SUCCEED;
     }
     return FAILED;

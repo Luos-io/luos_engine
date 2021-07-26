@@ -250,7 +250,7 @@ uint16_t Robus_TopologyDetection(ll_container_t *ll_container)
     return last_node;
 }
 /******************************************************************************
- * @brief reset all module port states
+ * @brief reset all service port states
  * @param ll_container pointer to the detecting ll_container
  * @return The number of detected node.
  ******************************************************************************/
@@ -357,7 +357,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             switch (input->header.size)
             {
                 case 0:
-                    // Someone asking us a new node id (we are the detecting module)
+                    // Someone asking us a new node id (we are the detecting service)
                     // Increase the number of node_nb and send it back
                     last_node++;
                     output_msg.header.cmd         = WRITE_NODE_ID;

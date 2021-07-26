@@ -281,7 +281,7 @@ void Recep_CatchAck(volatile uint8_t *data)
     }
 }
 /******************************************************************************
- * @brief Parse msg to find a module concerned
+ * @brief Parse msg to find a service concerned
  * @param header of message
  * @return ll_container pointer
  ******************************************************************************/
@@ -325,7 +325,7 @@ ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
     return NULL;
 }
 /******************************************************************************
- * @brief Parse msg to find a module concerne
+ * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
  ******************************************************************************/
@@ -386,7 +386,7 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
     return EXTERNALHOST;
 }
 /******************************************************************************
- * @brief Parse msg to find all modules concerned and create
+ * @brief Parse msg to find all services concerned and create
  * @param msg pointer
  * @return None
  ******************************************************************************/
