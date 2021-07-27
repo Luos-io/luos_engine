@@ -163,51 +163,48 @@ char *RoutingTB_StringFromType(luos_type_t type)
 {
     switch (type)
     {
-        case STATE_MOD:
+        case STATE_TYPE:
             return "State";
             break;
-        case COLOR_MOD:
+        case COLOR_TYPE:
             return "Color";
             break;
-        case SERVO_MOD:
+        case SERVO_TYPE:
             return "Servo";
             break;
-        case ANGLE_MOD:
+        case MOTOR_TYPE:
+            return "Motor";
+        break;
+        case SERVO_MOTOR_TYPE:
+            return "ServoMotor";
+        break;
+        case ANGLE_TYPE:
             return "Angle";
             break;
-        case DISTANCE_MOD:
+        case DISTANCE_TYPE:
             return "DistanceSensor";
             break;
-        case GATE_MOD:
+        case GATE_TYPE:
             return "Gate";
             break;
-        case DYNAMIXEL_MOD:
-            return "DynamixelMotor";
-            break;
-        case STEPPER_MOD:
-            return "Stepper";
-            break;
-        case DCMOTOR_MOD:
-            return "DCMotor";
-            break;
-            break;
-        case IMU_MOD:
+        case IMU_TYPE:
             return "Imu";
             break;
-        case LIGHT_MOD:
+        case LIGHT_TYPE:
             return "LightSensor";
             break;
-        case CONTROLLER_MOTOR_MOD:
-            return "ControllerMotor";
-        case VOID_MOD:
+        case VOID_TYPE:
             return "Void";
             break;
-        case LOAD_MOD:
+        case LOAD_TYPE:
             return "Load";
             break;
-        case VOLTAGE_MOD:
+        case VOLTAGE_TYPE:
             return "Voltage";
             break;
+        case PIPE_TYPE:
+            return "Pipe";
+        break;
         default:
             return "Unknown";
             break;
@@ -220,15 +217,13 @@ char *RoutingTB_StringFromType(luos_type_t type)
  ******************************************************************************/
 uint8_t RoutingTB_ContainerIsSensor(luos_type_t type)
 {
-    if ((type == ANGLE_MOD)
-        || (type == STATE_MOD)
-        || (type == DYNAMIXEL_MOD)
-        || (type == DISTANCE_MOD)
-        || (type == IMU_MOD)
-        || (type == LOAD_MOD)
-        || (type == CONTROLLER_MOTOR_MOD)
-        || (type == VOLTAGE_MOD)
-        || (type == LIGHT_MOD))
+    if ((type == ANGLE_TYPE)
+        || (type == STATE_TYPE)
+        || (type == DISTANCE_TYPE)
+        || (type == IMU_TYPE)
+        || (type == LOAD_TYPE)
+        || (type == VOLTAGE_TYPE)
+        || (type == LIGHT_TYPE))
     {
         return 1;
     }

@@ -41,7 +41,7 @@ container_t *TemplateState_CreateContainer(CONT_CB cont_cb, template_state_t *st
  ******************************************************************************/
 void ProfileState_Handler(container_t *container, msg_t *msg, profile_state_t *state_profile)
 {
-    if ((msg->header.cmd == ASK_PUB_CMD) && ((state_profile->access == READ_WRITE_ACCESS) || (state_profile->access == READ_ONLY_ACCESS)))
+    if ((msg->header.cmd == GET_CMD) && ((state_profile->access == READ_WRITE_ACCESS) || (state_profile->access == READ_ONLY_ACCESS)))
     {
         // fill the message infos
         msg_t pub_msg;
