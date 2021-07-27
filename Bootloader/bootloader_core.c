@@ -72,6 +72,7 @@ void LuosBootloader_SaveNodeID(void)
     LuosHAL_SaveNodeID(node_id);
 }
 
+#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief Create a service to signal a bootloader node
  * @param None
@@ -86,7 +87,6 @@ void LuosBootloader_Init(void)
     LuosBootloader_SetNodeID();
 }
 
-#ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief read the boot mode in flash memory
  * @param None
