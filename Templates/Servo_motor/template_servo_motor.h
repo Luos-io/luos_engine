@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file Template servo motor
- * @brief servo motor container template
+ * @brief servo motor service template
  * WARING : This h file should be only included by user code or profile_*.h codes
  * @author Luos
  * @version 0.0.0
@@ -19,7 +19,7 @@
  */
 typedef struct
 {
-    CONT_CB self;
+    SERVICE_CB self;
     profile_servo_motor_t profile;
 } template_servo_motor_t;
 
@@ -31,6 +31,6 @@ typedef struct
  * Function
  ******************************************************************************/
 
-container_t *TemplateServoMotor_CreateContainer(CONT_CB cont_cb, template_servo_motor_t *var, const char *alias, revision_t revision);
+service_t *TemplateServoMotor_CreateService(SERVICE_CB service_cb, template_servo_motor_t *var, const char *alias, revision_t revision);
 
 #endif /* TEMPLATE_TEMPLATE_SERVO_MOTOR_H_ */

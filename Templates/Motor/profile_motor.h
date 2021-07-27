@@ -22,6 +22,6 @@
  * Function
  ******************************************************************************/
 
-void ProfileMotor_Handler(container_t *container, msg_t *msg, profile_motor_t *motor_profile);
+void ProfileMotor_Handler(service_t *service, msg_t *msg, profile_motor_t *motor_profile);
 
 #endif /* TEMPLATE_CLASS_MOTOR_H_ */

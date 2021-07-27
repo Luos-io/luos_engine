@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file Template voltage
- * @brief voltage container template
+ * @brief voltage service template
  * WARING : This h file should be only included by user code or profile_*.h codes
  * @author Luos
  * @version 0.0.0
@@ -21,7 +21,7 @@
  */
 typedef struct
 {
-    CONT_CB self;
+    SERVICE_CB self;
     profile_voltage_t profile;
 } template_voltage_t;
 
@@ -33,6 +33,6 @@ typedef struct
  * Function
  ******************************************************************************/
 
-container_t *TemplateVoltage_CreateContainer(CONT_CB cont_cb, template_voltage_t *var, const char *alias, revision_t revision);
+service_t *TemplateVoltage_CreateService(SERVICE_CB service_cb, template_voltage_t *var, const char *alias, revision_t revision);
 
 #endif /* TEMPLATE_TEMPLATE_VOLTAGE_H_ */

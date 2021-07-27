@@ -22,6 +22,6 @@
  * Function
  ******************************************************************************/
 
-void ProfileState_Handler(container_t *container, msg_t *msg, profile_state_t *state_profile);
+void ProfileState_Handler(service_t *service, msg_t *msg, profile_state_t *state_profile);
 
 #endif /* TEMPLATE_CLASS_STATE_H_ */

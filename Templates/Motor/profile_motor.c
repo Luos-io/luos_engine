@@ -3,12 +3,12 @@
 #include "math.h"
 /******************************************************************************
  * @brief function converting Luos messages innto data and reverse.
- * @param container the target container
+ * @param service the target service
  * @param msg the received message
  * @param motor the data struct to update
  * @return None
  ******************************************************************************/
-static void MotorConfig_Handler(container_t *container, msg_t *msg, profile_motor_t *motor_profile)
+static void MotorConfig_Handler(service_t *service, msg_t *msg, profile_motor_t *motor_profile)
 {
     if (msg->header.cmd == PARAMETERS)
     {
@@ -19,44 +19,44 @@ static void MotorConfig_Handler(container_t *container, msg_t *msg, profile_moto
     }
 }
 /******************************************************************************
- * @brief Msg Handler call backed by Luos when a msg receive for this container
- * @param Container destination
+ * @brief Msg Handler call backed by Luos when a msg receive for this service
+ * @param Service destination
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void TemplateMotor_MsgHandler(container_t *container, msg_t *msg)
+static void TemplateMotor_MsgHandler(service_t *service, msg_t *msg)
 {
-    template_motor_t *motor_template = (template_motor_t *)container->template_context;
-    ProfileMotor_Handler(container, msg, &motor_template->profile);
-    MotorConfig_Handler(container, msg, &motor_template->profile);
+    template_motor_t *motor_template = (template_motor_t *)service->template_context;
+    ProfileMotor_Handler(service, msg, &motor_template->profile);
+    MotorConfig_Handler(service, msg, &motor_template->profile);
     if (motor_template->self != 0)
     {
-        motor_template->self(container, msg);
+        motor_template->self(service, msg);
     }
 }
 /******************************************************************************
- * @brief Container creation following the template
- * @param cont_cb is an optional user callback called on every massage for this container
+ * @brief Service creation following the template
+ * @param service_cb is an optional user callback called on every massage for this service
  * @param motor_struct template object pointer
- * @param alias for the container string (15 caracters max).
- * @param revision FW for the container (tab[MajorVersion,MinorVersion,Patch])
+ * @param alias for the service string (15 caracters max).
+ * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
  * @return None
  ******************************************************************************/
-container_t *TemplateMotor_CreateContainer(CONT_CB cont_cb, template_motor_t *motor_template, const char *alias, revision_t revision)
+service_t *TemplateMotor_CreateService(SERVICE_CB service_cb, template_motor_t *motor_template, const char *alias, revision_t revision)
 {
-    motor_template->self        = cont_cb;
-    container_t *container      = Luos_CreateContainer(TemplateMotor_MsgHandler, MOTOR_TYPE, alias, revision);
-    container->template_context = (void *)motor_template;
-    return container;
+    motor_template->self      = service_cb;
+    service_t *service        = Luos_CreateService(TemplateMotor_MsgHandler, MOTOR_TYPE, alias, revision);
+    service->template_context = (void *)motor_template;
+    return service;
 }
 /******************************************************************************
  * @brief function converting Luos messages innto data and reverse.
- * @param container the target container
+ * @param service the target service
  * @param msg the received message
  * @param motor_struct the data struct to update
  * @return None
  ******************************************************************************/
-void ProfileMotor_Handler(container_t *container, msg_t *msg, profile_motor_t *profile_motor)
+void ProfileMotor_Handler(service_t *service, msg_t *msg, profile_motor_t *profile_motor)
 {
     switch (msg->header.cmd)
     {
@@ -68,12 +68,12 @@ void ProfileMotor_Handler(container_t *container, msg_t *msg, profile_motor_t *p
             if (profile_motor->mode.current)
             {
                 ElectricOD_CurrentToMsg((current_t *)&profile_motor->current, &pub_msg);
-                Luos_SendMsg(container, &pub_msg);
+                Luos_SendMsg(service, &pub_msg);
             }
             if (profile_motor->mode.temperature)
             {
                 TemperatureOD_TemperatureToMsg((current_t *)&profile_motor->temperature, &pub_msg);
-                Luos_SendMsg(container, &pub_msg);
+                Luos_SendMsg(service, &pub_msg);
             }
         }
         break;
