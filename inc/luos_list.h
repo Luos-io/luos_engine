@@ -14,26 +14,20 @@
  ******************************************************************************/
 typedef enum
 {
-    GATE_MOD,
-    SERVO_MOD, // To remove
-    COLOR_MOD,
-    ANGLE_MOD,
+    VOID_TYPE,
+    GATE_TYPE,
+    COLOR_TYPE,
+    ANGLE_TYPE,
     STATE_TYPE,
-    STATE_MOD = STATE_TYPE, // retrocompatibility line
-    DISTANCE_MOD,
+    DISTANCE_TYPE,
     VOLTAGE_TYPE,
-    VOLTAGE_MOD = VOLTAGE_TYPE,
-    DYNAMIXEL_MOD, // To remove
-    STEPPER_MOD,   // To remove
+    IMU_TYPE,
+    LIGHT_TYPE,
+    LOAD_TYPE,
+    PIPE_TYPE,
     MOTOR_TYPE,
-    DCMOTOR_MOD = MOTOR_TYPE, // retrocompatibility line
-    IMU_MOD,
-    LIGHT_MOD,
     SERVO_MOTOR_TYPE,
-    CONTROLLER_MOTOR_MOD = SERVO_MOTOR_TYPE, // retrocompatibility line
-    VOID_MOD,
-    LOAD_MOD,
-    PIPE_MOD,
+    SERVO_TYPE, // To remove
     LUOS_LAST_TYPE
 } luos_type_t;
 
@@ -58,7 +52,6 @@ typedef enum
 
     // Common register for all containers
     GET_CMD,               // asks a container to publish its data
-    ASK_PUB_CMD = GET_CMD, // retrocompatibility line
     SET_CMD,               // set some undefined data
 
     // Generic data
@@ -113,9 +106,8 @@ typedef enum
     TEMPERATURE_LIMIT,      // Max temperature_t (°C)
 
     // Specific register
-    //    DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controller motor
-    HANDY_SET_POSITION, // handy_t to remove
     PARAMETERS,         // depend on the container, can be : servo_parameters_t, imu_report_t, motor_mode_t
+    ERROR_CMD, 
 
     // compatibility area
     LUOS_PROTOCOL_NB,

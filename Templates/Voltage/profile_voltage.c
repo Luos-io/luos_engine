@@ -41,7 +41,7 @@ container_t *TemplateVoltage_CreateContainer(CONT_CB cont_cb, template_voltage_t
  ******************************************************************************/
 void ProfileVoltage_Handler(container_t *container, msg_t *msg, profile_voltage_t *voltage_profile)
 {
-    if ((msg->header.cmd == ASK_PUB_CMD) && ((voltage_profile->access == READ_WRITE_ACCESS) || (voltage_profile->access == READ_ONLY_ACCESS)))
+    if ((msg->header.cmd == GET_CMD) && ((voltage_profile->access == READ_WRITE_ACCESS) || (voltage_profile->access == READ_ONLY_ACCESS)))
     {
         // fill the message infos
         msg_t pub_msg;

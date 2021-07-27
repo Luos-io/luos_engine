@@ -75,7 +75,7 @@ void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo
 {
     switch (msg->header.cmd)
     {
-        case ASK_PUB_CMD:
+        case GET_CMD:
         {
             // Report management
             msg_t pub_msg;

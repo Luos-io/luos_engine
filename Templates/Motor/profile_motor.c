@@ -60,7 +60,7 @@ void ProfileMotor_Handler(container_t *container, msg_t *msg, profile_motor_t *p
 {
     switch (msg->header.cmd)
     {
-        case ASK_PUB_CMD:
+        case GET_CMD:
         {
             msg_t pub_msg;
             pub_msg.header.target_mode = msg->header.target_mode;

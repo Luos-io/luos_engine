@@ -452,7 +452,7 @@ static void Luos_AutoUpdateManager(void)
                     updt_msg.header.target      = container_table[i].ll_container->id;
                     updt_msg.header.source      = container_table[i].auto_refresh.target;
                     updt_msg.header.target_mode = IDACK;
-                    updt_msg.header.cmd         = ASK_PUB_CMD;
+                    updt_msg.header.cmd         = GET_CMD;
                     updt_msg.header.size        = 0;
                     if ((container_table[i].cont_cb != 0))
                     {
@@ -969,7 +969,7 @@ void Luos_AddPackage(void (*Init)(void), void (*Loop)(void))
  ******************************************************************************/
 void Luos_EmptyNode(void)
 {
-    Luos_CreateContainer(0, VOID_MOD, "empty_node", luos_version);
+    Luos_CreateContainer(0, VOID_TYPE, "empty_node", luos_version);
 }
 
 /******************************************************************************
