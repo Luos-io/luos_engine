@@ -5,15 +5,22 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef TEMPLATE_CLASS_STATE_H_
-#define TEMPLATE_CLASS_STATE_H_
+#ifndef PROFILE_STATE_H_
+#define PROFILE_STATE_H_
 
-#include "struct_state.h"
+#include "profile_core.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+/*
+ * State data
+ */
+typedef struct
+{
+    access_t access;
+    bool state;
+} profile_state_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -21,7 +28,6 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
+void Luos_LinkStateProfile(profile_core_t *profile, profile_state_t *profile_state, SERVICE_CB callback);
 
-void ProfileState_Handler(service_t *service, msg_t *msg, profile_state_t *state_profile);
-
-#endif /* TEMPLATE_CLASS_STATE_H_ */
+#endif /* PROFILE_STATE_H_ */

@@ -1,59 +1,50 @@
-#include "template_state.h"
 #include "profile_state.h"
 
 /******************************************************************************
- * @brief Msg Handler call backed by Luos when a msg receive for this service
- * @param Service destination
- * @param Msg receive
- * @return None
- ******************************************************************************/
-static void TemplateState_MsgHandler(service_t *service, msg_t *msg)
-{
-    template_state_t *state_template = (template_state_t *)service->template_context;
-    ProfileState_Handler(service, msg, &state_template->profile);
-    if (state_template->self != 0)
-    {
-        state_template->self(service, msg);
-    }
-}
-/******************************************************************************
- * @brief Service creation following the template
- * @param service_cb is an optional user callback called on every massage for this service
- * @param state_struct template object pointer
- * @param alias for the service string (15 caracters max).
- * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
- * @return None
- ******************************************************************************/
-service_t *TemplateState_CreateService(SERVICE_CB service_cb, template_state_t *state_template, const char *alias, revision_t revision)
-{
-    state_template->self      = service_cb;
-    service_t *service        = Luos_CreateService(TemplateState_MsgHandler, STATE_TYPE, alias, revision);
-    service->template_context = (void *)state_template;
-    service->access           = state_template->profile.access;
-    return service;
-}
-/******************************************************************************
- * @brief function converting Luos messages innto data and reverse.
+ * @brief function converting Luos messages into data and reverse.
  * @param service the target service
  * @param msg the received message
- * @param state_struct the data struct to update
  * @return None
  ******************************************************************************/
-void ProfileState_Handler(service_t *service, msg_t *msg, profile_state_t *state_profile)
+void Luos_StateHandler(service_t *service, msg_t *msg)
 {
-    if ((msg->header.cmd == GET_CMD) && ((state_profile->access == READ_WRITE_ACCESS) || (state_profile->access == READ_ONLY_ACCESS)))
+    profile_core_t *profile        = Luos_GetProfileFromService(service);
+    profile_state_t *profile_state = (profile_state_t *)profile->profile_data;
+
+    if ((msg->header.cmd == GET_CMD) && ((profile_state->access == READ_WRITE_ACCESS) || (profile_state->access == READ_ONLY_ACCESS)))
     {
         // fill the message infos
         msg_t pub_msg;
         pub_msg.header.cmd         = IO_STATE;
         pub_msg.header.target_mode = msg->header.target_mode;
         pub_msg.header.target      = msg->header.source;
-        pub_msg.header.size        = sizeof(char);
-        pub_msg.data[0]            = state_profile->state;
+        pub_msg.header.size        = sizeof(bool);
+        memcpy(&pub_msg.data, &profile_state->state, sizeof(bool));
         Luos_SendMsg(service, &pub_msg);
     }
-    if ((msg->header.cmd == IO_STATE) && ((state_profile->access == READ_WRITE_ACCESS) || (state_profile->access == WRITE_ONLY_ACCESS)))
+    if ((msg->header.cmd == IO_STATE) && ((profile_state->access == READ_WRITE_ACCESS) || (profile_state->access == WRITE_ONLY_ACCESS)))
     {
-        state_profile->state = msg->data[0];
+        memcpy(&profile_state->state, &msg->data, sizeof(bool));
     }
+}
+
+/******************************************************************************
+ * @brief Lik state profile to the general profile handler
+ * @param profile handler, 
+ * @param profile_state handler, 
+ * @param callback used by the profile
+ * @return None
+ ******************************************************************************/
+void Luos_LinkStateProfile(profile_core_t *profile, profile_state_t *profile_state, SERVICE_CB callback)
+{
+    // set general profile handler type
+    profile->type = STATE_TYPE;
+
+    // link general profile handler to the profile data structure
+    profile->profile_data = (HANDLER *)profile_state;
+
+    // set profile handler / callback functions
+    profile->profile_ops.Init     = 0;
+    profile->profile_ops.Handler  = Luos_StateHandler;
+    profile->profile_ops.Callback = callback;
 }
