@@ -1,78 +1,33 @@
-#include "template_servo_motor.h"
 #include "profile_servo_motor.h"
-#include "profile_motor.h"
 #include "luos_hal.h"
+
 /******************************************************************************
- * @brief function converting Luos messages innto data and reverse.
+ * @brief Initilization function
+ * @param container the target container
+ * @param msg the received message
+ * @return None
+ ******************************************************************************/
+void Luos_ServoMotorInit(HANDLER *handler)
+{
+    profile_core_t *profile                    = (profile_core_t *)handler;
+    profile_servo_motor_t *servo_motor_profile = (profile_servo_motor_t *)profile->profile_data;
+
+    servo_motor_profile->motor.mode.current        = servo_motor_profile->mode.current;
+    servo_motor_profile->motor.mode.mode_compliant = servo_motor_profile->mode.mode_compliant;
+    servo_motor_profile->motor.mode.temperature    = servo_motor_profile->mode.temperature;
+}
+
+/******************************************************************************
+ * @brief function converting Luos messages into data and reverse.
  * @param service the target service
  * @param msg the received message
- * @param profile_servo_motor the data struct to update
  * @return None
  ******************************************************************************/
-static void ServoMotorConfig_Handler(service_t *service, msg_t *msg, profile_servo_motor_t *profile_servo_motor)
+void Luos_ServoMotorHandler(service_t *service, msg_t *msg)
 {
-    if (msg->header.cmd == PARAMETERS)
-    {
-        // fill the message infos
-        memcpy((void *)&profile_servo_motor->mode, msg->data, sizeof(servo_motor_mode_t));
+    profile_core_t *profile                    = Luos_GetProfileFromService(service);
+    profile_servo_motor_t *servo_motor_profile = (profile_servo_motor_t *)profile->profile_data;
 
-        // copy motor specific configuration into motor object
-        profile_servo_motor->motor.mode.current        = profile_servo_motor->mode.current;
-        profile_servo_motor->motor.mode.mode_compliant = profile_servo_motor->mode.mode_compliant;
-        profile_servo_motor->motor.mode.temperature    = profile_servo_motor->mode.temperature;
-
-        // manage specific configuration operations
-        if (profile_servo_motor->mode.mode_compliant == 0)
-        {
-            profile_servo_motor->target_angular_position = profile_servo_motor->angular_position;
-        }
-    }
-}
-/******************************************************************************
- * @brief Msg Handler call backed by Luos when a msg receive for this service
- * @param Service destination
- * @param Msg receive
- * @return None
- ******************************************************************************/
-static void TemplateServoMotor_MsgHandler(service_t *service, msg_t *msg)
-{
-    template_servo_motor_t *servo_motor_template = (template_servo_motor_t *)service->template_context;
-    ServoMotorConfig_Handler(service, msg, &servo_motor_template->profile);
-    ProfileServoMotor_Handler(service, msg, &servo_motor_template->profile);
-    if (servo_motor_template->self != 0)
-    {
-        servo_motor_template->self(service, msg);
-    }
-}
-/******************************************************************************
- * @brief Service creation following the template
- * @param service_cb is an optional user callback called on every massage for this service
- * @param servo_motor_template template object pointer
- * @param alias for the service string (15 caracters max).
- * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
- * @return None
- ******************************************************************************/
-service_t *TemplateServoMotor_CreateService(SERVICE_CB service_cb, template_servo_motor_t *servo_motor_template, const char *alias, revision_t revision)
-{
-    servo_motor_template->self = service_cb;
-    // copy motor specific configuration into motor object
-    servo_motor_template->profile.motor.mode.current        = servo_motor_template->profile.mode.current;
-    servo_motor_template->profile.motor.mode.mode_compliant = servo_motor_template->profile.mode.mode_compliant;
-    servo_motor_template->profile.motor.mode.temperature    = servo_motor_template->profile.mode.temperature;
-
-    service_t *service        = Luos_CreateService(TemplateServoMotor_MsgHandler, SERVO_MOTOR_TYPE, alias, revision);
-    service->template_context = (void *)servo_motor_template;
-    return service;
-}
-/******************************************************************************
- * @brief function converting Luos messages innto data and reverse.
- * @param service the target service
- * @param msg the received message
- * @param servo_motor_profile the data struct to update
- * @return None
- ******************************************************************************/
-void ProfileServoMotor_Handler(service_t *service, msg_t *msg, profile_servo_motor_t *servo_motor_profile)
-{
     switch (msg->header.cmd)
     {
         case GET_CMD:
@@ -273,6 +228,48 @@ void ProfileServoMotor_Handler(service_t *service, msg_t *msg, profile_servo_mot
             TimeOD_TimeFromMsg((time_luos_t *)&servo_motor_profile->sampling_period, msg);
         }
         break;
+        case PARAMETERS:
+        {
+            // fill the message infos
+            memcpy((void *)&servo_motor_profile->mode, msg->data, sizeof(servo_motor_mode_t));
+
+            // copy motor specific configuration into motor object
+            servo_motor_profile->motor.mode.current        = servo_motor_profile->mode.current;
+            servo_motor_profile->motor.mode.mode_compliant = servo_motor_profile->mode.mode_compliant;
+            servo_motor_profile->motor.mode.temperature    = servo_motor_profile->mode.temperature;
+
+            // manage specific configuration operations
+            if (servo_motor_profile->mode.mode_compliant == 0)
+            {
+                servo_motor_profile->target_angular_position = servo_motor_profile->angular_position;
+            }
+        }
+        break;
     }
-    ProfileMotor_Handler(service, msg, &servo_motor_profile->motor);
+
+    // call the motor handler
+    service_t motor_service;
+    motor_service.profile_context = (void *)&servo_motor_profile->motor;
+    Luos_MotorHandler(&motor_service, msg);
+}
+
+/******************************************************************************
+ * @brief Link motor profile to the general profile handler
+ * @param profile handler, 
+ * @param profile_servo_motor handler, 
+ * @param callback used by the profile
+ * @return None
+ ******************************************************************************/
+void Luos_LinkServoMotorProfile(profile_core_t *profile, profile_servo_motor_t *profile_servo_motor, SERVICE_CB callback)
+{
+    // set general profile handler type
+    profile->type = SERVO_MOTOR_TYPE;
+
+    // link general profile handler to the profile data structure
+    profile->profile_data = (HANDLER *)profile_servo_motor;
+
+    // set profile handler / callback functions
+    profile->profile_ops.Init     = Luos_ServoMotorInit;
+    profile->profile_ops.Handler  = Luos_ServoMotorHandler;
+    profile->profile_ops.Callback = callback;
 }
