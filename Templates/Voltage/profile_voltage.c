@@ -1,46 +1,16 @@
-#include "template_voltage.h"
 #include "profile_voltage.h"
 
 /******************************************************************************
- * @brief Msg Handler call backed by Luos when a msg receive for this service
- * @param Service destination
- * @param Msg receive
- * @return None
- ******************************************************************************/
-static void TemplateVoltage_MsgHandler(service_t *service, msg_t *msg)
-{
-    template_voltage_t *voltage_template = (template_voltage_t *)service->template_context;
-    ProfileVoltage_Handler(service, msg, &voltage_template->profile);
-    if (voltage_template->self != 0)
-    {
-        voltage_template->self(service, msg);
-    }
-}
-/******************************************************************************
- * @brief Service creation following the template
- * @param service_cb is an optional user callback called on every massage for this service
- * @param voltage_template template object pointer
- * @param alias for the service string (15 caracters max).
- * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
- * @return None
- ******************************************************************************/
-service_t *TemplateVoltage_CreateService(SERVICE_CB service_cb, template_voltage_t *voltage_template, const char *alias, revision_t revision)
-{
-    voltage_template->self    = service_cb;
-    service_t *service        = Luos_CreateService(TemplateVoltage_MsgHandler, VOLTAGE_TYPE, alias, revision);
-    service->template_context = (void *)voltage_template;
-    service->access           = voltage_template->profile.access;
-    return service;
-}
-/******************************************************************************
- * @brief function converting Luos messages innto data and reverse.
+ * @brief function converting Luos messages into data and reverse.
  * @param service the target service
  * @param msg the received message
- * @param voltage_profile the profile struct to update
  * @return None
  ******************************************************************************/
-void ProfileVoltage_Handler(service_t *service, msg_t *msg, profile_voltage_t *voltage_profile)
+void Luos_voltageHandler(service_t *service, msg_t *msg)
 {
+    profile_core_t *profile            = Luos_GetProfileFromService(service);
+    profile_voltage_t *voltage_profile = (profile_voltage_t *)profile->profile_data;
+
     if ((msg->header.cmd == GET_CMD) && ((voltage_profile->access == READ_WRITE_ACCESS) || (voltage_profile->access == READ_ONLY_ACCESS)))
     {
         // fill the message infos
@@ -81,4 +51,25 @@ void ProfileVoltage_Handler(service_t *service, msg_t *msg, profile_voltage_t *v
         TimeOD_TimeFromMsg((time_luos_t *)&voltage_profile->sampling_period, msg);
         return;
     }
+}
+
+/******************************************************************************
+ * @brief Link voltage profile to the general profile handler
+ * @param profile handler, 
+ * @param profile_voltage handler, 
+ * @param callback used by the profile
+ * @return None
+ ******************************************************************************/
+void Luos_LinkVoltageProfile(profile_core_t *profile, profile_voltage_t *profile_voltage, SERVICE_CB callback)
+{
+    // set general profile handler type
+    profile->type = VOLTAGE_TYPE;
+
+    // link general profile handler to the profile data structure
+    profile->profile_data = (HANDLER *)profile_voltage;
+
+    // set profile handler / callback functions
+    profile->profile_ops.Init     = 0;
+    profile->profile_ops.Handler  = Luos_voltageHandler;
+    profile->profile_ops.Callback = callback;
 }

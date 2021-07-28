@@ -5,15 +5,27 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef TEMPLATE_CLASS_VOLTAGE_H_
-#define TEMPLATE_CLASS_VOLTAGE_H_
+#ifndef PROFILE_VOLTAGE_H_
+#define PROFILE_VOLTAGE_H_
 
-#include "struct_voltage.h"
+#include "profile_core.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+/*
+ * Voltage data
+ */
+typedef struct
+{
+    access_t access;
+    voltage_t voltage;
 
+    //streaming
+    control_t control;
+    streaming_channel_t signal;
+    time_luos_t sampling_period;
+} profile_voltage_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -21,7 +33,6 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
+void Luos_LinkVoltageProfile(profile_core_t *profile, profile_voltage_t *profile_voltage, SERVICE_CB callback);
 
-void ProfileVoltage_Handler(service_t *service, msg_t *msg, profile_voltage_t *voltage_profile);
-
-#endif /* TEMPLATE_CLASS_VOLTAGE_H_ */
+#endif /* PROFILE_VOLTAGE_H_ */
