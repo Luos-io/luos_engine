@@ -19,8 +19,10 @@
  * Variables
  ******************************************************************************/
 revision_t luos_version = {.major = 1, .minor = 3, .build = 0};
+package_t package_table[MAX_CONTAINER_NUMBER];
+uint16_t package_number = 0;
 container_t container_table[MAX_CONTAINER_NUMBER];
-uint16_t container_number;
+uint16_t container_number = 0;
 volatile routing_table_t *routing_table_pt;
 
 luos_stats_t luos_stats;
@@ -37,6 +39,7 @@ static error_return_t Luos_SaveAlias(container_t *container, uint8_t *alias);
 static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_IsALuosCmd(container_t *container, uint8_t cmd, uint16_t size);
+static inline void Luos_EmptyNode(void);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -48,6 +51,20 @@ void Luos_Init(void)
     container_number = 0;
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     Robus_Init(&luos_stats.memory);
+
+    uint16_t package_index = 0;
+    if (package_number)
+    {
+        while (package_index < package_number)
+        {
+            package_table[package_index].Init();
+            package_index += 1;
+        }
+    }
+    else
+    {
+        Luos_EmptyNode();
+    }
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -126,6 +143,13 @@ void Luos_Loop(void)
     Luos_AutoUpdateManager();
     // save loop date
     last_loop_date = LuosHAL_GetSystick();
+
+    uint16_t package_index = 0;
+    while (package_index < package_number)
+    {
+        package_table[package_index].Loop();
+        package_index += 1;
+    }
 }
 /******************************************************************************
  * @brief Check if this command concern luos
@@ -927,4 +951,27 @@ error_return_t Luos_TxComplete(void)
 void Luos_Flush(void)
 {
     Robus_Flush();
+}
+
+/******************************************************************************
+ * @brief register a new package
+ * @param package to register
+ * @return None
+ ******************************************************************************/
+void Luos_AddPackage(void (*Init)(void), void (*Loop)(void))
+{
+    package_table[package_number].Init = Init;
+    package_table[package_number].Loop = Loop;
+
+    package_number += 1;
+}
+
+/******************************************************************************
+ * @brief Create a service to signal empty node
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_EmptyNode(void)
+{
+    Luos_CreateContainer(0, VOID_MOD, "empty_node", luos_version);
 }
