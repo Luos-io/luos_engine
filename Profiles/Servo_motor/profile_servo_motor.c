@@ -3,7 +3,7 @@
 
 /******************************************************************************
  * @brief Initilization function
- * @param container the target container
+ * @param service the target service
  * @param msg the received message
  * @return None
  ******************************************************************************/

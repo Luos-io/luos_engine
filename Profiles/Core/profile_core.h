@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file Profile 
- * @brief container profile
+ * @brief service profile
  * WARING : This h file should be only included by user code or profile_*.h codes
  * @author Luos
  * @version 0.0.0

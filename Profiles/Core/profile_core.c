@@ -5,9 +5,9 @@
  * @param service
  * @return profile_context pointer
  ******************************************************************************/
-profile_core_t *Luos_GetProfileFromService(service_t *container)
+profile_core_t *Luos_GetProfileFromService(service_t *service)
 {
-    return (profile_core_t *)container->profile_context;
+    return (profile_core_t *)service->profile_context;
 }
 
 /******************************************************************************
