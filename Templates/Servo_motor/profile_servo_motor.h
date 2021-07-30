@@ -22,6 +22,6 @@
  * Function
  ******************************************************************************/
 
-void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo_motor_t *profile_servo_motor);
+void ProfileServoMotor_Handler(service_t *service, msg_t *msg, profile_servo_motor_t *profile_servo_motor);
 
 #endif /* TEMPLATE_CLASS_SERVO_MOTOR_H_ */

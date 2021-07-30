@@ -2,44 +2,44 @@
 #include "profile_voltage.h"
 
 /******************************************************************************
- * @brief Msg Handler call backed by Luos when a msg receive for this container
- * @param Container destination
+ * @brief Msg Handler call backed by Luos when a msg receive for this service
+ * @param Service destination
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void TemplateVoltage_MsgHandler(container_t *container, msg_t *msg)
+static void TemplateVoltage_MsgHandler(service_t *service, msg_t *msg)
 {
-    template_voltage_t *voltage_template = (template_voltage_t *)container->template_context;
-    ProfileVoltage_Handler(container, msg, &voltage_template->profile);
+    template_voltage_t *voltage_template = (template_voltage_t *)service->template_context;
+    ProfileVoltage_Handler(service, msg, &voltage_template->profile);
     if (voltage_template->self != 0)
     {
-        voltage_template->self(container, msg);
+        voltage_template->self(service, msg);
     }
 }
 /******************************************************************************
- * @brief Container creation following the template
- * @param cont_cb is an optional user callback called on every massage for this container
+ * @brief Service creation following the template
+ * @param service_cb is an optional user callback called on every massage for this service
  * @param voltage_template template object pointer
- * @param alias for the container string (15 caracters max).
- * @param revision FW for the container (tab[MajorVersion,MinorVersion,Patch])
+ * @param alias for the service string (15 caracters max).
+ * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
  * @return None
  ******************************************************************************/
-container_t *TemplateVoltage_CreateContainer(CONT_CB cont_cb, template_voltage_t *voltage_template, const char *alias, revision_t revision)
+service_t *TemplateVoltage_CreateService(SERVICE_CB service_cb, template_voltage_t *voltage_template, const char *alias, revision_t revision)
 {
-    voltage_template->self      = cont_cb;
-    container_t *container      = Luos_CreateContainer(TemplateVoltage_MsgHandler, VOLTAGE_TYPE, alias, revision);
-    container->template_context = (void *)voltage_template;
-    container->access           = voltage_template->profile.access;
-    return container;
+    voltage_template->self    = service_cb;
+    service_t *service        = Luos_CreateService(TemplateVoltage_MsgHandler, VOLTAGE_TYPE, alias, revision);
+    service->template_context = (void *)voltage_template;
+    service->access           = voltage_template->profile.access;
+    return service;
 }
 /******************************************************************************
  * @brief function converting Luos messages innto data and reverse.
- * @param container the target container
+ * @param service the target service
  * @param msg the received message
  * @param voltage_profile the profile struct to update
  * @return None
  ******************************************************************************/
-void ProfileVoltage_Handler(container_t *container, msg_t *msg, profile_voltage_t *voltage_profile)
+void ProfileVoltage_Handler(service_t *service, msg_t *msg, profile_voltage_t *voltage_profile)
 {
     if ((msg->header.cmd == GET_CMD) && ((voltage_profile->access == READ_WRITE_ACCESS) || (voltage_profile->access == READ_ONLY_ACCESS)))
     {
@@ -52,12 +52,12 @@ void ProfileVoltage_Handler(container_t *container, msg_t *msg, profile_voltage_
             LUOS_ASSERT(voltage_profile->signal.data_ptr != 0);
             // send back a record stream
             pub_msg.header.cmd = VOLTAGE;
-            Luos_SendStreaming(container, &pub_msg, &voltage_profile->signal);
+            Luos_SendStreaming(service, &pub_msg, &voltage_profile->signal);
         }
         else
         {
             ElectricOD_VoltageToMsg(&voltage_profile->voltage, &pub_msg);
-            Luos_SendMsg(container, &pub_msg);
+            Luos_SendMsg(service, &pub_msg);
         }
     }
     if ((msg->header.cmd == VOLTAGE) && ((voltage_profile->access == READ_WRITE_ACCESS) || (voltage_profile->access == WRITE_ONLY_ACCESS)))
@@ -71,7 +71,7 @@ void ProfileVoltage_Handler(container_t *container, msg_t *msg, profile_voltage_
         {
             LUOS_ASSERT(voltage_profile->signal.data_ptr != 0);
             // this is a signal, save it into ring buffer.
-            Luos_ReceiveStreaming(container, msg, &voltage_profile->signal);
+            Luos_ReceiveStreaming(service, msg, &voltage_profile->signal);
             // values will be converted one by one during trajectory management.
         }
     }

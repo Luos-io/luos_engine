@@ -4,12 +4,12 @@
 #include "luos_hal.h"
 /******************************************************************************
  * @brief function converting Luos messages innto data and reverse.
- * @param container the target container
+ * @param service the target service
  * @param msg the received message
  * @param profile_servo_motor the data struct to update
  * @return None
  ******************************************************************************/
-static void ServoMotorConfig_Handler(container_t *container, msg_t *msg, profile_servo_motor_t *profile_servo_motor)
+static void ServoMotorConfig_Handler(service_t *service, msg_t *msg, profile_servo_motor_t *profile_servo_motor)
 {
     if (msg->header.cmd == PARAMETERS)
     {
@@ -29,49 +29,49 @@ static void ServoMotorConfig_Handler(container_t *container, msg_t *msg, profile
     }
 }
 /******************************************************************************
- * @brief Msg Handler call backed by Luos when a msg receive for this container
- * @param Container destination
+ * @brief Msg Handler call backed by Luos when a msg receive for this service
+ * @param Service destination
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void TemplateServoMotor_MsgHandler(container_t *container, msg_t *msg)
+static void TemplateServoMotor_MsgHandler(service_t *service, msg_t *msg)
 {
-    template_servo_motor_t *servo_motor_template = (template_servo_motor_t *)container->template_context;
-    ServoMotorConfig_Handler(container, msg, &servo_motor_template->profile);
-    ProfileServoMotor_Handler(container, msg, &servo_motor_template->profile);
+    template_servo_motor_t *servo_motor_template = (template_servo_motor_t *)service->template_context;
+    ServoMotorConfig_Handler(service, msg, &servo_motor_template->profile);
+    ProfileServoMotor_Handler(service, msg, &servo_motor_template->profile);
     if (servo_motor_template->self != 0)
     {
-        servo_motor_template->self(container, msg);
+        servo_motor_template->self(service, msg);
     }
 }
 /******************************************************************************
- * @brief Container creation following the template
- * @param cont_cb is an optional user callback called on every massage for this container
+ * @brief Service creation following the template
+ * @param service_cb is an optional user callback called on every massage for this service
  * @param servo_motor_template template object pointer
- * @param alias for the container string (15 caracters max).
- * @param revision FW for the container (tab[MajorVersion,MinorVersion,Patch])
+ * @param alias for the service string (15 caracters max).
+ * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
  * @return None
  ******************************************************************************/
-container_t *TemplateServoMotor_CreateContainer(CONT_CB cont_cb, template_servo_motor_t *servo_motor_template, const char *alias, revision_t revision)
+service_t *TemplateServoMotor_CreateService(SERVICE_CB service_cb, template_servo_motor_t *servo_motor_template, const char *alias, revision_t revision)
 {
-    servo_motor_template->self = cont_cb;
+    servo_motor_template->self = service_cb;
     // copy motor specific configuration into motor object
     servo_motor_template->profile.motor.mode.current        = servo_motor_template->profile.mode.current;
     servo_motor_template->profile.motor.mode.mode_compliant = servo_motor_template->profile.mode.mode_compliant;
     servo_motor_template->profile.motor.mode.temperature    = servo_motor_template->profile.mode.temperature;
 
-    container_t *container      = Luos_CreateContainer(TemplateServoMotor_MsgHandler, SERVO_MOTOR_TYPE, alias, revision);
-    container->template_context = (void *)servo_motor_template;
-    return container;
+    service_t *service        = Luos_CreateService(TemplateServoMotor_MsgHandler, SERVO_MOTOR_TYPE, alias, revision);
+    service->template_context = (void *)servo_motor_template;
+    return service;
 }
 /******************************************************************************
  * @brief function converting Luos messages innto data and reverse.
- * @param container the target container
+ * @param service the target service
  * @param msg the received message
  * @param servo_motor_profile the data struct to update
  * @return None
  ******************************************************************************/
-void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo_motor_t *servo_motor_profile)
+void ProfileServoMotor_Handler(service_t *service, msg_t *msg, profile_servo_motor_t *servo_motor_profile)
 {
     switch (msg->header.cmd)
     {
@@ -88,30 +88,30 @@ void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo
                     LUOS_ASSERT(servo_motor_profile->measurement.data_ptr != 0);
                     // send back a record stream
                     pub_msg.header.cmd = ANGULAR_POSITION;
-                    Luos_SendStreaming(container, &pub_msg, &servo_motor_profile->measurement);
+                    Luos_SendStreaming(service, &pub_msg, &servo_motor_profile->measurement);
                 }
                 else
                 {
                     LuosHAL_SetIrqState(false);
                     AngularOD_PositionToMsg((angular_position_t *)&servo_motor_profile->angular_position, &pub_msg);
                     LuosHAL_SetIrqState(true);
-                    Luos_SendMsg(container, &pub_msg);
+                    Luos_SendMsg(service, &pub_msg);
                 }
             }
             if (servo_motor_profile->mode.angular_speed)
             {
                 AngularOD_SpeedToMsg((angular_speed_t *)&servo_motor_profile->angular_speed, &pub_msg);
-                Luos_SendMsg(container, &pub_msg);
+                Luos_SendMsg(service, &pub_msg);
             }
             if (servo_motor_profile->mode.linear_position)
             {
                 LinearOD_PositionToMsg((linear_position_t *)&servo_motor_profile->linear_position, &pub_msg);
-                Luos_SendMsg(container, &pub_msg);
+                Luos_SendMsg(service, &pub_msg);
             }
             if (servo_motor_profile->mode.linear_speed)
             {
                 LinearOD_SpeedToMsg((linear_speed_t *)&servo_motor_profile->linear_speed, &pub_msg);
-                Luos_SendMsg(container, &pub_msg);
+                Luos_SendMsg(service, &pub_msg);
             }
         }
         break;
@@ -178,7 +178,7 @@ void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo
                 {
                     LUOS_ASSERT(servo_motor_profile->trajectory.data_ptr != 0);
                     // this is a trajectory, save it into streaming channel.
-                    Luos_ReceiveStreaming(container, msg, &servo_motor_profile->trajectory);
+                    Luos_ReceiveStreaming(service, msg, &servo_motor_profile->trajectory);
                 }
             }
         }
@@ -208,7 +208,7 @@ void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo
             {
                 LUOS_ASSERT(servo_motor_profile->trajectory.data_ptr != 0);
                 // this is a trajectory, save it into ring buffer.
-                Luos_ReceiveStreaming(container, msg, &servo_motor_profile->trajectory);
+                Luos_ReceiveStreaming(service, msg, &servo_motor_profile->trajectory);
                 // values will be converted one by one during trajectory management.
             }
         }
@@ -274,5 +274,5 @@ void ProfileServoMotor_Handler(container_t *container, msg_t *msg, profile_servo
         }
         break;
     }
-    ProfileMotor_Handler(container, msg, &servo_motor_profile->motor);
+    ProfileMotor_Handler(service, msg, &servo_motor_profile->motor);
 }

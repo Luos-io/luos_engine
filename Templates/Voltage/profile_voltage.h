@@ -22,6 +22,6 @@
  * Function
  ******************************************************************************/
 
-void ProfileVoltage_Handler(container_t *container, msg_t *msg, profile_voltage_t *voltage_profile);
+void ProfileVoltage_Handler(service_t *service, msg_t *msg, profile_voltage_t *voltage_profile);
 
 #endif /* TEMPLATE_CLASS_VOLTAGE_H_ */

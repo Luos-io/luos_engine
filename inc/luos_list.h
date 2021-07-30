@@ -40,9 +40,9 @@ typedef enum
     NODE_UUID,                   // luos_uuid_t
 
     // Revision management
-    REVISION,        // container sends its firmware revision
-    LUOS_REVISION,   // container sends its luos revision
-    LUOS_STATISTICS, // container sends its luos revision
+    REVISION,        // service sends its firmware revision
+    LUOS_REVISION,   // service sends its luos revision
+    LUOS_STATISTICS, // service sends its luos revision
 
     // bootloader command and response
     BOOTLOADER_CMD,
@@ -50,9 +50,9 @@ typedef enum
 
     // ************* End of Luos managed commands ****************
 
-    // Common register for all containers
-    GET_CMD,               // asks a container to publish its data
-    SET_CMD,               // set some undefined data
+    // Common register for all services
+    GET_CMD, // asks a service to publish its data
+    SET_CMD, // set some undefined data
 
     // Generic data
     COLOR,       // color_t (R, G, B)
@@ -106,8 +106,8 @@ typedef enum
     TEMPERATURE_LIMIT,      // Max temperature_t (°C)
 
     // Specific register
-    PARAMETERS,         // depend on the container, can be : servo_parameters_t, imu_report_t, motor_mode_t
-    ERROR_CMD, 
+    PARAMETERS, // depend on the service, can be : servo_parameters_t, imu_report_t, motor_mode_t
+    ERROR_CMD,
 
     // compatibility area
     LUOS_PROTOCOL_NB,
