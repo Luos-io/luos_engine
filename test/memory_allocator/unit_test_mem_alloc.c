@@ -186,7 +186,7 @@ void unittest_MsgAlloc_InvalidMsg()
             // Init variables
             //---------------
             current_msg = (msg_t *)&msg_buffer[i];
-            reset_assert();
+            RESET_ASSERT();
 
             // Call function
             //---------------
@@ -194,7 +194,7 @@ void unittest_MsgAlloc_InvalidMsg()
 
             // Verify
             //---------------
-            TEST_ASSERT_FALSE(is_assert());
+            TEST_ASSERT_FALSE(IS_ASSERT());
         }
 
         NEW_STEP();
@@ -203,7 +203,7 @@ void unittest_MsgAlloc_InvalidMsg()
             // Init variables
             //---------------
             current_msg = (msg_t *)&msg_buffer[i];
-            reset_assert();
+            RESET_ASSERT();
 
             // Call function
             //---------------
@@ -211,9 +211,9 @@ void unittest_MsgAlloc_InvalidMsg()
 
             // Verify
             //---------------
-            TEST_ASSERT_TRUE(is_assert());
+            TEST_ASSERT_TRUE(IS_ASSERT());
         }
-        reset_assert();
+        RESET_ASSERT();
     }
 
     NEW_TEST_CASE("\t* Check pointers values after invaliding a message");
@@ -413,7 +413,7 @@ void unittest_MsgAlloc_EndMsg()
         // Launch test
         for (uint8_t i = 0; i < assert_nb; i++)
         {
-            reset_assert();
+            RESET_ASSERT();
             // Init variables
             //---------------
             current_msg                   = (msg_t *)&msg_buffer[0];
@@ -428,11 +428,11 @@ void unittest_MsgAlloc_EndMsg()
             // Verify
             //---------------
             NEW_STEP();
-            TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, is_assert());
+            TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, IS_ASSERT());
         }
-        reset_assert();
+        RESET_ASSERT();
     }
-    reset_assert();
+    RESET_ASSERT();
 
     NEW_TEST_CASE("\t* Prepare the next message : update pointers");
     MsgAlloc_Init(NULL);
@@ -455,13 +455,13 @@ void unittest_MsgAlloc_EndMsg()
 
         // Call function
         //---------------
-        reset_assert();
+        RESET_ASSERT();
         MsgAlloc_EndMsg();
 
         // Verify
         //---------------
         NEW_STEP();
-        TEST_ASSERT_EQUAL(false, is_assert());
+        TEST_ASSERT_EQUAL(false, IS_ASSERT());
         NEW_STEP();
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
         NEW_STEP();
@@ -666,9 +666,9 @@ void unittest_MsgAlloc_PullMsgToInterpret()
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
             msg_tasks_stack_id = MAX_MSG_NB;
-            reset_assert();
+            RESET_ASSERT();
             result = MsgAlloc_PullMsgToInterpret(&returned_msg);
-            TEST_ASSERT_FALSE(is_assert());
+            TEST_ASSERT_FALSE(IS_ASSERT());
             TEST_ASSERT_EQUAL(SUCCEED, result);
             TEST_ASSERT_EQUAL(expected_message[i], returned_msg);
         }
@@ -1169,26 +1169,26 @@ void unittest_MsgAlloc_PullMsgFromTxTask()
         for (uint16_t i = 0; i < MAX_MSG_NB + 2; i++)
         {
             MsgAlloc_Init(NULL);
-            reset_assert();
+            RESET_ASSERT();
             tx_tasks_stack_id = i;
 
             if (tx_tasks_stack_id == 0)
             {
                 MsgAlloc_PullMsgFromTxTask();
-                TEST_ASSERT_TRUE(is_assert());
+                TEST_ASSERT_TRUE(IS_ASSERT());
             }
             else if (tx_tasks_stack_id > MAX_MSG_NB)
             {
                 MsgAlloc_PullMsgFromTxTask();
-                TEST_ASSERT_TRUE(is_assert());
+                TEST_ASSERT_TRUE(IS_ASSERT());
             }
             else
             {
                 MsgAlloc_PullMsgFromTxTask();
-                TEST_ASSERT_FALSE(is_assert());
+                TEST_ASSERT_FALSE(IS_ASSERT());
             }
         }
-        reset_assert();
+        RESET_ASSERT();
     }
 
     NEW_TEST_CASE("\t* Pull Tx message task");
@@ -1249,21 +1249,21 @@ void unittest_MsgAlloc_PullContainerFromTxTask()
         for (uint16_t i = 0; i < MAX_MSG_NB + 2; i++)
         {
             MsgAlloc_Init(NULL);
-            reset_assert();
+            RESET_ASSERT();
             tx_tasks_stack_id = i;
 
             if (tx_tasks_stack_id == 0)
             {
                 MsgAlloc_PullContainerFromTxTask(container_id);
-                TEST_ASSERT_TRUE(is_assert());
+                TEST_ASSERT_TRUE(IS_ASSERT());
             }
             else if (tx_tasks_stack_id > MAX_MSG_NB)
             {
                 MsgAlloc_PullContainerFromTxTask(container_id);
-                TEST_ASSERT_TRUE(is_assert());
+                TEST_ASSERT_TRUE(IS_ASSERT());
             }
         }
-        reset_assert();
+        RESET_ASSERT();
     }
 
     NEW_TEST_CASE("\t* Remove Tx tasks from a container");
@@ -1325,7 +1325,7 @@ void unittest_MsgAlloc_GetTxTask()
 
         // Init variables
         //---------------
-        reset_assert();
+        RESET_ASSERT();
         tx_tasks_stack_id = MAX_MSG_NB;
 
         // Call function
@@ -1333,11 +1333,11 @@ void unittest_MsgAlloc_GetTxTask()
         MsgAlloc_GetTxTask(&ll_container, &data, size, localhost);
 
         NEW_STEP();
-        TEST_ASSERT_TRUE(is_assert());
+        TEST_ASSERT_TRUE(IS_ASSERT());
 
         // Init variables
         //---------------
-        reset_assert();
+        RESET_ASSERT();
         tx_tasks_stack_id = MAX_MSG_NB + 1;
 
         // Call function
@@ -1347,9 +1347,9 @@ void unittest_MsgAlloc_GetTxTask()
         // Verify
         //---------------
         NEW_STEP();
-        TEST_ASSERT_TRUE(is_assert());
+        TEST_ASSERT_TRUE(IS_ASSERT());
 
-        reset_assert();
+        RESET_ASSERT();
     }
 
     NEW_TEST_CASE("\t* Verify there are no messages");
@@ -1427,7 +1427,7 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
-    assert_activation(1);
+    ASSERT_ACTIVATION(1);
 
     UNIT_TEST_RUN(unittest_MsgAlloc_loop);
     UNIT_TEST_RUN(unittest_MsgAlloc_ValidHeader);

@@ -9,9 +9,9 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void reset_assert(void);
-void assert_activation(uint8_t activation);
-bool is_assert(void);
+void RESET_ASSERT(void);
+void ASSERT_ACTIVATION(uint8_t activation);
+bool IS_ASSERT(void);
 void UNIT_TEST_RUN(void (*function)());
 void NEW_TEST_CASE(char *title);
 void NEW_STEP();

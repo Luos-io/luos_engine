@@ -37,11 +37,11 @@ void unittest_SetTxTask_buffer_full()
         //---------------------------
         for (uint16_t i = MAX_MSG_NB - 1; i < MAX_MSG_NB + 2; i++)
         {
-            reset_assert();
+            RESET_ASSERT();
             NEW_STEP();
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, &dummy_data, crc, size, localhost, ack));
             NEW_STEP();
-            TEST_ASSERT_FALSE(is_assert());
+            TEST_ASSERT_FALSE(IS_ASSERT());
         }
     }
 }
@@ -97,11 +97,11 @@ void unittest_SetTxTask_Tx_too_long_1()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
@@ -154,11 +154,11 @@ void unittest_SetTxTask_Tx_too_long_1()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
@@ -211,11 +211,11 @@ void unittest_SetTxTask_Tx_too_long_1()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 
@@ -270,11 +270,11 @@ void unittest_SetTxTask_Tx_too_long_2()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
@@ -324,11 +324,11 @@ void unittest_SetTxTask_Tx_too_long_2()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
@@ -381,11 +381,11 @@ void unittest_SetTxTask_Tx_too_long_2()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_Tx_too_long_3()
@@ -472,11 +472,11 @@ void unittest_SetTxTask_Tx_too_long_3()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -562,11 +562,11 @@ void unittest_SetTxTask_Rx_too_long_1()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
@@ -612,11 +612,11 @@ void unittest_SetTxTask_Rx_too_long_1()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
@@ -662,11 +662,11 @@ void unittest_SetTxTask_Rx_too_long_1()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_Rx_too_long_2()
@@ -714,11 +714,11 @@ void unittest_SetTxTask_Rx_too_long_2()
         tx_tasks_stack_id          = 1;
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 
@@ -767,11 +767,11 @@ void unittest_SetTxTask_Rx_too_long_3()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_Rx_too_long_4()
@@ -848,11 +848,11 @@ void unittest_SetTxTask_Rx_too_long_4()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -939,11 +939,11 @@ void unittest_SetTxTask_Task_already_exists()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_copy_OK()
@@ -1025,12 +1025,12 @@ void unittest_SetTxTask_copy_OK()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED,
                           MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1148,11 +1148,11 @@ void unittest_SetTxTask_copy_OK()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1269,11 +1269,11 @@ void unittest_SetTxTask_copy_OK()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1387,12 +1387,12 @@ void unittest_SetTxTask_copy_OK()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED,
                           MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1510,11 +1510,11 @@ void unittest_SetTxTask_ACK()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1635,11 +1635,11 @@ void unittest_SetTxTask_internal_localhost()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1766,11 +1766,11 @@ void unittest_SetTxTask_multihost()
 
         // Call function and Verify
         //---------------------------
-        reset_assert();
+        RESET_ASSERT();
         NEW_STEP();
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
         NEW_STEP();
@@ -1823,7 +1823,7 @@ void unittest_SetTxTask_assert()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    assert_activation(1);
+    ASSERT_ACTIVATION(1);
 
     UNIT_TEST_RUN(unittest_SetTxTask_buffer_full);
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_1);

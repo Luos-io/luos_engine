@@ -114,11 +114,11 @@ void unittest_BufferAvailableSpaceComputation(void)
         // Launch test
         for (uint8_t i = 0; i < assert_nb; i++)
         {
-            reset_assert();
+            RESET_ASSERT();
             oldest_msg = assert_sc[i].oldest_msg_position;
             MsgAlloc_BufferAvailableSpaceComputation();
             NEW_STEP();
-            TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, is_assert());
+            TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, IS_ASSERT());
         }
     }
 
@@ -143,7 +143,7 @@ void unittest_BufferAvailableSpaceComputation(void)
                 // Test is launched only if "data_end_estimation" doesn't overflows "msg_buffer" size
                 if (data_end_estimation < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
                 {
-                    reset_assert();
+                    RESET_ASSERT();
                     remaining_datas = (uint32_t)data_end_estimation - (uint32_t)current_msg;
                     expected_size   = MSG_BUFFER_SIZE - remaining_datas;
                     // Call function
@@ -152,7 +152,7 @@ void unittest_BufferAvailableSpaceComputation(void)
 
                     // Verify
                     //---------------
-                    TEST_ASSERT_FALSE(is_assert());
+                    TEST_ASSERT_FALSE(IS_ASSERT());
                     TEST_ASSERT_EQUAL(expected_size, free_space);
 
                     data_end_estimation++;
@@ -192,10 +192,10 @@ void unittest_BufferAvailableSpaceComputation(void)
             {
                 if ((uint32_t)oldest_msg > (uint32_t)data_end_estimation)
                 {
-                    reset_assert();
+                    RESET_ASSERT();
                     expected_size = (uint32_t)oldest_msg - (uint32_t)data_end_estimation;
                     free_space    = MsgAlloc_BufferAvailableSpaceComputation();
-                    TEST_ASSERT_FALSE(is_assert());
+                    TEST_ASSERT_FALSE(IS_ASSERT());
                     TEST_ASSERT_EQUAL(expected_size, free_space);
                 }
                 //oldest_msg++;
@@ -233,12 +233,12 @@ void unittest_BufferAvailableSpaceComputation(void)
             {
                 if ((uint32_t)oldest_msg < (uint32_t)data_end_estimation)
                 {
-                    reset_assert();
+                    RESET_ASSERT();
                     expected_size = (uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)data_end_estimation;
                     expected_size += (uint32_t)oldest_msg - (uint32_t)&msg_buffer[0];
                     free_space = MsgAlloc_BufferAvailableSpaceComputation();
 
-                    TEST_ASSERT_FALSE(is_assert());
+                    TEST_ASSERT_FALSE(IS_ASSERT());
                     TEST_ASSERT_EQUAL(expected_size, free_space);
                 }
                 oldest_msg = (msg_t *)&msg_buffer[j + 1];
@@ -280,11 +280,11 @@ void unittest_OldestMsgCandidate(void)
         // Launch test
         for (uint8_t i = 0; i < assert_nb; i++)
         {
-            reset_assert();
+            RESET_ASSERT();
             MsgAlloc_OldestMsgCandidate(assert_sc[i].oldest_stack_msg_pt);
 
             NEW_STEP();
-            TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, is_assert());
+            TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, IS_ASSERT());
         }
     }
 
@@ -304,11 +304,11 @@ void unittest_OldestMsgCandidate(void)
         volatile msg_t *expected_oldest_msg = oldest_msg;
         msg_t *oldest_stack_msg_pt          = NULL;
 
-        reset_assert();
+        RESET_ASSERT();
         MsgAlloc_OldestMsgCandidate(oldest_stack_msg_pt);
 
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
         NEW_STEP();
         TEST_ASSERT_EQUAL(expected_oldest_msg, oldest_msg);
     }
@@ -365,11 +365,11 @@ void unittest_ValidDataIntegrity(void)
 
         memset((void *)&msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
         memset((void *)&expected_msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
-        reset_assert();
+        RESET_ASSERT();
         MsgAlloc_ValidDataIntegrity();
 
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
         NEW_STEP();
         TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, MSG_BUFFER_SIZE);
     }
@@ -401,11 +401,11 @@ void unittest_ValidDataIntegrity(void)
         memset((void *)&msg_buffer[sizeof(msg_t)], 1, sizeof(header_t));
         memset((void *)&expected_msg_buffer[0], 1, sizeof(header_t));
 
-        reset_assert();
+        RESET_ASSERT();
         MsgAlloc_ValidDataIntegrity();
 
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
         NEW_STEP();
         TEST_ASSERT_EQUAL(copy_task_pointer, NULL);
         NEW_STEP();
@@ -418,11 +418,11 @@ void unittest_ValidDataIntegrity(void)
         mem_clear_needed    = 1;
         current_msg         = (msg_t *)&msg_buffer[0];
         data_end_estimation = (uint8_t *)(current_msg + 1);
-        reset_assert();
+        RESET_ASSERT();
         MsgAlloc_ValidDataIntegrity();
 
         NEW_STEP();
-        TEST_ASSERT_FALSE(is_assert());
+        TEST_ASSERT_FALSE(IS_ASSERT());
         NEW_STEP();
         TEST_ASSERT_EQUAL(0, mem_clear_needed);
         // No more TEST_ASSERT needed as MsgAlloc_ClearMsgSpace has already been tested
@@ -806,7 +806,7 @@ void unittest_ClearMsgTask(void)
         NEW_STEP();
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
-            TEST_ASSERT_FALSE(is_assert());
+            TEST_ASSERT_FALSE(IS_ASSERT());
             TEST_ASSERT_EQUAL(expected_msg_tasks[i], msg_tasks[i]);
         }
         TEST_ASSERT_EQUAL(MAX_MSG_NB - 1, msg_tasks_stack_id);
@@ -828,16 +828,16 @@ void unittest_ClearLuosTask(void)
             for (uint16_t j = 0; j <= MAX_MSG_NB + 2; j++)
             {
                 luos_task_id = j;
-                reset_assert();
+                RESET_ASSERT();
                 if ((luos_task_id >= luos_tasks_stack_id) || (luos_tasks_stack_id > MAX_MSG_NB))
                 {
                     MsgAlloc_ClearLuosTask(luos_task_id);
-                    TEST_ASSERT_TRUE(is_assert());
+                    TEST_ASSERT_TRUE(IS_ASSERT());
                 }
                 else
                 {
                     MsgAlloc_ClearLuosTask(luos_task_id);
-                    TEST_ASSERT_FALSE(is_assert());
+                    TEST_ASSERT_FALSE(IS_ASSERT());
                 }
             }
         }
@@ -881,7 +881,7 @@ void unittest_ClearLuosTask(void)
 
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
 
-        assert_activation(0);
+        ASSERT_ACTIVATION(0);
 
         NEW_STEP();
         for (uint16_t task_id = 0; task_id < MAX_MSG_NB; task_id++)
@@ -917,7 +917,7 @@ void unittest_ClearLuosTask(void)
                 }
 
                 // Launch test
-                reset_assert();
+                RESET_ASSERT();
                 MsgAlloc_ClearLuosTask(task_id);
 
                 // Analyze test results
@@ -928,7 +928,7 @@ void unittest_ClearLuosTask(void)
                 }
             }
         }
-        assert_activation(1);
+        ASSERT_ACTIVATION(1);
     }
 }
 
@@ -936,7 +936,7 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
-    assert_activation(1);
+    ASSERT_ACTIVATION(1);
 
     UNIT_TEST_RUN(unittest_DoWeHaveSpace);
     UNIT_TEST_RUN(unittest_CheckMsgSpace);

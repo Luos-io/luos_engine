@@ -70,7 +70,7 @@ void NEW_STEP()
  * @param None
  * @return True boolean if an assert has occured
  ******************************************************************************/
-bool is_assert(void)
+bool IS_ASSERT(void)
 {
     if ((ut_assert.enable == 1) && (ut_assert.state == 1))
     {
@@ -116,7 +116,7 @@ bool is_assert(void)
  * @param None
  * @return None
  ******************************************************************************/
-void reset_assert(void)
+void RESET_ASSERT(void)
 {
     ut_assert.state = 0;
 }
@@ -126,7 +126,7 @@ void reset_assert(void)
  * @param activation : Set to 1 to activate asserts
  * @return None
  ******************************************************************************/
-void assert_activation(uint8_t activation)
+void ASSERT_ACTIVATION(uint8_t activation)
 {
     if (activation)
     {
@@ -136,5 +136,5 @@ void assert_activation(uint8_t activation)
     {
         ut_assert.enable = 0;
     }
-    reset_assert();
+    RESET_ASSERT();
 }
