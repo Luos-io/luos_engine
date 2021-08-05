@@ -1,6 +1,3 @@
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include "../test/unit_test.h"
 #include "../Robus/inc/robus_struct.h"
 #include "../src/msg_alloc.c"
@@ -17,9 +14,23 @@
 void unittest_SetTxTask_buffer_full()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Check if TX message buffer stack is full");
+    NEW_TEST_CASE("Check if TX message buffer stack is full");
     MsgAlloc_Init(NULL);
     {
+        // tx_tasks_stack_id = MAX_MSG_NB
+        //
+        //          tx_tasks init state
+        //
+        //             +---------+
+        //             |  Tx 1   |
+        //             |---------|
+        //             |  Tx 2   |
+        //             |---------|
+        //             |  etc... |
+        //             |---------|
+        //             |  Tx 10  |
+        //             +---------+<--tx_tasks_stack_id
+
         error_return_t result;
         uint8_t *data;
         ll_container_t *ll_container_pt;
@@ -38,9 +49,9 @@ void unittest_SetTxTask_buffer_full()
         for (uint16_t i = MAX_MSG_NB - 1; i < MAX_MSG_NB + 2; i++)
         {
             RESET_ASSERT();
-            NEW_STEP();
+            NEW_STEP_IN_LOOP("Function returns FAILED when \"tx tasks stack id\" overflows", i - (MAX_MSG_NB - 1));
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, &dummy_data, crc, size, localhost, ack));
-            NEW_STEP();
+            NEW_STEP_IN_LOOP("Check NO assert has occured", i - (MAX_MSG_NB - 1));
             TEST_ASSERT_FALSE(IS_ASSERT());
         }
     }
@@ -49,9 +60,9 @@ void unittest_SetTxTask_buffer_full()
 void unittest_SetTxTask_Tx_too_long_1()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in msg buffer");
-    printf("\t* Tx size > Rx size received \n");
-    printf("\t* There is already a task in memory\n");
+    NEW_TEST_CASE("Tx message doesn't fit in msg buffer\n"
+                  "Tx size > Rx size received \n"
+                  "There is already a task in memory\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -98,16 +109,16 @@ void unittest_SetTxTask_Tx_too_long_1()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED when there is already a task in memory");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in msg buffer");
-    printf("\t* Rx size received > Tx size\n");
-    printf("\t* There is already a task in memory\n");
+    NEW_TEST_CASE("Tx message doesn't fit in msg buffer\n"
+                  "Rx size received > Tx size\n"
+                  "There is already a task in memory\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -155,16 +166,16 @@ void unittest_SetTxTask_Tx_too_long_1()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED when there is already a task in memory");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in msg buffer");
-    printf("\t* Rx size received = Tx size\n");
-    printf("\t* There is already a task in memory\n");
+    NEW_TEST_CASE("Tx message doesn't fit in msg buffer\n"
+                  "Rx size received = Tx size\n"
+                  "There is already a task in memory\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -212,9 +223,9 @@ void unittest_SetTxTask_Tx_too_long_1()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED when there is already a task in memory");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
@@ -222,9 +233,9 @@ void unittest_SetTxTask_Tx_too_long_1()
 void unittest_SetTxTask_Tx_too_long_2()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in msg buffer");
-    printf("\t* Tx size > Rx size received\n");
-    printf("\t* There is already a task at begin of message buffer\n");
+    NEW_TEST_CASE("Tx message doesn't fit in msg buffer\n"
+                  "Tx size > Rx size received\n"
+                  "There is already a task at begin of message buffer\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -271,16 +282,16 @@ void unittest_SetTxTask_Tx_too_long_2()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED when there is already a task at begin of message buffer");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in msg buffer");
-    printf("\t* Rx size received > Tx size\n");
-    printf("\t* There is already a task at begin of message buffer\n");
+    NEW_TEST_CASE("Tx message doesn't fit in msg buffer\n"
+                  "Rx size received > Tx size\n"
+                  "There is already a task at begin of message buffer\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -325,16 +336,16 @@ void unittest_SetTxTask_Tx_too_long_2()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED when there is already a task at begin of message buffer");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in msg buffer");
-    printf("\t* Rx size received = Tx size\n");
-    printf("\t* There is already a task at begin of message buffer\n");
+    NEW_TEST_CASE("Tx message doesn't fit in msg buffer\n"
+                  "Rx size received = Tx size\n"
+                  "There is already a task at begin of message buffer\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -382,18 +393,18 @@ void unittest_SetTxTask_Tx_too_long_2()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED when there is already a task at begin of message buffer");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_Tx_too_long_3()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message doesn't fit in message buffer");
-    printf("\t* Tx size > Rx size received \n");
-    printf("\t* There is space at begin of message buffer\n");
+    NEW_TEST_CASE("Tx message doesn't fit in message buffer\n"
+                  "Tx size > Rx size received \n"
+                  "There is space at begin of message buffer\n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -473,30 +484,30 @@ void unittest_SetTxTask_Tx_too_long_3()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)msg_buffer, tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -509,16 +520,18 @@ void unittest_SetTxTask_Tx_too_long_3()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, msg_buffer, tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, msg_buffer + tx_size, rx_bytes_received);
     }
 }
 void unittest_SetTxTask_Rx_too_long_1()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message fits in msg buffer");
-    printf("\t* Tx size + Rx size received doesn't fit msg buffer\n");
-    printf("\t* Tx size > Rx size received \n");
+    NEW_TEST_CASE("Tx message fits in msg buffer\n"
+                  "Tx size + Rx size received doesn't fit msg buffer\n"
+                  "Tx size > Rx size received \n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -563,16 +576,16 @@ void unittest_SetTxTask_Rx_too_long_1()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message fits in msg buffer");
-    printf("\t* Tx size + Rx size received doesn't fit msg buffer\n");
-    printf("\t* Rx size received > Tx size \n");
+    NEW_TEST_CASE("Tx message fits in msg buffer\n"
+                  "Tx size + Rx size received doesn't fit msg buffer\n"
+                  "Rx size received > Tx size \n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -613,16 +626,16 @@ void unittest_SetTxTask_Rx_too_long_1()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message fits in msg buffer");
-    printf("\t* Tx size + Rx size received doesn't fit msg buffer\n");
-    printf("\t* Rx size received = Tx size \n");
+    NEW_TEST_CASE("Tx message fits in msg buffer\n"
+                  "Tx size + Rx size received doesn't fit msg buffer\n"
+                  "Rx size received = Tx size \n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -663,18 +676,18 @@ void unittest_SetTxTask_Rx_too_long_1()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Function returns FAILED");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_Rx_too_long_2()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message fits in msg buffer");
-    printf("\t* Tx size + Rx size received doesn't fit msg buffer\n");
-    printf("\t* There is a Task \n");
+    NEW_TEST_CASE("Tx message fits in msg buffer\n"
+                  "Tx size + Rx size received doesn't fit msg buffer\n"
+                  "There is a Task \n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -715,9 +728,9 @@ void unittest_SetTxTask_Rx_too_long_2()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns FAILED when Tx + Rx size doesn't fit msg buffer and a task is in requested memory");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
@@ -725,9 +738,9 @@ void unittest_SetTxTask_Rx_too_long_2()
 void unittest_SetTxTask_Rx_too_long_3()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx message fits in msg buffer");
-    printf("\t* Tx size + Rx size received doesn't fit msg buffer\n");
-    printf("\t* There is already a task at begin of message buffer\n");
+    NEW_TEST_CASE("Tx message fits in msg buffer\n"
+                  "Tx size + Rx size received doesn't fit msg buffer\n"
+                  "There is already a task at begin of message buffer\n");
     MsgAlloc_Init(NULL);
     {
         error_return_t result;
@@ -768,17 +781,17 @@ void unittest_SetTxTask_Rx_too_long_3()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns FAILED when Tx + Rx size doesn't fit msg buffer and a task is in memory beginning");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_Rx_too_long_4()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx + Rx messages doesn't in message buffer");
-    printf("\t* There is space at begin of message buffer\n");
+    NEW_TEST_CASE("Tx + Rx messages doesn't in message buffer\n"
+                  "There is space at begin of message buffer\n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -849,30 +862,30 @@ void unittest_SetTxTask_Rx_too_long_4()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size + 1)], tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -885,15 +898,17 @@ void unittest_SetTxTask_Rx_too_long_4()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, &msg_buffer[MSG_BUFFER_SIZE - (tx_size + 1)], tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, msg_buffer, rx_bytes_received);
     }
 }
 void unittest_SetTxTask_Task_already_exists()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx + Rx messages fit in message buffer");
-    printf("\t* There is already a task in memory\n");
+    NEW_TEST_CASE("Tx + Rx messages fit in message buffer\n"
+                  "There is already a task in memory\n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -940,17 +955,17 @@ void unittest_SetTxTask_Task_already_exists()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns FAILED when  a task is in memory");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
 }
 void unittest_SetTxTask_copy_OK()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx and Rx messages fit in message buffer");
-    printf("\t* Tx size > Rx size received \n");
+    NEW_TEST_CASE("Tx and Rx messages fit in message buffer\n"
+                  "Tx size > Rx size received \n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1026,31 +1041,30 @@ void unittest_SetTxTask_copy_OK()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
-        TEST_ASSERT_EQUAL(SUCCEED,
-                          MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1063,13 +1077,15 @@ void unittest_SetTxTask_copy_OK()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size, rx_bytes_received);
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx and Rx messages fit in message buffer");
-    printf("\t* Rx size received > Tx size\n");
+    NEW_TEST_CASE("Tx and Rx messages fit in message buffer\n"
+                  "Rx size received > Tx size\n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1149,30 +1165,30 @@ void unittest_SetTxTask_copy_OK()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1185,13 +1201,15 @@ void unittest_SetTxTask_copy_OK()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size + padding, rx_bytes_received);
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx and Rx messages fit in message buffer");
-    printf("\t* Tx size = Rx size received\n");
+    NEW_TEST_CASE("Tx and Rx messages fit in message buffer\n"
+                  "Tx size = Rx size received\n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1270,30 +1288,30 @@ void unittest_SetTxTask_copy_OK()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1311,8 +1329,8 @@ void unittest_SetTxTask_copy_OK()
     }
 
     //**************************************************************
-    NEW_TEST_CASE("\t* Tx and Rx messages fit in message buffer");
-    printf("\t* Rx size received less than a header\n");
+    NEW_TEST_CASE("Tx and Rx messages fit in message buffer\n"
+                  "Rx size received less than a header\n");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1388,31 +1406,30 @@ void unittest_SetTxTask_copy_OK()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
-        TEST_ASSERT_EQUAL(SUCCEED,
-                          MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1425,7 +1442,9 @@ void unittest_SetTxTask_copy_OK()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size, rx_bytes_received);
     }
 }
@@ -1433,7 +1452,7 @@ void unittest_SetTxTask_copy_OK()
 void unittest_SetTxTask_ACK()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Ack transmission");
+    NEW_TEST_CASE("Ack transmission");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1511,30 +1530,30 @@ void unittest_SetTxTask_ACK()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is incremented to 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1547,8 +1566,11 @@ void unittest_SetTxTask_ACK()
 #endif
 
         // Check messages
-        TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE - 1);
+        NEW_STEP("Check ACK : good value in good memory position");
         TEST_ASSERT_EQUAL(ack, msg_buffer[MSG_START + tx_size - 1]); // Ack
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
+        TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE - 1);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size, rx_bytes_received);
     }
 }
@@ -1556,7 +1578,7 @@ void unittest_SetTxTask_ACK()
 void unittest_SetTxTask_internal_localhost()
 {
     //**************************************************************
-    NEW_TEST_CASE("\t* Internal Localhost");
+    NEW_TEST_CASE("Internal Localhost");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1636,37 +1658,37 @@ void unittest_SetTxTask_internal_localhost()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" = 1");
         TEST_ASSERT_EQUAL(1, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check \"message tasks stack id\" = 1");
         TEST_ASSERT_EQUAL(1, msg_tasks_stack_id);
 
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks is void
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_NULL(tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_NULL(tx_tasks[tx_tasks_stack_id].data_pt);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" = 0");
         TEST_ASSERT_EQUAL(0, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check \"localhost\" is not allocated");
         TEST_ASSERT_EQUAL(0, tx_tasks[tx_tasks_stack_id].localhost);
 
         // Check Message Tasks
-        NEW_STEP();
+        NEW_STEP("Check \"message tasks\" points to expected message");
         TEST_ASSERT_EQUAL((msg_t *)&msg_buffer[MSG_START], msg_tasks[msg_tasks_stack_id - 1]);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1679,14 +1701,16 @@ void unittest_SetTxTask_internal_localhost()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size, rx_bytes_received);
     }
 }
 
 void unittest_SetTxTask_multihost()
 { //**************************************************************
-    NEW_TEST_CASE("\t* MultiHost");
+    NEW_TEST_CASE("MultiHost");
     MsgAlloc_Init(NULL);
     memset((void *)msg_buffer, 0, sizeof(msg_buffer));
     {
@@ -1767,35 +1791,35 @@ void unittest_SetTxTask_multihost()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         // Check pointers
-        NEW_STEP();
+        NEW_STEP("Check \"tx tasks stack id\" is double incremented");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id); // 2 incrementations : 1 for tx_tasks + 1 for message_tasks
-        NEW_STEP();
+        NEW_STEP("Check \"message tasks stack id\" = 1");
         TEST_ASSERT_EQUAL(1, msg_tasks_stack_id);
 
-        NEW_STEP();
+        NEW_STEP("Check \"current message\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_current_msg, current_msg);
-        NEW_STEP();
+        NEW_STEP("Check \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
-        NEW_STEP();
+        NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(expected_data_end_estimation, data_end_estimation);
 
         // Check Tx Tasks AND Message Tasks
         tx_tasks_stack_id--;
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
-        NEW_STEP();
+        NEW_STEP("Check \"localhost\" value is set to LOCALHOST");
         TEST_ASSERT_EQUAL(LOCALHOST, tx_tasks[tx_tasks_stack_id].localhost); //Mutlihost must be seen as localhost
-        NEW_STEP();
+        NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
-        NEW_STEP();
+        NEW_STEP("Check message task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((msg_t *)&msg_buffer[MSG_START], msg_tasks[msg_tasks_stack_id - 1]);
 
 #ifdef UNIT_TEST_DEBUG
@@ -1808,7 +1832,9 @@ void unittest_SetTxTask_multihost()
 #endif
 
         // Check messages
+        NEW_STEP("Check Tx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(tx_message, (uint8_t *)&msg_buffer[MSG_START], tx_size - CRC_SIZE);
+        NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size, rx_bytes_received);
     }
 }
@@ -1829,7 +1855,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_1);
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_2);
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_3);
-    //UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_1); //this case is useless. Already tests by unittest_SetTxTask_Rx_too_long_2
+    //UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_1); //this case is useless. Already tested by unittest_SetTxTask_Rx_too_long_2
     UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_2);
     UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_3);
     UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_4);
