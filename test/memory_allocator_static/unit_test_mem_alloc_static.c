@@ -1,26 +1,41 @@
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include "../test/unit_test.h"
 #include "../Robus/inc/robus_struct.h"
 #include "../src/msg_alloc.c"
 
 void unittest_DoWeHaveSpace(void)
 {
-    NEW_TEST_CASE("\t* There is enough space");
+    NEW_TEST_CASE("There is enough space");
     MsgAlloc_Init(NULL);
     {
-        NEW_STEP();
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |-------------------------------------------------------------|
+        //        ^--------------^---------------------------------------------^+
+        //        |              |                                             |
+        //     pointer    or   pointer                                   or  pointer
+        //
+
+        NEW_STEP("Check function returns SUCCEED");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE; i++)
         {
             TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_DoWeHaveSpace((void *)&msg_buffer[i]));
         }
     }
 
-    NEW_TEST_CASE("\t* there is not enough space");
+    NEW_TEST_CASE("there is not enough space");
     MsgAlloc_Init(NULL);
     {
-        NEW_STEP();
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |-------------------------------------------------------------|
+        //        |-------------------------------------------------------------+ ^
+        //                                                                        |
+        //                                                                     pointer
+        //
+
+        NEW_STEP("Check function returns FAILED");
         for (uint16_t i = MSG_BUFFER_SIZE; i < MSG_BUFFER_SIZE + 10; i++)
         {
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_DoWeHaveSpace((void *)&msg_buffer[i]));
@@ -30,60 +45,206 @@ void unittest_DoWeHaveSpace(void)
 
 void unittest_CheckMsgSpace(void)
 {
-    NEW_TEST_CASE("\t* Check Message Space");
+    NEW_TEST_CASE("There are no used messages in memory space checked");
     MsgAlloc_Init(NULL);
     {
         // Declaration of dummy message start and end pointer
         uint32_t *mem_start;
         uint32_t *mem_end;
 
-        // Initialize pointer to buffer beginning
+        // Initialize pointer
         used_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
 
-        // Test function considering "used_msg"
-        // ("oldest_message" unit testing is useless as it's the same behaviour)
-
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |------------------------------|   MESSAGES...   |------------|
+        //        |--------------^--------------^^------------------------------+
+        //                       |              ||
+        //                     start         end |
+        //                                     used_msg
+        //
+        //
         // Init variables
         //---------------
         mem_start = (uint32_t *)used_msg - 2;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
-        NEW_STEP();
+        NEW_STEP("Function returns SUCCEED when we check space before messages");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
 
-        // Init variables
-        //---------------
-        mem_start = (uint32_t *)used_msg - 1;
-        mem_end   = mem_start + 1;
-        // Call function and Verify
-        //---------------------------
-        NEW_STEP();
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
-
-        // Init variables
-        //---------------
-        mem_start = (uint32_t *)used_msg;
-        mem_end   = mem_start + 1;
-        // Call function and Verify
-        //---------------------------
-        NEW_STEP();
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
-
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |--------|   MESSAGES...   |----------------------------------|
+        //        |--------------------------^^--------------^------------------+
+        //                                   ||              |
+        //                                   |start         end
+        //                                used_msg
+        //
+        //
         // Init variables
         //---------------
         mem_start = (uint32_t *)used_msg + 1;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
-        NEW_STEP();
+        NEW_STEP("Function returns SUCCEED when we check space after messages");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
+    }
+
+    NEW_TEST_CASE("The oldest message is not in memory space checked");
+    MsgAlloc_Init(NULL);
+    {
+        // Declaration of dummy message start and end pointer
+        uint32_t *mem_start;
+        uint32_t *mem_end;
+
+        // Initialize pointer
+        oldest_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
+
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |------------------------------|   MESSAGES...   |------------|
+        //        |--------------^--------------^^------------------------------+
+        //                       |              ||
+        //                     start         end |
+        //                                   oldest_msg
+        //
+        //
+        // Init variables
+        //---------------
+        mem_start = (uint32_t *)oldest_msg - 2;
+        mem_end   = mem_start + 1;
+        // Call function and Verify
+        //---------------------------
+        NEW_STEP("Function returns SUCCEED when we check space before messages");
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
+
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |--------|   MESSAGES...   |----------------------------------|
+        //        |--------------------------^^--------------^------------------+
+        //                                   ||              |
+        //                                   |start         end
+        //                              oldest_msg
+        //
+        //
+        // Init variables
+        //---------------
+        mem_start = (uint32_t *)oldest_msg + 1;
+        mem_end   = mem_start + 1;
+        // Call function and Verify
+        //---------------------------
+        NEW_STEP("Function returns SUCCEED when we check space after messages");
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
+    }
+
+    NEW_TEST_CASE("There are used messages in memory space checked");
+    MsgAlloc_Init(NULL);
+    {
+        // Declaration of dummy message start and end pointer
+        uint32_t *mem_start;
+        uint32_t *mem_end;
+
+        // Initialize pointer
+        used_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
+
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |----------------------------|   MESSAGES...   |--------------|
+        //        |--------------^-------------^^-------------------------------+
+        //                       |             ||
+        //                     start           |end
+        //                                 used_msg
+        //
+        //
+        // Init variables
+        //---------------
+        mem_start = (uint32_t *)used_msg - 1;
+        mem_end   = mem_start + 1;
+        // Call function and Verify
+        //---------------------------
+        NEW_STEP("Function returns FAILED when the end of a new message overflows begin of used message");
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
+
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |--------------|   MESSAGES...   |----------------------------|
+        //        |--------------^------^---------------------------------------+
+        //                       |      |
+        //                     start   end
+        //                   & used_msg
+        //
+        //
+        // Init variables
+        //---------------
+        mem_start = (uint32_t *)used_msg;
+        mem_end   = mem_start + 1;
+        // Call function and Verify
+        //---------------------------
+        NEW_STEP("Function returns FAILED when the beginning of a new message overflows begin of used message");
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
+    }
+
+    NEW_TEST_CASE("The oldest message is in memory space checked");
+    MsgAlloc_Init(NULL);
+    {
+        // Declaration of dummy message start and end pointer
+        uint32_t *mem_start;
+        uint32_t *mem_end;
+
+        // Initialize pointer
+        oldest_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
+
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |----------------------------|   MESSAGES...   |--------------|
+        //        |--------------^-------------^^-------------------------------+
+        //                       |             ||
+        //                     start           |end
+        //                                 oldest_msg
+        //
+        //
+        // Init variables
+        //---------------
+        mem_start = (uint32_t *)oldest_msg - 1;
+        mem_end   = mem_start + 1;
+        // Call function and Verify
+        //---------------------------
+        NEW_STEP("Function returns FAILED when the end of a new message overflows begin of oldest message");
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
+
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |--------------|   MESSAGES...   |----------------------------|
+        //        |--------------^------^---------------------------------------+
+        //                       |      |
+        //                     start   end
+        //                   & oldest_msg
+        //
+        //
+        // Init variables
+        //---------------
+        mem_start = (uint32_t *)oldest_msg;
+        mem_end   = mem_start + 1;
+        // Call function and Verify
+        //---------------------------
+        NEW_STEP("Function returns FAILED when the beginning of a new message overflows begin of oldest message");
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((void *)mem_start, (void *)mem_end));
     }
 }
 
 void unittest_BufferAvailableSpaceComputation(void)
 {
-    NEW_TEST_CASE("\t* Verify assertion cases");
+    NEW_TEST_CASE("Verify assertion cases");
     MsgAlloc_Init(NULL);
     {
 #define assert_nb 6
@@ -112,17 +273,17 @@ void unittest_BufferAvailableSpaceComputation(void)
         assert_sc[5].oldest_msg_position = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE] + 1;
 
         // Launch test
+        NEW_STEP("Verify function is asserting when forbidden values are injected");
         for (uint8_t i = 0; i < assert_nb; i++)
         {
             RESET_ASSERT();
             oldest_msg = assert_sc[i].oldest_msg_position;
             MsgAlloc_BufferAvailableSpaceComputation();
-            NEW_STEP();
             TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, IS_ASSERT());
         }
     }
 
-    NEW_TEST_CASE("\t* No task is availabled");
+    NEW_TEST_CASE("No task is availabled");
     MsgAlloc_Init(NULL);
     {
         uint32_t remaining_datas;
@@ -130,8 +291,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         uint32_t free_space    = 0;
         oldest_msg             = (msg_t *)0xFFFFFFFF; //No oldest message
 
-        //Test remaining space computing for all message size possibilities
-        NEW_STEP();
+        NEW_STEP("Check remaining space computing for all message size cases");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 2; i++)
         {
             // Init variables
@@ -165,7 +325,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         }
     }
 
-    NEW_TEST_CASE("\t* Oldest task is between `data_end_estimation` and the end of message buffer");
+    NEW_TEST_CASE("Oldest task is between `data_end_estimation` and the end of message buffer");
     MsgAlloc_Init(NULL);
     {
         //        msg_buffer
@@ -182,8 +342,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         oldest_msg             = (msg_t *)&msg_buffer[1];
         data_end_estimation    = (uint8_t *)oldest_msg - 1;
 
-        NEW_STEP();
-        //Test remaining space computing for all possibilities
+        NEW_STEP("Check remaining space computing for all cases");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 1; i++)
         {
             oldest_msg = (msg_t *)&msg_buffer[1];
@@ -205,7 +364,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         }
     }
 
-    NEW_TEST_CASE("\t* Oldest task is between the begin of the buffer and current_msg`");
+    NEW_TEST_CASE("Oldest task is between the begin of the buffer and current_msg`");
     MsgAlloc_Init(NULL);
     {
         //        msg_buffer
@@ -223,8 +382,8 @@ void unittest_BufferAvailableSpaceComputation(void)
         data_end_estimation    = (uint8_t *)&msg_buffer[1];
         oldest_msg             = (msg_t *)data_end_estimation - 1;
 
-        NEW_STEP();
-        //Test remaining space computing for all possibilities
+        NEW_STEP("Check remaining space computing for all cases");
+        //Test remaining space computing for all cases
         //while (data_end_estimation < &msg_buffer[MSG_BUFFER_SIZE])
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 1; i++)
         {
@@ -250,7 +409,7 @@ void unittest_BufferAvailableSpaceComputation(void)
 
 void unittest_OldestMsgCandidate(void)
 {
-    NEW_TEST_CASE("\t* Verify assertion cases");
+    NEW_TEST_CASE("Verify assertion cases");
     MsgAlloc_Init(NULL);
     {
 #define assert_nb 6
@@ -282,13 +441,12 @@ void unittest_OldestMsgCandidate(void)
         {
             RESET_ASSERT();
             MsgAlloc_OldestMsgCandidate(assert_sc[i].oldest_stack_msg_pt);
-
-            NEW_STEP();
+            NEW_STEP_IN_LOOP("Forbidden values are injected -> Verify function is asserting", i);
             TEST_ASSERT_EQUAL(assert_sc[i].expected_asserts, IS_ASSERT());
         }
     }
 
-    NEW_TEST_CASE("\t* Verify case \"oldest_stack_msg_pt\" is NULL");
+    NEW_TEST_CASE("Verify case \"oldest_stack_msg_pt\" is NULL");
     MsgAlloc_Init(NULL);
     {
         // Pass NULL pointer to MsgAlloc_OldestMsgCandidate => oldest_msg doesn't change
@@ -307,13 +465,13 @@ void unittest_OldestMsgCandidate(void)
         RESET_ASSERT();
         MsgAlloc_OldestMsgCandidate(oldest_stack_msg_pt);
 
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP();
+        NEW_STEP("Check oldest message doesn't change");
         TEST_ASSERT_EQUAL(expected_oldest_msg, oldest_msg);
     }
 
-    NEW_TEST_CASE("\t* Verify other cases");
+    NEW_TEST_CASE("Verify other cases");
     MsgAlloc_Init(NULL);
     {
 #define CASE 18
@@ -348,7 +506,7 @@ void unittest_OldestMsgCandidate(void)
             oldest_stack_msg_pt = (msg_t *)&msg_buffer[cases[i][2]];
             expected_oldest_msg = (msg_t *)&msg_buffer[cases[i][3]];
             MsgAlloc_OldestMsgCandidate(oldest_stack_msg_pt);
-            NEW_STEP();
+            NEW_STEP_IN_LOOP("Check all pointers cases", i);
             TEST_ASSERT_EQUAL(expected_oldest_msg, oldest_msg);
         }
     }
@@ -356,9 +514,23 @@ void unittest_OldestMsgCandidate(void)
 
 void unittest_ValidDataIntegrity(void)
 {
-    NEW_TEST_CASE("\t* No copy needed");
+    NEW_TEST_CASE("No copy needed");
     MsgAlloc_Init(NULL);
     {
+        // copy_task_pointer is NULL :
+        // So there is no need to copy header to begin of msg_buffer
+        //
+        //        msg_buffer init state
+        //        +-------------------------------------------------------------+
+        //        |-------|Header|----------------------------------------------|
+        //        +-------------------------------------------------------------+
+        //
+        //        msg_buffer ending state (idem init)
+        //        +-------------------------------------------------------------+
+        //        |-------|Header|----------------------------------------------|
+        //        +-------------------------------------------------------------+
+        //
+
         uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
         mem_clear_needed = 0;
         copy_task_pointer == NULL;
@@ -368,13 +540,13 @@ void unittest_ValidDataIntegrity(void)
         RESET_ASSERT();
         MsgAlloc_ValidDataIntegrity();
 
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP();
+        NEW_STEP("Check message buffered has not been modified");
         TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, MSG_BUFFER_SIZE);
     }
 
-    NEW_TEST_CASE("\t* Copy header to begin of message buffer");
+    NEW_TEST_CASE("Copy header to begin of message buffer");
     MsgAlloc_Init(NULL);
     {
         // Tx message size is greater than Rx size currently received.
@@ -391,6 +563,7 @@ void unittest_ValidDataIntegrity(void)
         //        +-------------------------------------------------------------+
         //        |Header|------------------------------------------------------|
         //        +-------------------------------------------------------------+
+        //
 
         uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
         mem_clear_needed  = 0;
@@ -404,15 +577,16 @@ void unittest_ValidDataIntegrity(void)
         RESET_ASSERT();
         MsgAlloc_ValidDataIntegrity();
 
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP();
-        TEST_ASSERT_EQUAL(copy_task_pointer, NULL);
-        NEW_STEP();
+        NEW_STEP("Check \"copy task pointer\" is NULL");
+        TEST_ASSERT_NULL(copy_task_pointer);
+        //TEST_ASSERT_EQUAL(copy_task_pointer, NULL);
+        NEW_STEP("Check header is copied to beginning of buffer");
         TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, sizeof(header_t));
     }
 
-    NEW_TEST_CASE("\t* Verify memory cleaning");
+    NEW_TEST_CASE("Verify memory cleaning");
     MsgAlloc_Init(NULL);
     {
         mem_clear_needed    = 1;
@@ -421,9 +595,9 @@ void unittest_ValidDataIntegrity(void)
         RESET_ASSERT();
         MsgAlloc_ValidDataIntegrity();
 
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP();
+        NEW_STEP("Check memory is cleared");
         TEST_ASSERT_EQUAL(0, mem_clear_needed);
         // No more TEST_ASSERT needed as MsgAlloc_ClearMsgSpace has already been tested
     }
@@ -431,17 +605,25 @@ void unittest_ValidDataIntegrity(void)
 
 void unittest_ClearMsgSpace(void)
 {
-    NEW_TEST_CASE("\t* There is not enough space in memory");
+    NEW_TEST_CASE("There is not enough space in memory");
     MsgAlloc_Init(NULL);
     {
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |-------------------------------------------------------------|
+        //        |-------------------------------------------------------------+ ^
+        //                                                                        |
+        //                                                                     pointer
+        //
         void *memory_start = (void *)&msg_buffer[0];
         void *memory_end   = (void *)&msg_buffer[MSG_BUFFER_SIZE];
 
-        NEW_STEP();
+        NEW_STEP("Check function returns FAILED");
         TEST_ASSERT_EQUAL(FAILED, MsgAlloc_ClearMsgSpace(memory_start, memory_end));
     }
 
-    NEW_TEST_CASE("\t* Drop used messages");
+    NEW_TEST_CASE("Drop used messages");
     MsgAlloc_Init(NULL);
     {
         //        used_msg will be dropped
@@ -468,16 +650,16 @@ void unittest_ClearMsgSpace(void)
         memory_start = (void *)&msg_buffer[0];
         memory_end   = (void *)&msg_buffer[2];
 
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_ClearMsgSpace(memory_start, memory_end));
-        NEW_STEP();
+        NEW_STEP("Check buffer occupation is 100\%");
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
-        NEW_STEP();
+        NEW_STEP("Check there is 1 dropped message");
         TEST_ASSERT_EQUAL(1, memory_stats.msg_drop_number);
-        NEW_STEP();
+        NEW_STEP("Check used message is cleaned");
         TEST_ASSERT_NULL(used_msg);
 
-        NEW_STEP();
+        NEW_STEP("Check drop counter validity for all cases");
         for (uint8_t i = 1; i < 0xFF; i++)
         {
             used_msg = (msg_t *)&msg_buffer[1];
@@ -489,11 +671,11 @@ void unittest_ClearMsgSpace(void)
         memory_stats.msg_drop_number = 255;
         MsgAlloc_ClearMsgSpace(memory_start, memory_end);
 
-        NEW_STEP();
+        NEW_STEP("Check drop counter has reached max value");
         TEST_ASSERT_EQUAL(255, memory_stats.msg_drop_number);
     }
 
-    NEW_TEST_CASE("\t* Drop all messages from luos_tasks");
+    NEW_TEST_CASE("Drop all messages from luos_tasks");
     MsgAlloc_Init(NULL);
     {
         //        All messages of luos_tasks will be dropped
@@ -562,15 +744,15 @@ void unittest_ClearMsgSpace(void)
         memory_end          = (void *)&msg_buffer[MAX_MSG_NB - 1];
         luos_tasks_stack_id = MAX_MSG_NB;
 
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_ClearMsgSpace(memory_start, memory_end));
-        NEW_STEP();
+        NEW_STEP("Check buffer occupation is 100\%");
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
-        NEW_STEP();
+        NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, luos_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check that 8 messages has been dropped");
         TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
-        NEW_STEP();
+        NEW_STEP("Check Luos Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
             TEST_ASSERT_EQUAL(0, luos_tasks[i].msg_pt);
@@ -578,7 +760,7 @@ void unittest_ClearMsgSpace(void)
         }
     }
 
-    NEW_TEST_CASE("\t* Drop all messages from msg_tasks");
+    NEW_TEST_CASE("Drop all messages from msg_tasks");
     MsgAlloc_Init(NULL);
     {
         //        All messages of msg_tasks will be dropped
@@ -646,22 +828,22 @@ void unittest_ClearMsgSpace(void)
         memory_end         = (void *)&msg_buffer[MAX_MSG_NB - 1];
         msg_tasks_stack_id = MAX_MSG_NB;
 
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_ClearMsgSpace(memory_start, memory_end));
-        NEW_STEP();
+        NEW_STEP("Check buffer occupation is 100\%");
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
-        NEW_STEP();
+        NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, msg_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check that 8 messages has been dropped");
         TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
-        NEW_STEP();
+        NEW_STEP("Check Message Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
             TEST_ASSERT_EQUAL(0, msg_tasks[i]);
         }
     }
 
-    NEW_TEST_CASE("\t* Drop all messages from tx_tasks");
+    NEW_TEST_CASE("Drop all messages from tx_tasks");
     MsgAlloc_Init(NULL);
     {
         //        All messages of tx_tasks will be dropped
@@ -730,15 +912,15 @@ void unittest_ClearMsgSpace(void)
         memory_end        = (void *)&msg_buffer[MAX_MSG_NB - 1];
         tx_tasks_stack_id = MAX_MSG_NB;
 
-        NEW_STEP();
+        NEW_STEP("Check function returns SUCCEED");
         TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_ClearMsgSpace(memory_start, memory_end));
-        NEW_STEP();
+        NEW_STEP("Check buffer occupation is 100\%");
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
-        NEW_STEP();
+        NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP();
+        NEW_STEP("Check that 8 messages has been dropped");
         TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
-        NEW_STEP();
+        NEW_STEP("Check Tx Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
             TEST_ASSERT_EQUAL(0, tx_tasks[i].data_pt);
@@ -749,7 +931,7 @@ void unittest_ClearMsgSpace(void)
 
 void unittest_ClearMsgTask(void)
 {
-    NEW_TEST_CASE("\t* Clear Message Task");
+    NEW_TEST_CASE("Clear Message Task");
     MsgAlloc_Init(NULL);
     {
         //        Last Message Task is cleared
@@ -803,7 +985,8 @@ void unittest_ClearMsgTask(void)
         expected_msg_tasks[MAX_MSG_NB - 1] = 0;
         MsgAlloc_ClearMsgTask();
 
-        NEW_STEP();
+        NEW_STEP("Check NO assert has occured");
+        NEW_STEP("Check last message task is cleared in all cases");
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
             TEST_ASSERT_FALSE(IS_ASSERT());
@@ -815,12 +998,11 @@ void unittest_ClearMsgTask(void)
 
 void unittest_ClearLuosTask(void)
 {
-    NEW_TEST_CASE("\t* Verify assertion cases");
+    NEW_TEST_CASE("Verify assertion cases");
     MsgAlloc_Init(NULL);
     {
         uint16_t luos_task_id;
 
-        NEW_STEP();
         for (uint16_t i = 0; i <= MAX_MSG_NB + 2; i++)
         {
             MsgAlloc_Init(NULL);
@@ -831,11 +1013,13 @@ void unittest_ClearLuosTask(void)
                 RESET_ASSERT();
                 if ((luos_task_id >= luos_tasks_stack_id) || (luos_tasks_stack_id > MAX_MSG_NB))
                 {
+                    NEW_STEP_IN_LOOP("Check assert has occured", (MAX_MSG_NB + 2) * i + i + j);
                     MsgAlloc_ClearLuosTask(luos_task_id);
                     TEST_ASSERT_TRUE(IS_ASSERT());
                 }
                 else
                 {
+                    NEW_STEP_IN_LOOP("Check NO assert has occured", (MAX_MSG_NB + 2) * i + i + j);
                     MsgAlloc_ClearLuosTask(luos_task_id);
                     TEST_ASSERT_FALSE(IS_ASSERT());
                 }
@@ -843,7 +1027,7 @@ void unittest_ClearLuosTask(void)
         }
     }
 
-    NEW_TEST_CASE("\t* Clear Luos Tasks");
+    NEW_TEST_CASE("Clear Luos Tasks");
     MsgAlloc_Init(NULL);
     {
         //        Last Luos Task is cleared
@@ -883,7 +1067,7 @@ void unittest_ClearLuosTask(void)
 
         ASSERT_ACTIVATION(0);
 
-        NEW_STEP();
+        NEW_STEP("Check Luos Task is cleared in all cases");
         for (uint16_t task_id = 0; task_id < MAX_MSG_NB; task_id++)
         {
             for (uint16_t tasks_stack_id = task_id + 1; tasks_stack_id <= MAX_MSG_NB; tasks_stack_id++)
