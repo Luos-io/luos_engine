@@ -33,7 +33,7 @@ void unittest_SetTxTask_buffer_full()
 
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -50,7 +50,7 @@ void unittest_SetTxTask_buffer_full()
         {
             RESET_ASSERT();
             NEW_STEP_IN_LOOP("Function returns FAILED when \"tx tasks stack id\" overflows", i - (MAX_MSG_NB - 1));
-            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, &dummy_data, crc, size, localhost, ack));
+            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, &dummy_data, crc, size, localhost, ack));
             NEW_STEP_IN_LOOP("Check NO assert has occured", i - (MAX_MSG_NB - 1));
             TEST_ASSERT_FALSE(IS_ASSERT());
         }
@@ -67,7 +67,7 @@ void unittest_SetTxTask_Tx_too_long_1()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -110,7 +110,7 @@ void unittest_SetTxTask_Tx_too_long_1()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED when there is already a task in memory");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -123,7 +123,7 @@ void unittest_SetTxTask_Tx_too_long_1()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -167,7 +167,7 @@ void unittest_SetTxTask_Tx_too_long_1()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED when there is already a task in memory");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -180,7 +180,7 @@ void unittest_SetTxTask_Tx_too_long_1()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -224,7 +224,7 @@ void unittest_SetTxTask_Tx_too_long_1()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED when there is already a task in memory");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -240,7 +240,7 @@ void unittest_SetTxTask_Tx_too_long_2()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -283,7 +283,7 @@ void unittest_SetTxTask_Tx_too_long_2()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED when there is already a task at begin of message buffer");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -296,7 +296,7 @@ void unittest_SetTxTask_Tx_too_long_2()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -337,7 +337,7 @@ void unittest_SetTxTask_Tx_too_long_2()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED when there is already a task at begin of message buffer");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -350,7 +350,7 @@ void unittest_SetTxTask_Tx_too_long_2()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -394,7 +394,7 @@ void unittest_SetTxTask_Tx_too_long_2()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED when there is already a task at begin of message buffer");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -410,7 +410,7 @@ void unittest_SetTxTask_Tx_too_long_3()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -449,7 +449,7 @@ void unittest_SetTxTask_Tx_too_long_3()
         uint8_t *init_rx_message;
         ack                 = 0;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;                          // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                            // Fake service value
         data                = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - tx_size];     // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size / 2)]; // There are only 25 bytes left in msg buffer
         data_end_estimation = (uint8_t *)current_msg + rx_size;                      // Complete Rx message = 20 bytes
@@ -461,10 +461,10 @@ void unittest_SetTxTask_Tx_too_long_3()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)msg_buffer;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)msg_buffer;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -485,7 +485,7 @@ void unittest_SetTxTask_Tx_too_long_3()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -503,8 +503,8 @@ void unittest_SetTxTask_Tx_too_long_3()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -536,7 +536,7 @@ void unittest_SetTxTask_Rx_too_long_1()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -577,7 +577,7 @@ void unittest_SetTxTask_Rx_too_long_1()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -590,7 +590,7 @@ void unittest_SetTxTask_Rx_too_long_1()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -627,7 +627,7 @@ void unittest_SetTxTask_Rx_too_long_1()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -640,7 +640,7 @@ void unittest_SetTxTask_Rx_too_long_1()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -677,7 +677,7 @@ void unittest_SetTxTask_Rx_too_long_1()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Function returns FAILED");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -692,7 +692,7 @@ void unittest_SetTxTask_Rx_too_long_2()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -729,7 +729,7 @@ void unittest_SetTxTask_Rx_too_long_2()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns FAILED when Tx + Rx size doesn't fit msg buffer and a task is in requested memory");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -745,7 +745,7 @@ void unittest_SetTxTask_Rx_too_long_3()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -782,7 +782,7 @@ void unittest_SetTxTask_Rx_too_long_3()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns FAILED when Tx + Rx size doesn't fit msg buffer and a task is in memory beginning");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -797,7 +797,7 @@ void unittest_SetTxTask_Rx_too_long_4()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -827,7 +827,7 @@ void unittest_SetTxTask_Rx_too_long_4()
         uint8_t *init_rx_message;
         ack                 = 0;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;                          // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                            // Fake service value
         data                = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - tx_size];     // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size + 1)]; // There are only 51 bytes left in msg buffer
         data_end_estimation = (uint8_t *)current_msg + rx_size;                      // Complete Rx message = 20 bytes
@@ -839,10 +839,10 @@ void unittest_SetTxTask_Rx_too_long_4()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)msg_buffer;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)msg_buffer;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -863,7 +863,7 @@ void unittest_SetTxTask_Rx_too_long_4()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -881,8 +881,8 @@ void unittest_SetTxTask_Rx_too_long_4()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -914,7 +914,7 @@ void unittest_SetTxTask_Task_already_exists()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -944,7 +944,7 @@ void unittest_SetTxTask_Task_already_exists()
         uint16_t rx_bytes_received = 15;
         ack                        = 0;
         localhost                  = 0;
-        ll_container_pt            = (ll_container_t *)msg_buffer;                      // Fake container value
+        ll_service_pt              = (ll_service_t *)msg_buffer;                        // Fake service value
         data                       = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - tx_size]; // Tx message = 50 bytes
         current_msg                = (msg_t *)&msg_buffer[MSG_START];                   // msg buffer is almost empty
         data_end_estimation        = (uint8_t *)current_msg + rx_size;                  // Complete Rx message = 20 bytes
@@ -956,7 +956,7 @@ void unittest_SetTxTask_Task_already_exists()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns FAILED when  a task is in memory");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_container_pt, data, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(ll_service_pt, data, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
     }
@@ -971,7 +971,7 @@ void unittest_SetTxTask_copy_OK()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -1006,7 +1006,7 @@ void unittest_SetTxTask_copy_OK()
         uint8_t *init_rx_message;
         ack                 = 0;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 20 bytes
@@ -1018,10 +1018,10 @@ void unittest_SetTxTask_copy_OK()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -1042,7 +1042,7 @@ void unittest_SetTxTask_copy_OK()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1060,8 +1060,8 @@ void unittest_SetTxTask_copy_OK()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -1091,7 +1091,7 @@ void unittest_SetTxTask_copy_OK()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -1129,7 +1129,7 @@ void unittest_SetTxTask_copy_OK()
         uint16_t padding;
         ack                 = 0;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 80 bytes
@@ -1142,10 +1142,10 @@ void unittest_SetTxTask_copy_OK()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -1166,7 +1166,7 @@ void unittest_SetTxTask_copy_OK()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1184,8 +1184,8 @@ void unittest_SetTxTask_copy_OK()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -1215,7 +1215,7 @@ void unittest_SetTxTask_copy_OK()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -1253,7 +1253,7 @@ void unittest_SetTxTask_copy_OK()
         uint16_t padding;
         ack                 = 0;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 80 bytes
@@ -1265,10 +1265,10 @@ void unittest_SetTxTask_copy_OK()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -1289,7 +1289,7 @@ void unittest_SetTxTask_copy_OK()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1307,8 +1307,8 @@ void unittest_SetTxTask_copy_OK()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -1336,7 +1336,7 @@ void unittest_SetTxTask_copy_OK()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -1371,7 +1371,7 @@ void unittest_SetTxTask_copy_OK()
         uint8_t *init_rx_message;
         ack                 = 0;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 20 bytes
@@ -1383,10 +1383,10 @@ void unittest_SetTxTask_copy_OK()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -1407,7 +1407,7 @@ void unittest_SetTxTask_copy_OK()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1425,8 +1425,8 @@ void unittest_SetTxTask_copy_OK()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -1458,7 +1458,7 @@ void unittest_SetTxTask_ACK()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost = EXTERNALHOST;
@@ -1494,7 +1494,7 @@ void unittest_SetTxTask_ACK()
         uint8_t *init_rx_message;
         ack                 = 55;
         localhost           = 0;
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 51 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 20 bytes
@@ -1506,10 +1506,10 @@ void unittest_SetTxTask_ACK()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE - sizeof(ack); i++)
@@ -1531,7 +1531,7 @@ void unittest_SetTxTask_ACK()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1549,8 +1549,8 @@ void unittest_SetTxTask_ACK()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"localhost\" is correctly computed");
         TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
@@ -1584,7 +1584,7 @@ void unittest_SetTxTask_internal_localhost()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost;
@@ -1622,7 +1622,7 @@ void unittest_SetTxTask_internal_localhost()
 
         ack                 = 0;
         localhost           = LOCALHOST;                                  // Localhost : to fill msg_task
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 20 bytes
@@ -1635,10 +1635,10 @@ void unittest_SetTxTask_internal_localhost()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -1659,7 +1659,7 @@ void unittest_SetTxTask_internal_localhost()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1678,8 +1678,8 @@ void unittest_SetTxTask_internal_localhost()
 
         // Check Tx Tasks is void
         tx_tasks_stack_id--;
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_NULL(tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_NULL(tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_NULL(tx_tasks[tx_tasks_stack_id].data_pt);
         NEW_STEP("Check Tx task \"size\" = 0");
@@ -1716,7 +1716,7 @@ void unittest_SetTxTask_multihost()
     {
         error_return_t result;
         uint8_t *data;
-        ll_container_t *ll_container_pt;
+        ll_service_t *ll_service_pt;
         uint16_t crc;
         uint16_t size;
         luos_localhost_t localhost;
@@ -1755,7 +1755,7 @@ void unittest_SetTxTask_multihost()
 
         ack                 = 0;
         localhost           = MULTIHOST;
-        ll_container_pt     = (ll_container_t *)msg_buffer;               // Fake container value
+        ll_service_pt       = (ll_service_t *)msg_buffer;                 // Fake service value
         data                = (uint8_t *)tx_message;                      // Tx message = 50 bytes
         current_msg         = (msg_t *)&msg_buffer[MSG_START];            // msg buffer is almost empty
         data_end_estimation = (uint8_t *)current_msg + rx_size;           // Complete Rx message = 20 bytes
@@ -1768,10 +1768,10 @@ void unittest_SetTxTask_multihost()
         expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
         expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
 
-        expected_tx_task.size            = tx_size;
-        expected_tx_task.data_pt         = (uint8_t *)current_msg;
-        expected_tx_task.ll_container_pt = ll_container_pt;
-        expected_tx_task.localhost       = localhost;
+        expected_tx_task.size          = tx_size;
+        expected_tx_task.data_pt       = (uint8_t *)current_msg;
+        expected_tx_task.ll_service_pt = ll_service_pt;
+        expected_tx_task.localhost     = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -1792,7 +1792,7 @@ void unittest_SetTxTask_multihost()
         //---------------------------
         RESET_ASSERT();
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_container_pt, tx_message, crc, tx_size, localhost, ack));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_SetTxTask(ll_service_pt, tx_message, crc, tx_size, localhost, ack));
         NEW_STEP("Check NO assert has occured");
         TEST_ASSERT_FALSE(IS_ASSERT());
 
@@ -1813,8 +1813,8 @@ void unittest_SetTxTask_multihost()
         tx_tasks_stack_id--;
         NEW_STEP("Check Tx task \"size\" is correctly computed");
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check Tx task \"container pointer\" is correctly computed");
-        TEST_ASSERT_EQUAL(ll_container_pt, tx_tasks[tx_tasks_stack_id].ll_container_pt);
+        NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
+        TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check \"localhost\" value is set to LOCALHOST");
         TEST_ASSERT_EQUAL(LOCALHOST, tx_tasks[tx_tasks_stack_id].localhost); //Mutlihost must be seen as localhost
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");

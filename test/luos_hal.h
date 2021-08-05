@@ -44,4 +44,9 @@ void LuosHAL_ComputeCRC(uint8_t *data, uint8_t *crc);
 void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 
+// bootloader functions
+void LuosHAL_SetMode(uint8_t mode);
+void LuosHAL_Reboot(void);
+void LuosHAL_SaveNodeID(uint16_t);
+
 #endif /* _LUOSHAL_H_ */

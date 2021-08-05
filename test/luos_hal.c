@@ -536,6 +536,34 @@ void __enable_irq()
 void __disable_irq()
 {
 }
+
+/******************************************************************************
+ * @brief Set boot mode in shared flash memory
+ * @param 
+ * @return
+ ******************************************************************************/
+void LuosHAL_SetMode(uint8_t mode)
+{
+}
+
+/******************************************************************************
+ * @brief Save node ID in shared flash memory
+ * @param Address, node_id
+ * @return
+ ******************************************************************************/
+void LuosHAL_SaveNodeID(uint16_t node_id)
+{
+}
+
+/******************************************************************************
+ * @brief software reboot the microprocessor
+ * @param 
+ * @return
+ ******************************************************************************/
+void LuosHAL_Reboot(void)
+{
+}
+
 /*void LUOS_TIMER_CLOCK_ENABLE()
 {
 }*/
