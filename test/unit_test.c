@@ -24,15 +24,19 @@ uint16_t step_number;
  * @param None
  * @return None
  ******************************************************************************/
-void UNIT_TEST_RUN(void (*function)())
+void RUN(const char *name, void (*function)(void))
 {
+    printf("\n\n========================================================================================================================================\n");
+    printf("Unit test function : %s\n", name);
+    printf("========================================================================================================================================\n");
+
     test_case_number = 0;
     RUN_TEST(function);
 }
 
 /******************************************************************************
  * @brief Start a new test case
- * @param None
+ * @param title (test description title)
  * @return None
  ******************************************************************************/
 void NEW_TEST_CASE(char *title)
@@ -40,13 +44,25 @@ void NEW_TEST_CASE(char *title)
     step_number = 0;
     test_case_number++;
 
-    if (test_case_number == 1)
+    printf("\n\nTest Case %d :\n", test_case_number);
+    printf("------------------------------------------------------------------------\n");
+    printf("%c", title[0]);
+
+    for (uint16_t i = 1; i < strlen(title); i++)
     {
-        printf("\n");
+        printf("%c", title[i]);
     }
-    printf("------------------------------------------------------------------------\n");
-    printf("Test Case %d :\n", test_case_number);
-    printf("------------------------------------------------------------------------\n");
+    printf("\n------------------------------------------------------------------------\n");
+}
+
+/******************************************************************************
+ * @brief Start a new test case
+ * @param title (step description title)
+ * @return None
+ ******************************************************************************/
+void NEW_STEP(char *title)
+{
+    printf("\t---> Check step %d :     ", ++step_number);
 
     for (uint16_t i = 0; i < strlen(title); i++)
     {
@@ -56,13 +72,25 @@ void NEW_TEST_CASE(char *title)
 }
 
 /******************************************************************************
- * @brief Print current step to verify
- * @param None
+ * @brief Start a new test case in a loop
+ * @param title (step description title)
+ * @param index (index of the loop) 
  * @return None
  ******************************************************************************/
-void NEW_STEP()
+void NEW_STEP_IN_LOOP(char title[], uint32_t index)
 {
-    printf("\t---> Check step %d\n", ++step_number);
+    char index2string[5];
+    char step_title[128];
+
+    memset((void *)step_title, 0, sizeof(step_title));
+
+    sprintf(index2string, "%d", index + 1);
+    strcat(step_title, "Loop ");
+    strcat(step_title, index2string);
+    strcat(step_title, ": ");
+    strcat(step_title, title);
+
+    NEW_STEP(step_title);
 }
 
 /******************************************************************************
