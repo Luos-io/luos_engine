@@ -169,9 +169,6 @@ char *RoutingTB_StringFromType(luos_type_t type)
         case COLOR_TYPE:
             return "Color";
             break;
-        case SERVO_TYPE:
-            return "Servo";
-            break;
         case MOTOR_TYPE:
             return "Motor";
             break;
@@ -182,7 +179,7 @@ char *RoutingTB_StringFromType(luos_type_t type)
             return "Angle";
             break;
         case DISTANCE_TYPE:
-            return "DistanceSensor";
+            return "Distance";
             break;
         case GATE_TYPE:
             return "Gate";
@@ -191,7 +188,7 @@ char *RoutingTB_StringFromType(luos_type_t type)
             return "Imu";
             break;
         case LIGHT_TYPE:
-            return "LightSensor";
+            return "Light";
             break;
         case VOID_TYPE:
             return "Void";
