@@ -220,7 +220,8 @@ uint8_t RoutingTB_ServiceIsSensor(luos_type_t type)
         || (type == IMU_TYPE)
         || (type == LOAD_TYPE)
         || (type == VOLTAGE_TYPE)
-        || (type == LIGHT_TYPE))
+        || (type == LIGHT_TYPE)
+        || (type == SERVO_MOTOR_TYPE))
     {
         return 1;
     }
