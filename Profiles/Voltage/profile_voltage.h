@@ -33,6 +33,7 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Luos_LinkVoltageProfile(profile_core_t *profile, profile_voltage_t *profile_voltage, SERVICE_CB callback);
+void ProfileVoltage_link(uint8_t, profile_voltage_t *);
+service_t *ProfileVoltage_CreateService(profile_voltage_t *, SERVICE_CB, const char *, revision_t);
 
 #endif /* PROFILE_VOLTAGE_H_ */
