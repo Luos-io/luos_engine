@@ -6,45 +6,73 @@
  * @param msg the received message
  * @return None
  ******************************************************************************/
-void Luos_StateHandler(service_t *service, msg_t *msg)
+void ProfileState_Handler(service_t *service, msg_t *msg)
 {
-    profile_core_t *profile        = Luos_GetProfileFromService(service);
+    profile_core_t *profile        = ProfileCore_GetFromService(service);
     profile_state_t *profile_state = (profile_state_t *)profile->profile_data;
 
-    if ((msg->header.cmd == GET_CMD) && ((profile_state->access == READ_WRITE_ACCESS) || (profile_state->access == READ_ONLY_ACCESS)))
+    switch (msg->header.cmd)
     {
-        // fill the message infos
-        msg_t pub_msg;
-        pub_msg.header.cmd         = IO_STATE;
-        pub_msg.header.target_mode = msg->header.target_mode;
-        pub_msg.header.target      = msg->header.source;
-        pub_msg.header.size        = sizeof(bool);
-        memcpy(&pub_msg.data, &profile_state->state, sizeof(bool));
-        Luos_SendMsg(service, &pub_msg);
+        case GET_CMD:
+            if ((profile_state->access == READ_WRITE_ACCESS) || (profile_state->access == READ_ONLY_ACCESS))
+            {
+                // fill the message infos
+                msg_t pub_msg;
+                pub_msg.header.cmd         = IO_STATE;
+                pub_msg.header.target_mode = msg->header.target_mode;
+                pub_msg.header.target      = msg->header.source;
+                pub_msg.header.size        = sizeof(bool);
+                memcpy(&pub_msg.data, &profile_state->state, sizeof(bool));
+                Luos_SendMsg(service, &pub_msg);
+            }
+            break;
+        case IO_STATE:
+            if ((profile_state->access == READ_WRITE_ACCESS) || (profile_state->access == WRITE_ONLY_ACCESS))
+            {
+                memcpy(&profile_state->state, &msg->data, sizeof(bool));
+            }
+            break;
+        default:
+        {
+            return;
+        }
+        break;
     }
-    if ((msg->header.cmd == IO_STATE) && ((profile_state->access == READ_WRITE_ACCESS) || (profile_state->access == WRITE_ONLY_ACCESS)))
+
+    if ((profile->profile_ops.Callback != 0))
     {
-        memcpy(&profile_state->state, &msg->data, sizeof(bool));
+        profile->profile_ops.Callback(service, msg);
     }
 }
 
 /******************************************************************************
- * @brief Lik state profile to the general profile handler
- * @param profile handler, 
- * @param profile_state handler, 
- * @param callback used by the profile
+ * @brief Link profile to the general profile handler
+ * @param profile_mode HEAD / CONNECT
+ * @param profile data structure
  * @return None
  ******************************************************************************/
-void Luos_LinkStateProfile(profile_core_t *profile, profile_state_t *profile_state, SERVICE_CB callback)
+void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state)
 {
-    // set general profile handler type
-    profile->type = STATE_TYPE;
+    profile_core_t *profile      = ProfileCore_GetNew(profile_mode);
+    profile->type                = STATE_TYPE;
+    profile->profile_data        = (void *)profile_state;
+    profile->profile_ops.Init    = 0;
+    profile->profile_ops.Handler = ProfileState_Handler;
+}
 
-    // link general profile handler to the profile data structure
-    profile->profile_data = (HANDLER *)profile_state;
+/******************************************************************************
+ * @brief Create a service with a linked profile
+ * @param profile data structure
+ * @param callback used by the service
+ * @param alias 
+ * @param revision 
+ * @return service pointer
+ ******************************************************************************/
+service_t *ProfileState_CreateService(profile_state_t *profile_state, SERVICE_CB callback, const char *alias, revision_t revision)
+{
+    // link head profile
+    ProfileState_link(HEAD_PROFILE, profile_state);
 
-    // set profile handler / callback functions
-    profile->profile_ops.Init     = 0;
-    profile->profile_ops.Handler  = Luos_StateHandler;
-    profile->profile_ops.Callback = callback;
+    // Start profile
+    return ProfileCore_StartService(callback, alias, revision);
 }

@@ -28,6 +28,7 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Luos_LinkStateProfile(profile_core_t *profile, profile_state_t *profile_state, SERVICE_CB callback);
+void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state);
+service_t *ProfileState_CreateService(profile_state_t *, SERVICE_CB, const char *, revision_t);
 
 #endif /* PROFILE_STATE_H_ */
