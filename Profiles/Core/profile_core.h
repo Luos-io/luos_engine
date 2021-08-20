@@ -14,19 +14,30 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-typedef struct
+typedef struct profile_ops
 {
-    void (*Init)(HANDLER *);
+    void (*Init)(void *);
     void (*Handler)(service_t *, msg_t *);
     SERVICE_CB Callback;
 } profile_ops_t;
 
-typedef struct
+typedef struct profile_core
 {
+    // connect an another profile
+    struct profile_core *connect;
+    // profile structure
     luos_type_t type;
-    HANDLER *profile_data;
+    void *profile_data;
     profile_ops_t profile_ops;
 } profile_core_t;
+
+#define CONNECT_AVAILABLE 0
+
+enum
+{
+    HEAD_PROFILE,
+    CONNECT_PROFILE
+};
 
 /*******************************************************************************
  * Variables
@@ -35,7 +46,9 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-profile_core_t *Luos_GetProfileFromService(service_t *);
-service_t *Luos_LaunchProfile(profile_core_t *, const char *, revision_t);
+profile_core_t *ProfileCore_GetFromService(service_t *);
+profile_core_t *ProfileCore_GetNew(bool);
+void ProfileCore_OverrideConnectHandler(void);
+service_t *ProfileCore_StartService(SERVICE_CB, const char *, revision_t);
 
 #endif /* PROFILE_CORE_H_ */
