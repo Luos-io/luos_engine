@@ -1839,10 +1839,6 @@ void unittest_SetTxTask_multihost()
     }
 }
 
-void unittest_SetTxTask_assert()
-{
-}
-
 /*******************************************************************************
  * MAIN
  ******************************************************************************/
@@ -1855,7 +1851,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_1);
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_2);
     UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_3);
-    //UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_1); //this case is useless. Already tested by unittest_SetTxTask_Rx_too_long_2
+    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_1);
     UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_2);
     UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_3);
     UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_4);

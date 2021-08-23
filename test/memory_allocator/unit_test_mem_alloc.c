@@ -1018,6 +1018,27 @@ void unittest_MsgAlloc_LuosTaskAlloc()
     }
 }
 
+void unittest_MsgAlloc_LuosTasksNbr(void)
+{
+    NEW_TEST_CASE("Verify getter for Luos Tasks number");
+    MsgAlloc_Init(NULL);
+    {
+        // Init variables
+        //---------------
+        luos_tasks_stack_id = 0;
+
+        // Call function and Verify
+        //---------------------------
+        for (uint8_t i = 0; i < MAX_MSG_NB; i++)
+        {
+            NEW_STEP_IN_LOOP("Check Luos task number", i);
+            MsgAlloc_LuosTasksNbr();
+            TEST_ASSERT_EQUAL(luos_tasks_stack_id, i);
+            luos_tasks_stack_id++;
+        }
+    }
+}
+
 void unittest_MsgAlloc_PullMsg()
 {
     NEW_TEST_CASE("Case FAILED : no message for the service");
@@ -2007,6 +2028,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_MsgAlloc_TxAllComplete);
     UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgToInterpret);
     UNIT_TEST_RUN(unittest_MsgAlloc_LuosTaskAlloc);
+    UNIT_TEST_RUN(unittest_MsgAlloc_LuosTasksNbr);
     UNIT_TEST_RUN(unittest_MsgAlloc_PullMsg);
     UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgFromLuosTask);
     UNIT_TEST_RUN(unittest_MsgAlloc_LookAtLuosTask);
@@ -2015,6 +2037,5 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_MsgAlloc_PullServiceFromTxTask);
     UNIT_TEST_RUN(unittest_MsgAlloc_GetTxTask);
     //MsgAlloc_Init         => this function doesn't need unit test
-    //MsgAlloc_LuosTasksNbr => this function doesn't need unit test
     UNITY_END();
 }
