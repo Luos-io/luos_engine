@@ -7,9 +7,9 @@
  * @param msg the received message
  * @return None
  ******************************************************************************/
-void Luos_MotorHandler(service_t *service, msg_t *msg)
+void ProfileMotor_Handler(service_t *service, msg_t *msg)
 {
-    profile_core_t *profile        = Luos_GetProfileFromService(service);
+    profile_core_t *profile        = ProfileCore_GetFromService(service);
     profile_motor_t *profile_motor = (profile_motor_t *)profile->profile_data;
 
     switch (msg->header.cmd)
@@ -21,12 +21,12 @@ void Luos_MotorHandler(service_t *service, msg_t *msg)
             pub_msg.header.target      = msg->header.source;
             if (profile_motor->mode.current)
             {
-                ElectricOD_CurrentToMsg(&profile_motor->current, &pub_msg);
+                ElectricOD_CurrentToMsg((current_t *)&profile_motor->current, &pub_msg);
                 Luos_SendMsg(service, &pub_msg);
             }
             if (profile_motor->mode.temperature)
             {
-                TemperatureOD_TemperatureToMsg(&profile_motor->temperature, &pub_msg);
+                TemperatureOD_TemperatureToMsg((current_t *)&profile_motor->temperature, &pub_msg);
                 Luos_SendMsg(service, &pub_msg);
             }
         }
@@ -71,26 +71,47 @@ void Luos_MotorHandler(service_t *service, msg_t *msg)
             memcpy((void *)&profile_motor->mode, msg->data, sizeof(motor_mode_t));
         }
         break;
+        default:
+        {
+            return;
+        }
+        break;
+    }
+
+    if ((profile->profile_ops.Callback != 0))
+    {
+        profile->profile_ops.Callback(service, msg);
     }
 }
 
 /******************************************************************************
- * @brief Link motor profile to the general profile handler
- * @param profile handler, 
- * @param profile_motor handler, 
- * @param callback used by the profile
+ * @brief Link profile to the general profile handler
+ * @param profile_mode HEAD / CONNECT
+ * @param profile data structure
  * @return None
  ******************************************************************************/
-void Luos_LinkMotorProfile(profile_core_t *profile, profile_motor_t *profile_motor, SERVICE_CB callback)
+void ProfileMotor_link(uint8_t profile_mode, profile_motor_t *profile_motor)
 {
-    // set general profile handler type
-    profile->type = MOTOR_TYPE;
+    profile_core_t *profile      = ProfileCore_GetNew(profile_mode);
+    profile->type                = MOTOR_TYPE;
+    profile->profile_data        = (void *)profile_motor;
+    profile->profile_ops.Init    = 0;
+    profile->profile_ops.Handler = ProfileMotor_Handler;
+}
 
-    // link general profile handler to the profile data structure
-    profile->profile_data = (HANDLER *)profile_motor;
+/******************************************************************************
+ * @brief Create a service with a linked profile
+ * @param profile data structure
+ * @param callback used by the service
+ * @param alias 
+ * @param revision 
+ * @return service pointer
+ ******************************************************************************/
+service_t *ProfileMotor_CreateService(profile_motor_t *profile_motor, SERVICE_CB callback, const char *alias, revision_t revision)
+{
+    // link head profile
+    ProfileMotor_link(HEAD_PROFILE, profile_motor);
 
-    // set profile handler / callback functions
-    profile->profile_ops.Init     = 0;
-    profile->profile_ops.Handler  = Luos_MotorHandler;
-    profile->profile_ops.Callback = callback;
+    // Start service with the linked profile
+    return ProfileCore_StartService(callback, alias, revision);
 }
