@@ -7,7 +7,7 @@
  * @param msg the received message
  * @return None
  ******************************************************************************/
-void Luos_ServoMotorInit(HANDLER *handler)
+void ProfileServo_Init(void *handler)
 {
     profile_core_t *profile                    = (profile_core_t *)handler;
     profile_servo_motor_t *servo_motor_profile = (profile_servo_motor_t *)profile->profile_data;
@@ -23,9 +23,10 @@ void Luos_ServoMotorInit(HANDLER *handler)
  * @param msg the received message
  * @return None
  ******************************************************************************/
-void Luos_ServoMotorHandler(service_t *service, msg_t *msg)
+void ProfileServo_Handler(service_t *service, msg_t *msg)
 {
-    profile_core_t *profile                    = Luos_GetProfileFromService(service);
+    // get profile informations from service
+    profile_core_t *profile                    = ProfileCore_GetFromService(service);
     profile_servo_motor_t *servo_motor_profile = (profile_servo_motor_t *)profile->profile_data;
 
     switch (msg->header.cmd)
@@ -184,7 +185,6 @@ void Luos_ServoMotorHandler(service_t *service, msg_t *msg)
         case ANGULAR_POSITION_LIMIT:
         {
             // set the motor limit anglular position
-
             AngularOD_PositionFromMsg((angular_position_t *)&servo_motor_profile->limit_angular_position, msg);
         }
         break;
@@ -230,10 +230,16 @@ void Luos_ServoMotorHandler(service_t *service, msg_t *msg)
         break;
         case PARAMETERS:
         {
+            // ************************************************************************* //
+            // This message overrides connected profile command i.e MOTOR PARAMETERS
+            // OVERRIDE_CONNECTED_HANDLER() must be called in this case
+            // ************************************************************************* //
+            ProfileCore_OverrideConnectHandler();
+
             // fill the message infos
             memcpy((void *)&servo_motor_profile->mode, msg->data, sizeof(servo_motor_mode_t));
 
-            // copy motor specific configuration into motor object
+            // get child information from servo
             servo_motor_profile->motor.mode.current        = servo_motor_profile->mode.current;
             servo_motor_profile->motor.mode.mode_compliant = servo_motor_profile->mode.mode_compliant;
             servo_motor_profile->motor.mode.temperature    = servo_motor_profile->mode.temperature;
@@ -245,31 +251,50 @@ void Luos_ServoMotorHandler(service_t *service, msg_t *msg)
             }
         }
         break;
+        default:
+        {
+            return;
+        }
+        break;
     }
 
-    // call the motor handler
-    service_t motor_service;
-    motor_service.profile_context = (void *)&servo_motor_profile->motor;
-    Luos_MotorHandler(&motor_service, msg);
+    if ((profile->profile_ops.Callback != 0))
+    {
+        profile->profile_ops.Callback(service, msg);
+    }
 }
 
 /******************************************************************************
- * @brief Link motor profile to the general profile handler
- * @param profile handler, 
- * @param profile_servo_motor handler, 
- * @param callback used by the profile
+ * @brief Link profile to the general profile handler
+ * @param profile_mode HEAD / CONNECT
+ * @param profile data structure
  * @return None
  ******************************************************************************/
-void Luos_LinkServoMotorProfile(profile_core_t *profile, profile_servo_motor_t *profile_servo_motor, SERVICE_CB callback)
+void ProfileServo_link(uint8_t profile_mode, profile_servo_motor_t *profile_servo_motor)
 {
-    // set general profile handler type
-    profile->type = SERVO_MOTOR_TYPE;
+    profile_core_t *profile      = ProfileCore_GetNew(profile_mode);
+    profile->type                = SERVO_MOTOR_TYPE;
+    profile->profile_data        = (void *)profile_servo_motor;
+    profile->profile_ops.Init    = ProfileServo_Init;
+    profile->profile_ops.Handler = ProfileServo_Handler;
+}
 
-    // link general profile handler to the profile data structure
-    profile->profile_data = (HANDLER *)profile_servo_motor;
+/******************************************************************************
+ * @brief Create a service with a linked profile
+ * @param profile data structure
+ * @param callback used by the service
+ * @param alias 
+ * @param revision 
+ * @return service pointer
+ ******************************************************************************/
+service_t *ProfileServo_CreateService(profile_servo_motor_t *profile_servo_motor, SERVICE_CB callback, const char *alias, revision_t revision)
+{
+    // link head profile
+    ProfileServo_link(HEAD_PROFILE, profile_servo_motor);
 
-    // set profile handler / callback functions
-    profile->profile_ops.Init     = Luos_ServoMotorInit;
-    profile->profile_ops.Handler  = Luos_ServoMotorHandler;
-    profile->profile_ops.Callback = callback;
+    // connect a profile to head profile
+    ProfileMotor_link(CONNECT_PROFILE, &profile_servo_motor->motor);
+
+    // Start service with the linked profile
+    return ProfileCore_StartService(callback, alias, revision);
 }
