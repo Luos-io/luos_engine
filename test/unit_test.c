@@ -11,7 +11,11 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-extern ut_luos_assert_t ut_assert;
+ut_luos_assert_t ut_assert = {.state = 0, .enable = 1};
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 uint16_t test_case_number;
 uint16_t step_number;
 
@@ -165,4 +169,27 @@ void ASSERT_ACTIVATION(uint8_t activation)
         ut_assert.enable = 0;
     }
     RESET_ASSERT();
+}
+
+/******************************************************************************
+ * @brief Assertion management for unit testing
+ * @param file name as a string
+ * @param line number
+ * @return None
+ ******************************************************************************/
+void unittest_assert(char *file, uint32_t line)
+{
+    msg_t msg;
+
+    ut_assert.state     = 1;
+    ut_assert.line_size = sizeof(line);
+    ut_assert.file_size = strlen(file);
+
+    msg.header.target_mode = BROADCAST;
+    msg.header.target      = BROADCAST_VAL;
+    msg.header.cmd         = ASSERT;
+    msg.header.size        = sizeof(line) + strlen(file);
+    memcpy(msg.data, &line, sizeof(line));
+    memcpy(&msg.data[sizeof(line)], file, strlen(file));
+    ut_assert.msg = msg;
 }

@@ -1,5 +1,4 @@
 #include "../test/unit_test.h"
-#include "../Robus/inc/robus_struct.h"
 #include "../src/msg_alloc.c"
 
 /*******************************************************************************
