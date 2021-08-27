@@ -204,6 +204,18 @@ static inline void MsgAlloc_ValidDataIntegrity(void)
     {
         // copy_task_pointer point to a header to copy at the begin of msg_buffer
         // Copy the header at the begining of msg_buffer
+        //
+        //        msg_buffer init state
+        //        +-------------------------------------------------------------+
+        //        |-------|Header|----------------------------------------------|
+        //        +-------------------------------------------------------------+
+        //
+        //
+        //        msg_buffer ending state
+        //        +-------------------------------------------------------------+
+        //        |Header|------------------------------------------------------|
+        //        +-------------------------------------------------------------+
+        //
         memcpy((void *)&msg_buffer[0], (void *)copy_task_pointer, sizeof(header_t));
         // reset copy_task_pointer status
         copy_task_pointer = NULL;
@@ -235,12 +247,32 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
         if ((uint32_t)oldest_msg > (uint32_t)data_end_estimation)
         {
             // The oldest task is between `data_end_estimation` and the end of the buffer
+            //        msg_buffer
+            //        +-------------------------------------------------------------+
+            //        |-------------------------------------------------------------|
+            //        +------^---------------------^--------------------------------+
+            //               |                     |
+            //               |<-----Free space---->|
+            //               |                     |
+            //               data_end_estimation    oldest_task
+            //
             stack_free_space = (uint32_t)oldest_msg - (uint32_t)data_end_estimation;
             LuosHAL_SetIrqState(true);
         }
         else
         {
             // The oldest task is between the begin of the buffer and `current_msg`
+            //
+            //        msg_buffer
+            //        +-------------------------------------------------------------+
+            //        |-------------------------------------------------------------|
+            //        +-------------^--------------^------------------^-------------+
+            //                      |              |                  |
+            //        <-Free space->|              |                  |<-Free space->
+            //                      |              |                  |
+            //                      |              |                  |
+            //                      oldest_task     current_message   data_end_estimation
+            //
             stack_free_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)data_end_estimation);
             LuosHAL_SetIrqState(true);
         }
@@ -338,6 +370,14 @@ static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
     if ((uint32_t)to > ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
     {
         // We reach msg_buffer end return an error
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |-------------------------------------------------------------|
+        //        |-------------------------------------------------------------+  ^
+        //                                                                         |
+        //                                                                      pointer
+        //
         return FAILED;
     }
     return SUCCEED;
@@ -357,6 +397,25 @@ void MsgAlloc_InvalidMsg(void)
         error_return_t clear_state = MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)(data_ptr));
         LUOS_ASSERT(clear_state == SUCCEED);
     }
+    //
+    //        msg_buffer init state
+    //        +-------------------------------------------------------------+
+    //        |-------------------------------------------------------------|
+    //        ^--------------^----------------------------------------------+
+    //        |              |
+    //        current_msg    data_ptr
+    //
+    //
+    //        msg_buffer ending state
+    //        +-------------------------------------------------------------+
+    //        |-------------------------------------------------------------|
+    //        ^---------------------^---------------------------------------+
+    //        |                     |
+    //        current_msg           data_end_estimation
+    //        data_ptr
+    //        |                     |
+    //         <----Header + CRC---->
+    //
     data_ptr            = (uint8_t *)current_msg;
     data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + CRC_SIZE]);
     LUOS_ASSERT((uint32_t)data_end_estimation < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]);
@@ -380,6 +439,22 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
         if (MsgAlloc_DoWeHaveSpace((void *)(&current_msg->data[data_size + CRC_SIZE])) == FAILED)
         {
             // We are at the end of msg_buffer, we need to move the current space to the begin of msg_buffer
+            //
+            //        msg_buffer init state
+            //        +-------------------------------------------------------------+
+            //        |------------------------------------|  Header  | Datas to be received |
+            //        +------------------------------------^----------^-------------+        ^
+            //                                             |          |                      |
+            //                                       current_msg     data_ptr         data_end_estimation
+            //
+            //
+            //        msg_buffer ending state :
+            //        +-------------------------------------------------------------+
+            //        |------------------------------------|  Header  | Datas to be received |
+            //        +----------^-------------------------^------------------------+
+            //        |          |                         |
+            //     current_msg  data_ptr             copy_task_pointer
+            //
             // Create a task to copy the header at the begining of msg_buffer
             copy_task_pointer = (header_t *)&current_msg->header;
             // Move current_msg to msg_buffer
@@ -388,10 +463,44 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
             data_ptr = &msg_buffer[sizeof(header_t)];
         }
         // Save the end position of our message
+        //
+        //        msg_buffer init state
+        //        +-------------------------------------------------------------+
+        //        |----------------------|  Header  |---------------------------|
+        //        +----------------------^----------^---------------------------+
+        //                               |          |
+        //                         current_msg     data_ptr
+        //
+        //
+        //        msg_buffer ending state : MEM_CLEAR_NEEDED = True
+        //        +-------------------------------------------------------------+
+        //        |----------------------|  Header  | Datas to be received |----|
+        //        +----------------------^----------^----------------------^----+
+        //                               |          |                      |
+        //                         current_msg     data_ptr         data_end_estimation
+        //
         data_end_estimation = (uint8_t *)&current_msg->data[data_size + CRC_SIZE];
+
         // check if there is a msg treatment pending
         if (((uint32_t)used_msg >= (uint32_t)current_msg) && ((uint32_t)used_msg <= (uint32_t)(&current_msg->data[data_size + CRC_SIZE])))
         {
+            //
+            //        msg_buffer init state
+            //        +-------------------------------------------------------------+
+            //        |-------------------|  Header  | Datas to be received |-------|
+            //        |----------------------------------------| An old message |---|
+            //        +-------------------^----------^---------^--------------------+
+            //                            |          |         |
+            //                      current_msg     data_ptr  used_msg
+            //
+            //
+            //        msg_buffer ending state : old message is cleared (used_msg = NULL)
+            //        +-------------------------------------------------------------+
+            //        |-------------------|  Header  | Datas to be received |-------|
+            //        +-------------------^----------^------------------------------+
+            //                            |          |
+            //                      current_msg     data_ptr
+            //
             used_msg = NULL;
             // This message is in the space we want to use, clear the task
             if (mem_stat->msg_drop_number < 0xFF)
@@ -405,6 +514,23 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
     }
     else
     {
+        //
+        //        msg_buffer init state
+        //        +-------------------------------------------------------------+
+        //        |-------------------|  Header  |------------------------------|
+        //        +-------------------^----------^------------------------------+
+        //                            |          |
+        //                      current_msg     data_ptr
+        //
+        //
+        //        msg_buffer ending state
+        //        +-------------------------------------------------------------+
+        //        |-------------------|  ******  |------------------------------|
+        //        +-------------------^-----------------------------------------+
+        //                            |
+        //                      current_msg
+        //                      data_ptr
+        //
         data_ptr = (uint8_t *)current_msg;
     }
 }
@@ -428,6 +554,18 @@ void MsgAlloc_EndMsg(void)
     if (msg_tasks_stack_id == MAX_MSG_NB)
     {
         // There is no more space on the msg_tasks, remove the oldest msg.
+        //
+        //          msg_tasks init state                           msg_tasks end state
+        //             +---------+                                    +---------+
+        //             |  MSG_1  |                                    |  MSG_2  |<--Oldest message "D 1" is deleted
+        //             |---------|                                    |---------|
+        //             |  MSG_2  |                                    |  MSG_3  |
+        //             |---------|                                    |---------|
+        //             |  etc... |                                    |  etc... |
+        //             |---------|                                    |---------|<--luos_tasks_stack_id
+        //             |  MSG_10 |                                    |    0    |
+        //             +---------+<--luos_tasks_stack_id              +---------+
+        //
         MsgAlloc_ClearMsgTask();
         if (mem_stat->msg_drop_number < 0xFF)
         {
@@ -443,7 +581,25 @@ void MsgAlloc_EndMsg(void)
         MsgAlloc_OldestMsgCandidate((msg_t *)msg_tasks[0]);
     }
     msg_tasks_stack_id++;
+
     //******** Prepare the next msg *********
+    //
+    //        msg_buffer init state
+    //        +-------------------------------------------------------------+
+    //        | Header | Data | CRC |---------------------------------------+
+    //        +---------------------^---------------------------------------+
+    //                              |
+    //                           data_ptr
+    //
+    //        msg_buffer ending state
+    //        +-------------------------------------------------------------+
+    // OLD    | Header | Data | CRC |---------------------------------------+
+    // FUTURE |---------------| Header |------------------------------------+
+    //        +---------------^--------^------------------------------------+
+    //                        |        |
+    //                     data_ptr   data_end_estimation
+    //                    current_msg
+    //
     //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= CRC_SIZE;
     // Check data ptr alignement
@@ -454,6 +610,20 @@ void MsgAlloc_EndMsg(void)
     // Check if we have space for the next message
     if (MsgAlloc_DoWeHaveSpace((void *)(data_ptr + sizeof(header_t) + CRC_SIZE)) == FAILED)
     {
+        //
+        //        msg_buffer init state
+        //        +-------------------------------------------------------------+
+        //        |-----------------------------------------------| Header | Data | CRC |
+        //        +-------------------------------------------------------------+
+        //
+        //        msg_buffer ending state
+        //        +-------------------------------------------------------------+
+        //        |-----------------------------------------------| Header | Data | CRC |
+        //        ^-------------------------------------------------------------+
+        //        |
+        //    data_ptr
+        //    current_mag
+        //
         data_ptr = &msg_buffer[0];
     }
     // update the current_msg
@@ -470,6 +640,22 @@ void MsgAlloc_EndMsg(void)
  ******************************************************************************/
 void MsgAlloc_SetData(uint8_t data)
 {
+    //
+    //        msg_buffer init state
+    //        +-------------------------------------------------------------+
+    //        |-------------------------------------------------------------|
+    //        ^-------------------------------------------------------------+
+    //        |
+    //      data_ptr
+    //
+    //
+    //        msg_buffer ending state
+    //        +-------------------------------------------------------------+
+    //        |First Data Byte|---------------------------------------------|
+    //        +---------------^---------------------------------------------+
+    //                        |
+    //                      data_ptr
+    //
     //******** Write data  *********
     *data_ptr = data;
     data_ptr++;
@@ -530,7 +716,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
         mem_stat->buffer_occupation_ratio = 100;
         while (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) && ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to) && (luos_tasks_stack_id > 0))
         {
-            // This message is in the space we want to use, clear the task
+            // This message is in the space we want to use, clear all the Luos task
             MsgAlloc_ClearLuosTask(0);
             if (mem_stat->msg_drop_number < 0xFF)
             {
@@ -541,7 +727,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
         // check if there is no msg between from and to on msg_tasks
         while (((uint32_t)msg_tasks[0] >= (uint32_t)from) && ((uint32_t)msg_tasks[0] <= (uint32_t)to) && (msg_tasks_stack_id > 0))
         {
-            // This message is in the space we want to use, clear the task
+            // This message is in the space we want to use, clear all the message task
             MsgAlloc_ClearMsgTask();
             if (mem_stat->msg_drop_number < 0xFF)
             {
@@ -552,7 +738,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
         // check if there is no msg between from and to on tx_tasks
         while (((uint32_t)tx_tasks[0].data_pt >= (uint32_t)from) && ((uint32_t)tx_tasks[0].data_pt <= (uint32_t)to) && (tx_tasks_stack_id > 0))
         {
-            // This message is in the space we want to use, clear the task
+            // This message is in the space we want to use, clear all the Tx task
             MsgAlloc_PullMsgFromTxTask();
             if (mem_stat->msg_drop_number < 0xFF)
             {
@@ -575,6 +761,18 @@ static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
     if ((((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to))
         || (((uint32_t)oldest_msg >= (uint32_t)from) && ((uint32_t)oldest_msg <= (uint32_t)to)))
     {
+        // FAILED CASES :
+        //
+        //        msg_buffer
+        //        +-------------------------------------------------------------+
+        //        |-------------------------|   MESSAGES...   |-----------------|
+        //        |--------------^----------^---^-------------------------------+
+        //                       |          |   |
+        //                     from         |   to
+        //                                  |
+        //                             "used_msg"
+        //                         or  "oldest_msg"
+        //
         return FAILED;
     }
     return SUCCEED;
@@ -592,6 +790,20 @@ static inline void MsgAlloc_ClearMsgTask(void)
 {
     LUOS_ASSERT((msg_tasks_stack_id <= MAX_MSG_NB) && (msg_tasks_stack_id > 0));
 
+    //
+    //     msg_tasks init state               msg_tasks ending state
+    //     +---------+				          +---------+
+    //     |  MSG_1  |				          |  MSG_2  |
+    //     +---------+				          +---------+
+    //     |  MSG_2  |				          |  MSG_3  |
+    //     +---------+				          +---------+
+    //     | etc...  |				          | etc...  |<--msg_tasks_stack_id
+    //     +---------+				          +---------+
+    //     |  Last   |<--msg_tasks_stack_id	  |    0    |   <--- Last message is cleared
+    //     +---------+				          +---------+
+    //     | etc...  |				          | etc...  |
+    //     +---------+				          +---------+
+    //
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
         LuosHAL_SetIrqState(true);
@@ -615,6 +827,19 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
     MsgAlloc_ValidDataIntegrity();
     if (msg_tasks_stack_id > 0)
     {
+        // Case SUCCEED
+        //
+        //         msg_tasks init state                msg_tasks ending state
+        //             +---------+                        +---------+
+        //             |  MSG_1  |                        |  MSG_2  |<--"returned_msg" points to 1st message of msg_tasks
+        //             |---------|                        |---------|
+        //             |  MSG_2  |                        |  MSG_3  |
+        //             |---------|                        |---------|
+        //             |  etc... |                        |  etc... |
+        //             |---------|                        |---------|<--msg_tasks_stack_id
+        //             |  LAST   |                        |    0    |
+        //             +---------+<--msg_tasks_stack_id   +---------+
+        //
         *returned_msg = (msg_t *)msg_tasks[0];
         LUOS_ASSERT(((uint32_t)*returned_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)*returned_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
         MsgAlloc_ClearMsgTask();
@@ -644,6 +869,26 @@ void MsgAlloc_UsedMsgEnd(void)
 static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 {
     LUOS_ASSERT((luos_task_id < luos_tasks_stack_id) && (luos_tasks_stack_id <= MAX_MSG_NB));
+    //
+    // Start to clear from "luos_task_id"
+    //
+    //         Luos_tasks init state                Luos_tasks ending state
+    //             +---------+                        +---------+
+    //             |  MSG_1  |                        |  MSG_1  |
+    //             +---------+                        +---------+
+    //             |  MSG_2  |                        |  MSG_2  |
+    //             +---------+                        +---------+
+    //             |  etc... |                        |  etc... |
+    //             +---------+                        +---------+
+    //             |  Msg X  |<--luos_task_id         |    0    |<--luos_tasks_stack_id
+    //             +---------+                        +---------+
+    //             |  etc... |                        |    0    |
+    //             |---------|                        |---------|
+    //             |  LAST   |                        |    0    |
+    //             +---------+                        +---------+
+    //             |    0    |<--luos_tasks_stack_id  |    0    |
+    //             +---------+                        |---------|
+    //
     for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
     {
         LuosHAL_SetIrqState(false);
@@ -711,6 +956,33 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
 error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_msg)
 {
     MsgAlloc_ValidDataIntegrity();
+    //
+    //   Pull a message from a specific service (for example service is in task D3)
+    //   luos_tasks_stack_id = 3 : function will search in messages D1, D2 & D3
+    //
+    //
+    //        msg_buffer                                 msg_buffer after pull
+    //        +------------------------+                +------------------------+
+    //        |------------------------|                |------------------------|
+    //        +--^---^---^-------------+                +--^---^---^-------------+
+    //           |   |   |                                 |   |   |
+    //   Msg:    1   2   3    ...                          1   2   used_msg   ...
+    //                                                            returned_msg
+    //
+    //
+    //             luos_tasks                                luos_tasks
+    //             +---------+                               +---------+
+    //             |  MSG_1  |\                              |  MSG_1  |
+    //             |---------| |                             |---------|
+    //             |  MSG_2  | |                             |  MSG_2  |
+    //             |---------| |                             |---------|
+    //             |  MSG_3  |/                              |    0    |<-- messaged pulled is cleared
+    //             |---------|<--luos_tasks_stack_id         |---------|
+    //             |  etc... |                               |  etc... |
+    //             |---------|                               |---------|
+    //             |   LAST  |                               |   LAST  |
+    //             +---------+                               +---------+
+    //
     //find the oldest message allocated to this service
     for (uint16_t i = 0; i < luos_tasks_stack_id; i++)
     {
@@ -724,6 +996,20 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
         }
     }
     // At this point we don't find any message for this service
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |  MSG_3  |\
+    //             |---------| |
+    //             |  etc... | |  <-- search these IDs
+    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | |
+    //             +---------+/
+    //
     return FAILED;
 }
 /******************************************************************************
@@ -735,6 +1021,29 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
 error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **returned_msg)
 {
     MsgAlloc_ValidDataIntegrity();
+    //
+    //        msg_buffer                    example : msg_buffer after pulling message D2
+    //        +------------------------+        +------------------------+
+    //        |------------------------|        |------------------------|
+    //        +--^-------^-------^-----+        +--^-------^-------^-----+
+    //           |       |       |                 |       |       |
+    //   Msg:    1       2  ... LAST               1       2  ... LAST
+    //                                                  used_msg
+    //                                                 returned_msg
+    //
+    //             luos_tasks                       luos_tasks
+    //             +---------+                      +---------+
+    //             |  MSG_1  |                      |  MSG_1  |
+    //             |---------|                      |---------|
+    //             |  MSG_2  |                      |  MSG_3  |
+    //             |---------|                      |---------|
+    //             |  MSG_3  |                      |  MSG_4  |
+    //             |---------|                      |---------|
+    //             |  etc... |                      |  etc... |
+    //             |---------|                      |---------|
+    //             |   LAST  |                      |    0    |
+    //             +---------+                      +---------+
+    //
     //find the oldest message allocated to this service
     if (luos_task_id < luos_tasks_stack_id)
     {
@@ -745,6 +1054,20 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
         return SUCCEED;
     }
     // At this point we don't find any message for this service
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |  MSG_3  |\
+    //             |---------| |
+    //             |  etc... | |  <-- search these IDs
+    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | |
+    //             +---------+/
+    //
     return FAILED;
 }
 /******************************************************************************
@@ -756,11 +1079,41 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
 error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **allocated_service)
 {
     MsgAlloc_ValidDataIntegrity();
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<-- if searching this ID : fills service pointer associated to D 2 Luos Task
+    //             |---------|
+    //             |  MSG_3  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |    0    |
+    //             |---------|
+    //             |  etc... |
+    //             |---------|
+    //             |    0    |
+    //             +---------+
+    //
     if (luos_task_id < luos_tasks_stack_id)
     {
         *allocated_service = luos_tasks[luos_task_id].ll_service_pt;
         return SUCCEED;
     }
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |  MSG_3  |\
+    //             |---------| |
+    //             |  etc... | |  <-- search these IDs
+    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | |
+    //             +---------+/
+    //
     return FAILED;
 }
 /******************************************************************************
@@ -771,11 +1124,37 @@ error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **all
  ******************************************************************************/
 error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd)
 {
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  ||
+    //             |---------|<--luos_tasks_stack_id : fills CMD header pointer
+    //             |  MSG_2  |
+    //             |---------|
+    //             |  etc... |
+    //             |---------|
+    //             |   LAST  |
+    //             +---------+
+    //
     if (luos_task_id < luos_tasks_stack_id)
     {
         *cmd = luos_tasks[luos_task_id].msg_pt->header.cmd;
         return SUCCEED;
     }
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |  MSG_3  |\
+    //             |---------| |
+    //             |  etc... | |  <-- search these IDs
+    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | |
+    //             +---------+/
+    //
     return FAILED;
 }
 /******************************************************************************
@@ -786,11 +1165,37 @@ error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd)
  ******************************************************************************/
 error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *source_id)
 {
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|<--luos_tasks_stack_id : fills SOURCE header pointer
+    //             |  MSG_2  |
+    //             |---------|
+    //             |  etc... |
+    //             |---------|
+    //             |   LAST  |
+    //             +---------+
+    //
     if (luos_task_id < luos_tasks_stack_id)
     {
         *source_id = luos_tasks[luos_task_id].msg_pt->header.source;
         return SUCCEED;
     }
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |  MSG_3  |\
+    //             |---------| |
+    //             |  etc... | |  <-- search these IDs
+    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | |
+    //             +---------+/
+    //
     return FAILED;
 }
 /******************************************************************************
@@ -801,11 +1206,37 @@ error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *sou
  ******************************************************************************/
 error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size)
 {
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|<--luos_tasks_stack_id : fills SIZE header pointer
+    //             |  MSG_2  |
+    //             |---------|
+    //             |  etc... |
+    //             |---------|
+    //             |   LAST  |
+    //             +---------+
+    //
     if (luos_task_id < luos_tasks_stack_id)
     {
         *size = luos_tasks[luos_task_id].msg_pt->header.size;
         return SUCCEED;
     }
+    //
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |<--luos_tasks_stack_id
+    //             |---------|
+    //             |  MSG_3  |\
+    //             |---------| |
+    //             |  etc... | |  <-- search these IDs
+    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | |
+    //             +---------+/
+    //
     return FAILED;
 }
 /******************************************************************************
@@ -818,12 +1249,35 @@ uint16_t MsgAlloc_LuosTasksNbr(void)
     return (uint16_t)luos_tasks_stack_id;
 }
 /******************************************************************************
- * @brief return the number of allocated messages
+ * @brief Clear a specific message in Luos Tasks
  * @param None
  * @return the number of messages
  ******************************************************************************/
 void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
 {
+    //
+    //  Example with message to clean = MSG_2
+    //
+    //        msg_buffer
+    //        +-------------------------------------------------------------+
+    //        |-------------------------------------------------------------|
+    //        +----------^^.......^..................^----------------------+
+    //                   ||       |                  |
+    //                   || msg to clean = D2        |
+    //                   ||                          |
+    //                   ||   Luos_tasks init state  |		Luos_tasks ending state
+    //                   ||  +---------+             |		  +---------+
+    //                   +|->|  MSG_1  |             |    	  |  MSG_1  |
+    //                    |  |---------|             |        |---------|
+    //                    +->|  MSG_2  |             |	      |  MSG_3  |
+    //                       |---------|             |        |---------|
+    //                       |  etc... |             |        |  etc... |
+    //                       |---------|             |        |---------|
+    //                       |  Last   |<------------+        |  Last   |
+    //                       +---------+					  |---------|
+    //  													  |    0    |
+    //														  +---------+
+    //
     uint16_t id = 0;
     while (id < luos_tasks_stack_id)
     {
@@ -836,6 +1290,24 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
             id++;
         }
     }
+    //      If message to clean is not in Luos_tasks : nothing is done
+    //
+    //        msg_buffer
+    //        +-------------------------------------------------------------+
+    //        |-------------------------------------------------------------|
+    //        +----------^^................^---------------^----------------+
+    //                   ||                |               |
+    //                   ||   Luos_tasks   |         msg  to clean
+    //                   ||  +---------+   |
+    //                   +|->|  MSG_1  |   |
+    //                    |  |---------|   |
+    //                    +->|  MSG_2  |   |
+    //                       |---------|   |
+    //                       |  etc... |   |
+    //                       |---------|   |
+    //                       |  Last   |<--+
+    //                       +---------+
+    //
 }
 /*******************************************************************************
  * Functions --> Tx tasks create, get and consume
@@ -869,7 +1341,37 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     progression_size = (uint32_t)data_ptr - (uint32_t)current_msg;
     estimated_size   = (uint32_t)data_end_estimation - (uint32_t)current_msg;
     rx_msg_bkp       = (void *)current_msg;
-    // We have to consider the biggest size between progression_size and size to be able to make a clean copy without stopping IRQ
+    //
+    //   * msg_buffer at beginning of MsgAlloc_SetTxTask : we are receiving a Rx message (complete or incomplete)
+    //        +--------------------------------------------------------------------------+
+    //        |------------------------------| Receiving Rx ... |------------------------|
+    //        +------------------------------^-------------------------------------------+
+    //                                       |
+    //                                   current_msg
+    //
+    //   * 2 cases for msg_buffer at end of MsgAlloc_SetTxTask :
+    //
+    //        --> Case 1 :  If Rx size received >= Tx size :
+    //              - Rx message is decayed after Tx message
+    //              - Tx message is copied to former Rx message space memory
+    //              - padding is added : important for a correct mem copy behaviour
+    //        +--------------------------------------------------------------------------+
+    //        |------------------------------| Tx | Padding |      Rx      |-------------|
+    //        +---------------------------------------------^----------------------------+
+    //                                                      |
+    //                                                  current_msg
+    //
+    //        --> Case 2 :  If Rx size received > Tx size :
+    //              - Rx message is decayed after Tx message
+    //              - Tx message is copied to former Rx message space memory
+    //              - No padding
+    //        +--------------------------------------------------------------------------+
+    //        |------------------------------|        Tx        | Rx |-------------------|
+    //        +-------------------------------------------------^-----------------------+
+    //                                                          |
+    //                                                     current_msg
+    //
+    // So, we have to consider the biggest size between progression_size and size to be able to make a clean copy without stopping IRQ
     if (progression_size > size)
     {
         decay_size = progression_size;
@@ -878,20 +1380,49 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     {
         decay_size = size;
     }
-    // Check if the message to send size fit into msg buffer
+    // Check if the message to send size (+ possible padding) fits into msg buffer
     if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + decay_size)) == FAILED)
     {
+        //
         // message to send don't fit
         // check at the end of buffer if there is a task
+        //
+        //
+        //                  +--------------------------------------------------------+
+        // memory needed :  |--------------------------------|  "size Tx" or  "size Rx received"  |
+        //                  +--------------------------------^-----------------------+
+        //                                                   |
+        //                                               current_msg
+        //
+        // There is no space available for now
         if (MsgAlloc_CheckMsgSpace((void *)current_msg, (void *)(uint32_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
         {
-            // There is no space available for now
+            // Check at the beginning of buffer if there is a task
+            //
+            //
+            //                  +----------------------------------------------------------------------------+
+            // memory needed :  |----------|  "size Tx" or  "size Rx received"  |----------------------------|
+            // msg_buffer    :  |----------|------------|Task|----------------------------------------------|
+            //                  +----------^------------^---------------------------------------------------+
+            //                             |            |
+            //                       current_msg      FAILED (there is a task)
+            //
             LuosHAL_SetIrqState(true);
             return FAILED;
         }
-        // Check at the beginning of buffer if there is a task
+
         if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + decay_size + estimated_size)) == FAILED)
         {
+            // Check at the beginning of buffer if there is a task
+            //
+            //
+            //                  +----------------------------------------------------------------------------+
+            // memory needed :  |  "size Tx" or  "size Rx received"  |---------------------------------------|
+            // msg_buffer    :  |--------------------------|Task|--------------------------------------------|
+            //                  +--------------------------^------------------------------------------------+
+            //                                             |
+            //                                       FAILED (there is a task)
+            //
             // There is no space available for now
             LuosHAL_SetIrqState(true);
             return FAILED;
@@ -906,15 +1437,37 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     else
     {
         // Message to send fit
+        //
+        //                  +----------------------------------------------------------------+
+        // memory needed :  |-------------------|  "size Tx" or  "size Rx received"  |-------|
+        //                  +-------------------^--------------------------------------------+
+        //                                      |
+        //                                  current_msg
+        //
         tx_msg = (void *)current_msg;
         // Check if the receiving message size fit into msg buffer
         if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)tx_msg + decay_size + estimated_size)) == FAILED)
         {
             // receiving message don't fit, move it to the start of the buffer
+            //
+            //                  +------------------------------------------------------+
+            // memory needed :  |---------------|  ("size Tx" or  "size Rx received")  +  Rx estimated_size |
+            //                  +---------------^--------------------------------------+
+            //                                  |
+            //                                tx_msg
+            //
             // Check space for the TX message
             if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + decay_size)) == FAILED)
             {
                 // There is no space available for now
+                //
+                //                  +--------------------------------------------------+
+                // memory needed :  |----------|  "size Tx" or  "size Rx received"  |--+
+                // msg_buffer    :  |----------|------------|Task|---------------------+
+                //                  +----------^------------^--------------------------+
+                //                             |            |
+                //                          tx_msg      FAILED (there is a task)
+                //
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
@@ -922,6 +1475,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)(uint32_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
             {
                 // There is no space available for now
+                //
+                //                  +----------------------------------------------------------------------------+
+                // memory needed :  |----------|  "size Tx" or  "size Rx received"  |----------------------------|
+                // msg_buffer    :  |----------|------------|-----------------------------------------------|Task|
+                //                  +----------^------------------------------------------------------------^----+
+                //                             |                                                            |
+                //                          tx_msg                                                   FAILED (there is a task)
+                //
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
@@ -929,6 +1490,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + estimated_size)) == FAILED)
             {
                 // There is no space available for now
+                //
+                //                  +----------------------------------------------------------------------------+
+                // memory needed :  |  Rx estimated_size  |------------------------------------------------------+
+                // msg_buffer    :  |------------------|Task|----------------------------------------------------+
+                //                  +------------------^---------------------------------------------------------+
+                //                                     |
+                //                                FAILED (there is a task)
+                //
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
@@ -943,6 +1512,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             if (MsgAlloc_CheckMsgSpace((void *)((uint32_t)tx_msg), (void *)((uint32_t)tx_msg + decay_size + estimated_size)) == FAILED)
             {
                 // There is no space available for now
+                //
+                //                  +----------------------------------------------------------------------+
+                // memory needed :  |-----|("size Tx" or  "size Rx received")  +  Rx estimated_size|-------+
+                // msg_buffer    :  |-----|------------|Task|----------------------------------------------+
+                //                  +-----^------------^---------------------------------------------------+
+                //                        |            |
+                //                        tx_msg     FAILED (there is a task)
+                //
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
@@ -953,11 +1530,15 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         data_ptr = (uint8_t *)((uint32_t)current_msg + progression_size);
         LUOS_ASSERT((uint32_t)(data_ptr) < (uint32_t)(&msg_buffer[MSG_BUFFER_SIZE]));
     }
+
+    // From here we have enough space to copy Tx message followed by Rx message
+    // First : deals with Rx
+    //----------------------------
     void *current_msg_cpy = (void *)current_msg;
     // Copy previously received header parts
     if (progression_size >= sizeof(header_t))
     {
-        // We already receive more than a header
+        // We have already received more than a header
         // Copy the header before reenabling IRQ
         memcpy((void *)current_msg_cpy, rx_msg_bkp, sizeof(header_t));
         // re-enable IRQ
@@ -967,21 +1548,25 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     }
     else
     {
-        // We receive less than a header
-        // Copy previously received datas
+        // Copy previously received incomplete header bytes
         memcpy((void *)current_msg_cpy, rx_msg_bkp, progression_size);
         // re-enable IRQ
         LuosHAL_SetIrqState(true);
     }
 
+    // Secondly : deals with Tx
+    //----------------------------
     // Copy 3 bytes from the message to transmit just to be sure to be ready to start transmitting
     // During those 3 bytes we have the time necessary to copy the other bytes
     memcpy((void *)tx_msg, (void *)data, 3);
-// Check if we need to transmit
+
 #ifndef VERBOSE_LOCALHOST
     if (localhost != LOCALHOST)
     {
 #endif
+        // if VERBOSE_LOCALHOST is defined :  Create a tx task to transmit on network for all localhost mode (including LOCALHOST)
+        // if VERBOSE_LOCALHOST is NOT defined : create a tx task to transmit on network, except for LOCALHOST
+        //
         // Now we are ready to transmit, we can create the tx task
         LuosHAL_SetIrqState(false);
         tx_tasks[tx_tasks_stack_id].size          = size;
@@ -1000,9 +1585,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     }
 #endif
 
-    //finish the copy
+    //finish the Tx copy (with Ack if necessary)
     if (ack != 0)
     {
+        //        msg_buffer : add Ack
+        //        +-------------------------------------------------------------+
+        //        |----------------------------------|   Tx  + Ack  | Rx |------|
+        //        +-------------------------------------------------------------+
+        //
         // Finish the copy of the message to transmit
         memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 6); // 3 bytes already copied - 2 bytes CRC - 1 byte ack
         ((char *)tx_msg)[size - 3] = (uint8_t)(crc);
@@ -1011,15 +1601,23 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     }
     else
     {
+        //    msg_buffer
+        //    +-------------------------------------------------------------+
+        //    |----------------------------------|   Tx   | Rx |------------|
+        //    +----------------------------------^--------------------------+
+        //                                       |
+        //                                     tx_msg
+        //
         // Finish the copy of the message to transmit
         memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 5); // 3 bytes already copied - 2 bytes CRC
         ((char *)tx_msg)[size - 2] = (uint8_t)(crc);
         ((char *)tx_msg)[size - 1] = (uint8_t)(crc >> 8);
     }
-    //manage localhost
+
+    //manage localhost (exclude EXTERNALHOST)
     if (localhost != EXTERNALHOST)
     {
-        // This is a localhost message copy it as a message task
+        // This is a localhost (LOCALHOST or MULTIHOST) message copy it as a message task
         LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
         LuosHAL_SetIrqState(false);
         LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
@@ -1037,7 +1635,23 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
 void MsgAlloc_PullMsgFromTxTask(void)
 {
     LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
-
+    //
+    //
+    //                      tx_tasks                         tx_tasks                         tx_tasks
+    //                     +---------+                      +---------+                      +---------+<--tx_tasks_stack_id = 0
+    //                     |   Tx1   |                      |   Tx2   |                      |    0    |
+    //                     |---------|                      |---------|                      |---------|
+    //                     |   Tx2   |                      |   Tx3   |                      |    0    |
+    //                     |---------|                      |---------|                      |---------|
+    //                     |   Tx3   |                      |   Tx4   |                      |    0    |
+    //                     |---------|                      |---------|                      |---------|
+    //                     |  etc... |                      |  etc... |       etc...         |  etc... |
+    //                     |---------|                      |---------|                      |---------|
+    //                     |  etc... |  tx_tasks_stack_id-->|  etc... |                      |    0    |
+    //                     |---------|                      |---------|                      |---------|
+    // tx_tasks_stack_id-->|  LAST   |                      |    0    |                      |    0    |
+    //                     +---------+                      +---------+                      +---------+
+    //
     // Decay tasks
     for (int i = 0; i < tx_tasks_stack_id; i++)
     {
@@ -1062,6 +1676,23 @@ void MsgAlloc_PullMsgFromTxTask(void)
  ******************************************************************************/
 void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
 {
+    //
+    //   Remove a Tx message from a specific service by analyzing "target" in header (for example service is in tx task Tx2)
+    //   tx_tasks_stack_id = 3 : function will search in messages Tx1, Tx2 & Tx3
+    //
+    //             tx_tasks                                  tx_tasks
+    //             +---------+                               +---------+
+    //             |   Tx1   |\                              |   Tx1   |
+    //             |---------| |                             |---------|
+    //             |   Tx2   | |                             |   Tx3   |<-- messaged Tx2 has been is cleared
+    //             |---------| |                             |---------|
+    //             |   Tx3   |/                              |   Tx4   |
+    //             |---------|<--tx_tasks_stack_id           |---------|
+    //             |  etc... |                               |  etc... |
+    //             |---------|                               |---------|
+    //             |   LAST  |                               |    0    |
+    //             +---------+                               +---------+
+    //
     LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
     uint8_t task_id = 0;
     // check all task
@@ -1105,6 +1736,19 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
+    //
+    // example if luos_tasks_stack_id = 0
+    //             luos_tasks
+    //             +---------+
+    //             |  MSG_1  |
+    //             |---------|<--luos_tasks_stack_id  : tx_tasks[0] is filled with pointers (service, data, size & localhost)
+    //             |  MSG_2  |
+    //             |---------|
+    //             |  etc... |
+    //             |---------|
+    //             |   LAST  |
+    //             +---------+
+    //
     if (tx_tasks_stack_id > 0)
     {
         *data          = tx_tasks[0].data_pt;
@@ -1113,6 +1757,18 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
         *localhost     = tx_tasks[0].localhost;
         return SUCCEED;
     }
+    //
+    //             luos_tasks
+    //             +---------+<--luos_tasks_stack_id  (no message, function return FAILED)
+    //             |  MSG_1  |
+    //             |---------|
+    //             |  MSG_2  |
+    //             |---------|
+    //             |  etc... |
+    //             |---------|
+    //             |   LAST  |
+    //             +---------+
+    //
     return FAILED;
 }
 /******************************************************************************
