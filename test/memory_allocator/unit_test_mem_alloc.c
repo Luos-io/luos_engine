@@ -1753,26 +1753,37 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
         //             +---------+
         //                        <--tx_tasks_stack_id overflows ==> Assert
         //
+        uint16_t service_id = 1;
 
-        uint16_t service_id = 0;
-
-        for (uint16_t i = 0; i < MAX_MSG_NB + 2; i++)
+        for (uint16_t i = 0; i <= MAX_MSG_NB; i++)
         {
             MsgAlloc_Init(NULL);
             RESET_ASSERT();
+
+            // Init variables
+            //---------------
             tx_tasks_stack_id = i;
 
+            for (uint16_t i = 0; i < MAX_MSG_NB; i++)
+            {
+                msg_tasks[i]                = (msg_t *)&msg_buffer[i * 20];
+                msg_tasks[i]->header.target = 0;
+                tx_tasks[i].data_pt         = (uint8_t *)msg_tasks[i];
+            }
+
+            // Call function and Verify
+            //---------------------------
             if (tx_tasks_stack_id == 0)
             {
+                NEW_STEP("Check assert has occured when \"tx tasks stack id\" = 0");
                 MsgAlloc_PullServiceFromTxTask(service_id);
-                NEW_STEP_IN_LOOP("Check assert has occured when \"tx tasks stack id\" = 0", i);
                 TEST_ASSERT_TRUE(IS_ASSERT());
             }
-            else if (tx_tasks_stack_id > MAX_MSG_NB)
+            else
             {
-                NEW_STEP_IN_LOOP("Check assert has occured when \"tx tasks stack id\" overflows", i);
+                NEW_STEP_IN_LOOP("Check correct cases", i - 1);
                 MsgAlloc_PullServiceFromTxTask(service_id);
-                TEST_ASSERT_TRUE(IS_ASSERT());
+                TEST_ASSERT_FALSE(IS_ASSERT());
             }
         }
         RESET_ASSERT();
@@ -1864,37 +1875,42 @@ void unittest_MsgAlloc_GetTxTask()
         //                        <--luos_tasks_stack_id (overflows ==> Assert)
         //
 
-        ll_service_t *ll_service;
-        uint8_t *data;
-        uint16_t *size;
-        uint8_t *localhost;
+        for (uint8_t i = 0; i < 2; i++)
+        {
+            RESET_ASSERT();
 
-        // Init variables
-        //---------------
-        RESET_ASSERT();
-        tx_tasks_stack_id = MAX_MSG_NB;
+            // Init variables
+            //---------------
+            ll_service_t *ll_service;
+            uint8_t *data;
+            uint16_t size     = 128;
+            uint8_t localhost = 1;
 
-        // Call function
-        //---------------
-        MsgAlloc_GetTxTask(&ll_service, &data, size, localhost);
+            tx_tasks[0].data_pt       = (uint8_t *)16;
+            tx_tasks[0].ll_service_pt = (ll_service_t *)32;
+            tx_tasks[0].size          = 128;
+            tx_tasks[0].localhost     = 1;
 
-        NEW_STEP("Check assert has occured when \"tx tasks stack id\" = max value");
-        TEST_ASSERT_TRUE(IS_ASSERT());
+            tx_tasks_stack_id = MAX_MSG_NB + i;
 
-        // Init variables
-        //---------------
-        RESET_ASSERT();
-        tx_tasks_stack_id = MAX_MSG_NB + 1;
+            // Call function
+            //---------------
+            MsgAlloc_GetTxTask(&ll_service, &data, &size, &localhost);
 
-        // Call function
-        //---------------
-        MsgAlloc_GetTxTask(&ll_service, &data, size, localhost);
+            // Verify
+            //---------------
+            NEW_STEP("Check assert has occured when \"tx tasks stack id\" = max value");
+            TEST_ASSERT_TRUE(IS_ASSERT());
 
-        // Verify
-        //---------------
-        NEW_STEP("Check assert has occured when \"tx tasks stack id\" overflows");
-        TEST_ASSERT_TRUE(IS_ASSERT());
+            // Call function
+            //---------------
+            MsgAlloc_GetTxTask(&ll_service, &data, &size, &localhost);
 
+            // Verify
+            //---------------
+            NEW_STEP("Check assert has occured when \"tx tasks stack id\" overflows");
+            TEST_ASSERT_TRUE(IS_ASSERT());
+        }
         RESET_ASSERT();
     }
 
