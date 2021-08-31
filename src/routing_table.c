@@ -55,7 +55,7 @@ uint16_t RoutingTB_IDFromAlias(char *alias)
             }
         }
     }
-    return 0xFFFF;
+    return 0;
 }
 /******************************************************************************
  * @brief  Return an id from type
@@ -74,7 +74,7 @@ uint16_t RoutingTB_IDFromType(luos_type_t type)
             }
         }
     }
-    return 0xFFFF;
+    return 0;
 }
 /******************************************************************************
  * @brief  Return a Nodeid from service id
