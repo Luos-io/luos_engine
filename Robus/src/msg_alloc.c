@@ -209,15 +209,17 @@ static inline void MsgAlloc_ValidDataIntegrity(void)
         // Copy the header at the begining of msg_buffer
         //
         //        msg_buffer init state
-        //        +-------------------------------------------------------------+
-        //        |-------|Header|----------------------------------------------|
-        //        +-------------------------------------------------------------+
-        //
+        //        +--------------------------------------------------------+
+        //        |-------------------------------|  Header  | Datas to be received |
+        //        +------------------------------------------^-------------+        ^
+        //                                                   |                      |
+        //                             Need to copy to buffer beginning    data_end_estimation
+        //                             as an overflows will occur
         //
         //        msg_buffer ending state
-        //        +-------------------------------------------------------------+
-        //        |Header|------------------------------------------------------|
-        //        +-------------------------------------------------------------+
+        //        +--------------------------------------------------------+
+        //        |Header|-------------------------------------------------|
+        //        +--------------------------------------------------------+
         //
         memcpy((void *)&msg_buffer[0], (void *)copy_task_pointer, sizeof(header_t));
         // reset copy_task_pointer status
@@ -616,15 +618,17 @@ void MsgAlloc_EndMsg(void)
         //
         //        msg_buffer init state
         //        +-------------------------------------------------------------+
-        //        |-----------------------------------------------| Header | Data | CRC |
-        //        +-------------------------------------------------------------+
-        //
+        //        |------------------------------------|  Header  | Datas to be received |
+        //        +-------------------------------------------------------------+        ^
+        //                                                                               |
+        //                                                                       data_end_estimation
         //        msg_buffer ending state
         //        +-------------------------------------------------------------+
-        //        |-----------------------------------------------| Header | Data | CRC |
-        //        ^-------------------------------------------------------------+
-        //        |
-        //    data_ptr
+        //        |------------------------------------|  Header  |-------------|
+        //        |---------| Datas to be received |----------------------------|
+        //        ^---------^---------------------------------------------------+
+        //        |         |
+        //    data_ptr      data_end_estimation
         //    current_mag
         //
         data_ptr = &msg_buffer[0];
@@ -980,16 +984,19 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
 {
     MsgAlloc_ValidDataIntegrity();
     //
-    //   Pull a message from a specific service (for example service is in task D3)
-    //   luos_tasks_stack_id = 3 : function will search in messages D1, D2 & D3
+    //   Pull a message from a specific service
+    //
+    //   For example, there are 4 messages in buffer and required service is in task 3 :
+    //   luos_tasks_stack_id = 3 : function will search in messages 1, 2 & 3
     //
     //
     //        msg_buffer                                 msg_buffer after pull
     //        +------------------------+                +------------------------+
     //        |------------------------|                |------------------------|
-    //        +--^---^---^-------------+                +--^---^---^-------------+
-    //           |   |   |                                 |   |   |
-    //   Msg:    1   2   3    ...                          1   2   used_msg   ...
+    //        +--^---^---^---^---------+                +--^---^---^---^---------+
+    //           |   |   |   |                             |   |   |   |
+    //   Msg:    1   2   3   4                             1   2   |   4
+    //                                                            used_msg
     //                                                            returned_msg
     //
     //
@@ -999,11 +1006,13 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
     //             |---------| |                             |---------|
     //             |  MSG_2  | |                             |  MSG_2  |
     //             |---------| |                             |---------|
-    //             |  MSG_3  |/                              |    0    |<-- messaged pulled is cleared
-    //             |---------|<--luos_tasks_stack_id         |---------|
-    //             |  etc... |                               |  etc... |
+    //             |  MSG_3  | |                             |  MSG_4  |<-- third message pulled is cleared
+    //             |---------| |                             |---------|
+    //             |  MSG_4  | |<--luos_tasks_stack_id       |    0    |
+    //             |---------| /                             |---------|
+    //             |    0    |                               |    0    |
     //             |---------|                               |---------|
-    //             |   LAST  |                               |   LAST  |
+    //             |  etc... |                               |  etc... |
     //             +---------+                               +---------+
     //
     //find the oldest message allocated to this service
@@ -1281,25 +1290,25 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
     //
     //  Example with message to clean = MSG_2
     //
-    //        msg_buffer
-    //        +-------------------------------------------------------------+
-    //        |-------------------------------------------------------------|
-    //        +----------^^.......^..................^----------------------+
-    //                   ||       |                  |
-    //                   || msg to clean = D2        |
-    //                   ||                          |
-    //                   ||   Luos_tasks init state  |		Luos_tasks ending state
-    //                   ||  +---------+             |		  +---------+
-    //                   +|->|  MSG_1  |             |    	  |  MSG_1  |
-    //                    |  |---------|             |        |---------|
-    //                    +->|  MSG_2  |             |	      |  MSG_3  |
-    //                       |---------|             |        |---------|
-    //                       |  etc... |             |        |  etc... |
-    //                       |---------|             |        |---------|
-    //                       |  Last   |<------------+        |  Last   |
-    //                       +---------+					  |---------|
-    //  													  |    0    |
-    //														  +---------+
+    //    msg_buffer
+    //  +-------------------------------------------------------------+
+    //  |--|  1  | 2 |----|     3    |------------ |    X    |--------|
+    //  +--^-----^--------^------------------------^------------------+
+    //     |     |        |                        |
+    //     |     |        |                        |
+    //     |     |        |                        |
+    //     |     |        | Luos_tasks init state  |      Luos_tasks ending state
+    //     |     |        |   +---------+          |        +---------+
+    //     +-----|--------|-->|  MSG_1  |          |        |  MSG_1  |
+    //           |        |   |---------|          |        |---------|
+    //           +--------|-->|  MSG_2  |          |        |  MSG_3  |
+    //                    |   |---------|          |        |---------|
+    //                    +-->|  MSG_3  |          |        |  etc... |
+    //                        |---------|          |        |---------|
+    //                        |  etc... |          |        |  Last   |
+    //                        |---------|          |        |---------|
+    //                        |  Last   |<---------+        |    0    |
+    //                        +---------+                   +---------+
     //
     uint16_t id = 0;
     while (id < luos_tasks_stack_id)
@@ -1375,24 +1384,32 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     //   * 2 cases for msg_buffer at end of MsgAlloc_SetTxTask :
     //
     //        --> Case 1 :  If Rx size received >= Tx size :
-    //              - Rx message is decayed after Tx message
+    //              - Rx message is decayed of "decay_size" after Tx message
     //              - Tx message is copied to former Rx message space memory
-    //              - padding is added : important for a correct mem copy behaviour
+    //              - Padding is added : important for a correct mem copy behaviour
     //        +--------------------------------------------------------------------------+
     //        |------------------------------| Tx | Padding |      Rx      |-------------|
-    //        +---------------------------------------------^----------------------------+
-    //                                                      |
-    //                                                  current_msg
+    //        +------------------------------^--------------^----------------------------+
+    //                                       |              |
+    //                                       |------------->|
+    //                                       |  decay_size  |
+    //                                       |              |
+    //                                 current_msg       current_msg
+    //                                  init state
     //
     //        --> Case 2 :  If Rx size received > Tx size :
-    //              - Rx message is decayed after Tx message
+    //              - Rx message is decayed of "decay_size" after Tx message
     //              - Tx message is copied to former Rx message space memory
     //              - No padding
     //        +--------------------------------------------------------------------------+
     //        |------------------------------|        Tx        | Rx |-------------------|
     //        +-------------------------------------------------^-----------------------+
-    //                                                          |
-    //                                                     current_msg
+    //                                       |                  |
+    //                                       |----------------->|
+    //                                       |    decay_size    |
+    //                                       |                  |
+    //                                 current_msg           current_msg
+    //                                  init state
     //
     // So, we have to consider the biggest size between progression_size and size to be able to make a clean copy without stopping IRQ
     if (progression_size > size)
