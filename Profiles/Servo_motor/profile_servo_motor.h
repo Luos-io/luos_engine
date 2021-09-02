@@ -1,16 +1,14 @@
 /******************************************************************************
- * @file Struct servo motor
- * @brief servo motor data structure definition
- * WARING : This h file should be only included by profile_*.h or template_*.h codes
+ * @file Profile servo motor
+ * @brief servo motor profile
+ * WARING : This h file should be only included by profile_*.c codes
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef TEMPLATE_STRUCT_SERVO_MOTOR_H_
-#define TEMPLATE_STRUCT_SERVO_MOTOR_H_
+#ifndef PROFILE_SERVO_MOTOR_H_
+#define PROFILE_SERVO_MOTOR_H_
 
-#include <stdbool.h>
-#include "luos.h"
-#include "struct_motor.h"
+#include "profile_motor.h"
 
 /*******************************************************************************
  * Definitions
@@ -80,5 +78,14 @@ typedef struct
     streaming_channel_t measurement;
     time_luos_t sampling_period;
 } profile_servo_motor_t;
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 
-#endif /* TEMPLATE_STRUCT_SERVO_MOTOR_H_ */
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
+void ProfileServo_link(uint8_t, profile_servo_motor_t *);
+service_t *ProfileServo_CreateService(profile_servo_motor_t *, SERVICE_CB, const char *, revision_t);
+
+#endif /* PROFILE_SERVO_MOTOR_H_ */

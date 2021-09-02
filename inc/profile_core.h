@@ -1,29 +1,43 @@
 /******************************************************************************
- * @file Template voltage
- * @brief voltage service template
+ * @file Profile 
+ * @brief service profile
  * WARING : This h file should be only included by user code or profile_*.h codes
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef TEMPLATE_TEMPLATE_VOLTAGE_H_
-#define TEMPLATE_TEMPLATE_VOLTAGE_H_
+#ifndef PROFILE_CORE_H
+#define PROFILE_CORE_H
 
 #include <stdbool.h>
 #include "luos.h"
-#include "struct_voltage.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-/*
- * voltage object
- */
-typedef struct
+typedef struct profile_ops
 {
-    SERVICE_CB self;
-    profile_voltage_t profile;
-} template_voltage_t;
+    void (*Init)(void *);
+    void (*Handler)(service_t *, msg_t *);
+    SERVICE_CB Callback;
+} profile_ops_t;
+
+typedef struct profile_core
+{
+    // connect an another profile
+    struct profile_core *connect;
+    // profile structure
+    luos_type_t type;
+    void *profile_data;
+    profile_ops_t profile_ops;
+} profile_core_t;
+
+#define CONNECT_AVAILABLE 0
+
+enum
+{
+    HEAD_PROFILE,
+    CONNECT_PROFILE
+};
 
 /*******************************************************************************
  * Variables
@@ -32,7 +46,9 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
+profile_core_t *ProfileCore_GetFromService(service_t *);
+profile_core_t *ProfileCore_GetNew(bool);
+void ProfileCore_OverrideConnectHandler(void);
+service_t *ProfileCore_StartService(SERVICE_CB, const char *, revision_t);
 
-service_t *TemplateVoltage_CreateService(SERVICE_CB service_cb, template_voltage_t *var, const char *alias, revision_t revision);
-
-#endif /* TEMPLATE_TEMPLATE_VOLTAGE_H_ */
+#endif /* PROFILE_CORE_H_ */

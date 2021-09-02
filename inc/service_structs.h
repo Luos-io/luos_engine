@@ -106,7 +106,7 @@ typedef struct __attribute__((__packed__)) service_t
     luos_stats_t *node_statistics;         /*!< Node level statistics. */
     service_stats_t statistics;            /*!< service level statistics. */
     access_t access;                       /*!< service read write access. */
-    void *template_context;                /*!< Pointer to the template context. */
+    void *profile_context;                 /*!< Pointer to the profile context. */
 } service_t;
 
 typedef void (*SERVICE_CB)(service_t *service, msg_t *msg);
