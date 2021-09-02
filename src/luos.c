@@ -531,6 +531,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
     service->ll_service->ll_stat.max_retry = &service->statistics.max_retry;
 
     service_number++;
+    LUOS_ASSERT(service_number <= MAX_SERVICE_NUMBER);
     return service;
 }
 /******************************************************************************

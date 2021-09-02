@@ -32,16 +32,9 @@ profile_core_t *ProfileCore_GetNew(bool profile_mode)
         head_profile_index = available_index;
 
     // update available profile index
-    if (available_index < (MAX_PROFILE_NUMBER - 1))
-    {
-        available_index += 1;
-        new_profile = &profile_table[available_index - 1];
-    }
-    else
-    {
-        available_index = (MAX_PROFILE_NUMBER - 1);
-        new_profile     = &profile_table[available_index];
-    }
+    LUOS_ASSERT(available_index <= (MAX_PROFILE_NUMBER - 1));
+    available_index += 1;
+    new_profile = &profile_table[available_index - 1];
 
     // find a connection for a profile
     if (profile_mode == CONNECT_PROFILE)
