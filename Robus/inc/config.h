@@ -28,6 +28,10 @@
 #define MAX_SERVICE_NUMBER 5
 #endif
 
+#ifndef MAX_PROFILE_NUMBER
+#define MAX_PROFILE_NUMBER MAX_SERVICE_NUMBER
+#endif
+
 #ifndef MSG_BUFFER_SIZE
 #define MSG_BUFFER_SIZE 3 * sizeof(msg_t)
 #endif
