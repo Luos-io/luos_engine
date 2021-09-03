@@ -8,8 +8,7 @@
 #define __SERVICE_STRUCT_H
 
 #include <stdint.h>
-#include "luos.h"
-#include "luos_od.h"
+#include "robus.h"
 
 /*******************************************************************************
  * Definitions
@@ -122,6 +121,27 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[3 * sizeof(uint32_t)]; /*!< Uncmaped form. */
     };
 } luos_uuid_t;
+
+typedef enum
+{
+    // Luos specific registers
+    RTB_CMD = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2), or share(size > 2) a routing_table.
+    WRITE_ALIAS,                 // Get and save a new given alias.
+    UPDATE_PUB,                  // Ask to update a sensor value each time duration to the sender
+    NODE_UUID,                   // luos_uuid_t
+
+    // Revision management
+    REVISION,        // service sends its firmware revision
+    LUOS_REVISION,   // service sends its luos revision
+    LUOS_STATISTICS, // service sends its luos revision
+
+    // bootloader command and response
+    BOOTLOADER_CMD,
+    BOOTLOADER_RESP,
+
+    // compatibility area
+    LUOS_LAST_RESERVED_CMD
+} reserved_luos_cmd_t;
 
 /*******************************************************************************
  * Variables

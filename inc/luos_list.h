@@ -7,7 +7,7 @@
 #ifndef LUOS_LIST_H
 #define LUOS_LIST_H
 
-#include <robus.h>
+#include "service_structs.h"
 
 /*******************************************************************************
  * Definitions
@@ -32,30 +32,12 @@ typedef enum
 
 typedef enum
 {
-    // Luos specific registers
-    RTB_CMD = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2), or share(size > 2) a routing_table.
-    WRITE_ALIAS,                 // Get and save a new given alias.
-    UPDATE_PUB,                  // Ask to update a sensor value each time duration to the sender
-    NODE_UUID,                   // luos_uuid_t
-
-    // Revision management
-    REVISION,        // service sends its firmware revision
-    LUOS_REVISION,   // service sends its luos revision
-    LUOS_STATISTICS, // service sends its luos revision
-
-    // bootloader command and response
-    BOOTLOADER_CMD,
-    BOOTLOADER_RESP,
-
-    // ************* End of Luos managed commands ****************
-
     // Common register for all services
-    GET_CMD, // asks a service to publish its data
-    SET_CMD, // set some undefined data
+    GET_CMD = LUOS_LAST_RESERVED_CMD, // asks a service to publish its data
+    SET_CMD,                          // set some undefined data
 
     // Generic data
     COLOR,       // color_t (R, G, B)
-    COMPLIANT,   // char (True/False)
     IO_STATE,    // char (True/False)
     RATIO,       // ratio_t (percentage %)
     PEDOMETER,   // long[2] (step number and step time millisecond)
@@ -109,7 +91,7 @@ typedef enum
     ERROR_CMD,
 
     // compatibility area
-    LUOS_PROTOCOL_NB,
+    LUOS_LAST_STD_CMD
 } luos_cmd_t;
 
 /*******************************************************************************
