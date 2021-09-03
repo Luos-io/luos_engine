@@ -6,6 +6,8 @@
  ******************************************************************************/
 
 #include "selftest.h"
+#include "context.h"
+#include "stdbool.h"
 #include "luos_hal.h"
 
 /*******************************************************************************
@@ -78,10 +80,17 @@ result_t selftest_com(void)
     uint32_t tickstart = LuosHAL_GetSystick();
     while (!rx_flag)
     {
-        if ((LuosHAL_GetSystick() - tickstart) > 3000)
+        if ((LuosHAL_GetSystick() - tickstart) > 2000)
         {
             return KO;
         }
+    }
+    while ((LuosHAL_GetSystick() - tickstart) < 2000)
+        ;
+
+    if (ctx.tx.lock == true)
+    {
+        return KO;
     }
 
     return OK;
