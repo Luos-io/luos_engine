@@ -553,6 +553,12 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
         // There is no service specified here, take the first one
         service = &service_table[0];
     }
+    if ((service->ll_service->id == 0) && (msg->header.cmd >= LUOS_LAST_RESERVED_CMD))
+    {
+        // We are in detection mode and this command come from user
+        // We can't send it
+        return PROHIBITED;
+    }
     if (Robus_SendMsg(service->ll_service, msg) == FAILED)
     {
         return FAILED;

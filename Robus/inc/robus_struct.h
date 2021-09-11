@@ -119,6 +119,7 @@ typedef struct __attribute__((__packed__))
 typedef enum
 {
     SUCCEED,      /*!< function work properly. */
+    PROHIBITED,   /*!< function usage is currently prohibited. */
     FAILED = 0xFF /*!< function fail. */
 } error_return_t;
 
