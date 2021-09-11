@@ -691,7 +691,17 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
     static uint32_t data_size[MAX_SERVICE_NUMBER]       = {0};
     static uint32_t total_data_size[MAX_SERVICE_NUMBER] = {0};
     static uint16_t last_msg_size                       = 0;
-    uint16_t id                                         = Luos_GetServiceIndex(service);
+
+    // When this function receive a data from a NULL service it is an error and we should reinit the reception state
+    if (service == NULL)
+    {
+        memset(data_size, 0, sizeof(data_size));
+        memset(total_data_size, 0, sizeof(total_data_size));
+        last_msg_size = 0;
+        return FAILED;
+    }
+
+    uint16_t id = Luos_GetServiceIndex(service);
     // check good service index
     if (id == 0xFFFF)
     {
