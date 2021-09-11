@@ -78,6 +78,12 @@ void Luos_Loop(void)
     {
         luos_stats.max_loop_time_ms = LuosHAL_GetSystick() - last_loop_date;
     }
+    if (MsgAlloc_IsReseted() == SUCCEED)
+    {
+        // We receive a reset detection
+        // Reset the data reception context
+        Luos_ReceiveData(NULL, NULL, NULL);
+    }
     Robus_Loop();
     // look at all received messages
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)

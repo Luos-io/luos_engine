@@ -145,9 +145,9 @@ void Recep_GetData(volatile uint8_t *data)
             // Make an exception for reset detection command
             if (current_msg->header.cmd == RESET_DETECTION)
             {
+                MsgAlloc_Reset();
                 ctx.node.node_id = 0;
                 PortMng_Init();
-                MsgAlloc_Init(NULL);
                 ctx.tx.status = TX_DISABLE;
             }
             else

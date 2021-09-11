@@ -76,7 +76,8 @@ typedef struct
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-memory_stats_t *mem_stat = NULL;
+memory_stats_t *mem_stat   = NULL;
+volatile bool reset_needed = false;
 
 // msg buffering
 volatile uint8_t msg_buffer[MSG_BUFFER_SIZE]; /*!< Memory space used to save and alloc messages. */
@@ -162,6 +163,8 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     {
         mem_stat = memory_stats;
     }
+    // Reset have been made
+    reset_needed = false;
 }
 /******************************************************************************
  * @brief execute some things out of IRQ
@@ -489,6 +492,24 @@ error_return_t MsgAlloc_IsEmpty(void)
     {
         return FAILED;
     }
+}
+
+void MsgAlloc_Reset(void)
+{
+    // We will need to reset
+    reset_needed = true;
+}
+
+error_return_t MsgAlloc_IsReseted(void)
+{
+    // Check if we need to reset everything due to detection reset
+    if (reset_needed)
+    {
+        // We need to reset MsgAlloc
+        MsgAlloc_Init(NULL);
+        return SUCCEED;
+    }
+    return FAILED;
 }
 
 /*******************************************************************************

@@ -501,6 +501,8 @@ void RoutingTB_DetectServices(service_t *service)
 {
     // Starts the topology detection.
     uint16_t nb_node = Robus_TopologyDetection(service->ll_service);
+    // Clear data reception state
+    Luos_ReceiveData(NULL, NULL, NULL);
     // clear the routing table.
     RoutingTB_Erase();
     // Generate the routing_table

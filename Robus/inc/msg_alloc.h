@@ -34,6 +34,8 @@ void MsgAlloc_EndMsg(void);
 void MsgAlloc_SetData(uint8_t data);
 error_return_t MsgAlloc_IsEmpty(void);
 void MsgAlloc_UsedMsgEnd(void);
+void MsgAlloc_Reset(void);
+error_return_t MsgAlloc_IsReseted(void);
 
 // msg interpretation task stack
 error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg);
