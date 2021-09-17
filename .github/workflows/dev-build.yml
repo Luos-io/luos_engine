@@ -127,3 +127,12 @@ jobs:
         # NUCLEO-G431KB
         platformio run -d Projects/NUCLEO-G431KB/Button
         platformio run -d Projects/NUCLEO-G431KB/Gate_SerialCom
+
+    - name: Run PlatformIO Unit Tests
+      env:
+        PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        cd ../Luos/
+        platformio run -t clean        
+        platformio test -e native -i CodeCoverage --verbose

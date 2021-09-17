@@ -14,12 +14,17 @@
 
 #define LUOS_ASSERTION
 
-#ifdef LUOS_ASSERTION
+#if defined(UNIT_TEST)
+extern void unittest_assert(char *file, uint32_t line);
+#define LUOS_ASSERT(expr) \
+    if (!(expr))          \
+    unittest_assert(__FILE__, __LINE__)
+#elif defined(LUOS_ASSERTION)
 #define LUOS_ASSERT(expr) \
     if (!(expr))          \
     Luos_assert(__FILE__, __LINE__)
 #else
-#define LUOS_ASSERT(expr)
+#define LUOS_ASSERT(expr) ()
 #endif
 
 /* This structure is used to manage node assertion informations
