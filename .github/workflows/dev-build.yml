@@ -135,4 +135,4 @@ jobs:
       run: |
         cd ../Luos/
         platformio run -t clean        
-        platformio test -e native --verbose
+        platformio test -e native -i CodeCoverage --verbose
