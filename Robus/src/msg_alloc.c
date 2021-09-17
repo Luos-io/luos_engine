@@ -1127,10 +1127,6 @@ void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
 error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
-    if (reset_needed)
-    {
-        return FAILED;
-    }
     MsgAlloc_ValidDataIntegrity();
     if (tx_tasks_stack_id > 0)
     {
