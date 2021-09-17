@@ -497,7 +497,9 @@ error_return_t MsgAlloc_IsEmpty(void)
 void MsgAlloc_Reset(void)
 {
     // We will need to reset
-    reset_needed = true;
+    reset_needed      = true;
+    tx_tasks_stack_id = 0;
+    memset((void *)tx_tasks, 0, sizeof(tx_tasks));
 }
 
 error_return_t MsgAlloc_IsReseted(void)
