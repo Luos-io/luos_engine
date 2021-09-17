@@ -1128,6 +1128,12 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
+
+    if (reset_needed)
+    {
+        MsgAlloc_Reset();
+    }
+
     if (tx_tasks_stack_id > 0)
     {
         *data          = tx_tasks[0].data_pt;
