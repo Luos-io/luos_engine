@@ -114,19 +114,22 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
  ******************************************************************************/
 error_return_t PortMng_PokeNextPort(void)
 {
-    for (uint8_t port = 0; port < NBR_PORT; port++)
+    if ((ctx.port.activ != NBR_PORT) || (ctx.node.node_id == 1))
     {
-        if (ctx.node.port_table[port] == 0)
+        for (uint8_t port = 0; port < NBR_PORT; port++)
         {
-            // this port have not been poked
-            if (PortMng_PokePort(port))
+            if (ctx.node.port_table[port] == 0)
             {
-                return SUCCEED;
-            }
-            else
-            {
-                // nobody is here
-                ctx.node.port_table[port] = 0xFFFF;
+                // this port have not been poked
+                if (PortMng_PokePort(port))
+                {
+                    return SUCCEED;
+                }
+                else
+                {
+                    // nobody is here
+                    ctx.node.port_table[port] = 0xFFFF;
+                }
             }
         }
     }
