@@ -49,6 +49,8 @@
 #include "luos_hal.h"
 #include "luos_utils.h"
 
+#include "context.h"
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -683,7 +685,11 @@ error_return_t MsgAlloc_IsEmpty(void)
         return FAILED;
     }
 }
-
+/******************************************************************************
+ * @brief Reset msg_alloc tx_tasks to avoid sending messages
+ * @param None
+ * @return None
+ ******************************************************************************/
 void MsgAlloc_Reset(void)
 {
     // We will need to reset
@@ -691,12 +697,18 @@ void MsgAlloc_Reset(void)
     tx_tasks_stack_id = 0;
     memset((void *)tx_tasks, 0, sizeof(tx_tasks));
 }
-
+/******************************************************************************
+ * @brief Check if we need to reset Msg alloc
+ * @param None
+ * @return SUCCEED or FAILED if msg alloc is reset or not
+ ******************************************************************************/
 error_return_t MsgAlloc_IsReseted(void)
 {
     // Check if we need to reset everything due to detection reset
     if (reset_needed)
     {
+        ctx.node.node_id = 0;
+        PortMng_Init();
         // We need to reset MsgAlloc
         MsgAlloc_Init(NULL);
         return SUCCEED;
