@@ -80,7 +80,7 @@ void LuosBootloader_SaveNodeID(void)
  ******************************************************************************/
 void LuosBootloader_Init(void)
 {
-    revision_t version = {.Major = 1, .Minor = 3, .Build = 0};
+    revision_t version = {.major = 2, .minor = 0, .build = 0};
     Luos_CreateService(0, VOID_TYPE, "boot_service", version);
 
     // set ID node saved in flash
