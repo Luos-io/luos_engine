@@ -24,7 +24,7 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.major = 1, .minor = 3, .build = 0};
+revision_t luos_version = {.major = 2, .minor = 0, .build = 0};
 package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
