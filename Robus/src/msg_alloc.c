@@ -1035,11 +1035,11 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
     //             |---------|
     //             |  MSG_2  |<--luos_tasks_stack_id
     //             |---------|
-    //             |  MSG_3  |\
-    //             |---------| |
-    //             |  etc... | |  <-- search these IDs
-    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
-    //             |  Last   | |
+    //             |  MSG_3  |\_
+    //             |---------|  |
+    //             |  etc... |  |  <-- search these IDs
+    //             |---------|  |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | _|
     //             +---------+/
     //
     return FAILED;
@@ -1093,11 +1093,11 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     //             |---------|
     //             |  MSG_2  |<--luos_tasks_stack_id
     //             |---------|
-    //             |  MSG_3  |\
-    //             |---------| |
-    //             |  etc... | |  <-- search these IDs
-    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
-    //             |  Last   | |
+    //             |  MSG_3  |\_
+    //             |---------|  |
+    //             |  etc... |  |  <-- search these IDs
+    //             |---------|  |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | _|
     //             +---------+/
     //
     return FAILED;
@@ -1139,11 +1139,11 @@ error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **all
     //             |---------|
     //             |  MSG_2  |<--luos_tasks_stack_id
     //             |---------|
-    //             |  MSG_3  |\
-    //             |---------| |
-    //             |  etc... | |  <-- search these IDs
-    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
-    //             |  Last   | |
+    //             |  MSG_3  |\_
+    //             |---------|  |
+    //             |  etc... |  |  <-- search these IDs
+    //             |---------|  |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | _|
     //             +---------+/
     //
     return FAILED;
@@ -1180,11 +1180,11 @@ error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd)
     //             |---------|
     //             |  MSG_2  |<--luos_tasks_stack_id
     //             |---------|
-    //             |  MSG_3  |\
-    //             |---------| |
-    //             |  etc... | |  <-- search these IDs
-    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
-    //             |  Last   | |
+    //             |  MSG_3  |\_
+    //             |---------|  |
+    //             |  etc... |  |  <-- search these IDs
+    //             |---------|  |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | _|
     //             +---------+/
     //
     return FAILED;
@@ -1221,11 +1221,11 @@ error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *sou
     //             |---------|
     //             |  MSG_2  |<--luos_tasks_stack_id
     //             |---------|
-    //             |  MSG_3  |\
-    //             |---------| |
-    //             |  etc... | |  <-- search these IDs
-    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
-    //             |  Last   | |
+    //             |  MSG_3  |\_
+    //             |---------|  |
+    //             |  etc... |  |  <-- search these IDs
+    //             |---------|  |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | _|
     //             +---------+/
     //
     return FAILED;
@@ -1262,11 +1262,11 @@ error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size)
     //             |---------|
     //             |  MSG_2  |<--luos_tasks_stack_id
     //             |---------|
-    //             |  MSG_3  |\
-    //             |---------| |
-    //             |  etc... | |  <-- search these IDs
-    //             |---------| |  (function return FAILED if ID > luos_tasks_stack_id)
-    //             |  Last   | |
+    //             |  MSG_3  |\_
+    //             |---------|  |
+    //             |  etc... |  |  <-- search these IDs
+    //             |---------|  |  (function return FAILED if ID > luos_tasks_stack_id)
+    //             |  Last   | _|
     //             +---------+/
     //
     return FAILED;
