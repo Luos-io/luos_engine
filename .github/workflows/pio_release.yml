@@ -25,4 +25,4 @@ jobs:
         PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
       run: |
         pio package pack
-        pio package publish --owner luos
+        pio package publish --owner luos --non-interactive
