@@ -21,6 +21,10 @@
 #include <stdio.h>
 #endif
 
+#ifdef SELFTEST
+#include "selftest.h"
+#endif
+
 #define COLLISION_DETECTION_NUMBER 4
 /*******************************************************************************
  * Variables
@@ -145,9 +149,7 @@ void Recep_GetData(volatile uint8_t *data)
             // Make an exception for reset detection command
             if (current_msg->header.cmd == RESET_DETECTION)
             {
-                ctx.node.node_id = 0;
-                PortMng_Init();
-                MsgAlloc_Init(NULL);
+                MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
             }
             else
@@ -206,6 +208,9 @@ void Recep_GetCollision(volatile uint8_t *data)
     {
         if (data_count == COLLISION_DETECTION_NUMBER)
         {
+#ifdef SELFTEST
+            selftest_SetRxFlag();
+#endif
             // collision detection end
             LuosHAL_SetRxState(false);
             LuosHAL_ResetTimeout(0);
@@ -281,11 +286,11 @@ void Recep_CatchAck(volatile uint8_t *data)
     }
 }
 /******************************************************************************
- * @brief Parse msg to find a module concerned
+ * @brief Parse msg to find a service concerned
  * @param header of message
- * @return ll_container pointer
+ * @return ll_service pointer
  ******************************************************************************/
-ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
+ll_service_t *Recep_GetConcernedLLService(header_t *header)
 {
     uint16_t i = 0;
     // Find if we are concerned by this message.
@@ -293,29 +298,29 @@ ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
     {
         case IDACK:
         case ID:
-            // Check all ll_container id
-            for (i = 0; i < ctx.ll_container_number; i++)
+            // Check all ll_service id
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if ((header->target == ctx.ll_container_table[i].id))
+                if ((header->target == ctx.ll_service_table[i].id))
                 {
-                    return (ll_container_t *)&ctx.ll_container_table[i];
+                    return (ll_service_t *)&ctx.ll_service_table[i];
                 }
             }
             break;
         case TYPE:
-            // Check all ll_container type
-            for (i = 0; i < ctx.ll_container_number; i++)
+            // Check all ll_service type
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (header->target == ctx.ll_container_table[i].type)
+                if (header->target == ctx.ll_service_table[i].type)
                 {
-                    return (ll_container_t *)&ctx.ll_container_table[i];
+                    return (ll_service_t *)&ctx.ll_service_table[i];
                 }
             }
             break;
         case BROADCAST:
         case NODEIDACK:
         case NODEID:
-            return (ll_container_t *)&ctx.ll_container_table[0];
+            return (ll_service_t *)&ctx.ll_service_table[0];
             break;
         case MULTICAST: // For now Multicast is disabled
         default:
@@ -325,7 +330,7 @@ ll_container_t *Recep_GetConcernedLLContainer(header_t *header)
     return NULL;
 }
 /******************************************************************************
- * @brief Parse msg to find a module concerne
+ * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
  ******************************************************************************/
@@ -338,20 +343,20 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
         case IDACK:
             ctx.rx.status.rx_error = false;
         case ID:
-            // Check all ll_container id
-            for (i = 0; i < ctx.ll_container_number; i++)
+            // Check all ll_service id
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if ((header->target == ctx.ll_container_table[i].id))
+                if ((header->target == ctx.ll_service_table[i].id))
                 {
                     return LOCALHOST;
                 }
             }
             break;
         case TYPE:
-            // Check all ll_container type
-            for (i = 0; i < ctx.ll_container_number; i++)
+            // Check all ll_service type
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (header->target == ctx.ll_container_table[i].type)
+                if (header->target == ctx.ll_service_table[i].type)
                 {
                     return MULTIHOST;
                 }
@@ -386,7 +391,7 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
     return EXTERNALHOST;
 }
 /******************************************************************************
- * @brief Parse msg to find all modules concerned and create
+ * @brief Parse msg to find all services concerned and create
  * @param msg pointer
  * @return None
  ******************************************************************************/
@@ -398,41 +403,41 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     {
         case IDACK:
         case ID:
-            // Check all ll_container id
-            for (i = 0; i < ctx.ll_container_number; i++)
+            // Check all ll_service id
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (msg->header.target == ctx.ll_container_table[i].id)
+                if (msg->header.target == ctx.ll_service_table[i].id)
                 {
-                    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                     return;
                 }
             }
             break;
         case TYPE:
-            // Check all ll_container type
-            for (i = 0; i < ctx.ll_container_number; i++)
+            // Check all ll_service type
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (msg->header.target == ctx.ll_container_table[i].type)
+                if (msg->header.target == ctx.ll_service_table[i].type)
                 {
-                    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                     return;
                 }
             }
             break;
         case BROADCAST:
-            for (i = 0; i < ctx.ll_container_number; i++)
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
             }
             return;
             break;
         case MULTICAST:
-            for (i = 0; i < ctx.ll_container_number; i++)
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (Trgt_MulticastTargetBank((ll_container_t *)&ctx.ll_container_table[i], msg->header.target))
+                if (Trgt_MulticastTargetBank((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
                 {
                     //TODO manage multiple slave concerned
-                    MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                     return;
                 }
             }
@@ -441,12 +446,12 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         case NODEID:
             if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
             {
-                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[0], msg);
+                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
                 return;
             }
-            for (i = 0; i < ctx.ll_container_number; i++)
+            for (i = 0; i < ctx.ll_service_number; i++)
             {
-                MsgAlloc_LuosTaskAlloc((ll_container_t *)&ctx.ll_container_table[i], msg);
+                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
             }
             return;
             break;

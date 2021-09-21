@@ -35,10 +35,10 @@ static void PortMng_Reset(void);
 void PortMng_Init(void)
 {
     PortMng_Reset();
-    // Reinit ll_container id
-    for (uint8_t i = 0; i < ctx.ll_container_number; i++)
+    // Reinit ll_service id
+    for (uint8_t i = 0; i < ctx.ll_service_number; i++)
     {
-        ctx.ll_container_table[i].id = DEFAULTID;
+        ctx.ll_service_table[i].id = DEFAULTID;
     }
     // Reinit port table
     for (uint8_t port = 0; port < NBR_PORT; port++)
@@ -108,25 +108,28 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     return 0;
 }
 /******************************************************************************
- * @brief detect the next module by poke ptp line
+ * @brief detect the next service by poke ptp line
  * @param None
  * @return true if a port have been poke else false
  ******************************************************************************/
 error_return_t PortMng_PokeNextPort(void)
 {
-    for (uint8_t port = 0; port < NBR_PORT; port++)
+    if ((ctx.port.activ != NBR_PORT) || (ctx.node.node_id == 1))
     {
-        if (ctx.node.port_table[port] == 0)
+        for (uint8_t port = 0; port < NBR_PORT; port++)
         {
-            // this port have not been poked
-            if (PortMng_PokePort(port))
+            if (ctx.node.port_table[port] == 0)
             {
-                return SUCCEED;
-            }
-            else
-            {
-                // nobody is here
-                ctx.node.port_table[port] = 0xFFFF;
+                // this port have not been poked
+                if (PortMng_PokePort(port))
+                {
+                    return SUCCEED;
+                }
+                else
+                {
+                    // nobody is here
+                    ctx.node.port_table[port] = 0xFFFF;
+                }
             }
         }
     }

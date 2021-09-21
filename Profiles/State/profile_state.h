@@ -5,15 +5,22 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef TEMPLATE_CLASS_STATE_H_
-#define TEMPLATE_CLASS_STATE_H_
+#ifndef PROFILE_STATE_H_
+#define PROFILE_STATE_H_
 
-#include "struct_state.h"
+#include "profile_core.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+/*
+ * State data
+ */
+typedef struct
+{
+    access_t access;
+    bool state;
+} profile_state_t;
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -21,7 +28,7 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
+void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state);
+service_t *ProfileState_CreateService(profile_state_t *, SERVICE_CB, const char *, revision_t);
 
-void ProfileState_Handler(container_t *container, msg_t *msg, profile_state_t *state_profile);
-
-#endif /* TEMPLATE_CLASS_STATE_H_ */
+#endif /* PROFILE_STATE_H_ */

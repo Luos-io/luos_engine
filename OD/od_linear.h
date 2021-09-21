@@ -158,7 +158,7 @@ static inline float LinearOD_SpeedTo_m_s(linear_speed_t self)
     return self;
 }
 
-static inline linear_speed_t LinearOD_Speedfrom_m_s(float m_s)
+static inline linear_speed_t LinearOD_SpeedFrom_m_s(float m_s)
 {
     return m_s;
 }

@@ -7,59 +7,37 @@
 #ifndef LUOS_LIST_H
 #define LUOS_LIST_H
 
-#include <robus.h>
+#include "service_structs.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
 typedef enum
 {
-    GATE_MOD,
-    SERVO_MOD, // To remove
-    COLOR_MOD,
-    ANGLE_MOD,
+    VOID_TYPE,
+    GATE_TYPE,
+    COLOR_TYPE,
+    ANGLE_TYPE,
     STATE_TYPE,
-    STATE_MOD = STATE_TYPE, // retrocompatibility line
-    DISTANCE_MOD,
+    DISTANCE_TYPE,
     VOLTAGE_TYPE,
-    VOLTAGE_MOD = VOLTAGE_TYPE,
-    DYNAMIXEL_MOD, // To remove
-    STEPPER_MOD,   // To remove
+    IMU_TYPE,
+    LIGHT_TYPE,
+    LOAD_TYPE,
+    PIPE_TYPE,
     MOTOR_TYPE,
-    DCMOTOR_MOD = MOTOR_TYPE, // retrocompatibility line
-    IMU_MOD,
-    LIGHT_MOD,
     SERVO_MOTOR_TYPE,
-    CONTROLLER_MOTOR_MOD = SERVO_MOTOR_TYPE, // retrocompatibility line
-    VOID_MOD,
-    LOAD_MOD,
-    PIPE_MOD,
     LUOS_LAST_TYPE
 } luos_type_t;
 
 typedef enum
 {
-    // Luos specific registers
-    RTB_CMD = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2), or share(size > 2) a routing_table.
-    WRITE_ALIAS,                 // Get and save a new given alias.
-    UPDATE_PUB,                  // Ask to update a sensor value each time duration to the sender
-    NODE_UUID,                   // luos_uuid_t
-
-    // Revision management
-    REVISION,        // container sends its firmware revision
-    LUOS_REVISION,   // container sends its luos revision
-    LUOS_STATISTICS, // container sends its luos revision
-
-    // ************* End of Luos managed commands ****************
-
-    // Common register for all containers
-    GET_CMD,               // asks a container to publish its data
-    ASK_PUB_CMD = GET_CMD, // retrocompatibility line
-    SET_CMD,               // set some undefined data
+    // Common register for all services
+    GET_CMD = LUOS_LAST_RESERVED_CMD, // asks a service to publish its data
+    SET_CMD,                          // set some undefined data
 
     // Generic data
     COLOR,       // color_t (R, G, B)
-    COMPLIANT,   // char (True/False)
     IO_STATE,    // char (True/False)
     RATIO,       // ratio_t (percentage %)
     PEDOMETER,   // long[2] (step number and step time millisecond)
@@ -109,12 +87,11 @@ typedef enum
     TEMPERATURE_LIMIT,      // Max temperature_t (°C)
 
     // Specific register
-    //    DXL_WHEELMODE,      // char (True/False) TODO => should be managed by MOTOR_REPORT the same way as controller motor
-    HANDY_SET_POSITION, // handy_t to remove
-    PARAMETERS,         // depend on the container, can be : servo_parameters_t, imu_report_t, motor_mode_t
+    PARAMETERS, // depend on the service, can be : servo_parameters_t, imu_report_t, motor_mode_t
+    ERROR_CMD,
 
     // compatibility area
-    LUOS_PROTOCOL_NB,
+    LUOS_LAST_STD_CMD
 } luos_cmd_t;
 
 /*******************************************************************************

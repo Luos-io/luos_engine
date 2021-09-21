@@ -1,15 +1,14 @@
 /******************************************************************************
- * @file containers structure
+ * @file services structure
  * @brief describs all the
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef __CONTAINER_STRUCT_H
-#define __CONTAINER_STRUCT_H
+#ifndef __SERVICE_STRUCT_H
+#define __SERVICE_STRUCT_H
 
 #include <stdint.h>
-#include "luos.h"
-#include "luos_od.h"
+#include "robus.h"
 
 /*******************************************************************************
  * Definitions
@@ -29,7 +28,7 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[sizeof(memory_stats_t) + 1]; /*!< streamable form. */
     };
 } luos_stats_t;
-/* This structure is used to create containers version
+/* This structure is used to create services version
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__))
@@ -45,10 +44,10 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[3]; /*!< streamable form. */
     };
 } revision_t;
-/* This structure is used to manage containers statistic
+/* This structure is used to manage services statistic
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) container_stats_t
+typedef struct __attribute__((__packed__)) service_stats_t
 {
     union
     {
@@ -58,9 +57,9 @@ typedef struct __attribute__((__packed__)) container_stats_t
         };
         uint8_t unmap[1]; /*!< streamable form. */
     };
-} container_stats_t;
+} service_stats_t;
 
-/* This structure is used to manage containers timed auto update
+/* This structure is used to manage services timed auto update
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) timed_update_t
@@ -81,26 +80,35 @@ typedef enum
     NO_ACCESS
 } access_t;
 
-/* This structure is used to manage containers
+/* This structure is used to manage packages
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) container_t
+typedef struct
 {
-    ll_container_t *ll_container;
-    // Callback
-    void (*cont_cb)(struct container_t *container, msg_t *msg);
-    // Variables
-    uint8_t default_alias[MAX_ALIAS_SIZE]; /*!< container default alias. */
-    uint8_t alias[MAX_ALIAS_SIZE];         /*!< container alias. */
-    timed_update_t auto_refresh;           /*!< container auto refresh context. */
-    revision_t revision;                   /*!< container firmware version. */
-    luos_stats_t *node_statistics;         /*!< Node level statistics. */
-    container_stats_t statistics;          /*!< container level statistics. */
-    access_t access;                       /*!< container read write access. */
-    void *template_context;                /*!< Pointer to the template context. */
-} container_t;
+    void (*Init)(void);
+    void (*Loop)(void);
+} package_t;
 
-typedef void (*CONT_CB)(container_t *container, msg_t *msg);
+/* This structure is used to manage services
+ * please refer to the documentation
+ */
+typedef struct __attribute__((__packed__)) service_t
+{
+    ll_service_t *ll_service;
+    // Callback
+    void (*service_cb)(struct service_t *service, msg_t *msg);
+    // Variables
+    uint8_t default_alias[MAX_ALIAS_SIZE]; /*!< service default alias. */
+    uint8_t alias[MAX_ALIAS_SIZE];         /*!< service alias. */
+    timed_update_t auto_refresh;           /*!< service auto refresh context. */
+    revision_t revision;                   /*!< service firmware version. */
+    luos_stats_t *node_statistics;         /*!< Node level statistics. */
+    service_stats_t statistics;            /*!< service level statistics. */
+    access_t access;                       /*!< service read write access. */
+    void *profile_context;                 /*!< Pointer to the profile context. */
+} service_t;
+
+typedef void (*SERVICE_CB)(service_t *service, msg_t *msg);
 
 /*
  * Luos unic ID => ARM serial number
@@ -114,6 +122,27 @@ typedef struct __attribute__((__packed__))
     };
 } luos_uuid_t;
 
+typedef enum
+{
+    // Luos specific registers
+    RTB_CMD = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2), or share(size > 2) a routing_table.
+    WRITE_ALIAS,                 // Get and save a new given alias.
+    UPDATE_PUB,                  // Ask to update a sensor value each time duration to the sender
+    NODE_UUID,                   // luos_uuid_t
+
+    // Revision management
+    REVISION,        // service sends its firmware revision
+    LUOS_REVISION,   // service sends its luos revision
+    LUOS_STATISTICS, // service sends its luos revision
+
+    // bootloader command and response
+    BOOTLOADER_CMD,
+    BOOTLOADER_RESP,
+
+    // compatibility area
+    LUOS_LAST_RESERVED_CMD
+} reserved_luos_cmd_t;
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -122,4 +151,4 @@ typedef struct __attribute__((__packed__))
  * Function
  ******************************************************************************/
 
-#endif /*__CONTAINER_STRUCT_H */
+#endif /*__SERVICE_STRUCT_H */

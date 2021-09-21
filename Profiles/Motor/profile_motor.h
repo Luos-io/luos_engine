@@ -1,15 +1,14 @@
 /******************************************************************************
- * @file Struct motor
- * @brief motor data structure definition
- * WARING : This h file should be only included by profile_*.h or template_*.h codes
+ * @file Profile motor
+ * @brief motor object managing a true false API
+ * WARING : This h file should be only included by profile_*.c codes
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef TEMPLATE_STRUCT_MOTOR_H_
-#define TEMPLATE_STRUCT_MOTOR_H_
+#ifndef PROFILE_MOTOR_H_
+#define PROFILE_MOTOR_H_
 
-#include <stdbool.h>
-#include "luos.h"
+#include "profile_core.h"
 
 #define MINI 0
 #define MAXI 1
@@ -54,5 +53,14 @@ typedef struct
     temperature_t temperature;
     current_t current;
 } profile_motor_t;
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
 
-#endif /* TEMPLATE_STRUCT_MOTOR_H_ */
+/*******************************************************************************
+ * Function
+ ******************************************************************************/
+void ProfileMotor_link(uint8_t, profile_motor_t *);
+service_t *ProfileMotor_CreateService(profile_motor_t *, SERVICE_CB, const char *, revision_t);
+
+#endif /* PROFILE_MOTOR_H_ */

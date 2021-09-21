@@ -22,11 +22,11 @@ typedef struct
     node_t node;    /*!< Node informations. */
     RxCom_t rx;     /*!< Receiver informations. */
     TxCom_t tx;     /*!< Transmitter informations. */
-    PortMng_t port; /*!< port informations. */
+    PortMng_t port; /*!< Port informations. */
 
-    //Virtual container management
-    ll_container_t ll_container_table[MAX_CONTAINER_NUMBER]; /*!< Virtual Container table. */
-    uint16_t ll_container_number;                            /*!< Virtual Container number. */
+    // Low level service management
+    ll_service_t ll_service_table[MAX_SERVICE_NUMBER]; /*!< Low level Service table. */
+    uint16_t ll_service_number;                        /*!< Low level Service number. */
 
 } context_t;
 

@@ -13,7 +13,7 @@ Version: 1.2.0
 
 We started designing Luos with the conviction that building electronic systems should be made easier than it is today. The majority of development time should be spent on designing the applications and behaviors instead of on complex and time-and-money-eating technicalities. To give a simple example, adding a new sensor (for example a distance sensor) to an electronic device in conception should not take more than a few minutes. So you can try, test and quickly iterate on a project to quickly design what users truly want.
 
-Luos works like a [microservice architecture](https://en.wikipedia.org/wiki/Microservices) in the software world, and a [distributed operating system](https://en.wikipedia.org/wiki/Distributed_operating_system): it encapsulates any software or hardware function to make it communicate and work with any other encapsulated module, however it was developed, either on bare metal or on top of an embedded OS.
+Luos works like a [microservice architecture](https://en.wikipedia.org/wiki/Microservices) in the software world, and a [distributed operating system](https://en.wikipedia.org/wiki/Distributed_operating_system): it encapsulates any software or hardware function to make it communicate and work with any other encapsulated service, however it was developed, either on bare metal or on top of an embedded OS.
 
 This repository contains the Luos library that you will need to include in your software projects. To correctly configure your hardware, it should be used in conjunction with the [LuosHAL project](https://github.com/Luos-io/LuosHAL).
 
@@ -25,19 +25,19 @@ Watch this video for additional details:
 
 → You can start by reading the [Basics](https://docs.luos.io/pages/overview/general-basics.html) page.
 
-## You want to make your own board with [Luos modules](https://docs.luos.io/pages/low/containers/create-containers.html)?
+## You want to make your own board with [Luos services](https://docs.luos.io/pages/low/services/create-services.html)?
 
 → Start reading how to integrate Luos in your [Development environment](https://docs.luos.io/pages/low/dev-env.html).
 
-→ Then learn how to [Create a Luos project](https://docs.luos.io/pages/low/containers/create-project.html).
+→ Then learn how to [Create a Luos project](https://docs.luos.io/pages/low/services/create-project.html).
 
 ## You want to tune your device's behavior?
 
 → Luos provides a sets of [Prototyping boards](https://docs.luos.io/pages/demo_boards/boards-list.html) you can use as example or to develop your own project.
 
-→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/containers/create-containers.html).
+→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/services/create-services.html).
 
-→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/containers_list/gate.html) module using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
+→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/services_list/gate.html) service using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
 
 If you have questions about a specific topic, you can refer or ask it on the [Luos' subreddit](https://www.reddit.com/r/Luos). And if you have suggestions about this documentation, don't hesitate to create pull requests.
 

@@ -1,6 +1,11 @@
 .nosync
 .DS_Store
+.gcda
+.gcno
+.info
+.gcov
 **/.DS_Store
 *.icloud
 **/*.icloud
 .vscode/
+.pio/
