@@ -23,21 +23,16 @@ Watch this video for additional details:
 
 ## Unfamiliar with Luos?
 
-→ You can start by reading the [Basics](https://docs.luos.io/pages/overview/general-basics.html) page.
-
-## You want to make your own board with [Luos services](https://docs.luos.io/pages/low/services/create-services.html)?
-
-→ Start reading how to integrate Luos in your [Development environment](https://docs.luos.io/pages/low/dev-env.html).
-
-→ Then learn how to [Create a Luos project](https://docs.luos.io/pages/low/services/create-project.html).
+→ You can start by reading the [Basics](https://docs.luos.io/pages/luos-technology/basics/basics.html) page.
 
 ## You want to tune your device's behavior?
 
-→ Luos provides a sets of [Prototyping boards](https://docs.luos.io/pages/demo_boards/boards-list.html) you can use as example or to develop your own project.
+→ Luos provides a [Demonstration board](https://docs.luos.io/pages/tutorials/demo-boards/luos-demo-boards.html) and [Example demonstration boards](https://github.com/Luos-io/Examples/tree/master/Hardware). You can use them as example or to develop your own project.
+.
 
-→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/services/create-services.html).
+→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/luos-technology/services/service_api.html).
 
-→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/services_list/gate.html) service using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
+→ You can control your devices through a [Gate](https://docs.luos.io/pages/tools/gate.html) service using [Pyluos](https://docs.luos.io/pages/tools/pyluos.html).
 
 If you have questions about a specific topic, you can refer or ask it on the [Luos' subreddit](https://www.reddit.com/r/Luos). And if you have suggestions about this documentation, don't hesitate to create pull requests.
 
