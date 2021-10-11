@@ -334,9 +334,29 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  * @param header of message
  * @return None
  ******************************************************************************/
+static inline error_return_t Recep_NodeCompare(uint16_t ID)
+{
+    uint16_t compare = 0;
+
+    if ((ID > (8 * ctx.Decay)))
+    {
+        compare = ((ID - 1) - ((8 * ctx.Decay)));
+        if ((ctx.Mask[compare / 8] & (1 << (compare % 8))) != 0)
+        {
+            return SUCCEED;
+        }
+    }
+    return FAILED;
+}
+/******************************************************************************
+ * @brief Parse msg to find a service concerne
+ * @param header of message
+ * @return None
+ ******************************************************************************/
 luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
+
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
@@ -344,12 +364,9 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
             ctx.rx.status.rx_error = false;
         case ID:
             // Check all ll_service id
-            for (i = 0; i < ctx.ll_service_number; i++)
+            if (Recep_NodeCompare(header->target) == SUCCEED)
             {
-                if ((header->target == ctx.ll_service_table[i].id))
-                {
-                    return LOCALHOST;
-                }
+                return LOCALHOST;
             }
             break;
         case TYPE:
