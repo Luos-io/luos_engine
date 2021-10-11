@@ -69,7 +69,12 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.status = TX_DISABLE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-
+    //mask
+    ctx.Decay = 0;
+    for (uint16_t i = 0; i < MASK_SIZE; i++)
+    {
+        ctx.Mask[i] = 0;
+    }
     // Init reception
     Recep_Init();
 
@@ -439,4 +444,19 @@ void Robus_Flush(void)
     LuosHAL_SetIrqState(false);
     MsgAlloc_Init(NULL);
     LuosHAL_SetIrqState(true);
+}
+/******************************************************************************
+ * @brief Flush the entire msg buffer
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_MaskDecayCalculation(uint16_t ID, uint16_t ServiceNumber)
+{
+    uint16_t tempo = 0;
+    ctx.Decay      = ID / 8;
+    for (uint16_t i = 0; i < ServiceNumber; i++)
+    {
+        tempo = (((ID - 1) + i) - (8 * ctx.Decay));
+        ctx.Mask[tempo / 8] |= 1 << ((tempo) % 8);
+    }
 }

@@ -241,6 +241,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                                 index++;
                             }
                         }
+                        Robus_MaskDecayCalculation(1, service_number);
                     }
                     else
                     {
@@ -249,6 +250,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                         {
                             service_table[i].ll_service->id = base_id + i;
                         }
+                        Robus_MaskDecayCalculation(base_id, service_number);
                     }
                 case 0:
                     // send back a local routing table
