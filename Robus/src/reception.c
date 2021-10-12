@@ -353,12 +353,15 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  ******************************************************************************/
 static inline error_return_t Recep_NodeCompare(uint16_t ID)
 {
+	//--------------------------->|__________|
+	//	Shift byte		            byte Mask of bit address
+
     uint16_t compare = 0;
 
-    if ((ID > (8 * ctx.Decay)))
+    if ((ID > (8 * ctx.ShiftMask)))//IDMask aligned byte
     {
-        compare = ((ID - 1) - ((8 * ctx.Decay)));
-        if ((ctx.Mask[compare / 8] & (1 << (compare % 8))) != 0)
+        compare = ((ID - 1) - ((8 * ctx.ShiftMask)));
+        if ((ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
         {
             return SUCCEED;
         }
