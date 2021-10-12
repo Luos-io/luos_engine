@@ -27,8 +27,8 @@ typedef struct
     // Low level service management
     ll_service_t ll_service_table[MAX_SERVICE_NUMBER]; /*!< Low level Service table. */
     uint16_t ll_service_number;                        /*!< Low level Service number. */
-    uint8_t Mask[MASK_SIZE];
-    uint16_t Decay;
+    uint8_t IDMask[MASK_SIZE];
+    uint16_t ShiftMask;
 
 } context_t;
 
