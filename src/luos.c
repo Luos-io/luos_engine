@@ -210,6 +210,11 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
     time_luos_t time;
     uint16_t base_id = 0;
 
+    if ((((input->header.target_mode == IDACK) || (input->header.target_mode == ID)) && (input->header.target != service->ll_service->id)))
+    {
+        return FAILED;
+    }
+
     switch (input->header.cmd)
     {
         case ASSERT:
