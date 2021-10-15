@@ -49,4 +49,9 @@ void LuosHAL_SetMode(uint8_t mode);
 void LuosHAL_Reboot(void);
 void LuosHAL_SaveNodeID(uint16_t);
 
+// timestamp functions
+uint64_t LuosHAL_GetTimestamp(void);
+void LuosHAL_StartTimestamp(void);
+void LuosHAL_StopTimestamp(void);
+
 #endif /* _LUOSHAL_H_ */
