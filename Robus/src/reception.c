@@ -39,7 +39,7 @@ static uint64_t ll_rx_timestamp = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-
+uint8_t Recep_IsAckNeeded(void);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -159,7 +159,7 @@ void Recep_GetData(volatile uint8_t *data)
                 memcpy((msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], &ll_rx_timestamp, sizeof(uint64_t));
             }
 
-            if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)))
+            if (Recep_IsAckNeeded())
             {
                 Transmit_SendAck();
             }
@@ -179,7 +179,7 @@ void Recep_GetData(volatile uint8_t *data)
         else
         {
             ctx.rx.status.rx_error = true;
-            if ((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK))
+            if (Recep_IsAckNeeded())
             {
                 Transmit_SendAck();
             }
@@ -497,4 +497,25 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         default:
             break;
     }
+}
+/******************************************************************************
+ * @brief Check if we need to send an ack
+ * @param None
+ * @return true or false
+ ******************************************************************************/
+uint8_t Recep_IsAckNeeded(void)
+{
+    // check the mode of the message received
+    if ((current_msg->header.target_mode == IDACK) && (Recep_NodeCompare(current_msg->header.target) == SUCCEED))
+    {
+        // when it is a idack and this message is destined to the node send an ack
+        return 1;
+    }
+    else if ((current_msg->header.target_mode == NODEIDACK) && (ctx.node.node_id == current_msg->header.target))
+    {
+        // when it is nodeidack and this message is destined to the node send an ack
+        return 1;
+    }
+    // if not failed
+    return 0;
 }
