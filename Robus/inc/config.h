@@ -44,8 +44,8 @@
 #define NBR_PORT 2
 #endif
 
-//Tab of byte. + 2 for overlap ID because aligned to byte
-#define MASK_SIZE ((MAX_SERVICE_NUMBER/8) +2)
+// Tab of byte. + 2 for overlap ID because aligned to byte
+#define MASK_SIZE ((MAX_SERVICE_NUMBER / 8) + 2)
 
 /*******************************************************************************
  * Variables
