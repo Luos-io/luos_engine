@@ -252,6 +252,8 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                         }
                         Robus_ShiftMaskCalculation(base_id, service_number);
                     }
+                    // detect end of detection
+                    Robus_SetNodeDetected(NETWORK_LINK_UP);
                 case 0:
                     // send back a local routing table
                     output_msg.header.cmd         = RTB;
@@ -974,6 +976,23 @@ error_return_t Luos_TxComplete(void)
 void Luos_Flush(void)
 {
     Robus_Flush();
+}
+
+/******************************************************************************
+ * @brief check if the node is connected to the network
+ * @param None
+ * @return None
+ ******************************************************************************/
+bool Luos_IsNodeDetected(void)
+{
+    if (Robus_IsNodeDetected() == NETWORK_LINK_UP)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 /******************************************************************************

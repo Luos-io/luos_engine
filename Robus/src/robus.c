@@ -33,6 +33,8 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
+static network_state_t node_connected = NETWORK_LINK_DOWN;
+
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
 static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
@@ -407,6 +409,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             return SUCCEED;
             break;
         case RESET_DETECTION:
+            Robus_SetNodeDetected(NETWORK_LINK_CONNECT);
             return SUCCEED;
             break;
         case SET_BAUDRATE:
@@ -445,6 +448,7 @@ void Robus_Flush(void)
     MsgAlloc_Init(NULL);
     LuosHAL_SetIrqState(true);
 }
+
 /******************************************************************************
  * @brief Masker filter calculation based on Local ID
  * @param ID and Number of service
@@ -466,4 +470,24 @@ void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
         tempo = (((ID - 1) + i) - (8 * ctx.ShiftMask));
         ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
     }
+}
+
+/******************************************************************************
+ * @brief set node_connected variable
+ * @param state
+ * @return None
+ ******************************************************************************/
+void Robus_SetNodeDetected(network_state_t state)
+{
+    node_connected = state;
+}
+
+/******************************************************************************
+ * @brief get node_connected value
+ * @param None
+ * @return state
+ ******************************************************************************/
+network_state_t Robus_IsNodeDetected(void)
+{
+    return node_connected;
 }
