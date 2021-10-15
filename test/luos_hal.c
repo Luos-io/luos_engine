@@ -564,6 +564,34 @@ void LuosHAL_Reboot(void)
 {
 }
 
+/******************************************************************************
+ * @brief Luos GetTimestamp
+ * @param None
+ * @return uint64_t
+ ******************************************************************************/
+uint64_t LuosHAL_GetTimestamp(void)
+{
+    return 0;
+}
+
+/******************************************************************************
+ * @brief Luos start Timestamp
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosHAL_StartTimestamp(void)
+{
+}
+
+/******************************************************************************
+ * @brief Luos stop Timestamp
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosHAL_StopTimestamp(void)
+{
+}
+
 /*void LUOS_TIMER_CLOCK_ENABLE()
 {
 }*/
