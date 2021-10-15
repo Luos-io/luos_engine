@@ -12,7 +12,7 @@
 #include "reception.h"
 #include "context.h"
 
-//MCU dependencies this HAL is for family XXX you can find
+// MCU dependencies this HAL is for family XXX you can find
 
 /*******************************************************************************
  * Definitions
@@ -26,7 +26,7 @@ uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV; //(freq MCU/f
 typedef struct
 {
     uint16_t Pin;
-    uint8_t *Port; //STUB
+    uint8_t *Port; // STUB
     uint8_t IRQ;
 } Port_t;
 
@@ -56,10 +56,10 @@ static void __disable_irq();
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
-    //Systick Initialization
+    // Systick Initialization
     LuosHAL_SystickInit();
 
-    //IO Initialization
+    // IO Initialization
     LuosHAL_GPIOInit();
 
     // Flash Initialization
@@ -68,7 +68,7 @@ void LuosHAL_Init(void)
     // CRC Initialization
     LuosHAL_CRCInit();
 
-    //Com Initialization
+    // Com Initialization
     LuosHAL_ComInit(DEFAULTBAUDRATE);
 }
 /******************************************************************************
@@ -94,7 +94,7 @@ void LuosHAL_SetIrqState(uint8_t Enable)
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
-    //Systick timer initialization
+    // Systick timer initialization
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
@@ -103,7 +103,7 @@ static void LuosHAL_SystickInit(void)
  ******************************************************************************/
 uint32_t LuosHAL_GetSystick(void)
 {
-    return 0; //return  tick
+    return 0; // return  tick
 }
 /******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
@@ -118,13 +118,13 @@ void LuosHAL_ComInit(uint32_t Baudrate)
 
     // Enable Reception interrupt
 
-    //Enable NVIC IRQ
+    // Enable NVIC IRQ
 
-    //enable DMA
+    // enable DMA
 #ifndef USE_TX_IT
-    //if DMA possible initialize DMA for a data transmission
+    // if DMA possible initialize DMA for a data transmission
 #endif
-    //Timeout Initialization
+    // Timeout Initialization
     Timer_Prescaler = (MCUFREQ / Baudrate) / TIMERDIV;
     LuosHAL_TimeoutInit();
 }
@@ -137,28 +137,28 @@ void LuosHAL_SetTxState(uint8_t Enable)
 {
     if (Enable == true)
     {
-        //put Tx COM pin in push pull
+        // put Tx COM pin in push pull
         if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
         {
-            //Tx enable
+            // Tx enable
         }
     }
     else
     {
-        //put Tx COM pin in Open drain
+        // put Tx COM pin in Open drain
         if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
         {
-            //Tx Disable
+            // Tx Disable
         }
 #ifdef USE_TX_IT
         // Stop current transmit operation
         data_size_to_transmit = 0;
-        //Disable IT tx empty
+        // Disable IT tx empty
 #else
 
-        //stop DMA transmission DMA disable
+        // stop DMA transmission DMA disable
 #endif
-        //disable tx complet IT
+        // disable tx complet IT
     }
 }
 /******************************************************************************
@@ -170,9 +170,9 @@ void LuosHAL_SetRxState(uint8_t Enable)
 {
     if (Enable == true)
     {
-        //clear data register
-        // Enable Rx com
-        // Enable Rx IT
+        // clear data register
+        //  Enable Rx com
+        //  Enable Rx IT
     }
     else
     {
@@ -210,14 +210,14 @@ void LuosHAL_SetRxDetecPin(uint8_t Enable)
 {
     if (TX_LOCK_DETECT_IRQ != DISABLE)
     {
-        //clear tx detect IT
+        // clear tx detect IT
         if (Enable == true)
         {
-            //clear flag
+            // clear flag
         }
         else
         {
-            //set flag
+            // set flag
         }
     }
 }
@@ -231,13 +231,13 @@ uint8_t LuosHAL_GetTxLockState(void)
     uint8_t result = false;
 
 #ifdef USART_ISR_BUSY
-    //check busy flag
+    // check busy flag
     LuosHAL_ResetTimeout(DEFAULT_TIMEOUT);
     result = true;
 #else
     if ((TX_LOCK_DETECT_PIN != DISABLE) && (TX_LOCK_DETECT_PORT != DISABLE))
     {
-        //if pin low
+        // if pin low
         result = true;
         if (TX_LOCK_DETECT_IRQ == DISABLE)
         {
@@ -257,12 +257,12 @@ uint8_t LuosHAL_GetTxLockState(void)
  ******************************************************************************/
 static void LuosHAL_TimeoutInit(void)
 {
-    //initialize clock
+    // initialize clock
     LUOS_TIMER_CLOCK_ENABLE();
 
-    //timer init
+    // timer init
 
-    //NVIC IT
+    // NVIC IT
 }
 /******************************************************************************
  * @brief Luos Timeout communication
@@ -273,10 +273,10 @@ void LuosHAL_ResetTimeout(uint16_t nbrbit)
 {
     // clear NVIC IT pending
     // clear IT flag
-    //reset counter Timer
-    //relaod value counter
-    //if nbrbit != 0
-    //enable timer
+    // reset counter Timer
+    // relaod value counter
+    // if nbrbit != 0
+    // enable timer
 }
 
 /******************************************************************************
@@ -300,53 +300,53 @@ void LuosHAL_ResetTimeout(uint16_t nbrbit)
  ******************************************************************************/
 static void LuosHAL_GPIOInit(void)
 {
-    //Activate Clock for PIN choosen in luosHAL
+    // Activate Clock for PIN choosen in luosHAL
     PORT_CLOCK_ENABLE();
 
     if ((RX_EN_PIN != DISABLE) || (RX_EN_PORT != DISABLE))
     {
-        //Configure GPIO pins : RxEN_Pin
-        //output
-        //no pull
+        // Configure GPIO pins : RxEN_Pin
+        // output
+        // no pull
     }
 
     if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
     {
-        //Configure GPIO pins : TxEN_Pin
-        //output
-        //no pull
+        // Configure GPIO pins : TxEN_Pin
+        // output
+        // no pull
     }
 
-    //Configure GPIO pin : TxPin
-    //ALTERNATE function USART Tx
-    //open drain
-    //pull up
+    // Configure GPIO pin : TxPin
+    // ALTERNATE function USART Tx
+    // open drain
+    // pull up
 
-    //Configure GPIO pin : RxPin
-    //ALTERNATE function USART Rx
-    //open drain
-    //pull up
+    // Configure GPIO pin : RxPin
+    // ALTERNATE function USART Rx
+    // open drain
+    // pull up
 
-    //configure PTP
+    // configure PTP
     LuosHAL_RegisterPTP();
     for (uint8_t i = 0; i < NBR_PORT; i++) /*Configure GPIO pins : PTP_Pin */
     {
-        //IT falling
-        // pull down
-        // Setup PTP lines
+        // IT falling
+        //  pull down
+        //  Setup PTP lines
         LuosHAL_SetPTPDefaultState(i);
-        //activate NVIC IT for PTP
+        // activate NVIC IT for PTP
     }
 
     /*Configure GPIO pins : TX_LOCK_DETECT_Pin */
     if ((TX_LOCK_DETECT_PIN != DISABLE) || (TX_LOCK_DETECT_PORT != DISABLE))
     {
-        //pull up
-        //input
+        // pull up
+        // input
         if (TX_LOCK_DETECT_IRQ != DISABLE)
         {
-            //it falling
-            //NVIC enable
+            // it falling
+            // NVIC enable
         }
     }
 }
@@ -414,8 +414,8 @@ static void LuosHAL_RegisterPTP(void)
  ******************************************************************************/
 void LuosHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
-    //clear IT
-    // Pull Down / IT mode / Rising Edge
+    // clear IT
+    //  Pull Down / IT mode / Rising Edge
 }
 /******************************************************************************
  * @brief Set PTP for reverse detection on branch
@@ -424,8 +424,8 @@ void LuosHAL_SetPTPDefaultState(uint8_t PTPNbr)
  ******************************************************************************/
 void LuosHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
-    //clear IT
-    // Pull Down / IT mode / Falling Edge
+    // clear IT
+    //  Pull Down / IT mode / Falling Edge
 }
 /******************************************************************************
  * @brief Set PTP line
@@ -453,7 +453,7 @@ uint8_t LuosHAL_GetPTPState(uint8_t PTPNbr)
  ******************************************************************************/
 static void LuosHAL_CRCInit(void)
 {
-    //CRC initialisation
+    // CRC initialisation
 }
 /******************************************************************************
  * @brief Compute CRC
@@ -463,7 +463,7 @@ static void LuosHAL_CRCInit(void)
 void LuosHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
 {
 #ifdef CRC_HW
-    //CRC HW calculation
+    // CRC HW calculation
 #else
     for (uint8_t i = 0; i < 1; ++i)
     {
@@ -495,7 +495,7 @@ static void LuosHAL_FlashInit(void)
 static void LuosHAL_FlashEraseLuosMemoryInfo(void)
 {
     uint32_t page_error = 0;
-    //routine to erase flash page
+    // routine to erase flash page
 }
 /******************************************************************************
  * @brief Write flash page where Luos keep permanente information
@@ -517,7 +517,7 @@ void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *dat
 
     // and copy it into flash
 
-    //write data
+    // write data
 }
 
 /******************************************************************************
@@ -539,7 +539,7 @@ void __disable_irq()
 
 /******************************************************************************
  * @brief Set boot mode in shared flash memory
- * @param 
+ * @param
  * @return
  ******************************************************************************/
 void LuosHAL_SetMode(uint8_t mode)
@@ -557,10 +557,38 @@ void LuosHAL_SaveNodeID(uint16_t node_id)
 
 /******************************************************************************
  * @brief software reboot the microprocessor
- * @param 
+ * @param
  * @return
  ******************************************************************************/
 void LuosHAL_Reboot(void)
+{
+}
+
+/******************************************************************************
+ * @brief Luos GetTimestamp
+ * @param None
+ * @return uint64_t
+ ******************************************************************************/
+uint64_t LuosHAL_GetTimestamp(void)
+{
+    return 0;
+}
+
+/******************************************************************************
+ * @brief Luos start Timestamp
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosHAL_StartTimestamp(void)
+{
+}
+
+/******************************************************************************
+ * @brief Luos stop Timestamp
+ * @param None
+ * @return None
+ ******************************************************************************/
+void LuosHAL_StopTimestamp(void)
 {
 }
 
