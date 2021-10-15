@@ -231,6 +231,13 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
     uint8_t redetect_nb = 0;
     bool detect_enabled = true;
 
+    // if node is connected or a detection is in progress,
+    // Don't do an another detection and return 0
+    if (!Robus_IsNodeDetected())
+    {
+        return 0;
+    }
+
     while (detect_enabled)
     {
         detect_enabled = false;
