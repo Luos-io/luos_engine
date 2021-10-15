@@ -98,7 +98,7 @@ void Luos_Loop(void)
         {
             break;
         }
-        //check if this msg cmd should be consumed by Luos_MsgHandler
+        // check if this msg cmd should be consumed by Luos_MsgHandler
         if (Luos_IsALuosCmd(service, cmd, size) == SUCCEED)
         {
             if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
@@ -419,7 +419,7 @@ static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_ms
     uint16_t entry_nb = 0;
     routing_table_t local_routing_table[service_number + 1];
 
-    //start by saving node entry
+    // start by saving node entry
     RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Robus_GetNode());
     entry_nb++;
     // save services entry
@@ -468,9 +468,9 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        //store service and msg pointer
-                        // todo this can't work for now because this message is not permanent.
-                        //mngr_set(&service_table[i], &updt_msg);
+                        // store service and msg pointer
+                        //  todo this can't work for now because this message is not permanent.
+                        // mngr_set(&service_table[i], &updt_msg);
                     }
                     service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
@@ -526,7 +526,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
         service->alias[i] = '\0';
     }
 
-    //Initialise the service revision to 0
+    // Initialise the service revision to 0
     memset((void *)service->revision.unmap, 0, sizeof(revision_t));
     // Save firmware version
     for (i = 0; i < sizeof(revision_t); i++)
@@ -534,7 +534,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
         service->revision.unmap[i] = revision.unmap[i];
     }
 
-    //initiate service statistics
+    // initiate service statistics
     service->node_statistics               = &luos_stats;
     service->ll_service->ll_stat.max_retry = &service->statistics.max_retry;
 
@@ -722,7 +722,7 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         return FAILED;
     }
 
-    //store total size of a msg
+    // store total size of a msg
     if (total_data_size[id] == 0)
     {
         total_data_size[id] = msg->header.size;
@@ -758,7 +758,7 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
     data_size[id] = data_size[id] + chunk_size;
     last_msg_size = msg->header.size;
 
-    //check
+    // check
     LUOS_ASSERT(data_size[id] <= total_data_size[id]);
 
     // Check end of data

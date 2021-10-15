@@ -64,9 +64,9 @@ void Recep_GetHeader(volatile uint8_t *data)
     // Check if we have all we need.
     switch (data_count)
     {
-        case 1: //reset CRC computation
-            //when we catch the first byte we timestamp the msg
-            // -8 : time to transmit 8 bits at 1 us/bit
+        case 1: // reset CRC computation
+            // when we catch the first byte we timestamp the msg
+            //  -8 : time to transmit 8 bits at 1 us/bit
             ll_rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
 
             ctx.tx.lock = true;
@@ -75,7 +75,7 @@ void Recep_GetHeader(volatile uint8_t *data)
             crc_val       = 0xFFFF;
             break;
 
-        case 3: //check if message is for the node
+        case 3: // check if message is for the node
             if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
             {
                 MsgAlloc_ValidHeader(false, data_size);
@@ -84,7 +84,7 @@ void Recep_GetHeader(volatile uint8_t *data)
             }
             break;
 
-        case (sizeof(header_t)): //Process at the header
+        case (sizeof(header_t)): // Process at the header
 #ifdef DEBUG
             printf("*******header data*******\n");
             printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
@@ -353,12 +353,12 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  ******************************************************************************/
 static inline error_return_t Recep_NodeCompare(uint16_t ID)
 {
-	//--------------------------->|__________|
-	//	Shift byte		            byte Mask of bit address
+    //--------------------------->|__________|
+    //	Shift byte		            byte Mask of bit address
 
     uint16_t compare = 0;
 
-    if ((ID > (8 * ctx.ShiftMask)))//IDMask aligned byte
+    if ((ID > (8 * ctx.ShiftMask))) // IDMask aligned byte
     {
         compare = ((ID - 1) - ((8 * ctx.ShiftMask)));
         if ((ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
@@ -473,7 +473,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
             {
                 if (Trgt_MulticastTargetBank((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
                 {
-                    //TODO manage multiple slave concerned
+                    // TODO manage multiple slave concerned
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                     return;
                 }
@@ -481,7 +481,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
             break;
         case NODEIDACK:
         case NODEID:
-            if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
+            if (msg->header.target == DEFAULTID) // on default ID it's always a luos command create only one task
             {
                 MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
                 return;

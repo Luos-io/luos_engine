@@ -370,7 +370,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
         // The string size of num is 2
         intsize = 2;
     }
-    if (num > 99) //only 2 digit are alowed when add alias number
+    if (num > 99) // only 2 digit are alowed when add alias number
     {
         // This is probably a mistake, put an error into the alias
         memset(alias, 0, ALIAS_SIZE);
@@ -483,7 +483,7 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
     intro_msg.header.cmd         = RTB_CMD;
     intro_msg.header.target_mode = NODEIDACK;
 
-    for (uint16_t i = 2; i <= nb_node; i++) //don't send to ourself
+    for (uint16_t i = 2; i <= nb_node; i++) // don't send to ourself
     {
         intro_msg.header.target = i;
         Luos_SendData(service, &intro_msg, routing_table, (last_routing_table_entry * sizeof(routing_table_t)));

@@ -69,7 +69,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.status = TX_DISABLE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-    //mask
+    // mask
     ctx.ShiftMask = 0;
     for (uint16_t i = 0; i < MASK_SIZE; i++)
     {
@@ -272,9 +272,9 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
 
     do
     {
-        //msg send not blocking
+        // msg send not blocking
         Robus_SendMsg(ll_service, &msg);
-        //need to wait until tx msg before clear msg alloc
+        // need to wait until tx msg before clear msg alloc
         while (MsgAlloc_TxAllComplete() != SUCCEED)
             ;
 
@@ -452,15 +452,15 @@ void Robus_Flush(void)
  ******************************************************************************/
 void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
 {
-	// 4096 bit address 512 byte possible
-	// Create a mask of only possibility in the node
-	//--------------------------->|__________|
-	//	Shift byte		            byte Mask of bit address
+    // 4096 bit address 512 byte possible
+    // Create a mask of only possibility in the node
+    //--------------------------->|__________|
+    //	Shift byte		            byte Mask of bit address
 
     uint16_t tempo = 0;
-    ctx.ShiftMask      = ID / 8;//aligned to byte
+    ctx.ShiftMask  = ID / 8; // aligned to byte
 
-    //create a mask of bit corresponding to ID number in the node
+    // create a mask of bit corresponding to ID number in the node
     for (uint16_t i = 0; i < ServiceNumber; i++)
     {
         tempo = (((ID - 1) + i) - (8 * ctx.ShiftMask));
