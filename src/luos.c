@@ -973,7 +973,15 @@ void Luos_Flush(void)
 {
     Robus_Flush();
 }
-
+/******************************************************************************
+ * @brief search id from type in localhost
+ * @param Type value
+ * @return uint16_t service id, or 0 if not found
+ ******************************************************************************/
+uint16_t Luos_IDFromType_localhost(uint16_t type)
+{
+    return Robus_IDFromType_localhost(type);
+}
 /******************************************************************************
  * @brief check if the node is connected to the network
  * @param None

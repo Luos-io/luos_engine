@@ -63,6 +63,7 @@ uint16_t Luos_NbrAvailableMsg(void);
 uint32_t Luos_GetSystick(void);
 error_return_t Luos_TxComplete(void);
 void Luos_Flush(void);
+uint16_t Luos_IDFromType_localhost(uint16_t type);
 bool Luos_IsNodeDetected(void);
 void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
 void Luos_Run(void);

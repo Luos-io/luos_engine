@@ -463,6 +463,22 @@ node_t *Robus_GetNode(void)
     return (node_t *)&ctx.node;
 }
 /******************************************************************************
+ * @brief search id from type in localhost
+ * @param Type value
+ * @return uint16_t service id, or 0 if not found
+ ******************************************************************************/
+uint16_t Robus_IDFromType_localhost(uint16_t type)
+{
+    for (int i = 0; i < ctx.ll_service_number; i++)
+    {
+        if (type == ctx.ll_service_table[i].type)
+        {
+            return ctx.ll_service_table[i].id;
+        }
+    }
+    return 0;
+}
+/******************************************************************************
  * @brief Flush the entire msg buffer
  * @param None
  * @return None

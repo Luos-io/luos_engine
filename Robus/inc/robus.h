@@ -41,6 +41,7 @@ void Robus_ServicesClear(void);
 error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg);
 uint16_t Robus_TopologyDetection(ll_service_t *ll_service);
 node_t *Robus_GetNode(void);
+uint16_t Robus_IDFromType_localhost(uint16_t type);
 void Robus_Flush(void);
 void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber);
 void Robus_SetNodeDetected(network_state_t);
