@@ -126,9 +126,10 @@ typedef enum
 {
     // Luos specific registers
     RTB_CMD = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2), or share(size > 2) a routing_table.
-    WRITE_ALIAS,                 // Get and save a new given alias.
-    UPDATE_PUB,                  // Ask to update a sensor value each time duration to the sender
-    NODE_UUID,                   // luos_uuid_t
+    END_DETECTION,
+    WRITE_ALIAS, // Get and save a new given alias.
+    UPDATE_PUB,  // Ask to update a sensor value each time duration to the sender
+    NODE_UUID,   // luos_uuid_t
 
     // Revision management
     REVISION,        // service sends its firmware revision

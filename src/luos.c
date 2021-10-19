@@ -273,6 +273,11 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             }
             consume = SUCCEED;
             break;
+        case END_DETECTION:
+            // detect end of detection
+            Robus_SetNodeDetected(NETWORK_LINK_UP);
+            consume = SUCCEED;
+            break;
         case REVISION:
             if (input->header.size == 0)
             {
