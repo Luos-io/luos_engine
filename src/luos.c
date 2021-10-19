@@ -252,8 +252,6 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                         }
                         Robus_ShiftMaskCalculation(base_id, service_number);
                     }
-                    // detect end of detection
-                    Robus_SetNodeDetected(NETWORK_LINK_UP);
                 case 0:
                     // send back a local routing table
                     output_msg.header.cmd         = RTB;
