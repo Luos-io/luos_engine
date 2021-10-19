@@ -416,7 +416,6 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             return SUCCEED;
             break;
         case RESET_DETECTION:
-            Robus_SetNodeDetected(NETWORK_LINK_CONNECT);
             return SUCCEED;
             break;
         case END_DETECTION:

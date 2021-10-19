@@ -14,6 +14,7 @@
 #include "msg_alloc.h"
 #include "luos_utils.h"
 #include "timestamp.h"
+#include "robus.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -168,6 +169,7 @@ void Recep_GetData(volatile uint8_t *data)
             {
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
+                Robus_SetNodeDetected(NETWORK_LINK_CONNECT);
             }
             else
             {
