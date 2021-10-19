@@ -108,7 +108,7 @@ typedef struct __attribute__((__packed__))
     uint16_t multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
     uint16_t dead_service_spotted;                         /*!< The ID of a service that don't reply to a lot of ACK msg */
 
-    //variable stat on robus com for ll_service
+    // variable stat on robus com for ll_service
     ll_stats_t ll_stat;
 } ll_service_t;
 
@@ -149,8 +149,9 @@ typedef enum
     // protocol level command
     WRITE_NODE_ID,   /*!< Get and save a new given node ID. */
     RESET_DETECTION, /*!< Reset detection*/
-    SET_BAUDRATE,    /*!< Set Robus baudrate*/
-    ASSERT,          /*!< Node Assert message (only broadcast with a source as a node */
+    END_DETECTION,
+    SET_BAUDRATE, /*!< Set Robus baudrate*/
+    ASSERT,       /*!< Node Assert message (only broadcast with a source as a node */
     ROBUS_PROTOCOL_NB,
 } robus_cmd_t;
 

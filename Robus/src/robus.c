@@ -419,6 +419,11 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             Robus_SetNodeDetected(NETWORK_LINK_CONNECT);
             return SUCCEED;
             break;
+        case END_DETECTION:
+            // detect end of detection
+            Robus_SetNodeDetected(NETWORK_LINK_UP);
+            return SUCCEED;
+            break;
         case SET_BAUDRATE:
             // We have to wait the end of transmission of all the messages we have to transmit
             while (MsgAlloc_TxAllComplete() == FAILED)
