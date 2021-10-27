@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "luos_hal.h"
 #include "context.h"
 
@@ -76,6 +77,34 @@ uint16_t RoutingTB_IDFromType(luos_type_t type)
     }
     return 0;
 }
+
+/******************************************************************************
+ * @brief  Return an id from the phisically closest type
+ * @param type of service look at
+ * @return ID or Error
+ ******************************************************************************/
+uint16_t RoutingTB_IDFromClosestType(service_t *service, luos_type_t type)
+{
+    uint16_t delta_node = 0xFFFF;
+    uint16_t result     = 0;
+    for (int i = 0; i <= last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == SERVICE)
+        {
+            if (type == routing_table[i].type)
+            {
+                uint16_t tmp_delta_node = abs(RoutingTB_NodeIDFromID(routing_table[i].id) - service->ll_service->id);
+                if (tmp_delta_node < delta_node)
+                {
+                    delta_node = tmp_delta_node;
+                    result     = routing_table[i].id;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 /******************************************************************************
  * @brief  Return a Nodeid from service id
  * @param id of service
@@ -83,7 +112,7 @@ uint16_t RoutingTB_IDFromType(luos_type_t type)
  ******************************************************************************/
 uint16_t RoutingTB_NodeIDFromID(uint16_t id)
 {
-    for (uint16_t i = RoutingTB_GetServiceID(id); i >= 0; i--)
+    for (uint16_t i = RoutingTB_GetServiceIndex(id); i >= 0; i--)
     {
         if (routing_table[i].mode == NODE)
         {
@@ -320,6 +349,22 @@ uint16_t RoutingTB_GetServiceNB(void)
 uint16_t RoutingTB_GetServiceID(uint16_t index)
 {
     return routing_table[index].id;
+}
+/******************************************************************************
+ * @brief  get Index of service on the routing table
+ * @param routing table id
+ * @return index
+ ******************************************************************************/
+uint16_t RoutingTB_GetServiceIndex(uint16_t id)
+{
+    for (uint8_t i = 0; i < last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == SERVICE && routing_table[i].id == id)
+        {
+            return i;
+        }
+    }
+    return 0;
 }
 
 /******************************************************************************
