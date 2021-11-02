@@ -33,11 +33,17 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
-static network_state_t node_connected = NETWORK_LINK_DOWN;
+static network_lock_t node_connected = {
+    .state       = NETWORK_LINK_DOWN,
+    .timeout_run = false,
+    .timeout     = 0};
+
+#define NETWORK_TIMEOUT 100
 
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
 static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
+void Robus_RunNetworkTimeout(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -100,6 +106,8 @@ void Robus_Init(memory_stats_t *memory_stats)
  ******************************************************************************/
 void Robus_Loop(void)
 {
+    // network timeout management
+    Robus_RunNetworkTimeout();
     // Execute message allocation tasks
     MsgAlloc_loop();
     // Interpreat received messages and create luos task for it.
@@ -489,7 +497,41 @@ void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
  ******************************************************************************/
 void Robus_SetNodeDetected(network_state_t state)
 {
-    node_connected = state;
+    switch (state)
+    {
+        case NETWORK_LINK_DOWN:
+            node_connected.timeout_run = false;
+            node_connected.timeout     = 0;
+            break;
+        case NETWORK_LINK_CONNECT:
+            node_connected.timeout_run = true;
+            node_connected.timeout     = LuosHAL_GetSystick();
+            break;
+        case NETWORK_LINK_UP:
+            node_connected.timeout_run = false;
+            node_connected.timeout     = 0;
+            break;
+        default:
+            break;
+    }
+    node_connected.state = state;
+}
+
+/******************************************************************************
+ * @brief manage network timeout
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_RunNetworkTimeout(void)
+{
+    if (node_connected.timeout_run)
+    {
+        // if timeout is reached, go back to link-down state
+        if (LuosHAL_GetSystick() - node_connected.timeout > NETWORK_TIMEOUT)
+        {
+            Robus_SetNodeDetected(NETWORK_LINK_DOWN);
+        }
+    }
 }
 
 /******************************************************************************
@@ -499,5 +541,5 @@ void Robus_SetNodeDetected(network_state_t state)
  ******************************************************************************/
 network_state_t Robus_IsNodeDetected(void)
 {
-    return node_connected;
+    return node_connected.state;
 }

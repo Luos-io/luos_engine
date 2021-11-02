@@ -20,6 +20,13 @@ typedef enum
     NETWORK_LINK_UP
 } network_state_t;
 
+typedef struct
+{
+    network_state_t state;
+    bool timeout_run;
+    uint32_t timeout;
+} network_lock_t;
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
