@@ -163,6 +163,14 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     uint8_t ack        = 0;
     uint16_t data_size = 0;
     uint16_t crc_val   = 0xFFFF;
+
+    // ***************************************************
+    // don't send luos messages if network is down
+    if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != NETWORK_LINK_UP))
+    {
+        return FAILED;
+    }
+
     // ********** Prepare the message ********************
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
