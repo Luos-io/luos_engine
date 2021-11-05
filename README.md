@@ -9,34 +9,33 @@
 
 Version: 2.0.0
 
-# Introduction to Luos :bulb:
+# Luos Technology
+## The most for the developer​
+Luos provides a simple way to think your hardware products as a group of independant features. You can easily manage and share your hardware products' features with your team, external developers, or with the community. Luos is an open-source lightweight library that can be used on any MCU, leading to free and fast multi-electronic-boards products development. Choosing Luos to design a product will help you to develop, debug, validate, monitor, and manage it from the cloud.
 
-We started designing Luos with the conviction that building electronic systems should be made easier than it is today. The majority of development time should be spent on designing the applications and behaviors instead of on complex and time-and-money-eating technicalities. To give a simple example, adding a new sensor (for example a distance sensor) to an electronic device in conception should not take more than a few minutes. So you can try, test and quickly iterate on a project to quickly design what users truly want.
+## The most for the community​
+Most of the embedded developments are made from scratch. By using Luos, you will be able to capitalize on the development you, your company, or the Luos community already did. The re-usability of features encapsulated in Luos services will fasten the time your products reach the market and reassure the robustness and the universality of your applications.
 
-Luos works like a [microservice architecture](https://en.wikipedia.org/wiki/Microservices) in the software world, and a [distributed operating system](https://en.wikipedia.org/wiki/Distributed_operating_system): it encapsulates any software or hardware function to make it communicate and work with any other encapsulated service, however it was developed, either on bare metal or on top of an embedded OS.
+* → Join the [Luos Slack Community](http://bit.ly/JoinLuosSlack)
+* → Join the [Luos Discord Community](http://bit.ly/JoinLuosDiscord)
+* → Join the [Luos Reddit Community](http://bit.ly/JoinLuosReddit)
+* → Join the [Luos Forum](http://bit.ly/JoinLuosForum)
 
-This repository contains the Luos library that you will need to include in your software projects. To correctly configure your hardware, it should be used in conjunction with the [LuosHAL project](https://github.com/Luos-io/LuosHAL).
+Need dedicated help with your project? Check out [Luos' support packages](https://www.luos.io/support).
 
-Watch this video for additional details:
+## Good practices with Luos​
+Luos proposes organized and effective development practices, guaranteeing development flexibility and evolutivity of your hardware product, from the idea to the maintenance of the industrialized product fleet.
 
-<a href="https://youtu.be/xQe3z0M_FE8"><img border="0" alt="Luos video" src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/6035128c3e63c132f1743d13_youtube.jpeg" width="640" height="360"></a>
+## Let's do this​
+This section details the features of Luos technology as an embedded development platform, following these subjects:
 
-## Unfamiliar with Luos?
+* Let's test through the [Luos get started](https://docs.luos.io/docs/get-started/getting-started), to build, flash, run, and control your very first Luos code.
+* The [Basics of Luos](https://docs.luos.io/docs/luos-technology/basics/basics), explaining the general concepts and the project organization.
+* Definition of [Nodes](https://docs.luos.io/docs/luos-technology/node/node), and the relation between Luos and the physical world.
+* Definition of [Packages](https://docs.luos.io/docs/luos-technology/package/package), and how to make a portable and reusable development.
+* Definition of [Services](https://docs.luos.io/docs/luos-technology/services/services), how to create and declare features in your product.
+* Definition of [Messages](https://docs.luos.io/docs/luos-technology/message/message), when, why, and how to handle them, explaining the more advanced features of Luos.
 
-→ You can start by reading the [Basics](https://docs.luos.io/pages/luos-technology/basics/basics.html) page.
-
-## You want to tune your device's behavior?
-
-→ Luos provides a [Demonstration board](https://docs.luos.io/pages/tutorials/demo-boards/luos-demo-boards.html) and [Example demonstration boards](https://github.com/Luos-io/Examples/tree/master/Hardware). You can use them as example or to develop your own project.
-.
-
-→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/luos-technology/services/service_api.html).
-
-→ You can control your devices through a [Gate](https://docs.luos.io/pages/tools/gate.html) service using [Pyluos](https://docs.luos.io/pages/tools/pyluos.html).
-
-If you have questions about a specific topic, you can refer or ask it on the [Luos' subreddit](https://www.reddit.com/r/Luos). And if you have suggestions about this documentation, don't hesitate to create pull requests.
-
-## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' subreddit](https://www.reddit.com/r/Luos/). :books:
 
 
 [![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
