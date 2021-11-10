@@ -34,7 +34,7 @@ static inline result_t selftest_ptp(void);
  ******************************************************************************/
 void selftest_SetPtpFlag(void)
 {
-    ptp_flag = 1;
+    ptp_flag++;
 }
 
 /******************************************************************************
@@ -106,15 +106,26 @@ result_t selftest_com(void)
  ******************************************************************************/
 result_t selftest_ptp(void)
 {
-    LuosHAL_SetPTPDefaultState(0);
-    if (LuosHAL_GetPTPState(1))
-        return KO;
-
     LuosHAL_PushPTP(0);
+    uint32_t start_tick = LuosHAL_GetSystick();
+    while (LuosHAL_GetSystick() - start_tick < 2);
+    // release the ptp line
     if (!LuosHAL_GetPTPState(1))
-        return KO;
+    {
+    	return KO;
+    }
+    LuosHAL_SetPTPDefaultState(0);
+    LuosHAL_PushPTP(1);
+    while (LuosHAL_GetSystick() - start_tick < 3);
+    if (!LuosHAL_GetPTPState(0))
+    {
+    	return KO;
+    }
 
-    if (!ptp_flag)
+    LuosHAL_SetPTPDefaultState(0);
+    LuosHAL_SetPTPDefaultState(1);
+
+    if (ptp_flag<2)
     {
         return KO;
     }
