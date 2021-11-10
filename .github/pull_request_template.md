@@ -20,7 +20,6 @@
 ## Tests are passed the best as I can
 - [ ]  Non regression existing tests are *passed OK*
 - [ ]  New tests for new features & bug fixes are *passed OK*
-- [ ]  If needed, tests 
 <br><br />
 ## Documentation
 - [ ] Documentation is up to date
