@@ -55,6 +55,9 @@ void selftest_SetRxFlag(void)
 void selftest_init(void)
 {
     Luos_Init();
+    revision_t revision = {.major = 1, .minor = 0, .build = 0};
+
+    Luos_CreateService(NULL, VOID_TYPE, "Selftest", revision);
 }
 
 /******************************************************************************
@@ -67,7 +70,7 @@ result_t selftest_com(void)
     msg_t msg;
     msg.header.target      = 1;
     msg.header.target_mode = NODEID;
-    msg.header.cmd         = IO_STATE;
+    msg.header.cmd         = REVISION;
     msg.header.size        = 5 * sizeof(uint8_t);
     msg.data[0]            = 0xAA;
     msg.data[1]            = 0x55;
