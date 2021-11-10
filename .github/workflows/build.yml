@@ -38,7 +38,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install platformio
-        npm install -g clang-format
+        npm install -g clang-format@1.5.0
 
     - name: Check out Luos repository
       uses: actions/checkout@v2
