@@ -21,21 +21,10 @@ typedef enum
 } result_t;
 
 volatile uint8_t rx_flag  = 0;
-volatile uint8_t ptp_flag = 0;
 
 static inline void selftest_init(void);
 static inline result_t selftest_com(void);
 static inline result_t selftest_ptp(void);
-
-/******************************************************************************
- * @brief set ptp selftest flag
- * @param None
- * @return None
- ******************************************************************************/
-void selftest_SetPtpFlag(void)
-{
-    ptp_flag = 1;
-}
 
 /******************************************************************************
  * @brief set rx selftest flag
@@ -111,9 +100,10 @@ result_t selftest_ptp(void)
 	LuosHAL_SetPTPDefaultState(0);
     LuosHAL_SetPTPDefaultState(1);
     LuosHAL_PushPTP(0);
+
     while (LuosHAL_GetSystick() - start_tick < 2);
-    // release the ptp line
     LuosHAL_SetPTPDefaultState(0);
+    //Test  pinout and IRQ
     if (!LuosHAL_GetPTPState(0))
     {
     	return KO;
@@ -122,16 +112,14 @@ result_t selftest_ptp(void)
 	LuosHAL_SetPTPDefaultState(0);
     LuosHAL_SetPTPDefaultState(1);
     LuosHAL_PushPTP(1);
+
+
     while (LuosHAL_GetSystick() - start_tick < 3);
     LuosHAL_SetPTPDefaultState(1);
+    //Test  pinout and IRQ
     if (!LuosHAL_GetPTPState(1))
     {
     	return KO;
-    }
-
-    if (!ptp_flag)
-    {
-        return KO;
     }
 
     return OK;
