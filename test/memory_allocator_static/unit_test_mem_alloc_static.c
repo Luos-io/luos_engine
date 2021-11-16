@@ -288,7 +288,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         uint32_t remaining_datas;
         uint32_t expected_size = 0;
         uint32_t free_space    = 0;
-        oldest_msg             = (msg_t *)0xFFFFFFFF; //No oldest message
+        oldest_msg             = (msg_t *)0xFFFFFFFF; // No oldest message
 
         NEW_STEP("Check remaining space computing for all message size cases");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 2; i++)
@@ -345,7 +345,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 1; i++)
         {
             oldest_msg = (msg_t *)&msg_buffer[1];
-            //for (uint8_t j = 0; j < 2; j++)
+            // for (uint8_t j = 0; j < 2; j++)
             for (uint16_t j = i; j < MSG_BUFFER_SIZE - 1; j++)
             {
                 if ((uint32_t)oldest_msg > (uint32_t)data_end_estimation)
@@ -356,7 +356,7 @@ void unittest_BufferAvailableSpaceComputation(void)
                     TEST_ASSERT_FALSE(IS_ASSERT());
                     TEST_ASSERT_EQUAL(expected_size, free_space);
                 }
-                //oldest_msg++;
+                // oldest_msg++;
                 oldest_msg = (msg_t *)&msg_buffer[j + 1];
             }
             data_end_estimation++;
@@ -382,8 +382,8 @@ void unittest_BufferAvailableSpaceComputation(void)
         oldest_msg             = (msg_t *)data_end_estimation - 1;
 
         NEW_STEP("Check remaining space computing for all cases");
-        //Test remaining space computing for all cases
-        //while (data_end_estimation < &msg_buffer[MSG_BUFFER_SIZE])
+        // Test remaining space computing for all cases
+        // while (data_end_estimation < &msg_buffer[MSG_BUFFER_SIZE])
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 1; i++)
         {
             oldest_msg = (msg_t *)&msg_buffer[1];
@@ -478,7 +478,7 @@ void unittest_OldestMsgCandidate(void)
         volatile msg_t *expected_oldest_msg;
 
         // Array with all possible cases
-        int cases[CASE][4] = {//current_msg  oldest_msg  oldest_stack_msg_pt  expected_oldest_msg
+        int cases[CASE][4] = {// current_msg  oldest_msg  oldest_stack_msg_pt  expected_oldest_msg
                               {/* */ 0, /*     */ 1, /*        */ 2, /*            */ 1},
                               {/* */ 0, /*     */ 2, /*        */ 1, /*            */ 1},
                               {/* */ 1, /*     */ 0, /*        */ 2, /*            */ 2},
@@ -580,7 +580,7 @@ void unittest_ValidDataIntegrity(void)
         TEST_ASSERT_FALSE(IS_ASSERT());
         NEW_STEP("Check \"copy task pointer\" is NULL");
         TEST_ASSERT_NULL(copy_task_pointer);
-        //TEST_ASSERT_EQUAL(copy_task_pointer, NULL);
+        // TEST_ASSERT_EQUAL(copy_task_pointer, NULL);
         NEW_STEP("Check header is copied to beginning of buffer");
         TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, sizeof(header_t));
     }

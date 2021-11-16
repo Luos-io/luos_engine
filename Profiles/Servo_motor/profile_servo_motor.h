@@ -65,14 +65,14 @@ typedef struct
     linear_position_t linear_position;
     linear_speed_t linear_speed;
 
-    //configs
+    // configs
     float motor_reduction;
     float resolution;
     linear_position_t wheel_diameter;
     asserv_pid_t position_pid;
     asserv_pid_t speed_pid;
 
-    //streaming
+    // streaming
     control_t control;
     streaming_channel_t trajectory;
     streaming_channel_t measurement;

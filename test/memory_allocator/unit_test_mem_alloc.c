@@ -86,7 +86,7 @@ void unittest_MsgAlloc_loop()
 
         // Call function and Verify
         //---------------------------
-        //Empty buffer
+        // Empty buffer
         data_end_estimation              = (uint8_t *)(current_msg);
         expected_buffer_occupation_ratio = 0;
         MsgAlloc_loop();
@@ -94,7 +94,7 @@ void unittest_MsgAlloc_loop()
         NEW_STEP("Check buffer is empty");
         TEST_ASSERT_EQUAL(0, memory_stats.buffer_occupation_ratio);
 
-        //Buffer occupation from 0 -> 100%
+        // Buffer occupation from 0 -> 100%
         NEW_STEP("Check buffer is full in all cases");
         for (uint16_t i = sizeof(header_t); i < MSG_BUFFER_SIZE; i++)
         {
@@ -2051,6 +2051,6 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgFromTxTask);
     UNIT_TEST_RUN(unittest_MsgAlloc_PullServiceFromTxTask);
     UNIT_TEST_RUN(unittest_MsgAlloc_GetTxTask);
-    //MsgAlloc_Init         => this function doesn't need unit test
+    // MsgAlloc_Init         => this function doesn't need unit test
     UNITY_END();
 }

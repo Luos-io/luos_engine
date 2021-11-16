@@ -150,7 +150,7 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
 
 /******************************************************************************
  * @brief process binary data received from the gate
- * @param None 
+ * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_EraseMemory(void)
@@ -160,7 +160,7 @@ void LuosBootloader_EraseMemory(void)
 
 /******************************************************************************
  * @brief process binary data received from the gate
- * @param None 
+ * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_ProcessData(void)
@@ -198,8 +198,8 @@ void LuosBootloader_ProcessData(void)
 }
 
 /******************************************************************************
- * @brief Save the current page when BIN_END command is received 
- * @param None 
+ * @brief Save the current page when BIN_END command is received
+ * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_SaveLastData(void)
@@ -209,7 +209,7 @@ void LuosBootloader_SaveLastData(void)
 
 /******************************************************************************
  * @brief compute crc 8 for each data
- * @param data pointer, data len 
+ * @param data pointer, data len
  * @return crc
  ******************************************************************************/
 void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
@@ -237,7 +237,7 @@ void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
 
 /******************************************************************************
  * @brief compute crc for the whole binary
- * @param data pointer, data len 
+ * @param data pointer, data len
  * @return crc
  ******************************************************************************/
 uint8_t compute_crc(void)
