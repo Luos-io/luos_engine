@@ -1815,7 +1815,7 @@ void unittest_SetTxTask_multihost()
         NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(ll_service_pt, tx_tasks[tx_tasks_stack_id].ll_service_pt);
         NEW_STEP("Check \"localhost\" value is set to LOCALHOST");
-        TEST_ASSERT_EQUAL(LOCALHOST, tx_tasks[tx_tasks_stack_id].localhost); //Mutlihost must be seen as localhost
+        TEST_ASSERT_EQUAL(LOCALHOST, tx_tasks[tx_tasks_stack_id].localhost); // Mutlihost must be seen as localhost
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
         NEW_STEP("Check message task \"data pointer\" is correctly computed");

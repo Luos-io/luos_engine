@@ -266,9 +266,9 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
 
     do
     {
-        //msg send not blocking
+        // msg send not blocking
         Robus_SendMsg(ll_service, &msg);
-        //need to wait until tx msg before clear msg alloc
+        // need to wait until tx msg before clear msg alloc
         while (MsgAlloc_TxAllComplete() != SUCCEED)
             ;
 

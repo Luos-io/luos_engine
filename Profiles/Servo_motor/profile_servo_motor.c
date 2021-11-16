@@ -283,8 +283,8 @@ void ProfileServo_link(uint8_t profile_mode, profile_servo_motor_t *profile_serv
  * @brief Create a service with a linked profile
  * @param profile data structure
  * @param callback used by the service
- * @param alias 
- * @param revision 
+ * @param alias
+ * @param revision
  * @return service pointer
  ******************************************************************************/
 service_t *ProfileServo_CreateService(profile_servo_motor_t *profile_servo_motor, SERVICE_CB callback, const char *alias, revision_t revision)

@@ -18,9 +18,9 @@
  ******************************************************************************/
 typedef struct
 {
-    //Port manager
-    volatile uint8_t activ;    //last Port where thereis activity
-    volatile uint8_t keepLine; //status of the line poked by your node
+    // Port manager
+    volatile uint8_t activ;    // last Port where thereis activity
+    volatile uint8_t keepLine; // status of the line poked by your node
 } PortMng_t;
 /*******************************************************************************
  * Function

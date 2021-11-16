@@ -64,8 +64,8 @@ void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state)
  * @brief Create a service with a linked profile
  * @param profile data structure
  * @param callback used by the service
- * @param alias 
- * @param revision 
+ * @param alias
+ * @param revision
  * @return service pointer
  ******************************************************************************/
 service_t *ProfileState_CreateService(profile_state_t *profile_state, SERVICE_CB callback, const char *alias, revision_t revision)
