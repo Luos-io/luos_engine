@@ -1,0 +1,17 @@
+name: Checklist merge authorization
+on: 
+  
+  pull_request:
+    types: [edited, opened, reopened]  
+    branches:
+      - master
+      - develop
+      - rc_*
+      
+jobs:
+  pr_checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: venkatsarvesh/pr-tasks-completed-action@v1.0.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
