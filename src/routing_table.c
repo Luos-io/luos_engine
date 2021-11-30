@@ -26,7 +26,6 @@ volatile uint16_t last_routing_table_entry = 0;
  * Function
  ******************************************************************************/
 static void RoutingTB_AddNumToAlias(char *alias, uint8_t num);
-static uint16_t RoutingTB_BigestID(void);
 static uint16_t RoutingTB_BigestNodeID(void);
 static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
@@ -232,7 +231,7 @@ uint8_t RoutingTB_ServiceIsSensor(luos_type_t type)
  * @param None
  * @return ID
  ******************************************************************************/
-static uint16_t RoutingTB_BigestID(void)
+uint16_t RoutingTB_BigestID(void)
 {
     uint16_t max_id = 0;
     for (uint16_t i = 0; i < last_routing_table_entry; i++)
