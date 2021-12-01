@@ -30,6 +30,7 @@ uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
 uint16_t service_number = 0;
 volatile routing_table_t *routing_table_pt;
+service_t *detection_service;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
@@ -174,6 +175,7 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
         case RTB:
         case WRITE_ALIAS:
         case UPDATE_PUB:
+        case ASK_DETECTION:
             return SUCCEED;
             break;
 
@@ -316,6 +318,13 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                 consume = SUCCEED;
             }
             break;
+        case ASK_DETECTION:
+            if (input->header.size == 0)
+            {
+                RoutingTB_DetectServices(detection_service);
+                consume = SUCCEED;
+                break;
+            }
         case LUOS_STATISTICS:
             if (input->header.size == 0)
             {
@@ -1086,5 +1095,40 @@ void Luos_Run(void)
             Luos_Loop();
             Luos_PackageLoop();
             break;
+    }
+}
+/******************************************************************************
+ * @brief Set a local id
+ * @param Service that we want to set id
+ * @param id value
+ * @return None
+ ******************************************************************************/
+void Luos_SetID(service_t *service, uint16_t id)
+{
+    // set id
+    service->ll_service->id = 1;
+    // change filter mask
+    Robus_ShiftMaskCalculation(id, service_number);
+}
+/******************************************************************************
+ * @brief Demand a detection
+ * @param Service that launched the detection
+ * @return None
+ ******************************************************************************/
+void Luos_Detect(service_t *service)
+{
+    msg_t detect_msg;
+
+    if (Robus_IsNodeDetected() != NETWORK_LINK_CONNECT)
+    {
+        // set the detection launcher id to 1
+        Luos_SetID(service, 1);
+        //  send ask detection message
+        detection_service             = service;
+        detect_msg.header.target_mode = IDACK;
+        detect_msg.header.cmd         = ASK_DETECTION;
+        detect_msg.header.size        = 0;
+        detect_msg.header.target      = 1;
+        Luos_SendMsg(service, &detect_msg);
     }
 }

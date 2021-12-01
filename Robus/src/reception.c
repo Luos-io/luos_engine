@@ -416,7 +416,7 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
             }
             else
             {
-                if ((header->target == ctx.node.node_id) && (header->target != 0))
+                if ((header->target == ctx.node.node_id) && ((header->target != 0)))
                 {
                     return LOCALHOST;
                 }
