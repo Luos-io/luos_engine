@@ -248,7 +248,6 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
         // setup local node
         ctx.node.node_id = 1;
         last_node        = 1;
-
         // setup sending ll_service
         ll_service->id = 1;
 
@@ -418,6 +417,11 @@ static error_return_t Robus_MsgHandler(msg_t *input)
         case RESET_DETECTION:
             Robus_SetNodeDetected(NETWORK_LINK_CONNECT);
             return SUCCEED;
+            break;
+        case END_DETECTION:
+            // detect end of detection
+            Robus_SetNodeDetected(NETWORK_LINK_UP);
+            return FAILED;
             break;
         case SET_BAUDRATE:
             // We have to wait the end of transmission of all the messages we have to transmit

@@ -31,6 +31,7 @@ static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node);
 static void RoutingTB_Share(service_t *service, uint16_t nb_node);
+static void RoutingTB_SendEndDetection(service_t *service);
 
 // ************************ routing_table search tools ***************************
 
@@ -490,6 +491,22 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 }
 
 /******************************************************************************
+ * @brief Send a message to indicate the end of the detection
+ * @param service who send
+ * @return None
+ ******************************************************************************/
+void RoutingTB_SendEndDetection(service_t *service)
+{
+    // send end detection message to each nodes
+    msg_t msg;
+    msg.header.target      = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd         = END_DETECTION;
+    msg.header.size        = 0;
+    Luos_SendMsg(service, &msg);
+}
+
+/******************************************************************************
  * @brief Detect all services and create a route table with it.
  * If multiple services have the same name it will be changed with a number in it
  * Automatically at the end this function create a list of sensors id
@@ -508,6 +525,8 @@ void RoutingTB_DetectServices(service_t *service)
     RoutingTB_Generate(service, nb_node);
     // We have a complete routing table now share it with others.
     RoutingTB_Share(service, nb_node);
+    // send a message to indicate the end of the detection
+    RoutingTB_SendEndDetection(service);
 }
 /******************************************************************************
  * @brief entry in routable node with associate service
