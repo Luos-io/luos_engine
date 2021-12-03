@@ -170,7 +170,8 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
                 return FAILED;
             }
             break;
-        case RTB_CMD:
+        case LOCAL_RTB:
+        case RTB:
         case WRITE_ALIAS:
         case UPDATE_PUB:
             return SUCCEED;
@@ -217,11 +218,10 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             // This assert information could be usefull for services, do not remove it.
             consume = FAILED;
             break;
-        case RTB_CMD:
+        case LOCAL_RTB:
             // Depending on the size of this message we have to make different operations
             // If size is 0 someone ask to get local_route table back
             // If size is 2 someone ask us to generate a local route table based on the given service ID then send local route table back.
-            // If size is bigger than 2 this is a complete routing table comming. We have to save it.
             switch (input->header.size)
             {
                 case 2:
@@ -252,23 +252,25 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                     }
                 case 0:
                     // send back a local routing table
-                    output_msg.header.cmd         = RTB_CMD;
+                    output_msg.header.cmd         = RTB;
                     output_msg.header.target_mode = IDACK;
                     output_msg.header.target      = input->header.source;
                     Luos_TransmitLocalRoutingTable(service, &output_msg);
                     break;
-                default:
-                    // Check routing table overflow
-                    LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
-                    if (Luos_ReceiveData(service, input, (void *)route_tab) == SUCCEED)
-                    {
-                        // route table section reception complete
-                        RoutingTB_ComputeRoutingTableEntryNB();
-                    }
-                    break;
             }
             consume = SUCCEED;
             break;
+        case RTB:
+            // Check routing table overflow
+            LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
+            if (Luos_ReceiveData(service, input, (void *)route_tab) == SUCCEED)
+            {
+                // route table section reception complete
+                RoutingTB_ComputeRoutingTableEntryNB();
+            }
+            consume = SUCCEED;
+            break;
+
         case REVISION:
             if (input->header.size == 0)
             {

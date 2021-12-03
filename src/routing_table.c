@@ -427,7 +427,7 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
     while ((last_node_id < nb_node) && (try_nb < nb_node))
     {
         try_nb++;
-        intro_msg.header.cmd         = RTB_CMD;
+        intro_msg.header.cmd         = LOCAL_RTB;
         intro_msg.header.target_mode = NODEIDACK;
         // Target next unknown node
         intro_msg.header.target = last_node_id + 1;
@@ -479,7 +479,7 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 {
     // send route table to each nodes. Routing tables are commonly usable for each services of a node.
     msg_t intro_msg;
-    intro_msg.header.cmd         = RTB_CMD;
+    intro_msg.header.cmd         = RTB;
     intro_msg.header.target_mode = NODEIDACK;
 
     for (uint16_t i = 2; i <= nb_node; i++) // don't send to ourself
