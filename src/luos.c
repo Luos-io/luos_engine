@@ -340,7 +340,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             uint8_t wrong = false;
             for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
             {
-                if (input->data[i] == '\r')
+                if ((input->data[i] == '\n') && (input->data[i - 1] == '\r'))
                 {
                     wrong = true;
                     break;
