@@ -14,8 +14,9 @@
  ******************************************************************************/
 typedef enum
 {
-    BOOTLOADER_MODE,
-    APPLICATION_MODE
+    BOOT_MODE,
+    JUMP_TO_APP_MODE,
+    APP_RELOAD_MODE,
 } bootloader_mode_t;
 
 #define BOOTLOADER_RCV_COMMAND   0x01
@@ -31,6 +32,7 @@ typedef enum
     BOOTLOADER_BIN_CHUNK,
     BOOTLOADER_BIN_END,
     BOOTLOADER_CRC_TEST,
+    BOOTLOADER_APP_SAVED,
     BOOTLOADER_READY_RESP = BOOTLOADER_SND_COMMAND,
     BOOTLOADER_BIN_HEADER_RESP,
     BOOTLOADER_ERASE_RESP,
@@ -39,16 +41,6 @@ typedef enum
     BOOTLOADER_CRC_RESP,
     BOOTLOADER_ERROR_SIZE = BOOTLOADER_ERROR_COMMAND,
 } bootloader_cmd_t;
-
-typedef enum
-{
-    BOOTLOADER_START_STATE,
-    BOOTLOADER_READY_STATE,
-    BOOTLOADER_STOP_STATE,
-    BOOTLOADER_ERASE_STATE,
-    BOOTLOADER_BIN_CHUNK_STATE,
-    BOOTLOADER_CRC_TEST_STATE,
-} bootloader_state_t;
 
 /*******************************************************************************
  * Variables
