@@ -62,14 +62,14 @@ void Recep_GetHeader(volatile uint8_t *data)
     // Check if we have all we need.
     switch (data_count)
     {
-        case 1: //reset CRC computation
+        case 1: // reset CRC computation
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
             ctx.tx.status = TX_DISABLE;
             crc_val       = 0xFFFF;
             break;
 
-        case 3: //check if message is for the node
+        case 3: // check if message is for the node
             if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
             {
                 MsgAlloc_ValidHeader(false, data_size);
@@ -78,7 +78,7 @@ void Recep_GetHeader(volatile uint8_t *data)
             }
             break;
 
-        case (sizeof(header_t)): //Process at the header
+        case (sizeof(header_t)): // Process at the header
 #ifdef DEBUG
             printf("*******header data*******\n");
             printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
@@ -436,7 +436,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
             {
                 if (Trgt_MulticastTargetBank((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
                 {
-                    //TODO manage multiple slave concerned
+                    // TODO manage multiple slave concerned
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                     return;
                 }
@@ -444,7 +444,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
             break;
         case NODEIDACK:
         case NODEID:
-            if (msg->header.target == DEFAULTID) //on default ID it's always a luos command create only one task
+            if (msg->header.target == DEFAULTID) // on default ID it's always a luos command create only one task
             {
                 MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
                 return;

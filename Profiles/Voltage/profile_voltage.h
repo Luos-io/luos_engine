@@ -21,7 +21,7 @@ typedef struct
     access_t access;
     voltage_t voltage;
 
-    //streaming
+    // streaming
     control_t control;
     streaming_channel_t signal;
     time_luos_t sampling_period;

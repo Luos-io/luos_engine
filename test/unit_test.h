@@ -40,4 +40,4 @@ void RUN(const char *name, void (*f)(void));
 void NEW_STEP_IN_LOOP(char message[], uint32_t index);
 void unittest_assert(char *file, uint32_t line);
 
-#endif //UNIT_TEST_H
+#endif // UNIT_TEST_H

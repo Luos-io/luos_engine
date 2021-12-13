@@ -78,7 +78,7 @@ void NEW_STEP(char *title)
 /******************************************************************************
  * @brief Start a new test case in a loop
  * @param title (step description title)
- * @param index (index of the loop) 
+ * @param index (index of the loop)
  * @return None
  ******************************************************************************/
 void NEW_STEP_IN_LOOP(char title[], uint32_t index)

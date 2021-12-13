@@ -98,7 +98,7 @@ void Luos_Loop(void)
         {
             break;
         }
-        //check if this msg cmd should be consumed by Luos_MsgHandler
+        // check if this msg cmd should be consumed by Luos_MsgHandler
         if (Luos_IsALuosCmd(service, cmd, size) == SUCCEED)
         {
             if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
@@ -170,7 +170,8 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
                 return FAILED;
             }
             break;
-        case RTB_CMD:
+        case LOCAL_RTB:
+        case RTB:
         case WRITE_ALIAS:
         case UPDATE_PUB:
             return SUCCEED;
@@ -217,11 +218,10 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             // This assert information could be usefull for services, do not remove it.
             consume = FAILED;
             break;
-        case RTB_CMD:
+        case LOCAL_RTB:
             // Depending on the size of this message we have to make different operations
             // If size is 0 someone ask to get local_route table back
             // If size is 2 someone ask us to generate a local route table based on the given service ID then send local route table back.
-            // If size is bigger than 2 this is a complete routing table comming. We have to save it.
             switch (input->header.size)
             {
                 case 2:
@@ -252,23 +252,25 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                     }
                 case 0:
                     // send back a local routing table
-                    output_msg.header.cmd         = RTB_CMD;
+                    output_msg.header.cmd         = RTB;
                     output_msg.header.target_mode = IDACK;
                     output_msg.header.target      = input->header.source;
                     Luos_TransmitLocalRoutingTable(service, &output_msg);
                     break;
-                default:
-                    // Check routing table overflow
-                    LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
-                    if (Luos_ReceiveData(service, input, (void *)route_tab) == SUCCEED)
-                    {
-                        // route table section reception complete
-                        RoutingTB_ComputeRoutingTableEntryNB();
-                    }
-                    break;
             }
             consume = SUCCEED;
             break;
+        case RTB:
+            // Check routing table overflow
+            LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
+            if (Luos_ReceiveData(service, input, (void *)route_tab) == SUCCEED)
+            {
+                // route table section reception complete
+                RoutingTB_ComputeRoutingTableEntryNB();
+            }
+            consume = SUCCEED;
+            break;
+
         case REVISION:
             if (input->header.size == 0)
             {
@@ -338,7 +340,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             uint8_t wrong = false;
             for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
             {
-                if (input->data[i] == '\r')
+                if ((input->data[i] == '\n') && (input->data[i - 1] == '\r'))
                 {
                     wrong = true;
                     break;
@@ -417,7 +419,7 @@ static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_ms
     uint16_t entry_nb = 0;
     routing_table_t local_routing_table[service_number + 1];
 
-    //start by saving node entry
+    // start by saving node entry
     RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Robus_GetNode());
     entry_nb++;
     // save services entry
@@ -466,9 +468,9 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        //store service and msg pointer
-                        // todo this can't work for now because this message is not permanent.
-                        //mngr_set(&service_table[i], &updt_msg);
+                        // store service and msg pointer
+                        //  todo this can't work for now because this message is not permanent.
+                        // mngr_set(&service_table[i], &updt_msg);
                     }
                     service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
@@ -524,7 +526,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
         service->alias[i] = '\0';
     }
 
-    //Initialise the service revision to 0
+    // Initialise the service revision to 0
     memset((void *)service->revision.unmap, 0, sizeof(revision_t));
     // Save firmware version
     for (i = 0; i < sizeof(revision_t); i++)
@@ -532,7 +534,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
         service->revision.unmap[i] = revision.unmap[i];
     }
 
-    //initiate service statistics
+    // initiate service statistics
     service->node_statistics               = &luos_stats;
     service->ll_service->ll_stat.max_retry = &service->statistics.max_retry;
 
@@ -720,7 +722,7 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         return FAILED;
     }
 
-    //store total size of a msg
+    // store total size of a msg
     if (total_data_size[id] == 0)
     {
         total_data_size[id] = msg->header.size;
@@ -756,7 +758,7 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
     data_size[id] = data_size[id] + chunk_size;
     last_msg_size = msg->header.size;
 
-    //check
+    // check
     LUOS_ASSERT(data_size[id] <= total_data_size[id]);
 
     // Check end of data

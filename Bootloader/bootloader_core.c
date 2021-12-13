@@ -37,6 +37,7 @@ uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)BUFFER_SIZE;
 uint32_t nb_bytes       = 0;
 uint8_t crc             = 0;
+bool load_flag          = false;
 uint16_t source_id      = 0; // used to save source_id, ie gate_id
 uint32_t tickstart      = 0;
 #endif
@@ -150,7 +151,7 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
 
 /******************************************************************************
  * @brief process binary data received from the gate
- * @param None 
+ * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_EraseMemory(void)
@@ -160,7 +161,7 @@ void LuosBootloader_EraseMemory(void)
 
 /******************************************************************************
  * @brief process binary data received from the gate
- * @param None 
+ * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_ProcessData(void)
@@ -198,8 +199,8 @@ void LuosBootloader_ProcessData(void)
 }
 
 /******************************************************************************
- * @brief Save the current page when BIN_END command is received 
- * @param None 
+ * @brief Save the current page when BIN_END command is received
+ * @param None
  * @return None
  ******************************************************************************/
 void LuosBootloader_SaveLastData(void)
@@ -209,7 +210,7 @@ void LuosBootloader_SaveLastData(void)
 
 /******************************************************************************
  * @brief compute crc 8 for each data
- * @param data pointer, data len 
+ * @param data pointer, data len
  * @return crc
  ******************************************************************************/
 void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
@@ -237,7 +238,7 @@ void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
 
 /******************************************************************************
  * @brief compute crc for the whole binary
- * @param data pointer, data len 
+ * @param data pointer, data len
  * @return crc
  ******************************************************************************/
 uint8_t compute_crc(void)
@@ -316,13 +317,14 @@ void LuosBootloader_Loop(void)
 {
     switch (LuosBootloader_GetMode())
     {
-        case APPLICATION_MODE:
+        case JUMP_TO_APP_MODE:
             // boot the application programmed in dedicated flash partition
             LuosBootloader_DeInit();
             LuosBootloader_JumpToApp();
             break;
 
-        case BOOTLOADER_MODE:
+        case BOOT_MODE:
+        case APP_RELOAD_MODE:
         default:
             break;
     }
@@ -344,7 +346,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
-            LuosHAL_SetMode((uint8_t)BOOTLOADER_MODE);
+            LuosHAL_SetMode((uint8_t)APP_RELOAD_MODE);
             LuosBootloader_SaveNodeID();
             LuosHAL_Reboot();
             break;
@@ -410,13 +412,26 @@ void LuosBootloader_MsgHandler(msg_t *input)
             LuosBootloader_SendCrc(BOOTLOADER_CRC_RESP, crc);
             break;
 
+        case BOOTLOADER_APP_SAVED:
+            // set load flag
+            load_flag = true;
+            break;
+
         case BOOTLOADER_STOP:
             source_id            = input->header.source;
             bootloader_data_size = input->header.size - sizeof(char);
             memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
 
-            // save boot_mode in flash
-            LuosHAL_SetMode((uint8_t)APPLICATION_MODE);
+            // save bootloader mode in flash
+            if (load_flag || (LuosBootloader_GetMode() == APP_RELOAD_MODE))
+            {
+                LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
+            }
+            else
+            {
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
+            }
+
             // wait for the command to be send to all nodes
             tickstart = LuosHAL_GetSystick();
             while ((LuosHAL_GetSystick() - tickstart) < 1000)

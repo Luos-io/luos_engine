@@ -11,7 +11,9 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifndef MAX_RTB_ENTRY
 #define MAX_RTB_ENTRY 40
+#endif
 
 typedef enum
 {
@@ -74,6 +76,7 @@ uint16_t RoutingTB_GetNodeID(uint16_t index);
 uint16_t RoutingTB_GetServiceNB(void);
 uint16_t RoutingTB_GetServiceID(uint16_t index);
 entry_mode_t RoutingTB_GetMode(uint16_t index);
+uint16_t RoutingTB_BigestID(void);
 
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);

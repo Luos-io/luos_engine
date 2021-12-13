@@ -397,7 +397,7 @@ static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
 void MsgAlloc_InvalidMsg(void)
 {
     //******** Remove the header by reseting data_ptr *********
-    //clean the memory zone
+    // clean the memory zone
     if (mem_clear_needed == true)
     {
         mem_clear_needed           = false;
@@ -548,7 +548,7 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
 void MsgAlloc_EndMsg(void)
 {
     //******** End the message **********
-    //clean the memory zone
+    // clean the memory zone
     if (mem_clear_needed == true)
     {
         // No luos_loop make it for us outside of IRQ, we have to make it
@@ -607,7 +607,7 @@ void MsgAlloc_EndMsg(void)
     //                     data_ptr   data_end_estimation
     //                    current_msg
     //
-    //data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
+    // data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= CRC_SIZE;
     // Check data ptr alignement
     if ((uint32_t)data_ptr % 2 == 1)
@@ -1027,7 +1027,7 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
     //             |  etc... |                               |  etc... |
     //             +---------+                               +---------+
     //
-    //find the oldest message allocated to this service
+    // find the oldest message allocated to this service
     for (uint16_t i = 0; i < luos_tasks_stack_id; i++)
     {
         if (luos_tasks[i].ll_service_pt == target_service)
@@ -1088,7 +1088,7 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
     //             |   LAST  |                      |    0    |
     //             +---------+                      +---------+
     //
-    //find the oldest message allocated to this service
+    // find the oldest message allocated to this service
     if (luos_task_id < luos_tasks_stack_id)
     {
         used_msg      = luos_tasks[luos_task_id].msg_pt;
@@ -1479,7 +1479,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             LuosHAL_SetIrqState(true);
             return FAILED;
         }
-        //move everything at the begining of the buffer
+        // move everything at the begining of the buffer
         tx_msg              = (void *)msg_buffer;
         current_msg         = (msg_t *)((uint32_t)msg_buffer + decay_size);
         data_ptr            = (uint8_t *)((uint32_t)current_msg + progression_size);
@@ -1637,7 +1637,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     }
 #endif
 
-    //finish the Tx copy (with Ack if necessary)
+    // finish the Tx copy (with Ack if necessary)
     if (ack != 0)
     {
         //        msg_buffer : add Ack
@@ -1666,7 +1666,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         ((char *)tx_msg)[size - 1] = (uint8_t)(crc >> 8);
     }
 
-    //manage localhost (exclude EXTERNALHOST)
+    // manage localhost (exclude EXTERNALHOST)
     if (localhost != EXTERNALHOST)
     {
         // This is a localhost (LOCALHOST or MULTIHOST) message copy it as a message task
