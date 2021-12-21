@@ -31,6 +31,7 @@ typedef struct
     uint16_t ShiftMask;
     uint8_t filter_state;
     uint16_t filter_id;
+    uint8_t verbose;
 } context_t;
 
 /*******************************************************************************

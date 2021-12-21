@@ -498,6 +498,8 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
 {
+    // Desactivate verbose mode
+    Luos_SetVerboseMode(false);
     // Starts the topology detection.
     uint16_t nb_node = Robus_TopologyDetection(service->ll_service);
     // Clear data reception state

@@ -30,5 +30,6 @@ node_t *Robus_GetNode(void);
 void Robus_Flush(void);
 void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber);
 void Robus_SetFilterState(uint8_t state, ll_service_t *service);
+void Robus_SetVerboseMode(uint8_t mode);
 
 #endif /* _ROBUS_H_ */
