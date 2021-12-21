@@ -35,12 +35,14 @@ uint16_t data_count             = 0;
 uint16_t data_size              = 0;
 uint16_t crc_val                = 0;
 static uint64_t ll_rx_timestamp = 0;
+uint8_t large_data_num          = 0;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static inline uint8_t Recep_IsAckNeeded(void);
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id);
+void Recep_ComputeMsgNumber(void);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -105,6 +107,8 @@ void Recep_GetHeader(volatile uint8_t *data)
             if (current_msg->header.size > MAX_DATA_MSG_SIZE)
             {
                 data_size = MAX_DATA_MSG_SIZE;
+                // store the number of the messages that compose the large message
+                Recep_ComputeMsgNumber();
             }
             else
             {
@@ -138,6 +142,8 @@ void Recep_GetHeader(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_GetData(volatile uint8_t *data)
 {
+    static uint16_t last_crc = 0;
+
     MsgAlloc_SetData(*data);
     if (data_count < data_size)
     {
@@ -175,7 +181,27 @@ void Recep_GetData(volatile uint8_t *data)
             }
             else
             {
+                // check if we have already received the same message
+                if ((crc == last_crc) && (large_data_num > 0))
+                {
+                    // if yes remove this message from memory
+                    MsgAlloc_InvalidMsg();
+                    ctx.rx.callback = Recep_Drop;
+                    return;
+                }
+                // if not treat message normally
                 MsgAlloc_EndMsg();
+                // reduce the number of remaining messages in case of a large message
+                if (large_data_num > 0)
+                {
+                    large_data_num--;
+                    // store the current crc for the next message comparison
+                    last_crc = crc;
+                }
+                else
+                {
+                    last_crc = 0;
+                }
             }
         }
         else
@@ -593,4 +619,23 @@ static inline uint8_t Recep_IsAckNeeded(void)
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
 {
     return (id - ctx.ll_service_table[0].id);
+}
+
+/******************************************************************************
+ * @brief computes the number of the messages that compose a large data message
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_ComputeMsgNumber(void)
+{
+    // check if it is the first msg of large data received
+    if (large_data_num == 0)
+    {
+        // find the number of the messages that belong to the same large message
+        large_data_num = current_msg->header.size / MAX_DATA_MSG_SIZE;
+        if (current_msg->header.size % MAX_DATA_MSG_SIZE != 0)
+        {
+            large_data_num++;
+        }
+    }
 }
