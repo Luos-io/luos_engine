@@ -210,7 +210,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
     time_luos_t time;
     uint16_t base_id = 0;
 
-    if ((((input->header.target_mode == IDACK) || (input->header.target_mode == ID)) && (input->header.target != service->ll_service->id)))
+    if (((input->header.target_mode == IDACK) || (input->header.target_mode == ID)) && (input->header.target != service->ll_service->id))
     {
         return FAILED;
     }
@@ -979,6 +979,16 @@ error_return_t Luos_TxComplete(void)
 void Luos_Flush(void)
 {
     Robus_Flush();
+}
+
+/******************************************************************************
+ * @brief Function that changes the filter value
+ * @param uint8_t value, 1 if we want to disable, 0 to enable
+ * @return None
+ ******************************************************************************/
+void Luos_SetFilterState(uint8_t state, service_t *service)
+{
+    Robus_SetFilterState(state, service->ll_service);
 }
 
 /******************************************************************************

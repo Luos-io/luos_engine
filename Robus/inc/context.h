@@ -29,7 +29,8 @@ typedef struct
     uint16_t ll_service_number;                        /*!< Low level Service number. */
     uint8_t IDMask[MASK_SIZE];
     uint16_t ShiftMask;
-
+    uint8_t filter_state;
+    uint16_t filter_id;
 } context_t;
 
 /*******************************************************************************
