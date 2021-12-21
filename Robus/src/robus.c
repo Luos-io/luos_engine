@@ -70,10 +70,10 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
     // mask
-    ctx.Decay = 0;
+    ctx.ShiftMask = 0;
     for (uint16_t i = 0; i < MASK_SIZE; i++)
     {
-        ctx.Mask[i] = 0;
+        ctx.IDMask[i] = 0;
     }
     // Init reception
     Recep_Init();
@@ -449,13 +449,20 @@ void Robus_Flush(void)
  * @param ID and Number of service
  * @return None
  ******************************************************************************/
-void Robus_MaskDecayCalculation(uint16_t ID, uint16_t ServiceNumber)
+void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
 {
+    // 4096 bit address 512 byte possible
+    // Create a mask of only possibility in the node
+    //--------------------------->|__________|
+    //	Shift byte		            byte Mask of bit address
+
     uint16_t tempo = 0;
-    ctx.Decay      = ID / 8;
+    ctx.ShiftMask  = ID / 8; // aligned to byte
+
+    // create a mask of bit corresponding to ID number in the node
     for (uint16_t i = 0; i < ServiceNumber; i++)
     {
-        tempo = (((ID - 1) + i) - (8 * ctx.Decay));
-        ctx.Mask[tempo / 8] |= 1 << ((tempo) % 8);
+        tempo = (((ID - 1) + i) - (8 * ctx.ShiftMask));
+        ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
     }
 }

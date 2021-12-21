@@ -711,10 +711,10 @@ error_return_t MsgAlloc_IsReseted(void)
         PortMng_Init();
         // We need to reset MsgAlloc
         MsgAlloc_Init(NULL);
-        ctx.Decay = 0;
+        ctx.ShiftMask = 0;
         for (uint16_t i = 0; i < MASK_SIZE; i++)
         {
-            ctx.Mask[i] = 0;
+            ctx.IDMask[i] = 0;
         }
         return SUCCEED;
     }
