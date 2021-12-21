@@ -41,6 +41,8 @@ typedef struct
     // network management
     network_lock_t node_connected;
 
+    uint8_t filter_state;
+    uint16_t filter_id;
 } context_t;
 
 /*******************************************************************************

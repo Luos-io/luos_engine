@@ -38,5 +38,6 @@ void Robus_Flush(void);
 void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber);
 void Robus_SetNodeDetected(network_state_t);
 network_state_t Robus_IsNodeDetected(void);
+void Robus_SetFilterState(uint8_t state, ll_service_t *service);
 
 #endif /* _ROBUS_H_ */
