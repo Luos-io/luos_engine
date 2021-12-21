@@ -58,6 +58,16 @@ typedef struct __attribute__((__packed__))
     };
 } routing_table_t;
 
+/******************************************************************************
+ * @struct search_result_t
+ * @brief allow user to get back result of routing table filtering
+ ******************************************************************************/
+typedef struct
+{
+    uint16_t result_nbr;
+    routing_table_t *result_table[MAX_RTB_ENTRY];
+} search_result_t;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -92,5 +102,10 @@ routing_table_t *RoutingTB_Get(void);
 uint16_t RoutingTB_GetLastService(void);
 uint16_t *RoutingTB_GetLastNode(void);
 uint16_t RoutingTB_GetLastEntry(void);
+
+// ********************* research routing table ********************************
+search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type);
+search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id);
+uint16_t RTFilter_ExtarctServiceID(search_result_t *result, uint16_t *id_table);
 
 #endif /* TABLE */
