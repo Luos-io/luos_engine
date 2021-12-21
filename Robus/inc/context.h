@@ -15,6 +15,14 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+
+typedef struct
+{
+    network_state_t state;
+    bool timeout_run;
+    uint32_t timeout;
+} network_lock_t;
+
 typedef struct
 {
 
@@ -29,6 +37,9 @@ typedef struct
     uint16_t ll_service_number;                        /*!< Low level Service number. */
     uint8_t IDMask[MASK_SIZE];
     uint16_t ShiftMask;
+
+    // network management
+    network_lock_t node_connected;
 
 } context_t;
 

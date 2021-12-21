@@ -94,7 +94,7 @@ void Luos_Loop(void)
         // check if this is a Luos Command
         uint8_t cmd   = 0;
         uint16_t size = 0;
-        // There is a possibility to receive in IT a reset_detection so check task before doing any treatement
+        // There is a possibility to receive in IT a START_DETECTION so check task before doing any treatement
         if ((MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) != SUCCEED) || (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) != SUCCEED))
         {
             break;
@@ -156,7 +156,7 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
     switch (cmd)
     {
         case WRITE_NODE_ID:
-        case RESET_DETECTION:
+        case START_DETECTION:
         case SET_BAUDRATE:
             // ERROR
             LUOS_ASSERT(0);
@@ -1119,7 +1119,7 @@ void Luos_Detect(service_t *service)
 {
     msg_t detect_msg;
 
-    if (Robus_IsNodeDetected() != NETWORK_LINK_CONNECT)
+    if (Robus_IsNodeDetected() != NETWORK_LINK_CONNECTING)
     {
         // set the detection launcher id to 1
         Luos_SetID(service, 1);

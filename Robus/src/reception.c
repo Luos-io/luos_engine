@@ -165,11 +165,11 @@ void Recep_GetData(volatile uint8_t *data)
             }
 
             // Make an exception for reset detection command
-            if (current_msg->header.cmd == RESET_DETECTION)
+            if (current_msg->header.cmd == START_DETECTION)
             {
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
-                Robus_SetNodeDetected(NETWORK_LINK_CONNECT);
+                Robus_SetNodeDetected(NETWORK_LINK_CONNECTING);
             }
             else
             {
