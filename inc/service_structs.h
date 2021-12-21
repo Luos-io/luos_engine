@@ -143,6 +143,8 @@ typedef enum
 
     // Timestamp command
     TIMESTAMP_CMD,
+    // Verbose command
+    VERBOSE,
 
     // compatibility area
     LUOS_LAST_RESERVED_CMD

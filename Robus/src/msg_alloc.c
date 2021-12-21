@@ -173,6 +173,8 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     // Filter State
     ctx.filter_id    = 0;
     ctx.filter_state = true;
+    // Verbose
+    ctx.verbose = LOCALHOST;
     // Reset have been made
     reset_needed = false;
 }

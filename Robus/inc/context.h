@@ -43,6 +43,7 @@ typedef struct
 
     uint8_t filter_state;
     uint16_t filter_id;
+    uint8_t verbose;
 } context_t;
 
 /*******************************************************************************

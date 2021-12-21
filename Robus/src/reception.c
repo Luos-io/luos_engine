@@ -171,6 +171,7 @@ void Recep_GetData(volatile uint8_t *data)
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
                 Robus_SetNodeDetected(NETWORK_LINK_CONNECTING);
+                Robus_SetVerboseMode(false);
             }
             else
             {
@@ -391,7 +392,7 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
             // Check all ll_service id
             if (Recep_NodeCompare(header->target) == SUCCEED)
             {
-                return LOCALHOST;
+                return ctx.verbose;
             }
             if (ctx.filter_state == false)
             {
@@ -433,13 +434,13 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
         case NODEID:
             if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
             {
-                return LOCALHOST; // discard message if ID = 0 and no Port activ
+                return ctx.verbose; // discard message if ID = 0 and no Port activ
             }
             else
             {
                 if ((header->target == ctx.node.node_id) && ((header->target != 0)))
                 {
-                    return LOCALHOST;
+                    return ctx.verbose;
                 }
                 else if (ctx.filter_state == false)
                 {

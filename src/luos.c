@@ -188,6 +188,12 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
                 return SUCCEED;
             }
             break;
+        case VERBOSE:
+            if (size == 1)
+            {
+                return SUCCEED;
+            }
+            break;
         case BOOTLOADER_CMD:
             return SUCCEED;
             break;
@@ -382,6 +388,11 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             service->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
             service->auto_refresh.last_update = LuosHAL_GetSystick();
             consume                           = SUCCEED;
+            break;
+        case VERBOSE:
+            // this node should send messages to all the network
+            Luos_SetVerboseMode(input->data[0]);
+            consume = SUCCEED;
             break;
         case BOOTLOADER_CMD:
             // send data to the bootloader
@@ -1016,7 +1027,15 @@ void Luos_SetFilterState(uint8_t state, service_t *service)
 {
     Robus_SetFilterState(state, service->ll_service);
 }
-
+/******************************************************************************
+ * @brief Function that changes the verbose mode
+ * @param uint8_t value, 1 if we want to enable, 0 to disable
+ * @return None
+ ******************************************************************************/
+void Luos_SetVerboseMode(uint8_t mode)
+{
+    Robus_SetVerboseMode(mode);
+}
 /******************************************************************************
  * @brief register a new package
  * @param package to register

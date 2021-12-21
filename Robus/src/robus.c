@@ -208,7 +208,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     // Check the localhost situation
     luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && (localhost && (msg->header.target != DEFAULTID)))
+    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
         ack = ctx.rx.status.unmap;
@@ -562,4 +562,15 @@ void Robus_SetFilterState(uint8_t state, ll_service_t *service)
 {
     ctx.filter_state = state;
     ctx.filter_id    = service->id;
+}
+
+/******************************************************************************
+ * @brief Set verbose mode
+ * @param mode true or false
+ * @return None
+ ******************************************************************************/
+void Robus_SetVerboseMode(uint8_t mode)
+{
+    // verbose is localhost or multihost
+    ctx.verbose = mode + 1;
 }
