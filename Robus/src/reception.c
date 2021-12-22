@@ -13,7 +13,7 @@
 #include "transmission.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
-
+#include "timestamp.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -26,12 +26,14 @@
 #endif
 
 #define COLLISION_DETECTION_NUMBER 4
+#define BYTE_TRANSMIT_TIME         8
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint16_t data_count = 0;
-uint16_t data_size  = 0;
-uint16_t crc_val    = 0;
+uint16_t data_count             = 0;
+uint16_t data_size              = 0;
+uint16_t crc_val                = 0;
+static uint64_t ll_rx_timestamp = 0;
 
 /*******************************************************************************
  * Function
@@ -63,6 +65,10 @@ void Recep_GetHeader(volatile uint8_t *data)
     switch (data_count)
     {
         case 1: // reset CRC computation
+            // when we catch the first byte we timestamp the msg
+            //  -8 : time to transmit 8 bits at 1 us/bit
+            ll_rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
             ctx.tx.status = TX_DISABLE;
@@ -141,6 +147,17 @@ void Recep_GetData(volatile uint8_t *data)
         uint16_t crc = ((uint16_t)current_msg->data[data_size]) | ((uint16_t)current_msg->data[data_size + 1] << 8);
         if (crc == crc_val)
         {
+            // if message is timestamped, update the timestamp
+            if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
+            {
+                uint64_t latency = 0;
+                // get timestamp in message stream
+                // timestamp is placed at the end of the payload, just before the crc.
+                memcpy(&latency, (msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], sizeof(uint64_t));
+                ll_rx_timestamp = (ll_rx_timestamp >= latency) ? ll_rx_timestamp - latency : 0;
+                memcpy((msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], &ll_rx_timestamp, sizeof(uint64_t));
+            }
+
             if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)))
             {
                 Transmit_SendAck();

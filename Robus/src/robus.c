@@ -15,7 +15,7 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
-
+#include "timestamp.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -172,19 +172,20 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     // Add the CRC to the total size of the message
     uint16_t full_size = sizeof(header_t) + data_size + CRC_SIZE;
 
-    // compute the CRC
-    for (uint16_t i = 0; i < full_size - 2; i++)
+    // if we send a timestamped message, don't compute the crc on the complete message
+    uint16_t crc_max_index = 0;
+
+    if (Timestamp_IsTimestampMsg(msg))
     {
-        uint16_t dbyte = msg->stream[i];
-        crc_val ^= dbyte << 8;
-        for (uint8_t j = 0; j < 8; ++j)
-        {
-            uint16_t mix = crc_val & 0x8000;
-            crc_val      = (crc_val << 1);
-            if (mix)
-                crc_val = crc_val ^ 0x0007;
-        }
+        crc_max_index = full_size - (sizeof(uint64_t) + sizeof(uint8_t));
     }
+    else
+    {
+        crc_max_index = full_size;
+    }
+
+    // compute the CRC
+    crc_val = ll_crc_compute(&msg->stream[0], crc_max_index - CRC_SIZE, 0xFFFF);
 
     // Check the localhost situation
     luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);

@@ -140,6 +140,9 @@ typedef enum
     BOOTLOADER_CMD,
     BOOTLOADER_RESP,
 
+    // Timestamp command
+    TIMESTAMP_CMD,
+
     // compatibility area
     LUOS_LAST_RESERVED_CMD
 } reserved_luos_cmd_t;
