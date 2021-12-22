@@ -311,7 +311,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         ll_service->dead_service_spotted = 0;
         // Ask an ID  to the detector service.
         msg_t msg;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = NODEIDACK;
         msg.header.target      = 1;
         msg.header.cmd         = WRITE_NODE_ID;
         msg.header.size        = 0;
