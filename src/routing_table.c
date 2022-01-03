@@ -699,15 +699,14 @@ uint16_t RoutingTB_GetLastEntry(void)
  * @param index of service
  * @return Last entry
  ******************************************************************************/
-void RTFilter_Init(search_result_t *result)
+search_result_t *RTFilter_Reset(search_result_t *result)
 {
     // the initialization is to keep a pointer to all the entries of the routing table
     for (uint8_t i = 0; i < last_routing_table_entry; i++)
     {
         result->result_table[i] = &routing_table[i];
     }
-    // the number of entries in the routing table
-    result->result_nbr = last_routing_table_entry;
+    return result;
 }
 /******************************************************************************
  * @brief search all the services with the same type
@@ -791,7 +790,14 @@ uint16_t RTFilter_ExtarctServiceID(search_result_t *result, uint16_t *id_table)
     // keep the id of every service entry in the research table
     for (uint8_t i = 0; i < search_result.result_nbr; i++)
     {
-        if (search_result.result_table[i]->mode == SERVICE)
+        // find a service with the wanted node_id
+        if (((result->result_table[entry_nbr]->mode == SERVICE) && (strcmp(result->result_table[entry_nbr]->alias, alias) != 0)) || (result->result_table[entry_nbr]->mode == NODE))
+        {
+            // if we find an other node_id, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
         {
             id_table[entry_nbr] = search_result.result_table[i]->id;
             entry_nbr++;
