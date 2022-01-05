@@ -21,7 +21,6 @@
  * Variables
  ******************************************************************************/
 routing_table_t routing_table[MAX_RTB_ENTRY];
-search_result_t search_result;
 volatile uint16_t last_service             = 0;
 volatile uint16_t last_routing_table_entry = 0;
 /*******************************************************************************
@@ -701,10 +700,15 @@ uint16_t RoutingTB_GetLastEntry(void)
  ******************************************************************************/
 search_result_t *RTFilter_Reset(search_result_t *result)
 {
-    // the initialization is to keep a pointer to all the entries of the routing table
+    // the initialization is to keep a pointer to all the  servicesentries of the routing table
+    result->result_nbr = 0;
     for (uint8_t i = 0; i < last_routing_table_entry; i++)
     {
-        result->result_table[i] = &routing_table[i];
+        if (routing_table[i].mode == SERVICE)
+        {
+            result->result_table[result->result_nbr] = &routing_table[i];
+            result->result_nbr++;
+        }
     }
     return result;
 }
@@ -717,20 +721,17 @@ search_result_t *RTFilter_Reset(search_result_t *result)
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
 {
     uint8_t entry_nbr = 0;
-    // if the user result structure is empty, initialize it with thw routing table
-    if (result == 0)
-    {
-        RTFilter_Init(&search_result);
-    }
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
 
-    while (entry_nbr < search_result.result_nbr)
+    while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted type
-        if ((search_result.result_table[entry_nbr]->mode == SERVICE) && (search_result.result_table[entry_nbr]->type != type))
+        if (((result->result_table[entry_nbr]->mode == SERVICE) && (result->result_table[entry_nbr]->type != type)) || (result->result_table[entry_nbr]->mode == NODE))
         {
             // if we find an other type, erase it from the research table
-            memcpy(search_result.result_table[entry_nbr], search_result.result_table[entry_nbr + 1], sizeof(routing_table_t *) * (search_result.result_nbr - entry_nbr));
-            search_result.result_nbr--;
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
         }
         else
         {
@@ -738,7 +739,7 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
         }
     }
     // return a pointer to the search structure
-    return (&search_result);
+    return (result);
 }
 /******************************************************************************
  * @brief search all the services of the same node
@@ -748,50 +749,14 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
  ******************************************************************************/
 search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
 {
-    // if the user result structure is empty, initialize it with thw routing table
-    if (result == 0)
-    {
-        RTFilter_Init(&search_result);
-    }
-    // search all the entries of the research table
-    for (uint16_t i = 0; i < search_result.result_nbr; i++)
-    {
-        // check if we are in the wanted node
-        if ((search_result.result_table[i]->mode == NODE) && (search_result.result_table[i]->node_id == node_id))
-        {
-            // keep all the services of the current node
-            for (uint8_t j = i + 1; j <= search_result.result_nbr; j++)
-            {
-                if (search_result.result_table[j]->mode == SERVICE)
-                {
-                    search_result.result_table[j - i - 1] = search_result.result_table[i + 1];
-                }
-                else
-                {
-                    // we found the end of this node, return
-                    search_result.result_nbr = j - i - 1;
-                    return (&search_result);
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-/******************************************************************************
- * @brief create an id_table with the ids of the result services
- * @param previous result research structure
- * @param id_table pointer to the empty id_table
- * @return number of ids
- ******************************************************************************/
-uint16_t RTFilter_ExtarctServiceID(search_result_t *result, uint16_t *id_table)
-{
     uint8_t entry_nbr = 0;
-    // keep the id of every service entry in the research table
-    for (uint8_t i = 0; i < search_result.result_nbr; i++)
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // search all the entries of the research table
+    while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted node_id
-        if (((result->result_table[entry_nbr]->mode == SERVICE) && (strcmp(result->result_table[entry_nbr]->alias, alias) != 0)) || (result->result_table[entry_nbr]->mode == NODE))
+        if (((result->result_table[entry_nbr]->mode == SERVICE) && (RoutingTB_NodeIDFromID(result->result_table[entry_nbr]->id) != node_id)) || (result->result_table[entry_nbr]->mode == NODE))
         {
             // if we find an other node_id, erase it from the research table
             memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
@@ -799,9 +764,9 @@ uint16_t RTFilter_ExtarctServiceID(search_result_t *result, uint16_t *id_table)
         }
         else
         {
-            id_table[entry_nbr] = search_result.result_table[i]->id;
             entry_nbr++;
         }
     }
-    return search_result.result_nbr;
+    // return a pointer to the search structure
+    return (result);
 }
