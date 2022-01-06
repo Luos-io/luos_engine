@@ -770,3 +770,27 @@ search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
     // return a pointer to the search structure
     return (result);
 }
+
+search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
+{
+    uint8_t entry_nbr = 0;
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // search all the entries of the research table
+    while (entry_nbr < result->result_nbr)
+    {
+        // find a service with the wanted node_id
+        if (((result->result_table[entry_nbr]->mode == SERVICE) && !strcmp(result->result_table[entry_nbr]->alias, alias)) || (result->result_table[entry_nbr]->mode == NODE))
+        {
+            // if we find an other node_id, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
+        {
+            entry_nbr++;
+        }
+    }
+    // return a pointer to the search structure
+    return (result);
+}

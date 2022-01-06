@@ -107,5 +107,6 @@ uint16_t RoutingTB_GetLastEntry(void);
 search_result_t *RTFilter_Reset(search_result_t *result);
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type);
 search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id);
+search_result_t *RTFilter_Alias(search_result_t *result, char *alias);
 
 #endif /* TABLE */
