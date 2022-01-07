@@ -54,7 +54,7 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
 error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg);
 error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **returned_msg);
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
-error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
+int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
 void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
