@@ -92,7 +92,7 @@ typedef enum
     ERROR_CMD,
 
     // compatibility area
-    LUOS_LAST_STD_CMD
+    LUOS_LAST_STD_CMD = 128
 } luos_cmd_t;
 
 /*******************************************************************************

@@ -93,7 +93,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Initialize the robus service status
     ctx.rx.status.unmap      = 0;
     ctx.rx.status.identifier = 0xF;
-    
+
     Robus_SetNodeDetected(NETWORK_LINK_DOWN);
 }
 /******************************************************************************

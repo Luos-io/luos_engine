@@ -147,7 +147,7 @@ typedef enum
     VERBOSE,
 
     // compatibility area
-    LUOS_LAST_RESERVED_CMD
+    LUOS_LAST_RESERVED_CMD = 42
 } reserved_luos_cmd_t;
 
 /*******************************************************************************
