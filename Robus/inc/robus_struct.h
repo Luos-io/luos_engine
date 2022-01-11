@@ -148,10 +148,13 @@ typedef enum
 {
     // protocol level command
     WRITE_NODE_ID,   /*!< Get and save a new given node ID. */
-    RESET_DETECTION, /*!< Reset detection*/
+    START_DETECTION, /*!< Start a detection*/
+    END_DETECTION,   /*!< Detect the end of a detection*/
     SET_BAUDRATE,    /*!< Set Robus baudrate*/
     ASSERT,          /*!< Node Assert message (only broadcast with a source as a node */
-    ROBUS_PROTOCOL_NB,
+
+    /*!< Compatibility area*/
+    ROBUS_PROTOCOL_NB = 13,
 } robus_cmd_t;
 
 typedef void (*RX_CB)(ll_service_t *ll_service, msg_t *msg);

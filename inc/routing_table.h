@@ -64,6 +64,7 @@ typedef struct __attribute__((__packed__))
 // ********************* routing_table search tools ************************
 uint16_t RoutingTB_IDFromAlias(char *alias);
 uint16_t RoutingTB_IDFromType(luos_type_t type);
+uint16_t RoutingTB_IDFromClosestType(service_t *service, luos_type_t type);
 uint16_t RoutingTB_IDFromService(service_t *service);
 char *RoutingTB_AliasFromId(uint16_t id);
 luos_type_t RoutingTB_TypeFromID(uint16_t id);
@@ -75,6 +76,7 @@ uint16_t RoutingTB_GetNodeNB(void);
 uint16_t RoutingTB_GetNodeID(uint16_t index);
 uint16_t RoutingTB_GetServiceNB(void);
 uint16_t RoutingTB_GetServiceID(uint16_t index);
+uint16_t RoutingTB_GetServiceIndex(uint16_t id);
 entry_mode_t RoutingTB_GetMode(uint16_t index);
 uint16_t RoutingTB_BigestID(void);
 

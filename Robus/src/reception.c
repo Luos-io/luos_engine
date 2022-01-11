@@ -13,7 +13,8 @@
 #include "transmission.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
-
+#include "timestamp.h"
+#include "robus.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -26,17 +27,20 @@
 #endif
 
 #define COLLISION_DETECTION_NUMBER 4
+#define BYTE_TRANSMIT_TIME         8
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint16_t data_count = 0;
-uint16_t data_size  = 0;
-uint16_t crc_val    = 0;
+uint16_t data_count             = 0;
+uint16_t data_size              = 0;
+uint16_t crc_val                = 0;
+static uint64_t ll_rx_timestamp = 0;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-
+static inline uint8_t Recep_IsAckNeeded(void);
+static inline uint16_t Recep_CtxIndexFromID(uint16_t id);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -63,6 +67,10 @@ void Recep_GetHeader(volatile uint8_t *data)
     switch (data_count)
     {
         case 1: // reset CRC computation
+            // when we catch the first byte we timestamp the msg
+            //  -8 : time to transmit 8 bits at 1 us/bit
+            ll_rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
             ctx.tx.status = TX_DISABLE;
@@ -141,16 +149,29 @@ void Recep_GetData(volatile uint8_t *data)
         uint16_t crc = ((uint16_t)current_msg->data[data_size]) | ((uint16_t)current_msg->data[data_size + 1] << 8);
         if (crc == crc_val)
         {
-            if (((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK)))
+            // if message is timestamped, update the timestamp
+            if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
+            {
+                uint64_t latency = 0;
+                // get timestamp in message stream
+                // timestamp is placed at the end of the payload, just before the crc.
+                memcpy(&latency, (msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], sizeof(uint64_t));
+                ll_rx_timestamp = (ll_rx_timestamp >= latency) ? ll_rx_timestamp - latency : 0;
+                memcpy((msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], &ll_rx_timestamp, sizeof(uint64_t));
+            }
+
+            if (Recep_IsAckNeeded())
             {
                 Transmit_SendAck();
             }
 
             // Make an exception for reset detection command
-            if (current_msg->header.cmd == RESET_DETECTION)
+            if (current_msg->header.cmd == START_DETECTION)
             {
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
+                Robus_SetNodeDetected(NETWORK_LINK_CONNECTING);
+                Robus_SetVerboseMode(false);
             }
             else
             {
@@ -160,7 +181,7 @@ void Recep_GetData(volatile uint8_t *data)
         else
         {
             ctx.rx.status.rx_error = true;
-            if ((current_msg->header.target_mode == IDACK) || (current_msg->header.target_mode == NODEIDACK))
+            if (Recep_IsAckNeeded())
             {
                 Transmit_SendAck();
             }
@@ -334,21 +355,52 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  * @param header of message
  * @return None
  ******************************************************************************/
+static inline error_return_t Recep_NodeCompare(uint16_t ID)
+{
+    //--------------------------->|__________|
+    //	Shift byte		            byte Mask of bit address
+
+    uint16_t compare = 0;
+
+    if ((ID > (8 * ctx.ShiftMask))) // IDMask aligned byte
+    {
+        compare = ((ID - 1) - ((8 * ctx.ShiftMask)));
+        if ((ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
+        {
+            return SUCCEED;
+        }
+    }
+    return FAILED;
+}
+/******************************************************************************
+ * @brief Parse msg to find a service concerne
+ * @param header of message
+ * @return None
+ ******************************************************************************/
 luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
+
     // Find if we are concerned by this message.
+    // check if we need to filter all the messages
+
     switch (header->target_mode)
     {
         case IDACK:
             ctx.rx.status.rx_error = false;
         case ID:
             // Check all ll_service id
-            for (i = 0; i < ctx.ll_service_number; i++)
+            if (Recep_NodeCompare(header->target) == SUCCEED)
             {
-                if ((header->target == ctx.ll_service_table[i].id))
+                return ctx.verbose;
+            }
+            if (ctx.filter_state == false)
+            {
+                // check if it is message comes from service that demanded the filter desactivation
+                if (ctx.filter_id != header->source)
                 {
-                    return LOCALHOST;
+                    // if there is a service that deactivated the filtering occupy the message
+                    return MULTIHOST;
                 }
             }
             break;
@@ -358,6 +410,15 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
             {
                 if (header->target == ctx.ll_service_table[i].type)
                 {
+                    return MULTIHOST;
+                }
+            }
+            if (ctx.filter_state == false)
+            {
+                // check if it is message comes from service that demanded the filter desactivation
+                if (ctx.filter_id != header->source)
+                {
+                    // if there is a service that deactivated the filtering occupy the message
                     return MULTIHOST;
                 }
             }
@@ -373,13 +434,22 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
         case NODEID:
             if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
             {
-                return LOCALHOST; // discard message if ID = 0 and no Port activ
+                return ctx.verbose; // discard message if ID = 0 and no Port activ
             }
             else
             {
-                if ((header->target == ctx.node.node_id) && (header->target != 0))
+                if ((header->target == ctx.node.node_id) && ((header->target != 0)))
                 {
-                    return LOCALHOST;
+                    return ctx.verbose;
+                }
+                else if (ctx.filter_state == false)
+                {
+                    // check if it is message comes from service that demanded the filter desactivation
+                    if (ctx.filter_id != header->source)
+                    {
+                        // if there is a service that deactivated the filtering occupy the message
+                        return MULTIHOST;
+                    }
                 }
             }
             break;
@@ -391,6 +461,26 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
     return EXTERNALHOST;
 }
 /******************************************************************************
+ * @brief Double Allocate msg_task in case of desactivated filter
+ * @param msg pointer
+ * @return None
+ ******************************************************************************/
+static inline void Recep_DoubleAlloc(msg_t *msg)
+{
+    // if there is a service that deactivated the filter we also allocate a message for it
+    if (ctx.filter_state == false)
+    {
+        // check if it is message for the same service that demanded the filter desactivation
+        if (ctx.filter_id != msg->header.target)
+        {
+            // find the position of this service in the node
+            // store the message if it is not so that we dont have double messages in memory
+            uint16_t idx = Recep_CtxIndexFromID(ctx.filter_id);
+            MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+        }
+    }
+}
+/******************************************************************************
  * @brief Parse msg to find all services concerned and create
  * @param msg pointer
  * @return None
@@ -398,6 +488,7 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
 void Recep_InterpretMsgProtocol(msg_t *msg)
 {
     uint16_t i = 0;
+
     // Find if we are concerned by this message.
     switch (msg->header.target_mode)
     {
@@ -409,9 +500,12 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                 if (msg->header.target == ctx.ll_service_table[i].id)
                 {
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                    return;
+                    break;
                 }
             }
+            // check if we need to double allocate msg_task
+            Recep_DoubleAlloc(msg);
+            return;
             break;
         case TYPE:
             // Check all ll_service type
@@ -420,9 +514,11 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                 if (msg->header.target == ctx.ll_service_table[i].type)
                 {
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                    return;
                 }
             }
+            // check if we need to double allocate msg_task
+            Recep_DoubleAlloc(msg);
+            return;
             break;
         case BROADCAST:
             for (i = 0; i < ctx.ll_service_number; i++)
@@ -438,9 +534,11 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                 {
                     // TODO manage multiple slave concerned
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                    return;
                 }
             }
+            // check if we need to double allocate msg_task
+            Recep_DoubleAlloc(msg);
+            return;
             break;
         case NODEIDACK:
         case NODEID:
@@ -449,13 +547,50 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                 MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
                 return;
             }
-            for (i = 0; i < ctx.ll_service_number; i++)
+            // check if the message is really for the node or it is a service that has no filter
+            if (msg->header.target == ctx.node.node_id)
             {
-                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+                for (i = 0; i < ctx.ll_service_number; i++)
+                {
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+                }
             }
+            // check if we need to double allocate msg_task
+            Recep_DoubleAlloc(msg);
             return;
             break;
         default:
             break;
     }
+}
+/******************************************************************************
+ * @brief Check if we need to send an ack
+ * @param None
+ * @return true or false
+ ******************************************************************************/
+static inline uint8_t Recep_IsAckNeeded(void)
+{
+    // check the mode of the message received
+    if ((current_msg->header.target_mode == IDACK) && (Recep_NodeCompare(current_msg->header.target) == SUCCEED))
+    {
+        // when it is a idack and this message is destined to the node send an ack
+        return 1;
+    }
+    else if ((current_msg->header.target_mode == NODEIDACK) && (ctx.node.node_id == current_msg->header.target))
+    {
+        // when it is nodeidack and this message is destined to the node send an ack
+        return 1;
+    }
+    // if not failed
+    return 0;
+}
+
+/******************************************************************************
+ * @brief returns the index in context table from the service id
+ * @param id
+ * @return index
+ ******************************************************************************/
+static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
+{
+    return (id - ctx.ll_service_table[0].id);
 }

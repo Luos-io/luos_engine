@@ -27,6 +27,7 @@ typedef enum
     PIPE_TYPE,
     MOTOR_TYPE,
     SERVO_MOTOR_TYPE,
+    INSPECTOR_TYPE,
     LUOS_LAST_TYPE
 } luos_type_t;
 
@@ -91,7 +92,7 @@ typedef enum
     ERROR_CMD,
 
     // compatibility area
-    LUOS_LAST_STD_CMD
+    LUOS_LAST_STD_CMD = 128
 } luos_cmd_t;
 
 /*******************************************************************************

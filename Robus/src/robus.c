@@ -15,7 +15,7 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
-
+#include "timestamp.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -33,9 +33,12 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
+#define NETWORK_TIMEOUT 100 // timeout to detect a failed detection
+
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
 static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
+static void Robus_RunNetworkTimeout(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -69,7 +72,12 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.status = TX_DISABLE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-
+    // mask
+    ctx.ShiftMask = 0;
+    for (uint16_t i = 0; i < MASK_SIZE; i++)
+    {
+        ctx.IDMask[i] = 0;
+    }
     // Init reception
     Recep_Init();
 
@@ -85,6 +93,8 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Initialize the robus service status
     ctx.rx.status.unmap      = 0;
     ctx.rx.status.identifier = 0xF;
+
+    Robus_SetNodeDetected(NETWORK_LINK_DOWN);
 }
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
@@ -93,6 +103,8 @@ void Robus_Init(memory_stats_t *memory_stats)
  ******************************************************************************/
 void Robus_Loop(void)
 {
+    // Network timeout management
+    Robus_RunNetworkTimeout();
     // Execute message allocation tasks
     MsgAlloc_loop();
     // Interpreat received messages and create luos task for it.
@@ -148,6 +160,14 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     uint8_t ack        = 0;
     uint16_t data_size = 0;
     uint16_t crc_val   = 0xFFFF;
+
+    // ***************************************************
+    // don't send luos messages if network is down
+    if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != NETWORK_LINK_UP))
+    {
+        return FAILED;
+    }
+
     // ********** Prepare the message ********************
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
@@ -172,24 +192,25 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     // Add the CRC to the total size of the message
     uint16_t full_size = sizeof(header_t) + data_size + CRC_SIZE;
 
-    // compute the CRC
-    for (uint16_t i = 0; i < full_size - 2; i++)
+    // if we send a timestamped message, don't compute the crc on the complete message
+    uint16_t crc_max_index = 0;
+
+    if (Timestamp_IsTimestampMsg(msg))
     {
-        uint16_t dbyte = msg->stream[i];
-        crc_val ^= dbyte << 8;
-        for (uint8_t j = 0; j < 8; ++j)
-        {
-            uint16_t mix = crc_val & 0x8000;
-            crc_val      = (crc_val << 1);
-            if (mix)
-                crc_val = crc_val ^ 0x0007;
-        }
+        crc_max_index = full_size - (sizeof(uint64_t) + sizeof(uint8_t));
     }
+    else
+    {
+        crc_max_index = full_size;
+    }
+
+    // compute the CRC
+    crc_val = ll_crc_compute(&msg->stream[0], crc_max_index - CRC_SIZE, 0xFFFF);
 
     // Check the localhost situation
     luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && (localhost && (msg->header.target != DEFAULTID)))
+    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
         ack = ctx.rx.status.unmap;
@@ -223,6 +244,13 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
     uint8_t redetect_nb = 0;
     bool detect_enabled = true;
 
+    // if a detection is in progress,
+    // Don't do an another detection and return 0
+    if (Robus_IsNodeDetected() == NETWORK_LINK_CONNECTING)
+    {
+        return 0;
+    }
+
     while (detect_enabled)
     {
         detect_enabled = false;
@@ -233,7 +261,6 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
         // setup local node
         ctx.node.node_id = 1;
         last_node        = 1;
-
         // setup sending ll_service
         ll_service->id = 1;
 
@@ -261,11 +288,17 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
 
     msg.header.target      = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
-    msg.header.cmd         = RESET_DETECTION;
+    msg.header.cmd         = START_DETECTION;
     msg.header.size        = 0;
 
     do
     {
+        // if a detection is in progress,
+        // Don't do an another detection and return 0
+        if (Robus_IsNodeDetected() == NETWORK_LINK_CONNECTING)
+        {
+            return 0;
+        }
         // msg send not blocking
         Robus_SendMsg(ll_service, &msg);
         // need to wait until tx msg before clear msg alloc
@@ -305,7 +338,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         ll_service->dead_service_spotted = 0;
         // Ask an ID  to the detector service.
         msg_t msg;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = NODEIDACK;
         msg.header.target      = 1;
         msg.header.cmd         = WRITE_NODE_ID;
         msg.header.size        = 0;
@@ -400,8 +433,13 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             }
             return SUCCEED;
             break;
-        case RESET_DETECTION:
+        case START_DETECTION:
             return SUCCEED;
+            break;
+        case END_DETECTION:
+            // Detect end of detection
+            Robus_SetNodeDetected(NETWORK_LINK_UP);
+            return FAILED;
             break;
         case SET_BAUDRATE:
             // We have to wait the end of transmission of all the messages we have to transmit
@@ -438,4 +476,103 @@ void Robus_Flush(void)
     LuosHAL_SetIrqState(false);
     MsgAlloc_Init(NULL);
     LuosHAL_SetIrqState(true);
+}
+
+/******************************************************************************
+ * @brief Masker filter calculation based on Local ID
+ * @param ID and Number of service
+ * @return None
+ ******************************************************************************/
+void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
+{
+    // 4096 bit address 512 byte possible
+    // Create a mask of only possibility in the node
+    //--------------------------->|__________|
+    //	Shift byte		            byte Mask of bit address
+
+    uint16_t tempo = 0;
+    ctx.ShiftMask  = ID / 8; // aligned to byte
+
+    // create a mask of bit corresponding to ID number in the node
+    for (uint16_t i = 0; i < ServiceNumber; i++)
+    {
+        tempo = (((ID - 1) + i) - (8 * ctx.ShiftMask));
+        ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
+    }
+}
+
+/******************************************************************************
+ * @brief set node_connected variable
+ * @param state
+ * @return None
+ ******************************************************************************/
+inline void Robus_SetNodeDetected(network_state_t state)
+{
+    switch (state)
+    {
+        case NETWORK_LINK_DOWN:
+            ctx.node_connected.timeout_run = false;
+            ctx.node_connected.timeout     = 0;
+            break;
+        case NETWORK_LINK_CONNECTING:
+            ctx.node_connected.timeout_run = true;
+            ctx.node_connected.timeout     = LuosHAL_GetSystick();
+            break;
+        case NETWORK_LINK_UP:
+            ctx.node_connected.timeout_run = false;
+            ctx.node_connected.timeout     = 0;
+            break;
+        default:
+            break;
+    }
+    ctx.node_connected.state = state;
+}
+
+/******************************************************************************
+ * @brief manage network timeout
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_RunNetworkTimeout(void)
+{
+    if (ctx.node_connected.timeout_run)
+    {
+        // if timeout is reached, go back to link-down state
+        if (LuosHAL_GetSystick() - ctx.node_connected.timeout > NETWORK_TIMEOUT)
+        {
+            Robus_SetNodeDetected(NETWORK_LINK_DOWN);
+        }
+    }
+}
+
+/******************************************************************************
+ * @brief get node_connected value
+ * @param None
+ * @return state
+ ******************************************************************************/
+network_state_t Robus_IsNodeDetected(void)
+{
+    return ctx.node_connected.state;
+}
+
+/******************************************************************************
+ * @brief Function that changes the filter value
+ * @param uint8_t value, 1 if we want to disable, 0 to enable
+ * @return None
+ ******************************************************************************/
+void Robus_SetFilterState(uint8_t state, ll_service_t *service)
+{
+    ctx.filter_state = state;
+    ctx.filter_id    = service->id;
+}
+
+/******************************************************************************
+ * @brief Set verbose mode
+ * @param mode true or false
+ * @return None
+ ******************************************************************************/
+void Robus_SetVerboseMode(uint8_t mode)
+{
+    // verbose is localhost or multihost
+    ctx.verbose = mode + 1;
 }

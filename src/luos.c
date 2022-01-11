@@ -30,6 +30,7 @@ uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
 uint16_t service_number = 0;
 volatile routing_table_t *routing_table_pt;
+service_t *detection_service;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
@@ -93,7 +94,7 @@ void Luos_Loop(void)
         // check if this is a Luos Command
         uint8_t cmd   = 0;
         uint16_t size = 0;
-        // There is a possibility to receive in IT a reset_detection so check task before doing any treatement
+        // There is a possibility to receive in IT a START_DETECTION so check task before doing any treatement
         if ((MsgAlloc_GetLuosTaskCmd(remaining_msg_number, &cmd) != SUCCEED) || (MsgAlloc_GetLuosTaskSize(remaining_msg_number, &size) != SUCCEED))
         {
             break;
@@ -155,7 +156,7 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
     switch (cmd)
     {
         case WRITE_NODE_ID:
-        case RESET_DETECTION:
+        case START_DETECTION:
         case SET_BAUDRATE:
             // ERROR
             LUOS_ASSERT(0);
@@ -174,6 +175,7 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
         case RTB:
         case WRITE_ALIAS:
         case UPDATE_PUB:
+        case ASK_DETECTION:
             return SUCCEED;
             break;
 
@@ -182,6 +184,12 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
         case NODE_UUID:
         case LUOS_STATISTICS:
             if (size == 0)
+            {
+                return SUCCEED;
+            }
+            break;
+        case VERBOSE:
+            if (size == 1)
             {
                 return SUCCEED;
             }
@@ -209,6 +217,11 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
     routing_table_t *route_tab = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
     time_luos_t time;
     uint16_t base_id = 0;
+
+    if (((input->header.target_mode == IDACK) || (input->header.target_mode == ID)) && (input->header.target != service->ll_service->id))
+    {
+        return FAILED;
+    }
 
     switch (input->header.cmd)
     {
@@ -241,6 +254,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                                 index++;
                             }
                         }
+                        Robus_ShiftMaskCalculation(1, service_number);
                     }
                     else
                     {
@@ -249,6 +263,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                         {
                             service_table[i].ll_service->id = base_id + i;
                         }
+                        Robus_ShiftMaskCalculation(base_id, service_number);
                     }
                 case 0:
                     // send back a local routing table
@@ -314,6 +329,13 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                 consume = SUCCEED;
             }
             break;
+        case ASK_DETECTION:
+            if (input->header.size == 0)
+            {
+                RoutingTB_DetectServices(detection_service);
+                consume = SUCCEED;
+                break;
+            }
         case LUOS_STATISTICS:
             if (input->header.size == 0)
             {
@@ -366,6 +388,11 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             service->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
             service->auto_refresh.last_update = LuosHAL_GetSystick();
             consume                           = SUCCEED;
+            break;
+        case VERBOSE:
+            // this node should send messages to all the network
+            Luos_SetVerboseMode(input->data[0]);
+            consume = SUCCEED;
             break;
         case BOOTLOADER_CMD:
             // send data to the bootloader
@@ -975,6 +1002,41 @@ void Luos_Flush(void)
 }
 
 /******************************************************************************
+ * @brief check if the node is connected to the network
+ * @param None
+ * @return None
+ ******************************************************************************/
+bool Luos_IsNodeDetected(void)
+{
+    if (Robus_IsNodeDetected() == NETWORK_LINK_UP)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/******************************************************************************
+ * @brief Function that changes the filter value
+ * @param uint8_t value, 1 if we want to disable, 0 to enable
+ * @return None
+ ******************************************************************************/
+void Luos_SetFilterState(uint8_t state, service_t *service)
+{
+    Robus_SetFilterState(state, service->ll_service);
+}
+/******************************************************************************
+ * @brief Function that changes the verbose mode
+ * @param uint8_t value, 1 if we want to enable, 0 to disable
+ * @return None
+ ******************************************************************************/
+void Luos_SetVerboseMode(uint8_t mode)
+{
+    Robus_SetVerboseMode(mode);
+}
+/******************************************************************************
  * @brief register a new package
  * @param package to register
  * @return None
@@ -1067,5 +1129,40 @@ void Luos_Run(void)
             Luos_Loop();
             Luos_PackageLoop();
             break;
+    }
+}
+/******************************************************************************
+ * @brief Set a local id
+ * @param Service that we want to set id
+ * @param id value
+ * @return None
+ ******************************************************************************/
+void Luos_SetID(service_t *service, uint16_t id)
+{
+    // set id
+    service->ll_service->id = 1;
+    // change filter mask
+    Robus_ShiftMaskCalculation(id, service_number);
+}
+/******************************************************************************
+ * @brief Demand a detection
+ * @param Service that launched the detection
+ * @return None
+ ******************************************************************************/
+void Luos_Detect(service_t *service)
+{
+    msg_t detect_msg;
+
+    if (Robus_IsNodeDetected() != NETWORK_LINK_CONNECTING)
+    {
+        // set the detection launcher id to 1
+        Luos_SetID(service, 1);
+        //  send ask detection message
+        detection_service             = service;
+        detect_msg.header.target_mode = IDACK;
+        detect_msg.header.cmd         = ASK_DETECTION;
+        detect_msg.header.size        = 0;
+        detect_msg.header.target      = 1;
+        Luos_SendMsg(service, &detect_msg);
     }
 }

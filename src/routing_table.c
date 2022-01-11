@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "luos_hal.h"
 #include "context.h"
 
@@ -31,6 +32,7 @@ static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node);
 static void RoutingTB_Share(service_t *service, uint16_t nb_node);
+static void RoutingTB_SendEndDetection(service_t *service);
 
 // ************************ routing_table search tools ***************************
 
@@ -75,6 +77,34 @@ uint16_t RoutingTB_IDFromType(luos_type_t type)
     }
     return 0;
 }
+
+/******************************************************************************
+ * @brief  Return an id from the phisically closest type
+ * @param type of service look at
+ * @return ID or Error
+ ******************************************************************************/
+uint16_t RoutingTB_IDFromClosestType(service_t *service, luos_type_t type)
+{
+    uint16_t delta_node = 0xFFFF;
+    uint16_t result     = 0;
+    for (int i = 0; i <= last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == SERVICE)
+        {
+            if (type == routing_table[i].type)
+            {
+                uint16_t tmp_delta_node = abs(RoutingTB_NodeIDFromID(routing_table[i].id) - service->ll_service->id);
+                if (tmp_delta_node < delta_node)
+                {
+                    delta_node = tmp_delta_node;
+                    result     = routing_table[i].id;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 /******************************************************************************
  * @brief  Return a Nodeid from service id
  * @param id of service
@@ -82,7 +112,7 @@ uint16_t RoutingTB_IDFromType(luos_type_t type)
  ******************************************************************************/
 uint16_t RoutingTB_NodeIDFromID(uint16_t id)
 {
-    for (uint16_t i = RoutingTB_GetServiceID(id); i >= 0; i--)
+    for (uint16_t i = RoutingTB_GetServiceIndex(id); i >= 0; i--)
     {
         if (routing_table[i].mode == NODE)
         {
@@ -320,6 +350,22 @@ uint16_t RoutingTB_GetServiceID(uint16_t index)
 {
     return routing_table[index].id;
 }
+/******************************************************************************
+ * @brief  get Index of service on the routing table
+ * @param routing table id
+ * @return index
+ ******************************************************************************/
+uint16_t RoutingTB_GetServiceIndex(uint16_t id)
+{
+    for (uint8_t i = 0; i < last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == SERVICE && routing_table[i].id == id)
+        {
+            return i;
+        }
+    }
+    return 0;
+}
 
 /******************************************************************************
  * @brief  get mode of a routing table entry
@@ -490,6 +536,22 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 }
 
 /******************************************************************************
+ * @brief Send a message to indicate the end of the detection
+ * @param service who send
+ * @return None
+ ******************************************************************************/
+void RoutingTB_SendEndDetection(service_t *service)
+{
+    // send end detection message to each nodes
+    msg_t msg;
+    msg.header.target      = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd         = END_DETECTION;
+    msg.header.size        = 0;
+    Luos_SendMsg(service, &msg);
+}
+
+/******************************************************************************
  * @brief Detect all services and create a route table with it.
  * If multiple services have the same name it will be changed with a number in it
  * Automatically at the end this function create a list of sensors id
@@ -498,6 +560,8 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
 {
+    // Desactivate verbose mode
+    Luos_SetVerboseMode(false);
     // Starts the topology detection.
     uint16_t nb_node = Robus_TopologyDetection(service->ll_service);
     // Clear data reception state
@@ -508,6 +572,8 @@ void RoutingTB_DetectServices(service_t *service)
     RoutingTB_Generate(service, nb_node);
     // We have a complete routing table now share it with others.
     RoutingTB_Share(service, nb_node);
+    // send a message to indicate the end of the detection
+    RoutingTB_SendEndDetection(service);
 }
 /******************************************************************************
  * @brief entry in routable node with associate service

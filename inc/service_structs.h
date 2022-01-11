@@ -130,6 +130,7 @@ typedef enum
     WRITE_ALIAS,                   // Get and save a new given alias.
     UPDATE_PUB,                    // Ask to update a sensor value each time duration to the sender
     NODE_UUID,                     // luos_uuid_t
+    ASK_DETECTION,                 // Ask Luos to launch a detection
 
     // Revision management
     REVISION,        // service sends its firmware revision
@@ -140,8 +141,13 @@ typedef enum
     BOOTLOADER_CMD,
     BOOTLOADER_RESP,
 
+    // Timestamp command
+    TIMESTAMP_CMD,
+    // Verbose command
+    VERBOSE,
+
     // compatibility area
-    LUOS_LAST_RESERVED_CMD
+    LUOS_LAST_RESERVED_CMD = 42
 } reserved_luos_cmd_t;
 
 /*******************************************************************************

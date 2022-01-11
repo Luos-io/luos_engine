@@ -63,7 +63,11 @@ uint16_t Luos_NbrAvailableMsg(void);
 uint32_t Luos_GetSystick(void);
 error_return_t Luos_TxComplete(void);
 void Luos_Flush(void);
+bool Luos_IsNodeDetected(void);
 void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
+void Luos_SetVerboseMode(uint8_t mode);
+void Luos_SetFilterState(uint8_t state, service_t *service);
 void Luos_Run(void);
+void Luos_Detect(service_t *service);
 
 #endif /* LUOS_H */
