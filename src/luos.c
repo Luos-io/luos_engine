@@ -809,8 +809,25 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
 void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream)
 {
     // Compute number of message needed to send available datas on ring buffer
-    int msg_number              = 1;
-    int data_size               = Stream_GetAvailableSampleNB(stream);
+    Luos_SendStreamingSize(service, msg, stream, Stream_GetAvailableSampleNB(stream));
+}
+/******************************************************************************
+ * @brief Send a number of datas of a streaming channel
+ * @param Service who send
+ * @param Message to send
+ * @param streaming channel pointer
+ * @param max_size maximum sample to send
+ * @return None
+ ******************************************************************************/
+void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size)
+{
+    // Compute number of message needed to send available datas on ring buffer
+    int msg_number = 1;
+    int data_size  = Stream_GetAvailableSampleNB(stream);
+    if (data_size > max_size)
+    {
+        data_size = max_size;
+    }
     const int max_data_msg_size = (MAX_DATA_MSG_SIZE / stream->data_size);
     if (data_size > max_data_msg_size)
     {
