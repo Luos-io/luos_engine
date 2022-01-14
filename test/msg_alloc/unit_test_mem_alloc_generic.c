@@ -1,5 +1,43 @@
-#include "../test/unit_test.h"
-#include "../src/msg_alloc.c"
+#include "main.h"
+#include "unit_test.h"
+#include "../inc/msg_alloc.h"
+
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    msg_t *msg_pt;               /*!< Start pointer of the msg on msg_buffer. */
+    ll_service_t *ll_service_pt; /*!< Pointer to the concerned ll_service. */
+} luos_task_t;
+
+typedef struct
+{
+    uint8_t *data_pt;            /*!< Start pointer of the data on msg_buffer. */
+    uint16_t size;               /*!< size of the data. */
+    ll_service_t *ll_service_pt; /*!< Pointer to the transmitting ll_service. */
+    uint8_t localhost;           /*!< is this message a localhost one? */
+} tx_task_t;
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+extern memory_stats_t *mem_stat;
+extern volatile bool reset_needed;
+extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
+extern volatile msg_t *current_msg;
+extern volatile uint8_t *data_ptr;
+extern volatile uint8_t *data_end_estimation;
+extern volatile msg_t *oldest_msg;
+extern volatile msg_t *used_msg;
+extern volatile uint8_t mem_clear_needed;
+extern volatile header_t *copy_task_pointer;
+extern volatile msg_t *msg_tasks[MAX_MSG_NB];
+extern volatile uint16_t msg_tasks_stack_id;
+extern volatile luos_task_t luos_tasks[MAX_MSG_NB];
+extern volatile uint16_t luos_tasks_stack_id;
+extern volatile tx_task_t tx_tasks[MAX_MSG_NB];
+extern volatile uint16_t tx_tasks_stack_id;
 
 /*******************************************************************************
  * Function
@@ -2019,38 +2057,4 @@ void unittest_MsgAlloc_TxAllComplete()
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_TxAllComplete());
         }
     }
-}
-
-/*******************************************************************************
- * MAIN
- ******************************************************************************/
-int main(int argc, char **argv)
-{
-    UNITY_BEGIN();
-
-    ASSERT_ACTIVATION(1);
-
-    UNIT_TEST_RUN(unittest_MsgAlloc_loop);
-    UNIT_TEST_RUN(unittest_MsgAlloc_ValidHeader);
-    UNIT_TEST_RUN(unittest_MsgAlloc_InvalidMsg);
-    UNIT_TEST_RUN(unittest_MsgAlloc_EndMsg);
-    UNIT_TEST_RUN(unittest_MsgAlloc_SetData);
-    UNIT_TEST_RUN(unittest_MsgAlloc_IsEmpty);
-    UNIT_TEST_RUN(unittest_MsgAlloc_UsedMsgEnd);
-    UNIT_TEST_RUN(unittest_MsgAlloc_GetLuosTaskSourceId);
-    UNIT_TEST_RUN(unittest_MsgAlloc_GetLuosTaskCmd);
-    UNIT_TEST_RUN(unittest_MsgAlloc_GetLuosTaskSize);
-    UNIT_TEST_RUN(unittest_MsgAlloc_TxAllComplete);
-    UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgToInterpret);
-    UNIT_TEST_RUN(unittest_MsgAlloc_LuosTaskAlloc);
-    UNIT_TEST_RUN(unittest_MsgAlloc_LuosTasksNbr);
-    UNIT_TEST_RUN(unittest_MsgAlloc_PullMsg);
-    UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgFromLuosTask);
-    UNIT_TEST_RUN(unittest_MsgAlloc_LookAtLuosTask);
-    UNIT_TEST_RUN(unittest_MsgAlloc_ClearMsgFromLuosTasks);
-    UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgFromTxTask);
-    UNIT_TEST_RUN(unittest_MsgAlloc_PullServiceFromTxTask);
-    UNIT_TEST_RUN(unittest_MsgAlloc_GetTxTask);
-    // MsgAlloc_Init         => this function doesn't need unit test
-    UNITY_END();
 }

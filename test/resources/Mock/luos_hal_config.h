@@ -35,10 +35,7 @@
  * PINOUT CONFIG
  ******************************************************************************/
 #ifndef PORT_CLOCK_ENABLE
-#define PORT_CLOCK_ENABLE() \
-    do                      \
-    {                       \
-    } while (0U)
+#define PORT_CLOCK_ENABLE() X86_STUB
 #endif
 
 // PTP pin definition
@@ -107,21 +104,16 @@
 #define COM_RX_AF X86_STUB
 #endif
 
-/*
 #ifndef PINOUT_IRQHANDLER
-#define PINOUT_IRQHANDLER(PIN)
+//#define PINOUT_IRQHANDLER(PIN)
 #endif
-*/
+
 
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
 #ifndef LUOS_COM_CLOCK_ENABLE
-#define LUOS_COM_CLOCK_ENABLE() \
-    do                          \
-    {                           \
-        ;                       \
-    } while (0U)
+#define LUOS_COM_CLOCK_ENABLE() X86_STUB
 #endif
 #ifndef LUOS_COM
 #define LUOS_COM X86_STUB // STUB
@@ -129,19 +121,15 @@
 #ifndef LUOS_COM_IRQ
 #define LUOS_COM_IRQ X86_STUB // STUB
 #endif
-/*#ifndef LUOS_COM_IRQHANDLER
+#ifndef LUOS_COM_IRQHANDLER
 #define LUOS_COM_IRQHANDLER() //STUB
-#endif*/
+#endif
 
 /*******************************************************************************
- * FLASH CONFIG
+ * DMA CONFIG
  ******************************************************************************/
 #ifndef LUOS_DMA_CLOCK_ENABLE
-#define LUOS_DMA_CLOCK_ENABLE() \
-    do                          \
-    {                           \
-        ;                       \
-    } while (0U)
+#define LUOS_DMA_CLOCK_ENABLE() X86_STUB
 #endif
 #ifndef LUOS_DMA
 #define LUOS_DMA X86_STUB // STUB
@@ -156,19 +144,8 @@
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-/*#ifndef LUOS_TIMER_LOCK_ENABLE
-#define LUOS_TIMER_LOCK_ENABLE()      \
-    do                                \
-    {                                 \
-        ;                             \
-    } while (0U)
-#endif*/
 #ifndef LUOS_TIMER_CLOCK_ENABLE
-//#define LUOS_TIMER_LOCK_ENABLE() //STUB
-#define LUOS_TIMER_CLOCK_ENABLE() \
-    do                            \
-    {                             \
-    } while (0U) // STUB
+#define LUOS_TIMER_LOCK_ENABLE() //STUB
 #endif
 #ifndef LUOS_TIMER
 #define LUOS_TIMER X86_STUB // STUB
@@ -176,20 +153,31 @@
 #ifndef LUOS_TIMER_IRQ
 #define LUOS_TIMER_IRQ X86_STUB // STUB
 #endif
-/*#ifndef LUOS_TIMER_IRQHANDLER
-#define LUOS_TIMER_IRQHANDLER() //STUB
-#endif*/
+#ifndef LUOS_TIMER_IRQHANDLER
+#define LUOS_TIMER_IRQHANDLER() x86_Timer_IRQHandler()
+#endif
+
+/*******************************************************************************
+ * DEFINE STUB FLASH FOR X86
+ ******************************************************************************/
+#ifndef FLASH_PAGE_SIZE
+#define FLASH_PAGE_SIZE   0x100
+#endif
+#ifndef FLASH_PAGE_NUMBER
+#define FLASH_PAGE_NUMBER 8
+#endif
+static uint32_t stub_flash_x86[FLASH_PAGE_NUMBER][FLASH_PAGE_SIZE];
+static uint32_t* last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE];
 
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE
-//#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
-#define PAGE_SIZE (uint32_t) X86_STUB // STUB
+#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE 
 #endif
 #ifndef ADDRESS_LAST_PAGE_FLASH
-//#define ADDRESS_LAST_PAGE_FLASH ((uint32_t)(FLASH_BANK1_END - FLASH_PAGE_SIZE))
-#define ADDRESS_LAST_PAGE_FLASH X86_STUB // STUB
+//#define ADDRESS_LAST_PAGE_FLASH (uint32_t*)&stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE]
+#define ADDRESS_LAST_PAGE_FLASH (uint32_t)last_page_stub_flash_x86
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */

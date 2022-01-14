@@ -1,11 +1,49 @@
-#include "../test/unit_test.h"
-#include "../src/msg_alloc.c"
+#include "main.h"
+#include "unit_test.h"
+#include "../inc/msg_alloc.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
 #define MSG_START 10
 #undef VERBOSE_LOCALHOST
+
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    msg_t *msg_pt;               /*!< Start pointer of the msg on msg_buffer. */
+    ll_service_t *ll_service_pt; /*!< Pointer to the concerned ll_service. */
+} luos_task_t;
+
+typedef struct
+{
+    uint8_t *data_pt;            /*!< Start pointer of the data on msg_buffer. */
+    uint16_t size;               /*!< size of the data. */
+    ll_service_t *ll_service_pt; /*!< Pointer to the transmitting ll_service. */
+    uint8_t localhost;           /*!< is this message a localhost one? */
+} tx_task_t;
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+extern memory_stats_t *mem_stat;
+extern volatile bool reset_needed;
+extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
+extern volatile msg_t *current_msg;
+extern volatile uint8_t *data_ptr;
+extern volatile uint8_t *data_end_estimation;
+extern volatile msg_t *oldest_msg;
+extern volatile msg_t *used_msg;
+extern volatile uint8_t mem_clear_needed;
+extern volatile header_t *copy_task_pointer;
+extern volatile msg_t *msg_tasks[MAX_MSG_NB];
+extern volatile uint16_t msg_tasks_stack_id;
+extern volatile luos_task_t luos_tasks[MAX_MSG_NB];
+extern volatile uint16_t luos_tasks_stack_id;
+extern volatile tx_task_t tx_tasks[MAX_MSG_NB];
+extern volatile uint16_t tx_tasks_stack_id;
 
 /*******************************************************************************
  * Function
@@ -1836,29 +1874,4 @@ void unittest_SetTxTask_multihost()
         NEW_STEP("Check Rx message integrity : correct values in correct memory position");
         TEST_ASSERT_EQUAL_MEMORY(rx_message, (uint8_t *)&msg_buffer[MSG_START] + tx_size, rx_bytes_received);
     }
-}
-
-/*******************************************************************************
- * MAIN
- ******************************************************************************/
-int main(int argc, char **argv)
-{
-    UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
-
-    UNIT_TEST_RUN(unittest_SetTxTask_buffer_full);
-    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_1);
-    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_2);
-    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_3);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_1);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_2);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_3);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_4);
-    UNIT_TEST_RUN(unittest_SetTxTask_Task_already_exists);
-    UNIT_TEST_RUN(unittest_SetTxTask_copy_OK);
-    UNIT_TEST_RUN(unittest_SetTxTask_ACK);
-    UNIT_TEST_RUN(unittest_SetTxTask_internal_localhost);
-    UNIT_TEST_RUN(unittest_SetTxTask_multihost);
-
-    UNITY_END();
 }
