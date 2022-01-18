@@ -312,7 +312,7 @@ uint16_t RoutingTB_GetNodeNB(void)
             node_nb++;
         }
     }
-    return node_nb - 1;
+    return node_nb;
 }
 /******************************************************************************
  * @brief  get ID of node on network
@@ -339,7 +339,7 @@ uint16_t RoutingTB_GetServiceNB(void)
             service_nb++;
         }
     }
-    return service_nb - 1;
+    return service_nb;
 }
 /******************************************************************************
  * @brief  get ID of service on the network
