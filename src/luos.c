@@ -123,7 +123,7 @@ void Luos_Loop(void)
         else
         {
             // This message is for a service
-            // check if this continer have a callback?
+            // check if this service have a callback?
             if (service->service_cb != 0)
             {
                 // This service have a callback pull the message

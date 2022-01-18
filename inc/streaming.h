@@ -26,7 +26,7 @@ typedef struct
     void *end_ring_buffer; // End of the ring buffer
     void *sample_ptr;      // Current sample pointer (pointer always point a fresh data)
     void *data_ptr;        // Current pointer of data
-    uint8_t data_size;     // Size granulariry of the data contained on the ring buffer
+    uint8_t data_size;     // Size granularity of the data contained on the ring buffer
 } streaming_channel_t;
 /*******************************************************************************
  * Variables

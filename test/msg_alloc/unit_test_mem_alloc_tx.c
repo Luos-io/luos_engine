@@ -1,6 +1,6 @@
 #include "main.h"
 #include "unit_test.h"
-#include "../inc/msg_alloc.h"
+#include "msg_alloc.h"
 
 /*******************************************************************************
  * Definitions
