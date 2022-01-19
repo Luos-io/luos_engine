@@ -15,6 +15,7 @@
 #include "luos_utils.h"
 #include "timestamp.h"
 #include "robus.h"
+#include "bootloader_core.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -163,6 +164,13 @@ void Recep_GetData(volatile uint8_t *data)
             if (Recep_IsAckNeeded())
             {
                 Transmit_SendAck();
+            }
+
+            // Make an exception for bootloader command
+            if ((current_msg->header.cmd == BOOTLOADER_CMD) && (current_msg->data[0] == BOOTLOADER_RESET))
+            {
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
+                LuosHAL_Reboot();
             }
 
             // Make an exception for reset detection command

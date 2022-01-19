@@ -380,6 +380,8 @@ void LuosBootloader_MsgHandler(msg_t *input)
 
             // erase flash memory
             LuosBootloader_EraseMemory();
+            // reset load flag
+            load_flag = false;
             // send ERASE response
             LuosBootloader_SendResponse(BOOTLOADER_ERASE_RESP);
             break;
