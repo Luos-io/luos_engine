@@ -374,10 +374,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
             break;
 
         case BOOTLOADER_ERASE:
-            source_id            = input->header.source;
-            bootloader_data_size = input->header.size - sizeof(char);
-            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
-
             // erase flash memory
             LuosBootloader_EraseMemory();
             // reset load flag
@@ -420,10 +416,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
             break;
 
         case BOOTLOADER_STOP:
-            source_id            = input->header.source;
-            bootloader_data_size = input->header.size - sizeof(char);
-            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
-
             // save bootloader mode in flash
             if (load_flag || (LuosBootloader_GetMode() == APP_RELOAD_MODE))
             {
