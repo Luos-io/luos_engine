@@ -424,7 +424,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
             // save bootloader mode in flash
             if (load_flag || (LuosBootloader_GetMode() == APP_RELOAD_MODE))
             {
-                LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
                 // boot the application programmed in dedicated flash partition
                 LuosBootloader_DeInit();
                 LuosBootloader_JumpToApp();

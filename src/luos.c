@@ -15,6 +15,8 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#define BOOT_TIMEOUT 1000
+
 typedef enum
 {
     NODE_INIT,
@@ -34,6 +36,10 @@ service_t *detection_service;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
+
+bool launch_boot_flag    = true;
+bool boot_run            = false;
+uint32_t boot_start_date = 0;
 
 /*******************************************************************************
  * Function
@@ -73,6 +79,21 @@ void Luos_Loop(void)
     uint16_t remaining_msg_number   = 0;
     ll_service_t *oldest_ll_service = NULL;
     msg_t *returned_msg             = NULL;
+
+#ifndef BOOTLOADER_CONFIG
+    if (launch_boot_flag)
+    {
+        launch_boot_flag = false;
+        boot_start_date  = LuosHAL_GetSystick();
+        boot_run         = true;
+    }
+
+    if (((LuosHAL_GetSystick() - boot_start_date) > BOOT_TIMEOUT) && boot_run)
+    {
+        LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
+        boot_run = false;
+    }
+#endif
 
     // check loop call time stat
     if ((LuosHAL_GetSystick() - last_loop_date) > luos_stats.max_loop_time_ms)
