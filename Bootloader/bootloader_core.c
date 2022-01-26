@@ -416,22 +416,25 @@ void LuosBootloader_MsgHandler(msg_t *input)
             break;
 
         case BOOTLOADER_STOP:
-            // save bootloader mode in flash
-            if (load_flag || (LuosBootloader_GetMode() == APP_RELOAD_MODE))
-            {
-                LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
-            }
-            else
-            {
-                LuosHAL_SetMode((uint8_t)BOOT_MODE);
-            }
-
             // wait for the command to be send to all nodes
             tickstart = LuosHAL_GetSystick();
             while ((LuosHAL_GetSystick() - tickstart) < 1000)
                 ;
-            // reboot the node
-            LuosHAL_Reboot();
+
+            // save bootloader mode in flash
+            if (load_flag || (LuosBootloader_GetMode() == APP_RELOAD_MODE))
+            {
+                LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
+                // boot the application programmed in dedicated flash partition
+                LuosBootloader_DeInit();
+                LuosBootloader_JumpToApp();
+            }
+            else
+            {
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
+                // reboot the node
+                LuosHAL_Reboot();
+            }
             break;
 #endif
         default:
