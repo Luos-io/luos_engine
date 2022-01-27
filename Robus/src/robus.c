@@ -491,7 +491,7 @@ void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
     //	Shift byte		            byte Mask of bit address
 
     uint16_t tempo = 0;
-    ctx.ShiftMask  = ID / 8; // aligned to byte
+    ctx.ShiftMask  = (ID - 1) / 8; // aligned to byte
 
     // create a mask of bit corresponding to ID number in the node
     for (uint16_t i = 0; i < ServiceNumber; i++)
