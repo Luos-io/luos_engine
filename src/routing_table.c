@@ -780,7 +780,7 @@ search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted node_id
-        if (((result->result_table[entry_nbr]->mode == SERVICE) && !strcmp(result->result_table[entry_nbr]->alias, alias)) || (result->result_table[entry_nbr]->mode == NODE))
+        if (((result->result_table[entry_nbr]->mode == SERVICE) && (strstr(result->result_table[entry_nbr]->alias, alias) == 0)) || (result->result_table[entry_nbr]->mode == NODE))
         {
             // if we find an other node_id, erase it from the research table
             memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
