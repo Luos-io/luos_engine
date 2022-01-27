@@ -108,7 +108,6 @@
 //#define PINOUT_IRQHANDLER(PIN)
 #endif
 
-
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
@@ -161,23 +160,23 @@
  * DEFINE STUB FLASH FOR X86
  ******************************************************************************/
 #ifndef FLASH_PAGE_SIZE
-#define FLASH_PAGE_SIZE   0x100
+#define FLASH_PAGE_SIZE 0x100
 #endif
 #ifndef FLASH_PAGE_NUMBER
 #define FLASH_PAGE_NUMBER 8
 #endif
 static uint32_t stub_flash_x86[FLASH_PAGE_NUMBER][FLASH_PAGE_SIZE];
-static uint32_t* last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE];
+static uint32_t *last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE];
 
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE 
+#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
 #endif
 #ifndef ADDRESS_LAST_PAGE_FLASH
 //#define ADDRESS_LAST_PAGE_FLASH (uint32_t*)&stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE]
-#define ADDRESS_LAST_PAGE_FLASH (uint32_t)last_page_stub_flash_x86
+#define ADDRESS_LAST_PAGE_FLASH (uint32_t) last_page_stub_flash_x86
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */
