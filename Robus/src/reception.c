@@ -376,8 +376,9 @@ static inline error_return_t Recep_NodeCompare(uint16_t ID)
  * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
+ * warning : this function can be redefined only for mock testing purpose 
  ******************************************************************************/
-luos_localhost_t Recep_NodeConcerned(header_t *header)
+__attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
 

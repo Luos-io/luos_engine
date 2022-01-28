@@ -91,7 +91,7 @@ typedef enum
     PARAMETERS, // depend on the service, can be : servo_parameters_t, imu_report_t, motor_mode_t
     ERROR_CMD,
 
-    TEXT,       // ASCII string
+    TEXT, // ASCII string
 
     // compatibility area
     LUOS_LAST_STD_CMD = 128

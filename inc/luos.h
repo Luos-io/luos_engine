@@ -56,6 +56,7 @@ error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **retu
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
 error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
 void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
+void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 void Luos_SendBaudrate(service_t *service, uint32_t baudrate);
 void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t target, uint16_t newid);

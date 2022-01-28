@@ -1,4 +1,5 @@
-#include "../test/unit_test.h"
+#include "main.h"
+#include "unit_test.h"
 #include "../src/msg_alloc.c"
 
 void unittest_DoWeHaveSpace(void)
@@ -1113,23 +1114,4 @@ void unittest_ClearLuosTask(void)
         }
         ASSERT_ACTIVATION(1);
     }
-}
-
-int main(int argc, char **argv)
-{
-    UNITY_BEGIN();
-
-    ASSERT_ACTIVATION(1);
-
-    UNIT_TEST_RUN(unittest_DoWeHaveSpace);
-    UNIT_TEST_RUN(unittest_CheckMsgSpace);
-    UNIT_TEST_RUN(unittest_BufferAvailableSpaceComputation);
-    UNIT_TEST_RUN(unittest_OldestMsgCandidate);
-    UNIT_TEST_RUN(unittest_ClearMsgTask);
-    UNIT_TEST_RUN(unittest_ClearLuosTask);
-    UNIT_TEST_RUN(unittest_ClearMsgSpace);
-    UNIT_TEST_RUN(unittest_ValidDataIntegrity);
-    ////MsgAlloc_FindNewOldestMsg => this function doesn't need unit test
-
-    UNITY_END();
 }
