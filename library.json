@@ -17,10 +17,7 @@
             "-I Profiles/Motor",
             "-I Profiles/Servo_motor",
             "-I Profiles/Voltage",
-            "-I Bootloader",
-            "-I test/resources/Unity",
-            "-I test/resources/Mock",
-            "-I test/resources/Scenarios"
+            "-I Bootloader"
         ],
         "srcFilter": [
             "+<*.c>",
@@ -30,10 +27,7 @@
             "+<../Profiles/Motor/*.c>",
             "+<../Profiles/Servo_motor/*.c>",
             "+<../Profiles/Voltage/*.c>",
-            "+<../Bootloader/*.c>",
-            "+<../test/resources/Unity/*.c>",			
-            "+<../test/resources/Mock/*.c>",
-            "+<../test/resources/Scenarios/*.c>"
+            "+<../Bootloader/*.c>"
         ]
     },
     "repository": {

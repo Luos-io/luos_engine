@@ -175,7 +175,6 @@ static uint32_t *last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 
 #define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
 #endif
 #ifndef ADDRESS_LAST_PAGE_FLASH
-//#define ADDRESS_LAST_PAGE_FLASH (uint32_t*)&stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE]
 #define ADDRESS_LAST_PAGE_FLASH (uint32_t) last_page_stub_flash_x86
 #endif
 
