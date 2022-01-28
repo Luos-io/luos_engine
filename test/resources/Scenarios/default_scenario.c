@@ -20,17 +20,18 @@
  ******************************************************************************/
 msg_t transmit_msg[DUMMY_SERVICE_NUMBER];
 msg_t receive_msg[DUMMY_SERVICE_NUMBER];
-streaming_channel_t streamChan[DUMMY_SERVICE_NUMBER];
-uint8_t stream_Buffer[DUMMY_SERVICE_NUMBER][STREAM_BUFFER_SIZE] = {0};
+uint8_t stream_Buffer1[STREAM_BUFFER_SIZE] = {0};
+uint8_t stream_Buffer2[STREAM_BUFFER_SIZE] = {0};
+streaming_channel_t Default_StreamChannel1;
+streaming_channel_t Default_StreamChannel2;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
 extern void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_t *concerned_msg);
 
-static void Reset_Context(void);
-static void Init_Messages(void);
 static void Reset_Streaming(void);
+static void Init_Messages(void);
 static void Detection(service_t *service);
 static void App_1_MsgHandler(service_t *service, msg_t *msg);
 static void App_2_MsgHandler(service_t *service, msg_t *msg);
@@ -51,10 +52,10 @@ void Init_Context(void)
     default_sc.App_2.app = Luos_CreateService(App_2_MsgHandler, VOID_TYPE, "Dummy_App_2", revision);
     default_sc.App_3.app = Luos_CreateService(App_3_MsgHandler, VOID_TYPE, "Dummy_App_3", revision);
 
+    Reset_Streaming();
     // Create stream channels
-    default_sc.App_1.streamChannel = Stream_CreateStreamingChannel(&stream_Buffer[0], STREAM_BUFFER_SIZE, streamChan[0].data_size);
-    default_sc.App_1.streamChannel = Stream_CreateStreamingChannel(&stream_Buffer[1], STREAM_BUFFER_SIZE, streamChan[1].data_size);
-    default_sc.App_1.streamChannel = Stream_CreateStreamingChannel(&stream_Buffer[2], STREAM_BUFFER_SIZE, streamChan[2].data_size);
+    Default_StreamChannel1 = Stream_CreateStreamingChannel(stream_Buffer1, STREAM_BUFFER_SIZE, 1);
+    Default_StreamChannel1 = Stream_CreateStreamingChannel(stream_Buffer2, STREAM_BUFFER_SIZE, 1);
 
     // Fill basic messages
     Init_Messages();
@@ -82,11 +83,11 @@ void Init_Context(void)
  ******************************************************************************/
 void Reset_Context(void)
 {
+    Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
     Init_Messages();
     Reset_Streaming();
-    Detection(default_sc.App_1.app);
 }
 
 /******************************************************************************
@@ -103,7 +104,7 @@ static void Detection(service_t *service)
 }
 
 /******************************************************************************
- * @brief Messages are reseted to default values 
+ * @brief Messages are reseted to default values
  * @param None
  * @return None
  ******************************************************************************/
@@ -170,20 +171,23 @@ void Init_Messages(void)
 }
 
 /******************************************************************************
- * @brief Create a streaming channel 
+ * @brief Create a streaming channel
  * @param None
  * @return None
  ******************************************************************************/
-void Reset_Streaming(void)
+static void Reset_Streaming(void)
 {
-    // Stream Channel Creation
-    for (uint16_t i; i < DUMMY_SERVICE_NUMBER; i++)
+    // Stream Channel reset
+    Stream_ResetStreamingChannel(&Default_StreamChannel1);
+    Stream_ResetStreamingChannel(&Default_StreamChannel2);
+    default_sc.streamChannel1 = &Default_StreamChannel1;
+    default_sc.streamChannel2 = &Default_StreamChannel2;
+    for (uint16_t i = 0; i < STREAM_BUFFER_SIZE; i++)
     {
-        Stream_ResetStreamingChannel(&streamChan[i]);
-        streamChan[i].data_size = 1;
+        stream_Buffer1[i] = (uint8_t)(i);
+        stream_Buffer2[i] = (uint8_t)(i);
     }
 }
-
 /******************************************************************************
  * @brief Loop Service App_1
  * @param None
