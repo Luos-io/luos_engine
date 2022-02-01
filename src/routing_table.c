@@ -692,7 +692,15 @@ uint16_t RoutingTB_GetLastEntry(void)
 }
 
 /******************************** Result Table ********************************/
-
+uint8_t RTFilter_InitCheck(search_result_t *result)
+{
+    // check if we fund the address of the result in routing table
+    if ((result->result_table[0] >= &routing_table[0]) && (result->result_table[0] <= &routing_table[last_routing_table_entry - 1]))
+    {
+        return true;
+    }
+    return false;
+}
 /******************************************************************************
  * @brief Initialize the Result table pointers
  * @param index of service
@@ -723,11 +731,11 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
-
+    LUOS_ASSERT(RTFilter_InitCheck(result));
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted type
-        if (((result->result_table[entry_nbr]->mode == SERVICE) && (result->result_table[entry_nbr]->type != type)) || (result->result_table[entry_nbr]->mode == NODE))
+        if (result->result_table[entry_nbr]->type != type)
         {
             // if we find an other type, erase it from the research table
             memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
@@ -752,11 +760,12 @@ search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
+    LUOS_ASSERT(RTFilter_InitCheck(result));
     // search all the entries of the research table
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted node_id
-        if (((result->result_table[entry_nbr]->mode == SERVICE) && (RoutingTB_NodeIDFromID(result->result_table[entry_nbr]->id) != node_id)) || (result->result_table[entry_nbr]->mode == NODE))
+        if (RoutingTB_NodeIDFromID(result->result_table[entry_nbr]->id) != node_id)
         {
             // if we find an other node_id, erase it from the research table
             memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
@@ -776,11 +785,12 @@ search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
+    LUOS_ASSERT(RTFilter_InitCheck(result));
     // search all the entries of the research table
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted node_id
-        if (((result->result_table[entry_nbr]->mode == SERVICE) && (strstr(result->result_table[entry_nbr]->alias, alias) == 0)) || (result->result_table[entry_nbr]->mode == NODE))
+        if (strstr(result->result_table[entry_nbr]->alias, alias) == 0)
         {
             // if we find an other node_id, erase it from the research table
             memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
