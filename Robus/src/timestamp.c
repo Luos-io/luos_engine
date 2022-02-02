@@ -22,8 +22,30 @@ timestamp_token_t *token_list_head = 0;
  * Function
  ******************************************************************************/
 static inline void Timestamp_AddToken(timestamp_token_t *);
-static uint64_t Timestamp_GetTimeFromToken(void *);
+static int64_t Timestamp_GetTimeFromToken(void *);
 static bool Timestamp_DeleteTokenFromList(void *);
+static void Timestamp_CreateEvent(int64_t, timestamp_token_t *, void *);
+
+/******************************************************************************
+ * @brief link a token to a target until its comsumption in a message
+ * @brief and save the associated timestamp with the relative event date
+ * @param relative_date of the event
+ * @param token instance
+ * @param target to link to the token
+ * @return None
+ ******************************************************************************/
+void Timestamp_CreateEvent(int64_t relative_date, timestamp_token_t *token, void *target)
+{
+    // update token only if it's not locked
+    token->target    = target;
+    token->timestamp = (((int64_t)LuosHAL_GetTimestamp()) + relative_date > 0) ? ((int64_t)LuosHAL_GetTimestamp()) + relative_date : 0;
+
+    // if it's a new token, add it to the list
+    if (!Timestamp_GetToken(target))
+    {
+        Timestamp_AddToken(token);
+    }
+}
 
 /******************************************************************************
  * @brief link a token to a target until its comsumption in a message
@@ -34,15 +56,7 @@ static bool Timestamp_DeleteTokenFromList(void *);
  ******************************************************************************/
 void Timestamp_Tag(timestamp_token_t *token, void *target)
 {
-    // update token only if it's not locked
-    token->target    = target;
-    token->timestamp = LuosHAL_GetTimestamp();
-
-    // if it's a new token, add it to the list
-    if (!Timestamp_GetToken(target))
-    {
-        Timestamp_AddToken(token);
-    }
+    Timestamp_CreateEvent(0, token, target);
 }
 
 /******************************************************************************
@@ -77,10 +91,10 @@ void Timestamp_AddToken(timestamp_token_t *token)
  * @param target associated with the timestamp to find
  * @return timestamp linked to the target
  ******************************************************************************/
-uint64_t Timestamp_GetTimeFromToken(void *target)
+int64_t Timestamp_GetTimeFromToken(void *target)
 {
     timestamp_token_t *token = Timestamp_GetToken(target);
-    uint64_t timestamp       = 0;
+    int64_t timestamp        = 0;
     if (token)
     {
         // get the timestamp from the token
@@ -179,16 +193,16 @@ bool Timestamp_IsTimestampMsg(msg_t *msg)
  ******************************************************************************/
 void Timestamp_TagMsg(msg_t *msg)
 {
-    uint16_t full_size      = sizeof(header_t) + msg->header.size + sizeof(uint16_t);
-    uint64_t data_timestamp = 0;
-    uint64_t latency        = 0;
+    uint16_t full_size     = sizeof(header_t) + msg->header.size + sizeof(uint16_t);
+    int64_t data_timestamp = 0;
+    int64_t latency        = 0;
 
     // get timestamp in message stream
-    memcpy(&data_timestamp, &msg->stream[full_size - sizeof(uint16_t) - sizeof(uint64_t)], sizeof(uint64_t));
+    memcpy(&data_timestamp, &msg->stream[full_size - sizeof(uint16_t) - sizeof(int64_t)], sizeof(int64_t));
     // update timestamp
-    latency = (LuosHAL_GetTimestamp() > data_timestamp) ? LuosHAL_GetTimestamp() - data_timestamp : 0;
+    latency = data_timestamp - (int64_t)LuosHAL_GetTimestamp();
     // copy timestamp in message
-    memcpy(&msg->stream[full_size - sizeof(uint16_t) - sizeof(uint64_t)], &latency, sizeof(uint64_t));
+    memcpy(&msg->stream[full_size - sizeof(int16_t) - sizeof(int64_t)], &latency, sizeof(int64_t));
 }
 
 /******************************************************************************
@@ -198,17 +212,17 @@ void Timestamp_TagMsg(msg_t *msg)
  ******************************************************************************/
 void Timestamp_EncodeMsg(msg_t *msg, void *target)
 {
-    uint64_t timestamp = Timestamp_GetTimeFromToken(target);
-    uint8_t cmd        = msg->header.cmd;
+    int64_t timestamp = Timestamp_GetTimeFromToken(target);
+    uint8_t cmd       = msg->header.cmd;
 
     // copy timestamp command
     msg->header.cmd = TIMESTAMP_CMD;
     // copy subcommand
     memcpy(&msg->data[msg->header.size], &cmd, sizeof(uint8_t));
     // copy timestamp
-    memcpy(&msg->data[msg->header.size + sizeof(uint8_t)], &timestamp, sizeof(uint64_t));
+    memcpy(&msg->data[msg->header.size + sizeof(uint8_t)], &timestamp, sizeof(int64_t));
     // update msg size
-    msg->header.size = msg->header.size + sizeof(uint64_t) + sizeof(uint8_t);
+    msg->header.size = msg->header.size + sizeof(int64_t) + sizeof(uint8_t);
 }
 
 /******************************************************************************
@@ -216,10 +230,10 @@ void Timestamp_EncodeMsg(msg_t *msg, void *target)
  * @param message to modify
  * @return None
  ******************************************************************************/
-void Timestamp_DecodeMsg(msg_t *msg, uint64_t *timestamp)
+void Timestamp_DecodeMsg(msg_t *msg, int64_t *timestamp)
 {
     // deserialize data
-    msg->header.size = msg->header.size - sizeof(uint64_t) - sizeof(uint8_t);
+    msg->header.size = msg->header.size - sizeof(int64_t) - sizeof(uint8_t);
     memcpy(&msg->header.cmd, &msg->data[msg->header.size], sizeof(uint8_t));
-    memcpy(timestamp, &msg->data[msg->header.size + sizeof(uint8_t)], sizeof(uint64_t));
+    memcpy(timestamp, &msg->data[msg->header.size + sizeof(uint8_t)], sizeof(int64_t));
 }
