@@ -72,23 +72,7 @@ typedef struct
  * Function
  ******************************************************************************/
 // ********************* routing_table search tools ************************
-uint16_t RoutingTB_IDFromAlias(char *alias);
-uint16_t RoutingTB_IDFromType(luos_type_t type);
-uint16_t RoutingTB_IDFromClosestType(service_t *service, luos_type_t type);
-uint16_t RoutingTB_IDFromService(service_t *service);
-char *RoutingTB_AliasFromId(uint16_t id);
-luos_type_t RoutingTB_TypeFromID(uint16_t id);
-luos_type_t RoutingTB_TypeFromAlias(char *alias);
-char *RoutingTB_StringFromType(luos_type_t type);
 uint16_t RoutingTB_NodeIDFromID(uint16_t id);
-uint8_t RoutingTB_ServiceIsSensor(luos_type_t type);
-uint16_t RoutingTB_GetNodeNB(void);
-uint16_t RoutingTB_GetNodeID(uint16_t index);
-uint16_t RoutingTB_GetServiceNB(void);
-uint16_t RoutingTB_GetServiceID(uint16_t index);
-uint16_t RoutingTB_GetServiceIndex(uint16_t id);
-entry_mode_t RoutingTB_GetMode(uint16_t index);
-uint16_t RoutingTB_BigestID(void);
 
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);
@@ -106,8 +90,10 @@ uint16_t RoutingTB_GetLastEntry(void);
 // ********************* routing table  filtering ********************************
 uint8_t RTFilter_InitCheck(search_result_t *result);
 search_result_t *RTFilter_Reset(search_result_t *result);
+search_result_t *RTFilter_ID(search_result_t *result, uint16_t id);
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type);
 search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id);
 search_result_t *RTFilter_Alias(search_result_t *result, char *alias);
+search_result_t *RTFilter_Service(search_result_t *result, service_t *service);
 
 #endif /* TABLE */
