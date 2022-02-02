@@ -16,7 +16,7 @@
  ******************************************************************************/
 typedef struct timestamp_token
 {
-    uint64_t timestamp;
+    int64_t timestamp;
     void *target;
     struct timestamp_token *next;
 } timestamp_token_t;
@@ -37,6 +37,6 @@ timestamp_token_t *Timestamp_GetToken(void *target);
 bool Timestamp_IsTimestampMsg(msg_t *msg);
 void Timestamp_TagMsg(msg_t *msg);
 void Timestamp_EncodeMsg(msg_t *msg, void *target);
-void Timestamp_DecodeMsg(msg_t *msg, uint64_t *timestamp);
+void Timestamp_DecodeMsg(msg_t *msg, int64_t *timestamp);
 
 #endif /* _TIMESTAMP_H_ */
