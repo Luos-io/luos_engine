@@ -12,8 +12,8 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define LUOS_TASK_NUMBER 3
-#define TX_TASK_NUMBER   3
+#define LUOS_TASK_NUMBER (MAX_MSG_IN_BUFFER / 2)
+#define TX_TASK_NUMBER   (MAX_MSG_IN_BUFFER / 2)
 
 /*******************************************************************************
  * Variables
