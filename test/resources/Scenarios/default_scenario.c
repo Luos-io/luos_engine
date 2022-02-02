@@ -97,10 +97,14 @@ void Reset_Context(void)
  ******************************************************************************/
 static void Detection(service_t *service)
 {
+    search_result_t result;
+
     Luos_Detect(service);
     Luos_Loop();
-    printf("[INFO] %d services are active\n", RoutingTB_GetServiceNB());
-    TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, RoutingTB_GetServiceNB());
+
+    RTFilter_Reset(&result);
+    printf("[INFO] %d services are active\n", result.result_nbr);
+    TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, result.result_nbr);
 }
 
 /******************************************************************************
