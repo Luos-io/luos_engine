@@ -8,6 +8,75 @@
 #include "luos_hal.h"
 #include "string.h"
 
+/******************************* Description of Timestamp process ************************************
+ *
+ * Timestamp is a mechanism which enables to track events in the system. The feature is build around
+ * the concept of tokens. A token is an object wich can be linked to an event and can store a
+ * timestamp. Each time a token is created and linked to an event, it's placed in a list with other
+ * tokens to form a linked list with all tokens presents in the system. The token is timestamped at
+ * the same moment.
+ *
+ * When you need to read the timestamp associated with an event, you can use the Timestamp_GetToken()
+ * function. This function will search the token linked to the event in the list and return the
+ * timestamp saved in it.
+ *
+
+                                              Event_A         Event_B
+
+                                                 │               │
+                                                 ▼               ▼
+                                            ───────────────────────────────────────────────►  Time
+                                                 |               |
+                                                 │               │
+               Token list                        │               │
+                                                 │               │
+               ┌───────┐                         │               │
+    Timestamp  │ Token │ ◄───────────────────────┘               │
+               ├───────┤                                         │
+    Timestamp  │ Token │ ◄───────────────────────────────────────┘
+               ├───────┤
+    Timestamp  │ Token │          Timestamp_Tag(token, Event_B)
+               ├───────┤
+    Timestamp  │ Token │
+               └───────┘
+                   .
+                   .
+                   .
+
+               ┌───────┐
+    Timestamp  │ Token │ ────────────────► Timestamp_GetToken(Event_B)
+               ├───────┤
+    Timestamp  │ Token │
+               ├───────┤
+    Timestamp  │ Token │
+               └───────┘
+
+ *
+ * You can also send a message with a data and it's associated timestamp, luos can handle this by slighly modifiyng its
+ * protocol. To encode a message with the timestamp protocol, use Timestamp_EncodeMsg() function, it will change the
+ * message is encoded and save the timestamp in it.
+ * An example is shown beneath: the sended data is a color, the the command saved in the header is COLOR_TYPE. What
+ * Timestamp_EncodeMsg() does is copying the COLOR_TYPE in a dedicated section after data payload and replace it in the
+ * header by a TIMESTAMP command. The timestamp value is placed at the end of the message, after data and data_cmd sections.
+ *
+                                          Timestamp            Color value             Color type
+ ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬───────────────────────┬─────────────┬────────────────┐
+ │Protocol │ Target  │  Mode   │ Source  │   Cmd   │  Size   │         Data          │  Data cmd   │   Timestamp    │
+ └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴───────────────────────┴─────────────┴────────────────┘
+                                              │                                             ▲
+                                              │                                             │
+                                              └─────────────────────────────────────────────┘
+ *
+ * Timestamp_DecodeMsg allows you to get the timestamp associated to a data saved in the message. It also recovers the
+ * original message before its transposition in the Timestamp protocol, as shown here after.
+ *
+                                          Color type           Color value
+ ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬────────────────────────┐
+ │Protocol │ Target  │  Mode   │ Source  │   Cmd   │  Size   │         Data           │
+ └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴────────────────────────┘
+
+ ***************************************************************************************************/
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
