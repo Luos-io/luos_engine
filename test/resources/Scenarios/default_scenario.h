@@ -28,7 +28,7 @@ typedef struct
 
 typedef enum
 {
-    DEFAULT_CMD = LUOS_LAST_STD_CMD // a dummy command for apps
+    DEFAULT_CMD = REVISION // a dummy command for apps
 } default_scenario_cmd_t;
 
 /*******************************************************************************

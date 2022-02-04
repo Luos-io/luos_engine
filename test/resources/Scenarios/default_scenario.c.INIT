@@ -18,9 +18,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
-
-volatile uint8_t *transmit_msg;
+msg_t transmit_msg[DUMMY_SERVICE_NUMBER];
 msg_t receive_msg[DUMMY_SERVICE_NUMBER];
 uint8_t stream_Buffer1[STREAM_BUFFER_SIZE] = {0};
 uint8_t stream_Buffer2[STREAM_BUFFER_SIZE] = {0};
@@ -46,7 +44,6 @@ static void App_3_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Init_Context(void)
 {
-    RESET_ASSERT();
     Luos_Init();
 
     // Create services
@@ -60,58 +57,22 @@ void Init_Context(void)
     Default_StreamChannel1 = Stream_CreateStreamingChannel(stream_Buffer1, STREAM_BUFFER_SIZE, 1);
     Default_StreamChannel1 = Stream_CreateStreamingChannel(stream_Buffer2, STREAM_BUFFER_SIZE, 1);
 
-    // Detection
-    Detection(default_sc.App_1.app);
-    Luos_Loop();
-
-    // Init messages pointers
-    transmit_msg = msg_buffer;
-
     // Fill basic messages
     Init_Messages();
 
-    // * Msg buffer is filled with 3 Tx messages
-    // * Each message is filled with 7 bytes for header + 64 data bytes (0,1,2,3...) + 64 data bytes to 0
-    //
-    //        msg_buffer
-    //        +-----------------------------------+
-    //        |  Msg  Tx  |  Msg  Tx  |  Msg  Tx  |
-    //        |      1    |      2    |      3    |
-    //        +-----------------------------------+
-    //
-    //        Tx Tasks                   Luos Tasks
-    //        +------------+             +------------+
-    //        |  Msg Tx 1  |             |  Msg Rx 1  |
-    //        |------------|             |------------|
-    //        |  Msg Tx 2  |             |  Msg Rx 2  |
-    //        |------------|             |------------|
-    //        |  Msg Tx 3  |             |  Msg Rx 3  |
-    //        |------------|             |------------|
-    //        |     0      |             |     0      |
-    //        |------------|             |------------|
-    //        |   etc...   |             |   etc...   |
-    //        +------------+             +------------+
-    //
+    // Detection
+    Detection(default_sc.App_1.app);
 
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[sizeof(msg_t)]));
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]));
-    // Create TX_TASK_NUMBER Tx Tasks
-    /*for (uint16_t i = 0; i < TX_TASK_NUMBER; i++)
-    {
-        Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (sizeof(msg_t) * i)));
-    }*/
-
-    //MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
     // Create LUOS_TASK_NUMBER Luos Tasks
-    /*for (uint16_t i = 0; i < LUOS_TASK_NUMBER; i++)
+    for (uint16_t i = 0; i < LUOS_TASK_NUMBER; i++)
     {
-        MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (i) * (sizeof(msg_t) + 1)));
-    }*/
-    if (IS_ASSERT())
+        MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, &transmit_msg[i]);
+    }
+
+    // Create TX_TASK_NUMBER Tx Tasks
+    for (uint16_t i = 0; i < TX_TASK_NUMBER; i++)
     {
-        printf("[FATAL] Can't initialize scenario context\n");
-        TEST_ASSERT_TRUE(IS_ASSERT());
+        Robus_SendMsg(default_sc.App_1.app->ll_service, &transmit_msg[i]);
     }
 }
 
@@ -122,18 +83,11 @@ void Init_Context(void)
  ******************************************************************************/
 void Reset_Context(void)
 {
-    RESET_ASSERT();
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
-    transmit_msg = msg_buffer;
     Init_Messages();
     Reset_Streaming();
-    if (IS_ASSERT())
-    {
-        printf("[FATAL] Can't reset scenario context\n");
-        TEST_ASSERT_TRUE(IS_ASSERT());
-    }
 }
 
 /******************************************************************************
@@ -161,11 +115,9 @@ static void Detection(service_t *service)
 void Init_Messages(void)
 {
     // Init tx messages pointers
-    default_sc.App_1.tx_msg = (msg_t *)(&msg_buffer[0]);
-    default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[sizeof(msg_t)]);
-    //default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[4]);
-    //default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]);
-    default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[0]);
+    default_sc.App_1.tx_msg = &transmit_msg[0];
+    default_sc.App_2.tx_msg = &transmit_msg[1];
+    default_sc.App_3.tx_msg = &transmit_msg[2];
 
     // Init rx messages pointers
     default_sc.App_1.last_rx_msg = &receive_msg[0];
@@ -179,7 +131,7 @@ void Init_Messages(void)
     default_sc.App_1.tx_msg->header.target      = 2;
     default_sc.App_1.tx_msg->header.target_mode = IDACK;
     default_sc.App_1.tx_msg->header.cmd         = DEFAULT_CMD;
-    default_sc.App_1.tx_msg->header.size        = MAX_DATA_MSG_SIZE;
+    default_sc.App_1.tx_msg->header.size        = MAX_DATA_MSG_SIZE / 2; // data = half of max size
 
     // App 2 : Send message to App 1
     // -------------------------------
@@ -188,7 +140,7 @@ void Init_Messages(void)
     default_sc.App_2.tx_msg->header.target      = 1;
     default_sc.App_2.tx_msg->header.target_mode = IDACK;
     default_sc.App_2.tx_msg->header.cmd         = DEFAULT_CMD;
-    default_sc.App_2.tx_msg->header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
+    default_sc.App_2.tx_msg->header.size        = MAX_DATA_MSG_SIZE / 2; // data = half of max size
 
     // App 3 : Send message to App 2
     // -------------------------------
@@ -197,17 +149,17 @@ void Init_Messages(void)
     default_sc.App_3.tx_msg->header.target      = 2;
     default_sc.App_3.tx_msg->header.target_mode = IDACK;
     default_sc.App_3.tx_msg->header.cmd         = DEFAULT_CMD;
-    default_sc.App_3.tx_msg->header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
+    default_sc.App_3.tx_msg->header.size        = MAX_DATA_MSG_SIZE / 2; // data = half of max size
 
     // TX message : Only fill half of datas with a counter
-    for (uint16_t i = 0; i < MAX_DATA_MSG_SIZE / 2; i++)
+    for (uint16_t i = 0; i < default_sc.App_1.tx_msg->header.size; i++)
     {
         default_sc.App_1.tx_msg->data[i] = (uint8_t)i;
         default_sc.App_2.tx_msg->data[i] = (uint8_t)i;
         default_sc.App_3.tx_msg->data[i] = (uint8_t)i;
     }
     // TX message : Last half of datas is set to 0
-    for (uint16_t i = MAX_DATA_MSG_SIZE / 2; i < MAX_DATA_MSG_SIZE; i++)
+    for (uint16_t i = default_sc.App_1.tx_msg->header.size; i < MAX_DATA_MSG_SIZE; i++)
     {
         default_sc.App_1.tx_msg->data[i] = 0;
         default_sc.App_2.tx_msg->data[i] = 0;
