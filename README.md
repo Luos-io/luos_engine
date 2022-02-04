@@ -19,15 +19,13 @@ Most of the embedded developments are made from scratch. By using Luos, you will
 * → Join the [Luos Discord Community](https://discord.gg/luos)
 * → Join the [Luos Reddit Community](http://bit.ly/JoinLuosReddit)
 
-Need dedicated help with your project? Check out [Luos' support packages](https://www.luos.io/support).
-
 ## Good practices with Luos​
 Luos proposes organized and effective development practices, guaranteeing development flexibility and evolutivity of your hardware product, from the idea to the maintenance of the industrialized product fleet.
 
 ## Let's do this​
 This section details the features of Luos technology as an embedded development platform, following these subjects:
 
-* Let's test through the [Luos get started](https://docs.luos.io/get-started/get-started), to build, flash, run, and control your very first Luos code.
+* Let's test through the [Luos get started](https://docs.luos.io/get-started/get-started/), to build, flash, run, and control your very first Luos code.
 * The [Basics of Luos](https://docs.luos.io/docs/luos-technology/basics/basics), explaining the general concepts and the project organization.
 * Definition of [Nodes](https://docs.luos.io/docs/luos-technology/node/node), and the relation between Luos and the physical world.
 * Definition of [Packages](https://docs.luos.io/docs/luos-technology/package/package), and how to make a portable and reusable development.
