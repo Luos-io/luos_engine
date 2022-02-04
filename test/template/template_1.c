@@ -11,7 +11,10 @@ void unittest_TEMPLATE(void)
         // Init default dummy context
         //----------------------------
         Scenario_template_Context_Init(DETECTION);
-        printf("Number of services after init :  %d\n", RoutingTB_GetServiceNB());
+
+        search_result_t result;
+        RTFilter_Reset(&result);
+        printf("Number of services after init :  %d\n", result.result_nbr);
 
         // Test step
         // **************************************************************

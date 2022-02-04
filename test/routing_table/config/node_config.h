@@ -44,9 +44,8 @@
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
 
-#define MAX_MSG_IN_BUFFER  6
 #define MAX_SERVICE_NUMBER 4
-#define MSG_BUFFER_SIZE    MAX_MSG_IN_BUFFER * sizeof(msg_t)
+#define MSG_BUFFER_SIZE    3 * sizeof(msg_t)
 #define MAX_MSG_NB         10
 
 /*******************************************************************************
