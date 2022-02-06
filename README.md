@@ -7,7 +7,7 @@
 [![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
 [![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
 
-# Luos Technology
+# Luos Engine
 ## The most for the developer​
 Luos provides a simple way to think your hardware products as a group of independant features. You can easily manage and share your hardware products' features with your team, external developers, or with the community. Luos is an open-source lightweight library that can be used on any MCU, leading to free and fast multi-electronic-boards products development. Choosing Luos to design a product will help you to develop, debug, validate, monitor, and manage it from the cloud.
 * → Go to the [Luos Documentation](https://docs.luos.io)
