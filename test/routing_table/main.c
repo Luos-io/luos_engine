@@ -14,7 +14,7 @@ void unittest_RTFilter_Reset(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
+        //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
         char alias[MAX_ALIAS_SIZE] = {0};
@@ -48,7 +48,7 @@ void unittest_RTFilter_InitCheck(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
+        //  Init variables
         search_result_t result;
         uint8_t value;
         // Add samples
@@ -74,8 +74,9 @@ void unittest_RTFilter_Type(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
+        //  Init variables
         search_result_t result;
+        result.result_nbr = 0;
         RTFilter_Type(&result, VOID_TYPE);
 
         NEW_STEP("Test that we have asserted");
@@ -89,7 +90,7 @@ void unittest_RTFilter_Type(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
+        //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
         // Add samples
@@ -113,7 +114,7 @@ void unittest_RTFilter_Type(void)
 
         Luos_Detect(default_sc.App_1.app);
         Luos_Loop();
-        //  Init variable
+        //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
         // Add samples
@@ -143,12 +144,12 @@ void unittest_RTFilter_Node(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
+        //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
         // Add samples
 
-        NEW_STEP("Verify that we have all the 4 services");
+        NEW_STEP("Verify that we have all the 3 services");
         RTFilter_Node(RTFilter_Reset(&result), 1);
         TEST_ASSERT_EQUAL(ExpectedServiceNB, result.result_nbr);
 
@@ -168,7 +169,7 @@ void unittest_RTFilter_ID(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
+        //  Init variables
         ExpectedServiceNB = 1;
         search_result_t result;
         // Add samples
@@ -201,7 +202,6 @@ void unittest_RTFilter_Service(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        //  Init variable
         ExpectedServiceNB = 1;
         search_result_t result;
         // Add samples
@@ -211,8 +211,12 @@ void unittest_RTFilter_Service(void)
         TEST_ASSERT_EQUAL(ExpectedServiceNB, result.result_nbr);
 
         NEW_STEP("Verify that we have assert if we put 0 at service pointer");
+        //  Init variables
         ExpectedServiceNB = 0;
-        RTFilter_Service(RTFilter_Reset(&result), 0);
+        RTFilter_Reset(&result);
+        result.result_nbr = 0;
+
+        RTFilter_Service(&result, 0);
         TEST_ASSERT_TRUE(IS_ASSERT());
     }
 }
@@ -232,7 +236,7 @@ void unittest_RTFilter_Alias()
 
         Luos_Detect(default_sc.App_1.app);
         Luos_Loop();
-        //  Init variable
+        //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
         // Add samples
