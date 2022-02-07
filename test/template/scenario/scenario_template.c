@@ -53,11 +53,11 @@ static void dummy_App_2_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void launch_detection(void)
 {
-    uint16_t services_nb;
     uint32_t last_detection_date;
+    search_result_t result;
 
-    services_nb = RoutingTB_GetServiceNB();
-    printf("*** [INFO] %d services are active before detection\n", services_nb);
+    RTFilter_Reset(&result);
+    printf("*** [INFO] %d services are active before detection\n", result.result_nbr);
 
     last_detection_date = 0;
     printf("*** [INFO] Launch Detection\n");
@@ -66,9 +66,9 @@ void launch_detection(void)
     Luos_Loop();
 
     // Verify all dummy services are created
-    services_nb = RoutingTB_GetServiceNB();
-    printf("*** [INFO] %d services are active\n", services_nb);
-    TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, services_nb);
+    RTFilter_Reset(&result);
+    printf("*** [INFO] %d services are active\n", result.result_nbr);
+    TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, result.result_nbr);
 }
 
 void Scenario_template_Context_Init(int detection)
@@ -134,6 +134,7 @@ void Scenario_template_Loop(int *stop)
     static uint32_t last_detection_time = 0;
     static uint8_t first_detection      = 0;
     uint16_t id;
+    search_result_t result;
 
     switch (detection_state)
     {
@@ -154,12 +155,12 @@ void Scenario_template_Loop(int *stop)
             break;
 
         case DETECT_FIRST_APP:
-            id = RoutingTB_IDFromType(DUMMY_TYPE_1);
-            if (id > 0)
+            RTFilter_ID(RTFilter_Reset(&result), 3);
+            if (result.result_nbr == 1)
             {
                 msg_t msg;
-                msg.header.source      = RoutingTB_IDFromType(detection_TYPE);
-                msg.header.target      = id;
+                msg.header.source      = 1;
+                msg.header.target      = 2;
                 msg.header.target_mode = IDACK;
                 msg.header.cmd         = SET_CMD;
                 msg.header.size        = sizeof(uint8_t);
@@ -172,13 +173,12 @@ void Scenario_template_Loop(int *stop)
             break;
 
         case DETECT_SECOND_APP:
-            id = RoutingTB_IDFromType(DUMMY_TYPE_2);
-
-            if (id > 0)
+            RTFilter_ID(RTFilter_Reset(&result), 3);
+            if (result.result_nbr == 1)
             {
                 msg_t msg;
-                msg.header.source      = RoutingTB_IDFromType(detection_TYPE);
-                msg.header.target      = id;
+                msg.header.source      = 1;
+                msg.header.target      = 3;
                 msg.header.target_mode = IDACK;
                 msg.header.cmd         = SET_CMD;
                 msg.header.size        = sizeof(uint8_t);

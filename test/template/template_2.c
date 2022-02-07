@@ -10,7 +10,6 @@ void unittest_TEMPLATE_2(void)
     NEW_TEST_CASE("Template example");
     {
         uint32_t start_time;
-        uint16_t services_nb;
         int is_finished = 0;
 
         // Init default dummy context : no detection is asked
@@ -42,10 +41,10 @@ void unittest_TEMPLATE_2(void)
         //--------------------------------------------------------------------
         // Verify
         //--------------------------------------------------------------------
-        services_nb = RoutingTB_GetServiceNB();
-        printf("Number of services :  %d\n", services_nb);
-
+        search_result_t result;
+        RTFilter_Reset(&result);
+        printf("Number of services :  %d\n", result.result_nbr);
         // Test is OK if there are 3 activated services.
-        TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, services_nb);
+        TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, result.result_nbr);
     }
 }
