@@ -64,6 +64,7 @@ uint16_t Luos_NbrAvailableMsg(void);
 uint32_t Luos_GetSystick(void);
 error_return_t Luos_TxComplete(void);
 void Luos_Flush(void);
+void Luos_ResetStatistic(void);
 bool Luos_IsNodeDetected(void);
 void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
 void Luos_SetVerboseMode(uint8_t mode);
