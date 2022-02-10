@@ -35,7 +35,7 @@ uint16_t data_count             = 0;
 uint16_t data_size              = 0;
 uint16_t crc_val                = 0;
 static uint64_t ll_rx_timestamp = 0;
-uint8_t large_data_num          = 0;
+uint16_t large_data_num         = 0;
 
 /*******************************************************************************
  * Function
@@ -629,6 +629,7 @@ static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
  ******************************************************************************/
 void Recep_ComputeMsgNumber(void)
 {
+    LUOS_ASSERT(current_msg->header.size > MAX_DATA_MSG_SIZE);
     // check if it is the first msg of large data received
     if (large_data_num == 0)
     {
