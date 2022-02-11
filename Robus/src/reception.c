@@ -186,6 +186,7 @@ void Recep_GetData(volatile uint8_t *data)
                 ctx.tx.status = TX_DISABLE;
                 Robus_SetNodeDetected(NETWORK_LINK_CONNECTING);
                 Robus_SetVerboseMode(false);
+                PortMng_Init();
             }
             else
             {
@@ -410,7 +411,7 @@ static inline error_return_t Recep_NodeCompare(uint16_t ID)
  * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
- * warning : this function can be redefined only for mock testing purpose 
+ * warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
 __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
 {

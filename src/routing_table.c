@@ -337,6 +337,10 @@ void RoutingTB_SendEndDetection(service_t *service)
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
 {
+    if (Robus_IsNodeDetected() == NETWORK_LINK_CONNECTING)
+    {
+        return;
+    }
     // Desactivate verbose mode
     Luos_SetVerboseMode(false);
     // Starts the topology detection.
