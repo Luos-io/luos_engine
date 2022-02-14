@@ -165,11 +165,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     {
         mem_stat = memory_stats;
     }
-    ctx.ShiftMask = 0;
-    for (uint16_t i = 0; i < MASK_SIZE; i++)
-    {
-        ctx.IDMask[i] = 0;
-    }
+    Robus_MaskInit();
     // Filter State
     ctx.filter_id    = 0;
     ctx.filter_state = true;
