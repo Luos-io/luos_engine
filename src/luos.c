@@ -728,8 +728,6 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
  ******************************************************************************/
 int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
 {
-    LUOS_ASSERT(msg != 0);
-    LUOS_ASSERT(bin_data != 0);
     // Manage buffer session (one per service)
     static uint32_t data_size[MAX_SERVICE_NUMBER]       = {0};
     static uint32_t total_data_size[MAX_SERVICE_NUMBER] = {0};
@@ -743,6 +741,9 @@ int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         last_msg_size = 0;
         return -1;
     }
+
+    LUOS_ASSERT(msg != 0);
+    LUOS_ASSERT(bin_data != 0);
 
     uint16_t id = Luos_GetServiceIndex(service);
     // check good service index
