@@ -278,7 +278,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
         case RTB:
             // Check routing table overflow
             LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
-            if (Luos_ReceiveData(service, input, (void *)route_tab) == SUCCEED)
+            if (Luos_ReceiveData(service, input, (void *)route_tab) > 0)
             {
                 // route table section reception complete
                 RoutingTB_ComputeRoutingTableEntryNB();
@@ -724,10 +724,12 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
  * @param Service who receive
  * @param Message chunk received
  * @param pointer to data
- * @return error
+ * @return valid data received (negative values are errors)
  ******************************************************************************/
-error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
+int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
 {
+    LUOS_ASSERT(msg != 0);
+    LUOS_ASSERT(bin_data != 0);
     // Manage buffer session (one per service)
     static uint32_t data_size[MAX_SERVICE_NUMBER]       = {0};
     static uint32_t total_data_size[MAX_SERVICE_NUMBER] = {0};
@@ -739,14 +741,14 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         memset(data_size, 0, sizeof(data_size));
         memset(total_data_size, 0, sizeof(total_data_size));
         last_msg_size = 0;
-        return FAILED;
+        return -1;
     }
 
     uint16_t id = Luos_GetServiceIndex(service);
     // check good service index
     if (id == 0xFFFF)
     {
-        return FAILED;
+        return -1;
     }
 
     // store total size of a msg
@@ -764,7 +766,7 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         // reset session and return an error.
         data_size[id] = 0;
         last_msg_size = 0;
-        return FAILED;
+        return -1;
     }
 
     // Get chunk size
@@ -794,10 +796,11 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         // Data collection finished, reset buffer session state
         data_size[id]       = 0;
         last_msg_size       = 0;
+        uint32_t backup     = total_data_size[id];
         total_data_size[id] = 0;
-        return SUCCEED;
+        return backup;
     }
-    return FAILED;
+    return 0;
 }
 /******************************************************************************
  * @brief Send datas of a streaming channel
