@@ -282,6 +282,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             {
                 // route table section reception complete
                 RoutingTB_ComputeRoutingTableEntryNB();
+                Luos_ResetStatistic();
             }
             consume = SUCCEED;
             break;
@@ -1021,7 +1022,19 @@ void Luos_Flush(void)
 {
     Robus_Flush();
 }
-
+/******************************************************************************
+ * @brief Luos clear statistic
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_ResetStatistic(void)
+{
+    memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
+    for (uint16_t i = 0; i < service_number; i++)
+    {
+        service_table[i].statistics.max_retry = 0;
+    }
+}
 /******************************************************************************
  * @brief check if the node is connected to the network
  * @param None

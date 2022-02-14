@@ -351,6 +351,8 @@ void RoutingTB_DetectServices(service_t *service)
     RoutingTB_Share(service, nb_node);
     // send a message to indicate the end of the detection
     RoutingTB_SendEndDetection(service);
+    // clear statistic of node who start the detction
+    Luos_ResetStatistic();
 }
 /******************************************************************************
  * @brief entry in routable node with associate service
