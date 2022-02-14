@@ -372,7 +372,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         while (ctx.port.keepLine)
         {
             Robus_Loop();
-            if (LuosHAL_GetSystick() - start_tick > 1000)
+            if (LuosHAL_GetSystick() - start_tick > 3000)
             {
                 // topology detection is too long, we should abort it and restart
                 return FAILED;

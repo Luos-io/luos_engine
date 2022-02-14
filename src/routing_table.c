@@ -325,7 +325,8 @@ void RoutingTB_SendEndDetection(service_t *service)
     msg.header.target_mode = BROADCAST;
     msg.header.cmd         = END_DETECTION;
     msg.header.size        = 0;
-    Luos_SendMsg(service, &msg);
+    while (Luos_SendMsg(service, &msg) != SUCCEED)
+        ;
 }
 
 /******************************************************************************
@@ -337,10 +338,6 @@ void RoutingTB_SendEndDetection(service_t *service)
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
 {
-    if (Robus_IsNodeDetected() == NETWORK_LINK_CONNECTING)
-    {
-        return;
-    }
     // Desactivate verbose mode
     Luos_SetVerboseMode(false);
     // Starts the topology detection.
