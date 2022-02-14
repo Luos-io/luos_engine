@@ -73,11 +73,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
     // mask
-    ctx.ShiftMask = 0;
-    for (uint16_t i = 0; i < MASK_SIZE; i++)
-    {
-        ctx.IDMask[i] = 0;
-    }
+    Robus_MaskInit();
     // Init reception
     Recep_Init();
 
@@ -95,6 +91,19 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.rx.status.identifier = 0xF;
 
     Robus_SetNodeDetected(NETWORK_LINK_DOWN);
+}
+/******************************************************************************
+ * @brief Reset Mask
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_MaskInit(void)
+{
+    ctx.ShiftMask = 0;
+    for (uint16_t i = 0; i < MASK_SIZE; i++)
+    {
+        ctx.IDMask[i] = 0;
+    }
 }
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
