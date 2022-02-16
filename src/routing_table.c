@@ -510,7 +510,11 @@ search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
-    LUOS_ASSERT(RTFilter_InitCheck(result));
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == 0)
+    {
+        result->result_nbr = 0;
+    }
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted type
@@ -539,7 +543,11 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
-    LUOS_ASSERT(RTFilter_InitCheck(result));
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == 0)
+    {
+        result->result_nbr = 0;
+    }
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted type
@@ -568,7 +576,11 @@ search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
-    LUOS_ASSERT(RTFilter_InitCheck(result));
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == 0)
+    {
+        result->result_nbr = 0;
+    }
     // search all the entries of the research table
     while (entry_nbr < result->result_nbr)
     {
@@ -593,7 +605,11 @@ search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
-    LUOS_ASSERT(RTFilter_InitCheck(result));
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == 0)
+    {
+        result->result_nbr = 0;
+    }
     // search all the entries of the research table
     while (entry_nbr < result->result_nbr)
     {
@@ -624,9 +640,12 @@ search_result_t *RTFilter_Service(search_result_t *result, service_t *service)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == 0)
+    {
+        result->result_nbr = 0;
+    }
     LUOS_ASSERT(service != 0);
-    LUOS_ASSERT(RTFilter_InitCheck(result));
-
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted type
