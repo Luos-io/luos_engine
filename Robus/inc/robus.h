@@ -15,9 +15,10 @@
  ******************************************************************************/
 typedef enum
 {
-    NETWORK_LINK_DOWN,
-    NETWORK_LINK_CONNECTING,
-    NETWORK_LINK_UP
+    NO_DETECTION,
+    DETECTION_OK,
+    LOCAL_DETECTION,
+    EXTERNAL_DETECTION,
 } network_state_t;
 
 /*******************************************************************************

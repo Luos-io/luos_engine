@@ -360,10 +360,13 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
         case ASK_DETECTION:
             if (input->header.size == 0)
             {
-                RoutingTB_DetectServices(detection_service);
-                consume = SUCCEED;
-                break;
+                if (Robus_IsNodeDetected() < LOCAL_DETECTION)
+                {
+                    RoutingTB_DetectServices(detection_service);
+                }
             }
+            consume = SUCCEED;
+            break;
         case LUOS_STATISTICS:
             if (input->header.size == 0)
             {
@@ -1069,7 +1072,7 @@ void Luos_ResetStatistic(void)
  ******************************************************************************/
 bool Luos_IsNodeDetected(void)
 {
-    if (Robus_IsNodeDetected() == NETWORK_LINK_UP)
+    if (Robus_IsNodeDetected() == DETECTION_OK)
     {
         return true;
     }
@@ -1215,7 +1218,7 @@ void Luos_Detect(service_t *service)
 {
     msg_t detect_msg;
 
-    if (Robus_IsNodeDetected() != NETWORK_LINK_CONNECTING)
+    if (Robus_IsNodeDetected() < LOCAL_DETECTION)
     {
         // set the detection launcher id to 1
         Luos_SetID(service, 1);

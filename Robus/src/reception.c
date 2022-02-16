@@ -184,7 +184,7 @@ void Recep_GetData(volatile uint8_t *data)
             {
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
-                Robus_SetNodeDetected(NETWORK_LINK_CONNECTING);
+                Robus_SetNodeDetected(EXTERNAL_DETECTION);
                 Robus_SetVerboseMode(false);
                 PortMng_Init();
             }
