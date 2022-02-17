@@ -33,7 +33,7 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
-#define NETWORK_TIMEOUT 1000 // timeout to detect a failed detection
+#define NETWORK_TIMEOUT 3000 // timeout to detect a failed detection
 
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
@@ -376,7 +376,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         while (ctx.port.keepLine)
         {
             Robus_Loop();
-            if (LuosHAL_GetSystick() - start_tick > 3000)
+            if (LuosHAL_GetSystick() - start_tick > NETWORK_TIMEOUT)
             {
                 // topology detection is too long, we should abort it and restart
                 return FAILED;
