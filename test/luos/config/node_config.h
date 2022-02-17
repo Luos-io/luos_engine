@@ -45,7 +45,8 @@
  ******************************************************************************/
 
 #define MAX_SERVICE_NUMBER 3
-#define MAX_MSG_NB         10
+#define MSG_BUFFER_SIZE    6 * sizeof(msg_t)
+#define MAX_MSG_NB         20
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION

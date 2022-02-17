@@ -46,7 +46,6 @@ static void App_3_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Init_Context(void)
 {
-    RESET_ASSERT();
     Luos_Init();
 
     // Create services
@@ -62,7 +61,6 @@ void Init_Context(void)
 
     // Detection
     Detection(default_sc.App_1.app);
-    Luos_Loop();
 
     // Init messages pointers
     transmit_msg = msg_buffer;
@@ -93,25 +91,16 @@ void Init_Context(void)
     //        +------------+             +------------+
     //
 
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[sizeof(msg_t)]));
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]));
     // Create TX_TASK_NUMBER Tx Tasks
-    /*for (uint16_t i = 0; i < TX_TASK_NUMBER; i++)
+    for (uint16_t i = 0; i < TX_TASK_NUMBER; i++)
     {
         Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (sizeof(msg_t) * i)));
-    }*/
+    }
 
-    //MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
     // Create LUOS_TASK_NUMBER Luos Tasks
-    /*for (uint16_t i = 0; i < LUOS_TASK_NUMBER; i++)
+    for (uint16_t i = 0; i < LUOS_TASK_NUMBER; i++)
     {
         MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (i) * (sizeof(msg_t) + 1)));
-    }*/
-    if (IS_ASSERT())
-    {
-        printf("[FATAL] Can't initialize scenario context\n");
-        TEST_ASSERT_TRUE(IS_ASSERT());
     }
 }
 
@@ -122,18 +111,12 @@ void Init_Context(void)
  ******************************************************************************/
 void Reset_Context(void)
 {
-    RESET_ASSERT();
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
     transmit_msg = msg_buffer;
     Init_Messages();
     Reset_Streaming();
-    if (IS_ASSERT())
-    {
-        printf("[FATAL] Can't reset scenario context\n");
-        TEST_ASSERT_TRUE(IS_ASSERT());
-    }
 }
 
 /******************************************************************************
@@ -161,11 +144,9 @@ static void Detection(service_t *service)
 void Init_Messages(void)
 {
     // Init tx messages pointers
-    default_sc.App_1.tx_msg = (msg_t *)(&msg_buffer[0]);
-    default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[sizeof(msg_t)]);
-    //default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[4]);
-    //default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]);
-    default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[0]);
+    default_sc.App_1.tx_msg = (msg_t *)(transmit_msg);
+    default_sc.App_2.tx_msg = (msg_t *)(transmit_msg + sizeof(msg_t));
+    default_sc.App_3.tx_msg = (msg_t *)(transmit_msg + 2 * sizeof(msg_t));
 
     // Init rx messages pointers
     default_sc.App_1.last_rx_msg = &receive_msg[0];
