@@ -35,11 +35,6 @@ static void PortMng_Reset(void);
 void PortMng_Init(void)
 {
     PortMng_Reset();
-    // Reinit ll_service id
-    for (uint8_t i = 0; i < ctx.ll_service_number; i++)
-    {
-        ctx.ll_service_table[i].id = DEFAULTID;
-    }
     // Reinit port table
     for (uint8_t port = 0; port < NBR_PORT; port++)
     {

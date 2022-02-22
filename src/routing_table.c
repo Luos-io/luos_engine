@@ -300,6 +300,11 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 {
+    // Make sure that the detection is not interrupted
+    if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+    {
+        return;
+    }
     // send route table to each nodes. Routing tables are commonly usable for each services of a node.
     msg_t intro_msg;
     intro_msg.header.cmd         = RTB;
@@ -319,13 +324,19 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 void RoutingTB_SendEndDetection(service_t *service)
 {
+    // Make sure that the detection is not interrupted
+    if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+    {
+        return;
+    }
     // send end detection message to each nodes
     msg_t msg;
     msg.header.target      = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
     msg.header.cmd         = END_DETECTION;
     msg.header.size        = 0;
-    Luos_SendMsg(service, &msg);
+    while (Luos_SendMsg(service, &msg) != SUCCEED)
+        ;
 }
 
 /******************************************************************************

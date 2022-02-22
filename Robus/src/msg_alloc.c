@@ -148,6 +148,11 @@ static inline void MsgAlloc_ValidDataIntegrity(void);
 void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
+    // Reinit ll_service id
+    for (uint8_t i = 0; i < ctx.ll_service_number; i++)
+    {
+        ctx.ll_service_table[i].id = DEFAULTID;
+    }
     current_msg         = (msg_t *)&msg_buffer[0];
     data_ptr            = (uint8_t *)&msg_buffer[0];
     data_end_estimation = (uint8_t *)&current_msg->data[CRC_SIZE];
@@ -713,10 +718,13 @@ error_return_t MsgAlloc_IsReseted(void)
     // Check if we need to reset everything due to detection reset
     if (reset_needed)
     {
-        ctx.node.node_id = 0;
-        PortMng_Init();
-        // We need to reset MsgAlloc
-        MsgAlloc_Init(NULL);
+        if (ctx.node.node_id != 0)
+        {
+            ctx.node.node_id = 0;
+            // We need to reset MsgAlloc
+            MsgAlloc_Init(NULL);
+        }
+        reset_needed = false;
         return SUCCEED;
     }
     return FAILED;

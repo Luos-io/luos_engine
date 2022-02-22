@@ -32,7 +32,7 @@ __attribute__((weak)) void node_assert(char *file, uint32_t line)
  * @param file name as a string
  * @param line number
  * @return None
-*  warning : this function can be redefined only for mock testing purpose
+ *  warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
 __attribute__((weak)) void Luos_assert(char *file, uint32_t line)
 {
