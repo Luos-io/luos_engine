@@ -51,17 +51,17 @@ void unittest_RTFilter_InitCheck(void)
         //  Init variables
         search_result_t result;
         uint8_t value;
-        // Add samples
+
         NEW_STEP("Verify that we have not initialized the result");
         value = RTFilter_InitCheck(&result);
         //  Verify
-        TEST_ASSERT_EQUAL(0, value);
+        TEST_ASSERT_EQUAL(FAILED, value);
 
         NEW_STEP("Verify that we have initialized the result");
         RTFilter_Reset(&result);
         value = RTFilter_InitCheck(&result);
         //  Verify
-        TEST_ASSERT_EQUAL(1, value);
+        TEST_ASSERT_EQUAL(SUCCEED, value);
     }
 }
 
@@ -78,9 +78,8 @@ void unittest_RTFilter_Type(void)
         search_result_t result;
         result.result_nbr = 0;
         RTFilter_Type(&result, VOID_TYPE);
-
-        NEW_STEP("Test that we have asserted");
-        TEST_ASSERT_TRUE(IS_ASSERT());
+        NEW_STEP("Test result_nbr is set to 0");
+        TEST_ASSERT_EQUAL(0, result.result_nbr);
     }
     NEW_TEST_CASE("Test the type filtering result number");
     {
