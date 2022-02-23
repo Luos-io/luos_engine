@@ -34,8 +34,9 @@ typedef enum
 typedef enum
 {
     // Common register for all services
-    GET_CMD = LUOS_LAST_RESERVED_CMD, // asks a service to publish its data
-    SET_CMD,                          // set some undefined data
+    UNKNOW  = LUOS_LAST_RESERVED_CMD, // set or get some undefined data (change size of msg to set or get)
+    GET_CMD = UNKNOW,                 // retrocompatibility
+    SET_CMD,                          // retrocompatibility
 
     // Generic data
     COLOR,       // color_t (R, G, B)
