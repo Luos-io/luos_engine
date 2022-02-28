@@ -15,9 +15,10 @@
  ******************************************************************************/
 typedef enum
 {
-    NETWORK_LINK_DOWN,
-    NETWORK_LINK_CONNECTING,
-    NETWORK_LINK_UP
+    NO_DETECTION,
+    DETECTION_OK,
+    LOCAL_DETECTION,
+    EXTERNAL_DETECTION,
 } network_state_t;
 
 /*******************************************************************************
@@ -40,5 +41,6 @@ void Robus_SetNodeDetected(network_state_t);
 network_state_t Robus_IsNodeDetected(void);
 void Robus_SetFilterState(uint8_t state, ll_service_t *service);
 void Robus_SetVerboseMode(uint8_t mode);
+void Robus_MaskInit(void);
 
 #endif /* _ROBUS_H_ */

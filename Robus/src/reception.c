@@ -15,6 +15,7 @@
 #include "luos_utils.h"
 #include "timestamp.h"
 #include "robus.h"
+#include "bootloader_core.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -35,12 +36,14 @@ uint16_t data_count             = 0;
 uint16_t data_size              = 0;
 uint16_t crc_val                = 0;
 static uint64_t ll_rx_timestamp = 0;
+uint16_t large_data_num         = 0;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static inline uint8_t Recep_IsAckNeeded(void);
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id);
+void Recep_ComputeMsgNumber(void);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -105,6 +108,8 @@ void Recep_GetHeader(volatile uint8_t *data)
             if (current_msg->header.size > MAX_DATA_MSG_SIZE)
             {
                 data_size = MAX_DATA_MSG_SIZE;
+                // store the number of the messages that compose the large message
+                Recep_ComputeMsgNumber();
             }
             else
             {
@@ -138,6 +143,8 @@ void Recep_GetHeader(volatile uint8_t *data)
  ******************************************************************************/
 void Recep_GetData(volatile uint8_t *data)
 {
+    static uint16_t last_crc = 0;
+
     MsgAlloc_SetData(*data);
     if (data_count < data_size)
     {
@@ -165,17 +172,45 @@ void Recep_GetData(volatile uint8_t *data)
                 Transmit_SendAck();
             }
 
+            // Make an exception for bootloader command
+            if ((current_msg->header.cmd == BOOTLOADER_CMD) && (current_msg->data[0] == BOOTLOADER_RESET))
+            {
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
+                LuosHAL_Reboot();
+            }
+
             // Make an exception for reset detection command
             if (current_msg->header.cmd == START_DETECTION)
             {
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
-                Robus_SetNodeDetected(NETWORK_LINK_CONNECTING);
+                Robus_SetNodeDetected(EXTERNAL_DETECTION);
                 Robus_SetVerboseMode(false);
+                PortMng_Init();
             }
             else
             {
+                // check if we have already received the same message
+                if ((crc == last_crc) && (large_data_num > 0))
+                {
+                    // if yes remove this message from memory
+                    MsgAlloc_InvalidMsg();
+                    ctx.rx.callback = Recep_Drop;
+                    return;
+                }
+                // if not treat message normally
                 MsgAlloc_EndMsg();
+                // reduce the number of remaining messages in case of a large message
+                if (large_data_num > 0)
+                {
+                    large_data_num--;
+                    // store the current crc for the next message comparison
+                    last_crc = crc;
+                }
+                else
+                {
+                    last_crc = 0;
+                }
             }
         }
         else
@@ -376,8 +411,9 @@ static inline error_return_t Recep_NodeCompare(uint16_t ID)
  * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
+ * warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
-luos_localhost_t Recep_NodeConcerned(header_t *header)
+__attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
 
@@ -593,4 +629,24 @@ static inline uint8_t Recep_IsAckNeeded(void)
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
 {
     return (id - ctx.ll_service_table[0].id);
+}
+
+/******************************************************************************
+ * @brief computes the number of the messages that compose a large data message
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_ComputeMsgNumber(void)
+{
+    LUOS_ASSERT(current_msg->header.size > MAX_DATA_MSG_SIZE);
+    // check if it is the first msg of large data received
+    if (large_data_num == 0)
+    {
+        // find the number of the messages that belong to the same large message
+        large_data_num = current_msg->header.size / MAX_DATA_MSG_SIZE;
+        if (current_msg->header.size % MAX_DATA_MSG_SIZE != 0)
+        {
+            large_data_num++;
+        }
+    }
 }

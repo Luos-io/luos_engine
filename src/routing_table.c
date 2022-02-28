@@ -27,7 +27,10 @@ volatile uint16_t last_routing_table_entry = 0;
  * Function
  ******************************************************************************/
 static void RoutingTB_AddNumToAlias(char *alias, uint8_t num);
+uint16_t RoutingTB_IDFromAlias(char *alias);
+char *RoutingTB_AliasFromId(uint16_t id);
 static uint16_t RoutingTB_BigestNodeID(void);
+uint16_t RoutingTB_GetServiceIndex(uint16_t id);
 static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node);
@@ -59,53 +62,6 @@ uint16_t RoutingTB_IDFromAlias(char *alias)
     return 0;
 }
 /******************************************************************************
- * @brief  Return an id from type
- * @param type of service look at
- * @return ID or Error
- ******************************************************************************/
-uint16_t RoutingTB_IDFromType(luos_type_t type)
-{
-    for (int i = 0; i <= last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == SERVICE)
-        {
-            if (type == routing_table[i].type)
-            {
-                return routing_table[i].id;
-            }
-        }
-    }
-    return 0;
-}
-
-/******************************************************************************
- * @brief  Return an id from the phisically closest type
- * @param type of service look at
- * @return ID or Error
- ******************************************************************************/
-uint16_t RoutingTB_IDFromClosestType(service_t *service, luos_type_t type)
-{
-    uint16_t delta_node = 0xFFFF;
-    uint16_t result     = 0;
-    for (int i = 0; i <= last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == SERVICE)
-        {
-            if (type == routing_table[i].type)
-            {
-                uint16_t tmp_delta_node = abs(RoutingTB_NodeIDFromID(routing_table[i].id) - service->ll_service->id);
-                if (tmp_delta_node < delta_node)
-                {
-                    delta_node = tmp_delta_node;
-                    result     = routing_table[i].id;
-                }
-            }
-        }
-    }
-    return result;
-}
-
-/******************************************************************************
  * @brief  Return a Nodeid from service id
  * @param id of service
  * @return NODEID or Error
@@ -120,20 +76,6 @@ uint16_t RoutingTB_NodeIDFromID(uint16_t id)
         }
     }
     return 0;
-}
-/******************************************************************************
- * @brief  Return an id from service
- * @param service look at
- * @return ID or Error
- ******************************************************************************/
-uint16_t RoutingTB_IDFromService(service_t *service)
-{
-    // make sure route table is clean before sharing id
-    if (last_routing_table_entry == 0)
-    {
-        return 0;
-    }
-    return (uint16_t)service->ll_service->id;
 }
 /******************************************************************************
  * @brief  Return service Alias from ID
@@ -153,108 +95,6 @@ char *RoutingTB_AliasFromId(uint16_t id)
         }
     }
     return (char *)0;
-}
-/******************************************************************************
- * @brief  Return service type from ID
- * @param id service look at
- * @return pointer service or Error
- ******************************************************************************/
-luos_type_t RoutingTB_TypeFromID(uint16_t id)
-{
-    for (uint16_t i = 0; i <= last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == SERVICE)
-        {
-            if (routing_table[i].id == id)
-            {
-                return routing_table[i].type;
-            }
-        }
-    }
-    return -1;
-}
-/******************************************************************************
- * @brief  Return service type from alias
- * @param alias service look at
- * @return pointer to service or Error
- ******************************************************************************/
-luos_type_t RoutingTB_TypeFromAlias(char *alias)
-{
-    uint16_t id = RoutingTB_IDFromAlias(alias);
-    return RoutingTB_TypeFromID(id);
-}
-/******************************************************************************
- * @brief  Create a string from a service type
- * @param type of service look at
- * @return pointer to string or Error
- ******************************************************************************/
-char *RoutingTB_StringFromType(luos_type_t type)
-{
-    switch (type)
-    {
-        case STATE_TYPE:
-            return "State";
-            break;
-        case COLOR_TYPE:
-            return "Color";
-            break;
-        case MOTOR_TYPE:
-            return "Motor";
-            break;
-        case SERVO_MOTOR_TYPE:
-            return "ServoMotor";
-            break;
-        case ANGLE_TYPE:
-            return "Angle";
-            break;
-        case DISTANCE_TYPE:
-            return "Distance";
-            break;
-        case GATE_TYPE:
-            return "Gate";
-            break;
-        case IMU_TYPE:
-            return "Imu";
-            break;
-        case LIGHT_TYPE:
-            return "Light";
-            break;
-        case VOID_TYPE:
-            return "Void";
-            break;
-        case LOAD_TYPE:
-            return "Load";
-            break;
-        case VOLTAGE_TYPE:
-            return "Voltage";
-            break;
-        case PIPE_TYPE:
-            return "Pipe";
-            break;
-        default:
-            return "Unknown";
-            break;
-    }
-}
-/******************************************************************************
- * @brief  check if the service is a sensor or not
- * @param service look at
- * @return Error
- ******************************************************************************/
-uint8_t RoutingTB_ServiceIsSensor(luos_type_t type)
-{
-    if ((type == ANGLE_TYPE)
-        || (type == STATE_TYPE)
-        || (type == DISTANCE_TYPE)
-        || (type == IMU_TYPE)
-        || (type == LOAD_TYPE)
-        || (type == VOLTAGE_TYPE)
-        || (type == LIGHT_TYPE)
-        || (type == SERVO_MOTOR_TYPE))
-    {
-        return 1;
-    }
-    return 0;
 }
 /******************************************************************************
  * @brief  return bigest service ID in list
@@ -298,59 +138,6 @@ static uint16_t RoutingTB_BigestNodeID(void)
 }
 
 /******************************************************************************
- * @brief  get number of a node on network
- * @param None
- * @return number of node
- ******************************************************************************/
-uint16_t RoutingTB_GetNodeNB(void)
-{
-    uint16_t node_nb = 0;
-    for (uint16_t i = 0; i <= last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == NODE)
-        {
-            node_nb++;
-        }
-    }
-    return node_nb - 1;
-}
-/******************************************************************************
- * @brief  get ID of node on network
- * @param pointer to index of Node
- * @return node_id
- ******************************************************************************/
-uint16_t RoutingTB_GetNodeID(uint16_t index)
-{
-    return routing_table[index].node_id;
-}
-
-/******************************************************************************
- * @brief  get number of a service on the network
- * @param None
- * @return service number
- ******************************************************************************/
-uint16_t RoutingTB_GetServiceNB(void)
-{
-    uint16_t service_nb = 0;
-    for (uint16_t i = 0; i <= last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == SERVICE)
-        {
-            service_nb++;
-        }
-    }
-    return service_nb - 1;
-}
-/******************************************************************************
- * @brief  get ID of service on the network
- * @param routing table index
- * @return ID
- ******************************************************************************/
-uint16_t RoutingTB_GetServiceID(uint16_t index)
-{
-    return routing_table[index].id;
-}
-/******************************************************************************
  * @brief  get Index of service on the routing table
  * @param routing table id
  * @return index
@@ -365,16 +152,6 @@ uint16_t RoutingTB_GetServiceIndex(uint16_t id)
         }
     }
     return 0;
-}
-
-/******************************************************************************
- * @brief  get mode of a routing table entry
- * @param routing table index
- * @return mode
- ******************************************************************************/
-entry_mode_t RoutingTB_GetMode(uint16_t index)
-{
-    return routing_table[index].mode;
 }
 
 // ********************* routing_table management tools ************************
@@ -523,6 +300,11 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 {
+    // Make sure that the detection is not interrupted
+    if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+    {
+        return;
+    }
     // send route table to each nodes. Routing tables are commonly usable for each services of a node.
     msg_t intro_msg;
     intro_msg.header.cmd         = RTB;
@@ -542,13 +324,19 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 void RoutingTB_SendEndDetection(service_t *service)
 {
+    // Make sure that the detection is not interrupted
+    if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+    {
+        return;
+    }
     // send end detection message to each nodes
     msg_t msg;
     msg.header.target      = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
     msg.header.cmd         = END_DETECTION;
     msg.header.size        = 0;
-    Luos_SendMsg(service, &msg);
+    while (Luos_SendMsg(service, &msg) != SUCCEED)
+        ;
 }
 
 /******************************************************************************
@@ -574,6 +362,8 @@ void RoutingTB_DetectServices(service_t *service)
     RoutingTB_Share(service, nb_node);
     // send a message to indicate the end of the detection
     RoutingTB_SendEndDetection(service);
+    // clear statistic of node who start the detction
+    Luos_ResetStatistic();
 }
 /******************************************************************************
  * @brief entry in routable node with associate service
@@ -625,7 +415,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
                 // We find our node remove all services
                 while (routing_table[i].mode == SERVICE)
                 {
-                    RoutingTB_RemoveOnRoutingTable(RoutingTB_GetServiceID(i));
+                    RoutingTB_RemoveOnRoutingTable(routing_table[i].id);
                 }
                 return;
             }
@@ -689,4 +479,198 @@ uint16_t RoutingTB_GetLastService(void)
 uint16_t RoutingTB_GetLastEntry(void)
 {
     return (uint16_t)last_routing_table_entry;
+}
+
+/******************************** Result Table ********************************/
+error_return_t RTFilter_InitCheck(search_result_t *result)
+{
+    // check if we fund the address of the result in routing table
+    if ((result->result_table[0] >= &routing_table[0]) && (result->result_table[0] <= &routing_table[last_routing_table_entry - 1]))
+    {
+        return SUCCEED;
+    }
+    return FAILED;
+}
+/******************************************************************************
+ * @brief Initialize the Result table pointers
+ * @param index of service
+ * @return Last entry
+ ******************************************************************************/
+search_result_t *RTFilter_Reset(search_result_t *result)
+{
+    // the initialization is to keep a pointer to all the  servicesentries of the routing table
+    result->result_nbr = 0;
+    for (uint8_t i = 0; i < last_routing_table_entry; i++)
+    {
+        if (routing_table[i].mode == SERVICE)
+        {
+            result->result_table[result->result_nbr] = &routing_table[i];
+            result->result_nbr++;
+        }
+    }
+    return result;
+}
+/******************************************************************************
+ * @brief find the service with a specific id
+ * @param previous result research structure
+ * @param id that we want to find
+ * @return new result research structure with the entry of the demanded id
+ ******************************************************************************/
+search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
+{
+    uint8_t entry_nbr = 0;
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == FAILED)
+    {
+        result->result_nbr = 0;
+    }
+    while (entry_nbr < result->result_nbr)
+    {
+        // find a service with the wanted type
+        if (result->result_table[entry_nbr]->id != id)
+        {
+            // if we find an other id, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
+        {
+            entry_nbr++;
+        }
+    }
+    // return a pointer to the search structure
+    return (result);
+}
+/******************************************************************************
+ * @brief search all the services with the same type
+ * @param previous result research structure
+ * @param type that we want to find
+ * @return new result research structure
+ ******************************************************************************/
+search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
+{
+    uint8_t entry_nbr = 0;
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == FAILED)
+    {
+        result->result_nbr = 0;
+    }
+    while (entry_nbr < result->result_nbr)
+    {
+        // find a service with the wanted type
+        if (result->result_table[entry_nbr]->type != type)
+        {
+            // if we find an other type, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
+        {
+            entry_nbr++;
+        }
+    }
+    // return a pointer to the search structure
+    return (result);
+}
+/******************************************************************************
+ * @brief search all the services of the same node
+ * @param previous result research structure
+ * @param node_id of the node that we want to find
+ * @return new result research structure
+ ******************************************************************************/
+search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
+{
+    uint8_t entry_nbr = 0;
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == FAILED)
+    {
+        result->result_nbr = 0;
+    }
+    // search all the entries of the research table
+    while (entry_nbr < result->result_nbr)
+    {
+        // find a service with the wanted node_id
+        if (RoutingTB_NodeIDFromID(result->result_table[entry_nbr]->id) != node_id)
+        {
+            // if we find an other node_id, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
+        {
+            entry_nbr++;
+        }
+    }
+    // return a pointer to the search structure
+    return (result);
+}
+
+search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
+{
+    uint8_t entry_nbr = 0;
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == FAILED)
+    {
+        result->result_nbr = 0;
+    }
+    // search all the entries of the research table
+    while (entry_nbr < result->result_nbr)
+    {
+        // find a service with the wanted node_id
+        if (strstr(result->result_table[entry_nbr]->alias, alias) == 0)
+        {
+            // if we find an other node_id, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
+        {
+            entry_nbr++;
+        }
+    }
+    // return a pointer to the search structure
+    return (result);
+}
+
+/******************************************************************************
+ * @brief find the service info with a service pointer
+ * @param previous result research structure
+ * @param service pointer to the service
+ * @return new result research structure with the entry of the demanded service
+ ******************************************************************************/
+search_result_t *RTFilter_Service(search_result_t *result, service_t *service)
+{
+    uint8_t entry_nbr = 0;
+    // Check result pointer
+    LUOS_ASSERT(result != 0);
+    // if we the result is not initialized return 0
+    if (RTFilter_InitCheck(result) == FAILED)
+    {
+        result->result_nbr = 0;
+    }
+    LUOS_ASSERT(service != 0);
+    while (entry_nbr < result->result_nbr)
+    {
+        // find a service with the wanted type
+        if (result->result_table[entry_nbr]->id != service->ll_service->id)
+        {
+            // if we find an other id, erase it from the research table
+            memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));
+            result->result_nbr--;
+        }
+        else
+        {
+            entry_nbr++;
+        }
+    }
+    // return a pointer to the search structure
+    return (result);
 }

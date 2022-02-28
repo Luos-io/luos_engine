@@ -15,6 +15,8 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#define BOOT_TIMEOUT 1000
+
 typedef enum
 {
     NODE_INIT,
@@ -34,6 +36,10 @@ service_t *detection_service;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
+
+bool launch_boot_flag    = true;
+bool boot_run            = false;
+uint32_t boot_start_date = 0;
 
 /*******************************************************************************
  * Function
@@ -61,6 +67,12 @@ void Luos_Init(void)
     service_number = 0;
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     Robus_Init(&luos_stats.memory);
+    uint32_t init_time = 0;
+    // initialize the timer
+    init_time = Luos_GetSystick();
+    // wait for 2 ms
+    while ((Luos_GetSystick() - init_time) < 2)
+        ;
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -73,6 +85,21 @@ void Luos_Loop(void)
     uint16_t remaining_msg_number   = 0;
     ll_service_t *oldest_ll_service = NULL;
     msg_t *returned_msg             = NULL;
+
+#ifndef BOOTLOADER_CONFIG
+    if (launch_boot_flag)
+    {
+        launch_boot_flag = false;
+        boot_start_date  = LuosHAL_GetSystick();
+        boot_run         = true;
+    }
+
+    if (((LuosHAL_GetSystick() - boot_start_date) > BOOT_TIMEOUT) && boot_run)
+    {
+        LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
+        boot_run = false;
+    }
+#endif
 
     // check loop call time stat
     if ((LuosHAL_GetSystick() - last_loop_date) > luos_stats.max_loop_time_ms)
@@ -123,7 +150,7 @@ void Luos_Loop(void)
         else
         {
             // This message is for a service
-            // check if this continer have a callback?
+            // check if this service have a callback?
             if (service->service_cb != 0)
             {
                 // This service have a callback pull the message
@@ -278,10 +305,11 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
         case RTB:
             // Check routing table overflow
             LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
-            if (Luos_ReceiveData(service, input, (void *)route_tab) == SUCCEED)
+            if (Luos_ReceiveData(service, input, (void *)route_tab) > 0)
             {
                 // route table section reception complete
                 RoutingTB_ComputeRoutingTableEntryNB();
+                Luos_ResetStatistic();
             }
             consume = SUCCEED;
             break;
@@ -332,10 +360,13 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
         case ASK_DETECTION:
             if (input->header.size == 0)
             {
-                RoutingTB_DetectServices(detection_service);
-                consume = SUCCEED;
-                break;
+                if (Robus_IsNodeDetected() < LOCAL_DETECTION)
+                {
+                    RoutingTB_DetectServices(detection_service);
+                }
             }
+            consume = SUCCEED;
+            break;
         case LUOS_STATISTICS:
             if (input->header.size == 0)
             {
@@ -724,9 +755,9 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
  * @param Service who receive
  * @param Message chunk received
  * @param pointer to data
- * @return error
+ * @return valid data received (negative values are errors)
  ******************************************************************************/
-error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
+int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
 {
     // Manage buffer session (one per service)
     static uint32_t data_size[MAX_SERVICE_NUMBER]       = {0};
@@ -739,14 +770,17 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         memset(data_size, 0, sizeof(data_size));
         memset(total_data_size, 0, sizeof(total_data_size));
         last_msg_size = 0;
-        return FAILED;
+        return -1;
     }
+
+    LUOS_ASSERT(msg != 0);
+    LUOS_ASSERT(bin_data != 0);
 
     uint16_t id = Luos_GetServiceIndex(service);
     // check good service index
     if (id == 0xFFFF)
     {
-        return FAILED;
+        return -1;
     }
 
     // store total size of a msg
@@ -764,7 +798,7 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         // reset session and return an error.
         data_size[id] = 0;
         last_msg_size = 0;
-        return FAILED;
+        return -1;
     }
 
     // Get chunk size
@@ -794,10 +828,11 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         // Data collection finished, reset buffer session state
         data_size[id]       = 0;
         last_msg_size       = 0;
+        uint32_t backup     = total_data_size[id];
         total_data_size[id] = 0;
-        return SUCCEED;
+        return backup;
     }
-    return FAILED;
+    return 0;
 }
 /******************************************************************************
  * @brief Send datas of a streaming channel
@@ -809,8 +844,25 @@ error_return_t Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
 void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream)
 {
     // Compute number of message needed to send available datas on ring buffer
-    int msg_number              = 1;
-    int data_size               = Stream_GetAvailableSampleNB(stream);
+    Luos_SendStreamingSize(service, msg, stream, Stream_GetAvailableSampleNB(stream));
+}
+/******************************************************************************
+ * @brief Send a number of datas of a streaming channel
+ * @param Service who send
+ * @param Message to send
+ * @param streaming channel pointer
+ * @param max_size maximum sample to send
+ * @return None
+ ******************************************************************************/
+void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size)
+{
+    // Compute number of message needed to send available datas on ring buffer
+    int msg_number = 1;
+    int data_size  = Stream_GetAvailableSampleNB(stream);
+    if (data_size > max_size)
+    {
+        data_size = max_size;
+    }
     const int max_data_msg_size = (MAX_DATA_MSG_SIZE / stream->data_size);
     if (data_size > max_data_msg_size)
     {
@@ -1000,7 +1052,19 @@ void Luos_Flush(void)
 {
     Robus_Flush();
 }
-
+/******************************************************************************
+ * @brief Luos clear statistic
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_ResetStatistic(void)
+{
+    memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
+    for (uint16_t i = 0; i < service_number; i++)
+    {
+        service_table[i].statistics.max_retry = 0;
+    }
+}
 /******************************************************************************
  * @brief check if the node is connected to the network
  * @param None
@@ -1008,7 +1072,7 @@ void Luos_Flush(void)
  ******************************************************************************/
 bool Luos_IsNodeDetected(void)
 {
-    if (Robus_IsNodeDetected() == NETWORK_LINK_UP)
+    if (Robus_IsNodeDetected() == DETECTION_OK)
     {
         return true;
     }
@@ -1139,6 +1203,7 @@ void Luos_Run(void)
  ******************************************************************************/
 void Luos_SetID(service_t *service, uint16_t id)
 {
+    Robus_MaskInit();
     // set id
     service->ll_service->id = 1;
     // change filter mask
@@ -1153,7 +1218,7 @@ void Luos_Detect(service_t *service)
 {
     msg_t detect_msg;
 
-    if (Robus_IsNodeDetected() != NETWORK_LINK_CONNECTING)
+    if (Robus_IsNodeDetected() < LOCAL_DETECTION)
     {
         // set the detection launcher id to 1
         Luos_SetID(service, 1);

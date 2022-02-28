@@ -34,8 +34,9 @@ typedef enum
 typedef enum
 {
     // Common register for all services
-    GET_CMD = LUOS_LAST_RESERVED_CMD, // asks a service to publish its data
-    SET_CMD,                          // set some undefined data
+    UNKNOW  = LUOS_LAST_RESERVED_CMD, // set or get some undefined data (change size of msg to set or get)
+    GET_CMD = UNKNOW,                 // retrocompatibility
+    SET_CMD,                          // retrocompatibility
 
     // Generic data
     COLOR,       // color_t (R, G, B)
@@ -90,6 +91,8 @@ typedef enum
     // Specific register
     PARAMETERS, // depend on the service, can be : servo_parameters_t, imu_report_t, motor_mode_t
     ERROR_CMD,
+
+    TEXT, // ASCII string
 
     // compatibility area
     LUOS_LAST_STD_CMD = 128

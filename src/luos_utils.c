@@ -32,8 +32,9 @@ __attribute__((weak)) void node_assert(char *file, uint32_t line)
  * @param file name as a string
  * @param line number
  * @return None
+ *  warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
-void Luos_assert(char *file, uint32_t line)
+__attribute__((weak)) void Luos_assert(char *file, uint32_t line)
 {
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.

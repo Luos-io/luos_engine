@@ -33,7 +33,7 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
-#define NETWORK_TIMEOUT 100 // timeout to detect a failed detection
+#define NETWORK_TIMEOUT 3000 // timeout to detect a failed detection
 
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
@@ -73,11 +73,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
     // mask
-    ctx.ShiftMask = 0;
-    for (uint16_t i = 0; i < MASK_SIZE; i++)
-    {
-        ctx.IDMask[i] = 0;
-    }
+    Robus_MaskInit();
     // Init reception
     Recep_Init();
 
@@ -94,7 +90,20 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.rx.status.unmap      = 0;
     ctx.rx.status.identifier = 0xF;
 
-    Robus_SetNodeDetected(NETWORK_LINK_DOWN);
+    Robus_SetNodeDetected(NO_DETECTION);
+}
+/******************************************************************************
+ * @brief Reset Mask
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Robus_MaskInit(void)
+{
+    ctx.ShiftMask = 0;
+    for (uint16_t i = 0; i < MASK_SIZE; i++)
+    {
+        ctx.IDMask[i] = 0;
+    }
 }
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
@@ -163,7 +172,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 
     // ***************************************************
     // don't send luos messages if network is down
-    if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != NETWORK_LINK_UP))
+    if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != DETECTION_OK))
     {
         return FAILED;
     }
@@ -231,7 +240,6 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
-
     return SUCCEED;
 }
 /******************************************************************************
@@ -246,7 +254,7 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
 
     // if a detection is in progress,
     // Don't do an another detection and return 0
-    if (Robus_IsNodeDetected() == NETWORK_LINK_CONNECTING)
+    if (Robus_IsNodeDetected() >= LOCAL_DETECTION)
     {
         return 0;
     }
@@ -257,7 +265,11 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
 
         // Reset all detection state of services on the network
         Robus_ResetNetworkDetection(ll_service);
-
+        // Make sure that the detection is not interrupted
+        if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+        {
+            return 0;
+        }
         // setup local node
         ctx.node.node_id = 1;
         last_node        = 1;
@@ -295,7 +307,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
     {
         // if a detection is in progress,
         // Don't do an another detection and return 0
-        if (Robus_IsNodeDetected() == NETWORK_LINK_CONNECTING)
+        if (Robus_IsNodeDetected() >= LOCAL_DETECTION)
         {
             return 0;
         }
@@ -318,6 +330,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
     PortMng_Init();
     if (try_nbr < 5)
     {
+        Robus_SetNodeDetected(LOCAL_DETECTION);
         return SUCCEED;
     }
 
@@ -363,7 +376,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         while (ctx.port.keepLine)
         {
             Robus_Loop();
-            if (LuosHAL_GetSystick() - start_tick > 1000)
+            if (LuosHAL_GetSystick() - start_tick > NETWORK_TIMEOUT)
             {
                 // topology detection is too long, we should abort it and restart
                 return FAILED;
@@ -438,7 +451,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             break;
         case END_DETECTION:
             // Detect end of detection
-            Robus_SetNodeDetected(NETWORK_LINK_UP);
+            Robus_SetNodeDetected(DETECTION_OK);
             return FAILED;
             break;
         case SET_BAUDRATE:
@@ -510,15 +523,16 @@ inline void Robus_SetNodeDetected(network_state_t state)
 {
     switch (state)
     {
-        case NETWORK_LINK_DOWN:
+        case NO_DETECTION:
             ctx.node_connected.timeout_run = false;
             ctx.node_connected.timeout     = 0;
             break;
-        case NETWORK_LINK_CONNECTING:
+        case LOCAL_DETECTION:
+        case EXTERNAL_DETECTION:
             ctx.node_connected.timeout_run = true;
             ctx.node_connected.timeout     = LuosHAL_GetSystick();
             break;
-        case NETWORK_LINK_UP:
+        case DETECTION_OK:
             ctx.node_connected.timeout_run = false;
             ctx.node_connected.timeout     = 0;
             break;
@@ -540,7 +554,7 @@ void Robus_RunNetworkTimeout(void)
         // if timeout is reached, go back to link-down state
         if (LuosHAL_GetSystick() - ctx.node_connected.timeout > NETWORK_TIMEOUT)
         {
-            Robus_SetNodeDetected(NETWORK_LINK_DOWN);
+            Robus_SetNodeDetected(NO_DETECTION);
         }
     }
 }

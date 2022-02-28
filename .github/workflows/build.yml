@@ -6,106 +6,110 @@ on:
       - master
 
 jobs:
-
   build:
-    
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         include:
-        - os: windows-latest
-          pio_lib_path: D:\a\Luos
-        - os: macos-latest
-          pio_lib_path: ~/work/Luos
-        - os: ubuntu-latest
-          pio_lib_path: ~/work/Luos
-
+          - os: windows-latest
+            pio_lib_path: D:\a\Luos
+          - os: macos-latest
+            pio_lib_path: ~/work/Luos
+          - os: ubuntu-latest
+            pio_lib_path: ~/work/Luos
 
     steps:
-        
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
 
-    - name: Set up Node
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install platformio
-        npm install -g clang-format@1.5.0
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+          npm install -g clang-format@1.5.0
 
-    - name: Check out Luos repository
-      uses: actions/checkout@v2
+      - name: Check out Luos repository
+        uses: actions/checkout@v2
 
-    - name: Check for code format
-      if: ${{ runner.os != 'Windows' }}
-      run: python .github/workflows/run-clang-format.py -r .
+      - name: Check for code format
+        if: ${{ runner.os != 'Windows' }}
+        run: python .github/workflows/run-clang-format.py -r .
 
-    - name: Create env repo
-      shell: bash
-      run: |
-        # Step back and get dependancies
-        cd ..
+      - name: Create env repo
+        shell: bash
+        run: |
+          # Step back and get dependancies
+          cd ..
 
-        # Examples
-        git clone https://github.com/Luos-io/Examples.git
+          # Examples
+          git clone https://github.com/Luos-io/Examples.git
 
-    - name: Run PlatformIO
-      env:
-        PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
-      run: |
-        cd ../Examples/
-        # L0
-        platformio run -d Projects/l0/Button
-        platformio run -d Projects/l0/Controller_motor
-        platformio run -d Projects/l0/Dc_motor
-        platformio run -d Projects/l0/Distance
-        platformio run -d Projects/l0/Dxl
-        platformio run -d Projects/l0/Gate_SerialCom
-        platformio run -d Projects/l0/Gpio
-        platformio run -d Projects/l0/Imu
-        platformio run -d Projects/l0/Led
-        platformio run -d Projects/l0/Led_strip
-        platformio run -d Projects/l0/Light_sensor
-        platformio run -d Projects/l0/Load
-        platformio run -d Projects/l0/Potentiometer
-        platformio run -d Projects/l0/Power_switch
-        platformio run -d Projects/l0/Servo
-        platformio run -d Projects/l0/Stepper
-        platformio run -d Projects/l0/Bike_alarm/Alarm_controller
-        platformio run -d Projects/l0/Bike_alarm/Start_controller
-        # arduino
-        platformio run -d Projects/Arduino/Button
-        platformio run -d Projects/Arduino/Gate_SerialCom
-        # NUCLEO-L432KC
-        platformio run -d Projects/NUCLEO-L432KC/Button
-        platformio run -d Projects/NUCLEO-L432KC/Gate_SerialCom
-        platformio run -d Projects/NUCLEO-L432KC/Led
-        # STM32F4-discovery
-        platformio run -d Projects/STM32F4-discovery/Button
-        platformio run -d Projects/STM32F4-discovery/Gate_SerialCom
-        # NUCLEO-F401RE
-        platformio run -d Projects/NUCLEO-F401RE/Button
-        platformio run -d Projects/NUCLEO-F401RE/Gate_SerialCom
-        platformio run -d Projects/NUCLEO-F401RE/Led
-        # NUCLEO-F401RB
-        platformio run -d Projects/NUCLEO-F410RB/Button
-        platformio run -d Projects/NUCLEO-F410RB/Gate_SerialCom
-        # NUCLEO-G431KB
-        platformio run -d Projects/NUCLEO-G431KB/Button
-        platformio run -d Projects/NUCLEO-G431KB/Gate_SerialCom
+      - name: Run PlatformIO
+        env:
+          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
+        run: |
+          cd ../Examples/
+          # L0
+          platformio run -d Projects/l0/Button
+          platformio run -d Projects/l0/Controller_motor
+          platformio run -d Projects/l0/Dc_motor
+          platformio run -d Projects/l0/Distance
+          platformio run -d Projects/l0/Dxl
+          platformio run -d Projects/l0/Gate_SerialCom
+          platformio run -d Projects/l0/Gpio
+          platformio run -d Projects/l0/Imu
+          platformio run -d Projects/l0/Led
+          platformio run -d Projects/l0/Led_strip
+          platformio run -d Projects/l0/Light_sensor
+          platformio run -d Projects/l0/Load
+          platformio run -d Projects/l0/Potentiometer
+          platformio run -d Projects/l0/Power_switch
+          platformio run -d Projects/l0/Servo
+          platformio run -d Projects/l0/Stepper
+          platformio run -d Projects/l0/Bike_alarm/Alarm_controller
+          platformio run -d Projects/l0/Bike_alarm/Start_controller
+          # arduino
+          platformio run -d Projects/Arduino/Button
+          platformio run -d Projects/Arduino/Gate_SerialCom
+          # NUCLEO-L432KC
+          platformio run -d Projects/NUCLEO-L432KC/Button
+          platformio run -d Projects/NUCLEO-L432KC/Gate_SerialCom
+          platformio run -d Projects/NUCLEO-L432KC/Led
+          # STM32F4-discovery
+          platformio run -d Projects/STM32F4-discovery/Button
+          platformio run -d Projects/STM32F4-discovery/Gate_SerialCom
+          # NUCLEO-F401RE
+          platformio run -d Projects/NUCLEO-F401RE/Button
+          platformio run -d Projects/NUCLEO-F401RE/Gate_SerialCom
+          platformio run -d Projects/NUCLEO-F401RE/Led
+          # NUCLEO-F401RB
+          platformio run -d Projects/NUCLEO-F410RB/Button
+          platformio run -d Projects/NUCLEO-F410RB/Gate_SerialCom
+          # NUCLEO-G431KB
+          platformio run -d Projects/NUCLEO-G431KB/Button
+          platformio run -d Projects/NUCLEO-G431KB/Gate_SerialCom
 
-    - name: Run PlatformIO Unit Tests
-      env:
-        PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
-      if: ${{ runner.os == 'Windows' }}
-      run: |
-        cd ../Luos/
-        platformio run -t clean        
-        platformio test -e native -i CodeCoverage --verbose
+      - name: Run PlatformIO Unit Tests
+        env:
+          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          cd ../Luos/
+
+          # Clean all projects
+          platformio run -t clean -c .\test\msg_alloc\config\platformio.ini
+          platformio run -t clean -c .\test\luos\config\platformio.ini
+          platformio run -t clean -c .\test\routing_table\config\platformio.ini
+
+          # Run Unit tests
+          platformio test -e native -c .\test\msg_alloc\config\platformio.ini     -f msg_alloc     --verbose
+          platformio test -e native -c .\test\luos\config\platformio.ini          -f luos          --verbose
+          platformio test -e native -c .\test\routing_table\config\platformio.ini -f routing_table --verbose          
