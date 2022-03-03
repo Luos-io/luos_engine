@@ -1,0 +1,81 @@
+name: Build
+
+
+on:
+  workflow_dispatch:
+    description: 'manual build'
+
+
+jobs:
+  fix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            pio_lib_path: ~/work/Luos
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+          npm install -g clang-format@1.5.0
+
+      - name: Check out Luos repository
+        uses: actions/checkout@v2
+
+      - name: Check for code format
+        if: ${{ runner.os != 'Windows' }}
+        run: python .github/workflows/run-clang-format.py -r .
+
+      - name: Create env repo
+        shell: bash
+        run: |
+          # Step back and get dependancies
+          cd ..
+
+          # Examples
+          git clone https://github.com/Luos-io/Examples.git
+
+          # HAL
+          git clone https://github.com/Luos-io/LuosHAL.git
+
+      - name: Run PlatformIO
+        env:
+          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
+        run: |
+          cd ../Examples/
+          # L0
+          platformio run -d Projects/l0/Button
+          platformio run -d Projects/l0/Controller_motor
+          platformio run -d Projects/NUCLEO-F401RE/Gate_SerialCom
+
+
+      - name: Run PlatformIO Unit Tests
+        env:
+          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          cd ../Luos/
+
+          # Clean all projects
+          platformio run -t clean -c .\test\msg_alloc\config\platformio.ini
+          platformio run -t clean -c .\test\luos\config\platformio.ini
+          platformio run -t clean -c .\test\routing_table\config\platformio.ini
+
+          # Run Unit tests
+          platformio test -e native -c .\test\msg_alloc\config\platformio.ini     -f msg_alloc     --verbose
+          platformio test -e native -c .\test\luos\config\platformio.ini          -f luos          --verbose
+          platformio test -e native -c .\test\routing_table\config\platformio.ini -f routing_table --verbose          
