@@ -1,0 +1,59 @@
+{
+  "build": {
+    "arduino": {
+      "ldscript": "flash_with_bootloader.ld"
+    },
+    "core": "arduino",
+    "cpu": "cortex-m0plus",
+    "extra_flags": "-DARDUINO_SAMD_ZERO -D__SAMD21G18A__ -D LUOSHAL=ATSAMD21_ARDUINO",
+    "f_cpu": "48000000L",
+    "hwids": [
+      [
+        "0x2341",
+        "0x804D"
+      ],
+      [
+        "0x03EB",
+        "0x2157"
+      ]
+    ],
+    "mcu": "samd21g18a",
+    "usb_product": "Arduino Zero",
+    "variant": "arduino_zero",
+    "zephyr": {
+      "variant": "arduino_zero"
+    }
+  },
+  "debug": {
+    "jlink_device": "ATSAMD21G18",
+    "onboard_tools": [
+      "cmsis-dap"
+    ],
+    "openocd_chipname": "at91samd21g18",
+    "openocd_target": "at91samdXX",
+    "svd_path": "ATSAMD21G18A.svd"
+  },
+  "frameworks": [
+    "arduino",
+    "zephyr"
+  ],
+  "name": "Arduino Zero (Programming/Debug Port)",
+  "upload": {
+    "disable_flushing": true,
+    "maximum_ram_size": 32768,
+    "maximum_size": 262144,
+    "offset_address": "0x2000",
+    "protocol": "cmsis-dap",
+    "protocols": [
+      "cmsis-dap",
+      "blackmagic",
+      "jlink",
+      "atmel-ice"
+    ],
+    "require_upload_port": false,
+    "use_1200bps_touch": false,
+    "wait_for_upload_port": false
+  },
+  "url": "https://www.arduino.cc/en/Main/ArduinoBoardZero",
+  "vendor": "Arduino"
+}

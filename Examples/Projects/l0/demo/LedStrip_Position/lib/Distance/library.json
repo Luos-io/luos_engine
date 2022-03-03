@@ -1,0 +1,27 @@
+{
+    "name": "VL53L0X_1.0.2",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,VL53L0X_1.0.2,VL53L0X",
+    "description": "Luos turn your embedded system as services like microservice do it in software.",
+    "version": "1.0.0",
+    "authors": {
+        "name": "VL53L0X",
+        "url": "https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=2ahUKEwjestXmvY3oAhUTD2MBHQoJDooQFjABegQIBxAB&url=https%3A%2F%2Fwww.st.com%2Fresource%2Fen%2Fdatasheet%2Fvl53l0x.pdf&usg=AOvVaw2D772P0Ms66VJ7lbKKynB-"
+    },
+    "licence": "MIT",
+    "build": {
+        "flags": [
+            "-I VL53L0X_1.0.2/Api/platform/inc",
+            "-I VL53L0X_1.0.2/Api/core/inc"
+        ],
+        "src_filter": [
+            "+<VL53L0X_1.0.2/Api/core/src/*>",
+            "+<VL53L0X_1.0.2/Api/platform/src/*>"
+        ]
+    },
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}

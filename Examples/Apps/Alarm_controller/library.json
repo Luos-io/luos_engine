@@ -1,0 +1,17 @@
+{
+    "name": "alarm_controller",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,cJSON",
+    "description": "A Luos movement detection rising an alarm.",
+    "version": "1.0.1",
+    "authors": {
+        "name": "Luos",
+        "url": "https://www.luos.io/us/"
+    },
+    "licence": "MIT",
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}

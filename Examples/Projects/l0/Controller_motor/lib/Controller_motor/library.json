@@ -1,0 +1,17 @@
+{
+    "name": "Controller_motor",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "description": "a simple Controller_motor",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "licence": "MIT",
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}

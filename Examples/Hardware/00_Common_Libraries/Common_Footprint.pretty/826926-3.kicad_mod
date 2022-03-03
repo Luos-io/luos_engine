@@ -1,0 +1,16 @@
+(module 826926-3 (layer F.Cu) (tedit 5D161F5B)
+  (fp_text reference J2 (at 0 2.54) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value Header3Contacts (at 0 -2.54) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (pad 1 thru_hole circle (at -2.54 0) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask))
+  (pad 2 thru_hole circle (at 0 0) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask))
+  (pad 3 thru_hole circle (at 2.54 0) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask))
+  (model ${KISYS3DMOD}/HEADER3PMAL.stp
+    (offset (xyz -2.5 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 0))
+  )
+)

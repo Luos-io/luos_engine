@@ -1,0 +1,972 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text Label 7850 6100 2    60   ~ 0
+PTPB
+Text Label 7850 5400 2    60   ~ 0
+PTPA
+Text Label 7850 5300 2    60   ~ 0
+TxD
+Text Label 7850 5200 2    60   ~ 0
+RxD
+Text Label 7850 5900 2    60   ~ 0
+DE
+Text Label 7850 6000 2    60   ~ 0
+RE
+$Comp
+L Common_Lib:Discovery_Socket J7
+U 1 1 5A8C4F7F
+P 8400 4600
+F 0 "J7" H 8000 6300 50  0000 C CNN
+F 1 "Discovery_Socket" H 8300 2900 50  0000 C CNN
+F 2 "Common_Footprint:Discovery_Socket" H 8500 4700 50  0001 C CNN
+F 3 "" H 8500 4700 50  0001 C CNN
+	1    8400 4600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5VP #PWR013
+U 1 1 5A8C6B11
+P 7850 3000
+F 0 "#PWR013" H 7850 2850 50  0001 C CNN
+F 1 "+5VP" V 7865 3128 50  0000 L CNN
+F 2 "" H 7850 3000 50  0001 C CNN
+F 3 "" H 7850 3000 50  0001 C CNN
+	1    7850 3000
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+3.3V #PWR020
+U 1 1 5A8DAFF8
+P 8900 3200
+F 0 "#PWR020" H 8900 3050 50  0001 C CNN
+F 1 "+3.3V" V 8900 3400 50  0000 C CNN
+F 2 "" H 8900 3200 50  0001 C CNN
+F 3 "" H 8900 3200 50  0001 C CNN
+	1    8900 3200
+	0    1    1    0   
+$EndComp
+Text Label 8900 5100 0    50   ~ 0
+RS485_LVL_DOWN
+Text Label 8900 5200 0    50   ~ 0
+RS485_LVL_UP
+$Comp
+L power:GND #PWR014
+U 1 1 5A8DC045
+P 7850 3100
+F 0 "#PWR014" H 7850 2850 50  0001 C CNN
+F 1 "GND" V 7850 2900 50  0000 C CNN
+F 2 "" H 7850 3100 50  0001 C CNN
+F 3 "" H 7850 3100 50  0001 C CNN
+	1    7850 3100
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR019
+U 1 1 5A8DC29C
+P 8900 3100
+F 0 "#PWR019" H 8900 2850 50  0001 C CNN
+F 1 "GND" V 8905 2927 50  0000 C CNN
+F 2 "" H 8900 3100 50  0001 C CNN
+F 3 "" H 8900 3100 50  0001 C CNN
+	1    8900 3100
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+3.3V #PWR015
+U 1 1 5A8DDDC3
+P 7850 3400
+F 0 "#PWR015" H 7850 3250 50  0001 C CNN
+F 1 "+3.3V" V 7850 3650 50  0000 C CNN
+F 2 "" H 7850 3400 50  0001 C CNN
+F 3 "" H 7850 3400 50  0001 C CNN
+	1    7850 3400
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR021
+U 1 1 5A8E5230
+P 8900 3800
+F 0 "#PWR021" H 8900 3550 50  0001 C CNN
+F 1 "GND" V 8905 3627 50  0000 C CNN
+F 2 "" H 8900 3800 50  0001 C CNN
+F 3 "" H 8900 3800 50  0001 C CNN
+	1    8900 3800
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+3.3V #PWR018
+U 1 1 5A8E7507
+P 8900 3000
+F 0 "#PWR018" H 8900 2850 50  0001 C CNN
+F 1 "+3.3V" V 8900 3200 50  0000 C CNN
+F 2 "" H 8900 3000 50  0001 C CNN
+F 3 "" H 8900 3000 50  0001 C CNN
+	1    8900 3000
+	0    1    1    0   
+$EndComp
+$Comp
+L power:+3.3V #PWR023
+U 1 1 5A8E7953
+P 8900 4900
+F 0 "#PWR023" H 8900 4750 50  0001 C CNN
+F 1 "+3.3V" V 8900 5100 50  0000 C CNN
+F 2 "" H 8900 4900 50  0001 C CNN
+F 3 "" H 8900 4900 50  0001 C CNN
+	1    8900 4900
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR022
+U 1 1 5A8E7B16
+P 8900 4800
+F 0 "#PWR022" H 8900 4550 50  0001 C CNN
+F 1 "GND" V 8905 4627 50  0000 C CNN
+F 2 "" H 8900 4800 50  0001 C CNN
+F 3 "" H 8900 4800 50  0001 C CNN
+	1    8900 4800
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR024
+U 1 1 5A8E8115
+P 8900 6200
+F 0 "#PWR024" H 8900 5950 50  0001 C CNN
+F 1 "GND" V 8905 6027 50  0000 C CNN
+F 2 "" H 8900 6200 50  0001 C CNN
+F 3 "" H 8900 6200 50  0001 C CNN
+	1    8900 6200
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR016
+U 1 1 5A8E826B
+P 7850 6200
+F 0 "#PWR016" H 7850 5950 50  0001 C CNN
+F 1 "GND" V 7855 6027 50  0000 C CNN
+F 2 "" H 7850 6200 50  0001 C CNN
+F 3 "" H 7850 6200 50  0001 C CNN
+	1    7850 6200
+	0    1    1    0   
+$EndComp
+$Comp
+L Common_Lib:DF11-8DP-2DS(24) J1
+U 1 1 59EDFF88
+P 800 1100
+F 0 "J1" H 750 1550 60  0000 C CNN
+F 1 "DF11-8DP-2DS(24)" V 600 1100 60  0000 C CNN
+F 2 "Common_Footprint:DF11-8DP-2DS(24)" H 800 1700 60  0001 C CNN
+F 3 "https://www.hirose.com/product/en/download_file/key_name/DF11%2D8DP%2D2DS%2824%29/category/Drawing%20(2D)/doc_file_id/39437/?file_category_id=6&item_id=05430535724&is_series=" H 1400 500 60  0001 C CNN
+F 4 "1688360" H 0   0   60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 0   0   50  0001 C CNN "Fournisseur"
+	1    800  1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Common_Lib:DF11-8DP-2DS(24) J2
+U 1 1 59EDFFDD
+P 800 2250
+F 0 "J2" H 750 2700 60  0000 C CNN
+F 1 "DF11-8DP-2DS(24)" V 600 2250 60  0000 C CNN
+F 2 "Common_Footprint:DF11-8DP-2DS(24)" H 800 2850 60  0001 C CNN
+F 3 "https://www.hirose.com/product/en/download_file/key_name/DF11%2D8DP%2D2DS%2824%29/category/Drawing%20(2D)/doc_file_id/39437/?file_category_id=6&item_id=05430535724&is_series=" H 1400 1650 60  0001 C CNN
+F 4 "1688360" H 0   150 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 0   150 50  0001 C CNN "Fournisseur"
+	1    800  2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Common_Lib:Header6Contacts J5
+U 1 1 59EE15C1
+P 5350 1650
+F 0 "J5" H 5300 1950 60  0000 C CNN
+F 1 "Header6Contacts" V 5200 1600 60  0000 C CNN
+F 2 "Common_Footprint:826926-6" V 5100 1700 60  0001 C CNN
+F 3 "" H 5250 1700 60  0001 C CNN
+F 4 "1593415" H -250 -350 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H -250 -350 50  0001 C CNN "Fournisseur"
+	1    5350 1650
+	1    0    0    -1  
+$EndComp
+Text Label 1050 1050 0    60   ~ 0
+B_RS_485_P
+Text Label 1050 1150 0    60   ~ 0
+A_RS_485_N
+Text Label 1050 2400 0    60   ~ 0
+PTPB_PRO
+Text Label 2050 2100 0    60   ~ 0
+PTPB
+Text Label 1050 2200 0    60   ~ 0
+B_RS_485_P
+Text Label 1050 2300 0    60   ~ 0
+A_RS_485_N
+Text Label 1050 1250 0    60   ~ 0
+PTPA_PRO
+Text Label 2000 950  0    60   ~ 0
+PTPA
+$Comp
+L power:GND #PWR04
+U 1 1 59EF11F2
+P 1350 2500
+F 0 "#PWR04" H 1350 2250 50  0001 C CNN
+F 1 "GND" V 1355 2372 50  0000 R CNN
+F 2 "" H 1350 2500 50  0001 C CNN
+F 3 "" H 1350 2500 50  0001 C CNN
+	1    1350 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR03
+U 1 1 59EF1300
+P 1350 2000
+F 0 "#PWR03" H 1350 1750 50  0001 C CNN
+F 1 "GND" V 1355 1872 50  0000 R CNN
+F 2 "" H 1350 2000 50  0001 C CNN
+F 3 "" H 1350 2000 50  0001 C CNN
+	1    1350 2000
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR02
+U 1 1 59EF1353
+P 1350 1350
+F 0 "#PWR02" H 1350 1100 50  0001 C CNN
+F 1 "GND" V 1355 1222 50  0000 R CNN
+F 2 "" H 1350 1350 50  0001 C CNN
+F 3 "" H 1350 1350 50  0001 C CNN
+	1    1350 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR01
+U 1 1 59EF13CA
+P 1350 850
+F 0 "#PWR01" H 1350 600 50  0001 C CNN
+F 1 "GND" V 1355 722 50  0000 R CNN
+F 2 "" H 1350 850 50  0001 C CNN
+F 3 "" H 1350 850 50  0001 C CNN
+	1    1350 850 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR09
+U 1 1 59EF14DE
+P 3050 2100
+F 0 "#PWR09" H 3050 1850 50  0001 C CNN
+F 1 "GND" H 3055 1927 50  0000 C CNN
+F 2 "" H 3050 2100 50  0001 C CNN
+F 3 "" H 3050 2100 50  0001 C CNN
+	1    3050 2100
+	1    0    0    -1  
+$EndComp
+Text Label 2650 1600 2    60   ~ 0
+A_RS_485_N
+Text Label 2650 1450 2    60   ~ 0
+B_RS_485_P
+$Comp
+L power:+3.3V #PWR010
+U 1 1 59EF183A
+P 3950 1750
+F 0 "#PWR010" H 3950 1600 50  0001 C CNN
+F 1 "+3.3V" H 3965 1923 50  0000 C CNN
+F 2 "" H 3950 1750 50  0001 C CNN
+F 3 "" H 3950 1750 50  0001 C CNN
+	1    3950 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C1
+U 1 1 59EF1B6C
+P 3350 2050
+F 0 "C1" V 3300 2100 50  0000 L CNN
+F 1 "100nF" V 3400 2100 50  0000 L CNN
+F 2 "Common_Footprint:C_0402_NoSilk" H 3350 2050 50  0001 C CNN
+F 3 "" H 3350 2050 50  0001 C CNN
+F 4 "1759380" H 200 0   60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 200 0   50  0001 C CNN "Fournisseur"
+	1    3350 2050
+	0    1    1    0   
+$EndComp
+Text Label 3650 1500 0    60   ~ 0
+RE
+Text Label 3650 1700 0    60   ~ 0
+DE
+Text Label 3650 1400 0    60   ~ 0
+TxD
+Text Label 3650 1600 0    60   ~ 0
+RxD
+$Comp
+L Device:R_Small R6
+U 1 1 59EF4EA8
+P 2800 1950
+F 0 "R6" H 2859 1996 50  0000 L CNN
+F 1 "10K" H 2859 1905 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 2800 1950 50  0001 C CNN
+F 3 "" H 2800 1950 50  0001 C CNN
+F 4 "2447096" H 200 0   60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 200 0   50  0001 C CNN "Fournisseur"
+	1    2800 1950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_Small R5
+U 1 1 5D600E2F
+P 2800 1000
+F 0 "R5" H 2859 1046 50  0000 L CNN
+F 1 "10K" H 2859 955 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 2800 1000 50  0001 C CNN
+F 3 "" H 2800 1000 50  0001 C CNN
+F 4 "2447096" H 200 0   60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 200 0   50  0001 C CNN "Fournisseur"
+	1    2800 1000
+	1    0    0    -1  
+$EndComp
+Text Notes 4150 600  0    60   Italic 12
+ROBUS Interface
+Text Label 8900 5600 0    60   ~ 0
+TIM3.3
+Text Label 8900 5700 0    60   ~ 0
+TIM3.4
+Text Label 8900 4400 0    60   ~ 0
+TIM2.1/ADC0
+Text Label 8900 4500 0    60   ~ 0
+TIM2.2/ADC1
+Text Label 8900 5900 0    60   ~ 0
+TX/SCL/TIM2.3
+Text Label 7850 3800 2    60   ~ 0
+MOSI/SD
+Text Label 7850 3900 2    60   ~ 0
+MISO/MCK
+Text Label 7850 4000 2    60   ~ 0
+SCK/CK
+Text Label 5500 1550 0    60   ~ 0
+MOSI/SD
+Text Label 5500 1650 0    60   ~ 0
+MISO/MCK
+Text Label 5500 1750 0    60   ~ 0
+SCK/CK
+Text Label 5500 1950 0    60   ~ 0
+Vin
+$Comp
+L power:+3.3V #PWR011
+U 1 1 59EFD5D2
+P 5500 1850
+F 0 "#PWR011" H 5500 1700 50  0001 C CNN
+F 1 "+3.3V" H 5515 2023 50  0000 C CNN
+F 2 "" H 5500 1850 50  0001 C CNN
+F 3 "" H 5500 1850 50  0001 C CNN
+	1    5500 1850
+	0    1    1    0   
+$EndComp
+Text Label 5500 1450 0    60   ~ 0
+TIM2.1/ADC0
+Text Label 1050 2600 0    60   ~ 0
+Vin
+Text Label 1050 1450 0    60   ~ 0
+Vin
+Text Label 1050 1900 0    60   ~ 0
+Vin
+Text Label 1050 750  0    60   ~ 0
+Vin
+Wire Wire Line
+	1050 850  1350 850 
+Wire Wire Line
+	1050 1350 1350 1350
+Wire Wire Line
+	1050 2000 1350 2000
+Wire Wire Line
+	1050 2500 1350 2500
+Wire Wire Line
+	3050 2050 3250 2050
+Wire Wire Line
+	3050 1800 3050 2050
+Wire Wire Line
+	3450 2050 3650 2050
+Wire Wire Line
+	3650 2050 3650 1800
+Connection ~ 3050 2050
+Wire Wire Line
+	3050 2050 3050 2100
+Text Label 2800 900  0    50   ~ 0
+RS485_LVL_DOWN
+Text Label 2800 2150 2    50   ~ 0
+RS485_LVL_UP
+Wire Wire Line
+	2800 2050 2800 2150
+$Comp
+L Common_Lib:ST3485ECDR U1
+U 1 1 5A8DEBD8
+P 3350 1600
+F 0 "U1" H 3350 2037 60  0000 C CNN
+F 1 "ST3485ECDR" H 3350 1931 60  0000 C CNN
+F 2 "Common_Footprint:SO8" H 3550 1000 60  0001 C CNN
+F 3 "Documentations/TransceiverRS485/isl83078e.pdf" H 3200 1850 60  0001 C CNN
+F 4 "Farnell" H 3300 2000 50  0001 C CNN "Fournisseur"
+F 5 "1842628" H 3400 2100 50  0001 C CNN "CodeCommande"
+	1    3350 1600
+	1    0    0    -1  
+$EndComp
+Connection ~ 3650 1800
+Wire Wire Line
+	2650 1600 2800 1600
+Wire Wire Line
+	2650 1450 2800 1450
+Wire Wire Line
+	2800 1850 2800 1600
+Connection ~ 2800 1600
+Wire Wire Line
+	2800 1600 3050 1600
+Wire Wire Line
+	2800 1100 2800 1450
+Connection ~ 2800 1450
+Wire Wire Line
+	2800 1450 3050 1450
+$Comp
+L Device:R_Small R7
+U 1 1 5A8E63C5
+P 9850 4500
+F 0 "R7" H 9909 4546 50  0000 L CNN
+F 1 "68K" H 9909 4455 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 9850 4500 50  0001 C CNN
+F 3 "" H 9850 4500 50  0001 C CNN
+F 4 "Farnell" H 4950 -2250 50  0001 C CNN "Fournisseur"
+F 5 "2447207" H 7250 2550 60  0001 C CNN "CodeCommande"
+	1    9850 4500
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R_Small R8
+U 1 1 5A8E662D
+P 9850 4700
+F 0 "R8" H 9909 4746 50  0000 L CNN
+F 1 "10K" H 9909 4655 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 9850 4700 50  0001 C CNN
+F 3 "" H 9850 4700 50  0001 C CNN
+F 4 "2447096" H 7250 2750 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 4950 -2250 50  0001 C CNN "Fournisseur"
+	1    9850 4700
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR026
+U 1 1 5A8E6933
+P 9850 4800
+F 0 "#PWR026" H 9850 4550 50  0001 C CNN
+F 1 "GND" V 9855 4672 50  0000 R CNN
+F 2 "" H 9850 4800 50  0001 C CNN
+F 3 "" H 9850 4800 50  0001 C CNN
+	1    9850 4800
+	1    0    0    -1  
+$EndComp
+Text Label 9850 4400 1    60   ~ 0
+Vin
+Wire Wire Line
+	8900 4600 9850 4600
+Connection ~ 9850 4600
+$Comp
+L Device:LED_Small D6
+U 1 1 5A9F208A
+P 10350 4600
+F 0 "D6" V 10396 4532 50  0000 R CNN
+F 1 "SMLE13BC8TT86" V 10305 4532 50  0000 R CNN
+F 2 "Common_Footprint:LED_0603" V 10350 4600 50  0001 C CNN
+F 3 "~" V 10350 4600 50  0001 C CNN
+F 4 "Farnell" V 10350 4600 50  0001 C CNN "Fournisseur"
+F 5 "2762564" V 10350 4600 50  0001 C CNN "CodeCommande"
+	1    10350 4600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+3.3V #PWR027
+U 1 1 5A9F2AC6
+P 10350 4500
+F 0 "#PWR027" H 10350 4350 50  0001 C CNN
+F 1 "+3.3V" H 10365 4673 50  0000 C CNN
+F 2 "" H 10350 4500 50  0001 C CNN
+F 3 "" H 10350 4500 50  0001 C CNN
+	1    10350 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_Small R9
+U 1 1 5A9F2F8A
+P 10350 4800
+F 0 "R9" H 10409 4846 50  0000 L CNN
+F 1 "82" H 10409 4755 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 10350 4800 50  0001 C CNN
+F 3 "" H 10350 4800 50  0001 C CNN
+F 4 "Farnell" H 5450 -2150 50  0001 C CNN "Fournisseur"
+F 5 "2447220" H 7750 2850 60  0001 C CNN "CodeCommande"
+	1    10350 4800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8900 4700 9600 4700
+$Comp
+L Common_Lib:D_Zener D1
+U 1 1 5C64666C
+P 2100 1100
+F 0 "D1" V 2054 1179 50  0000 L CNN
+F 1 "D_Zener" V 2145 1179 50  0000 L CNN
+F 2 "Common_Footprint:D_SOD-323F" H 2000 1100 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/1508366.pdf?_ga=2.177624099.709276861.1551429612-1109058091.1515162769&_gac=1.216712866.1551429612.EAIaIQobChMI4qC11cXg4AIVBpzVCh0oJQymEAAYASAAEgIbufD_BwE" H 2100 1200 50  0001 C CNN
+F 4 "Farnell" H 2200 1300 50  0001 C CNN "Fournisseur"
+F 5 "2069511" H 2300 1400 50  0001 C CNN "CodeCommande"
+	1    2100 1100
+	0    1    1    0   
+$EndComp
+$Comp
+L Common_Lib:D_Zener D2
+U 1 1 5C647283
+P 2150 2250
+F 0 "D2" V 2104 2329 50  0000 L CNN
+F 1 "D_Zener" V 2300 2300 50  0000 L CNN
+F 2 "Common_Footprint:D_SOD-323F" H 2050 2250 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/1508366.pdf?_ga=2.177624099.709276861.1551429612-1109058091.1515162769&_gac=1.216712866.1551429612.EAIaIQobChMI4qC11cXg4AIVBpzVCh0oJQymEAAYASAAEgIbufD_BwE" H 2150 2350 50  0001 C CNN
+F 4 "Farnell" H 2250 2450 50  0001 C CNN "Fournisseur"
+F 5 "2069511" H 2350 2550 50  0001 C CNN "CodeCommande"
+	1    2150 2250
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1050 2100 1700 2100
+Wire Wire Line
+	1050 2400 1700 2400
+Wire Wire Line
+	1700 2400 1700 2100
+Connection ~ 1350 2500
+Connection ~ 1350 1350
+Wire Wire Line
+	1050 950  1750 950 
+Wire Wire Line
+	1050 1250 1750 1250
+Wire Wire Line
+	1750 1250 1750 950 
+Wire Wire Line
+	2150 2500 2150 2400
+Wire Wire Line
+	1350 2500 2150 2500
+Wire Wire Line
+	2100 1350 2100 1250
+Wire Wire Line
+	1350 1350 2100 1350
+$Comp
+L Device:R_Small R1
+U 1 1 5C6858F0
+P 1900 950
+F 0 "R1" H 1959 996 50  0000 L CNN
+F 1 "100" H 1959 905 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 1900 950 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/2563624.pdf?_ga=2.51081953.913354071.1549995772-506460182.1534760965" H 1900 950 50  0001 C CNN
+F 4 "2447095" H -700 -50 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H -700 -50 50  0001 C CNN "Fournisseur"
+	1    1900 950 
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R_Small R2
+U 1 1 5C685DF9
+P 1900 2100
+F 0 "R2" H 1959 2146 50  0000 L CNN
+F 1 "100" H 1959 2055 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 1900 2100 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/2563624.pdf?_ga=2.51081953.913354071.1549995772-506460182.1534760965" H 1900 2100 50  0001 C CNN
+F 4 "2447095" H -700 1100 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H -700 1100 50  0001 C CNN "Fournisseur"
+	1    1900 2100
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1750 950  1800 950 
+Connection ~ 1750 950 
+Wire Wire Line
+	2000 950  2100 950 
+Wire Wire Line
+	1800 2100 1700 2100
+Connection ~ 1700 2100
+Wire Wire Line
+	2000 2100 2150 2100
+Text Notes 5050 600  0    60   Italic 12
+External Connections
+Text Label 8900 6000 0    60   ~ 0
+RX/SDA/TIM2.4
+Wire Wire Line
+	9600 4700 9600 5150
+Wire Wire Line
+	9600 5150 10350 5150
+Wire Wire Line
+	10350 5150 10350 4900
+Wire Wire Line
+	3650 1800 3950 1800
+Wire Wire Line
+	3950 1800 3950 1750
+NoConn ~ 7850 3200
+NoConn ~ 7850 3300
+NoConn ~ 7850 3500
+NoConn ~ 7850 3600
+NoConn ~ 7850 3700
+NoConn ~ 7850 4100
+NoConn ~ 7850 4200
+NoConn ~ 7850 4300
+NoConn ~ 7850 4400
+NoConn ~ 7850 4500
+NoConn ~ 7850 4600
+NoConn ~ 7850 4700
+NoConn ~ 7850 4800
+NoConn ~ 7850 4900
+NoConn ~ 8900 3300
+NoConn ~ 8900 3400
+NoConn ~ 8900 3500
+NoConn ~ 8900 3600
+NoConn ~ 8900 3700
+NoConn ~ 8900 3900
+NoConn ~ 8900 4000
+NoConn ~ 8900 4100
+NoConn ~ 8900 4200
+NoConn ~ 8900 4300
+NoConn ~ 8900 5000
+NoConn ~ 8900 5300
+NoConn ~ 8900 5400
+NoConn ~ 8900 5500
+NoConn ~ 8900 5800
+NoConn ~ 8900 6100
+Wire Notes Line
+	5000 500  5000 2700
+Wire Notes Line
+	8250 450  8250 2700
+Text Notes 8300 600  0    60   Italic 12
+Monitoring port
+$Comp
+L power:GND #PWR025
+U 1 1 5D797208
+P 9750 1750
+F 0 "#PWR025" H 9750 1500 50  0001 C CNN
+F 1 "GND" V 9755 1622 50  0000 R CNN
+F 2 "" H 9750 1750 50  0001 C CNN
+F 3 "" H 9750 1750 50  0001 C CNN
+	1    9750 1750
+	0    1    1    0   
+$EndComp
+Text Label 9750 950  2    60   ~ 0
+PTPA
+Text Label 9750 1650 2    60   ~ 0
+RxD
+Text Label 9750 1550 2    60   ~ 0
+TxD
+Text Label 9750 1050 2    60   ~ 0
+PTPB
+Text Label 9750 850  2    60   ~ 0
+B_RS_485_P
+Text Label 9750 750  2    60   ~ 0
+A_RS_485_N
+Text Label 7600 1850 2    60   ~ 0
+TIM3.3
+Text Label 7600 1750 2    60   ~ 0
+TIM3.4
+Text Label 7600 1950 2    60   ~ 0
+TIM2.2/ADC1
+Text Label 7600 1650 2    60   ~ 0
+TX/SCL/TIM2.3
+Text Label 7600 1550 2    60   ~ 0
+RX/SDA/TIM2.4
+$Comp
+L power:GND #PWR012
+U 1 1 59EFCA52
+P 7600 1450
+F 0 "#PWR012" H 7600 1200 50  0001 C CNN
+F 1 "GND" V 7605 1322 50  0000 R CNN
+F 2 "" H 7600 1450 50  0001 C CNN
+F 3 "" H 7600 1450 50  0001 C CNN
+	1    7600 1450
+	0    1    1    0   
+$EndComp
+$Comp
+L Common_Lib:Header6Contacts J6
+U 1 1 59EE159B
+P 7750 1650
+F 0 "J6" H 7700 1950 60  0000 C CNN
+F 1 "Header6Contacts" V 7600 1600 60  0000 C CNN
+F 2 "Common_Footprint:826926-6" V 7500 1700 60  0001 C CNN
+F 3 "" H 7650 1700 60  0001 C CNN
+F 4 "1593415" H -2950 500 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H -2950 500 50  0001 C CNN "Fournisseur"
+	1    7750 1650
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Common_Lib:Header11Contacts J8
+U 1 1 5F9A4CA0
+P 9900 1550
+F 0 "J8" H 9772 1197 60  0000 R CNN
+F 1 "Header11Contacts" H 9772 1303 60  0000 R CNN
+F 2 "Common_Footprint:826926-11" V 9650 1600 60  0001 C CNN
+F 3 "" H 9800 1600 60  0001 C CNN
+F 4 "?" H 10000 1950 50  0001 C CNN "Fournisseur"
+F 5 "?" H 10100 2050 50  0001 C CNN "CodeCommande"
+	1    9900 1550
+	-1   0    0    1   
+$EndComp
+Wire Notes Line
+	5000 2750 5000 5400
+Wire Notes Line
+	5000 5400 550  5400
+Wire Notes Line
+	5000 2700 11150 2700
+Text Label 7850 5100 2    60   ~ 0
+PTPC
+Text Label 7850 5000 2    60   ~ 0
+PTPD
+$Comp
+L Common_Lib:DF11-8DP-2DS(24) J3
+U 1 1 5F9B3E91
+P 800 3500
+F 0 "J3" H 750 3950 60  0000 C CNN
+F 1 "DF11-8DP-2DS(24)" V 600 3500 60  0000 C CNN
+F 2 "Common_Footprint:DF11-8DP-2DS(24)" H 800 4100 60  0001 C CNN
+F 3 "https://www.hirose.com/product/en/download_file/key_name/DF11%2D8DP%2D2DS%2824%29/category/Drawing%20(2D)/doc_file_id/39437/?file_category_id=6&item_id=05430535724&is_series=" H 1400 2900 60  0001 C CNN
+F 4 "1688360" H 0   1400 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 0   1400 50  0001 C CNN "Fournisseur"
+	1    800  3500
+	1    0    0    -1  
+$EndComp
+Text Label 1050 3650 0    60   ~ 0
+PTPC_PRO
+Text Label 2050 3350 0    60   ~ 0
+PTPC
+Text Label 1050 3450 0    60   ~ 0
+B_RS_485_P
+Text Label 1050 3550 0    60   ~ 0
+A_RS_485_N
+$Comp
+L power:GND #PWR06
+U 1 1 5F9B3E9B
+P 1350 3750
+F 0 "#PWR06" H 1350 3500 50  0001 C CNN
+F 1 "GND" V 1355 3622 50  0000 R CNN
+F 2 "" H 1350 3750 50  0001 C CNN
+F 3 "" H 1350 3750 50  0001 C CNN
+	1    1350 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR05
+U 1 1 5F9B3EA1
+P 1350 3250
+F 0 "#PWR05" H 1350 3000 50  0001 C CNN
+F 1 "GND" V 1355 3122 50  0000 R CNN
+F 2 "" H 1350 3250 50  0001 C CNN
+F 3 "" H 1350 3250 50  0001 C CNN
+	1    1350 3250
+	0    -1   -1   0   
+$EndComp
+Text Label 1050 3850 0    60   ~ 0
+Vin
+Text Label 1050 3150 0    60   ~ 0
+Vin
+Wire Wire Line
+	1050 3250 1350 3250
+Wire Wire Line
+	1050 3750 1350 3750
+Text Label 2800 3550 2    50   ~ 0
+RS485_LVL_UP
+$Comp
+L Common_Lib:D_Zener D3
+U 1 1 5F9B3EAE
+P 2150 3500
+F 0 "D3" V 2104 3579 50  0000 L CNN
+F 1 "D_Zener" V 2300 3550 50  0000 L CNN
+F 2 "Common_Footprint:D_SOD-323F" H 2050 3500 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/1508366.pdf?_ga=2.177624099.709276861.1551429612-1109058091.1515162769&_gac=1.216712866.1551429612.EAIaIQobChMI4qC11cXg4AIVBpzVCh0oJQymEAAYASAAEgIbufD_BwE" H 2150 3600 50  0001 C CNN
+F 4 "Farnell" H 2250 3700 50  0001 C CNN "Fournisseur"
+F 5 "2069511" H 2350 3800 50  0001 C CNN "CodeCommande"
+	1    2150 3500
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1050 3350 1700 3350
+Wire Wire Line
+	1050 3650 1700 3650
+Wire Wire Line
+	1700 3650 1700 3350
+Connection ~ 1350 3750
+Wire Wire Line
+	2150 3750 2150 3650
+Wire Wire Line
+	1350 3750 2150 3750
+$Comp
+L Device:R_Small R3
+U 1 1 5F9B3EBC
+P 1900 3350
+F 0 "R3" H 1959 3396 50  0000 L CNN
+F 1 "100" H 1959 3305 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 1900 3350 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/2563624.pdf?_ga=2.51081953.913354071.1549995772-506460182.1534760965" H 1900 3350 50  0001 C CNN
+F 4 "2447095" H -700 2350 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H -700 2350 50  0001 C CNN "Fournisseur"
+	1    1900 3350
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1800 3350 1700 3350
+Connection ~ 1700 3350
+Wire Wire Line
+	2000 3350 2150 3350
+$Comp
+L Common_Lib:DF11-8DP-2DS(24) J4
+U 1 1 5F9B8388
+P 800 4800
+F 0 "J4" H 750 5250 60  0000 C CNN
+F 1 "DF11-8DP-2DS(24)" V 600 4800 60  0000 C CNN
+F 2 "Common_Footprint:DF11-8DP-2DS(24)" H 800 5400 60  0001 C CNN
+F 3 "https://www.hirose.com/product/en/download_file/key_name/DF11%2D8DP%2D2DS%2824%29/category/Drawing%20(2D)/doc_file_id/39437/?file_category_id=6&item_id=05430535724&is_series=" H 1400 4200 60  0001 C CNN
+F 4 "1688360" H 0   2700 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H 0   2700 50  0001 C CNN "Fournisseur"
+	1    800  4800
+	1    0    0    -1  
+$EndComp
+Text Label 1050 4950 0    60   ~ 0
+PTPD_PRO
+Text Label 2050 4650 0    60   ~ 0
+PTPD
+Text Label 1050 4750 0    60   ~ 0
+B_RS_485_P
+Text Label 1050 4850 0    60   ~ 0
+A_RS_485_N
+$Comp
+L power:GND #PWR08
+U 1 1 5F9B8392
+P 1350 5050
+F 0 "#PWR08" H 1350 4800 50  0001 C CNN
+F 1 "GND" V 1355 4922 50  0000 R CNN
+F 2 "" H 1350 5050 50  0001 C CNN
+F 3 "" H 1350 5050 50  0001 C CNN
+	1    1350 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR07
+U 1 1 5F9B8398
+P 1350 4550
+F 0 "#PWR07" H 1350 4300 50  0001 C CNN
+F 1 "GND" V 1355 4422 50  0000 R CNN
+F 2 "" H 1350 4550 50  0001 C CNN
+F 3 "" H 1350 4550 50  0001 C CNN
+	1    1350 4550
+	0    -1   -1   0   
+$EndComp
+Text Label 1050 5150 0    60   ~ 0
+Vin
+Text Label 1050 4450 0    60   ~ 0
+Vin
+Wire Wire Line
+	1050 4550 1350 4550
+Wire Wire Line
+	1050 5050 1350 5050
+Text Label 2800 4850 2    50   ~ 0
+RS485_LVL_UP
+$Comp
+L Common_Lib:D_Zener D4
+U 1 1 5F9B83A5
+P 2150 4800
+F 0 "D4" V 2104 4879 50  0000 L CNN
+F 1 "D_Zener" V 2300 4850 50  0000 L CNN
+F 2 "Common_Footprint:D_SOD-323F" H 2050 4800 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/1508366.pdf?_ga=2.177624099.709276861.1551429612-1109058091.1515162769&_gac=1.216712866.1551429612.EAIaIQobChMI4qC11cXg4AIVBpzVCh0oJQymEAAYASAAEgIbufD_BwE" H 2150 4900 50  0001 C CNN
+F 4 "Farnell" H 2250 5000 50  0001 C CNN "Fournisseur"
+F 5 "2069511" H 2350 5100 50  0001 C CNN "CodeCommande"
+	1    2150 4800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1050 4650 1700 4650
+Wire Wire Line
+	1050 4950 1700 4950
+Wire Wire Line
+	1700 4950 1700 4650
+Connection ~ 1350 5050
+Wire Wire Line
+	2150 5050 2150 4950
+Wire Wire Line
+	1350 5050 2150 5050
+$Comp
+L Device:R_Small R4
+U 1 1 5F9B83B3
+P 1900 4650
+F 0 "R4" H 1959 4696 50  0000 L CNN
+F 1 "100" H 1959 4605 50  0000 L CNN
+F 2 "Common_Footprint:R_0402_NoSilk" H 1900 4650 50  0001 C CNN
+F 3 "http://www.farnell.com/datasheets/2563624.pdf?_ga=2.51081953.913354071.1549995772-506460182.1534760965" H 1900 4650 50  0001 C CNN
+F 4 "2447095" H -700 3650 60  0001 C CNN "CodeCommande"
+F 5 "Farnell" H -700 3650 50  0001 C CNN "Fournisseur"
+	1    1900 4650
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1800 4650 1700 4650
+Connection ~ 1700 4650
+Wire Wire Line
+	2000 4650 2150 4650
+Text Label 9750 1150 2    60   ~ 0
+PTPC
+Text Label 9750 1250 2    60   ~ 0
+PTPD
+Text Label 9750 1450 2    60   ~ 0
+RE
+Text Label 9750 1350 2    60   ~ 0
+DE
+$Comp
+L pspice:DIODE D5
+U 1 1 5F987320
+P 9300 2100
+F 0 "D5" H 9300 2365 50  0000 C CNN
+F 1 "DIODE" H 9300 2274 50  0000 C CNN
+F 2 "Common_Footprint:D_SOD-323F" H 9300 2100 50  0001 C CNN
+F 3 "~" H 9300 2100 50  0001 C CNN
+F 4 "Farnell" H 9300 2100 50  0001 C CNN "Fournisseur"
+F 5 "2317404" H 9300 2100 50  0001 C CNN "CodeCommande"
+	1    9300 2100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Common_Lib:Header2Contacts J9
+U 1 1 5F98D40C
+P 9900 2150
+F 0 "J9" H 9772 2097 60  0000 R CNN
+F 1 "Header2Contacts" H 9772 2203 60  0000 R CNN
+F 2 "Common_Footprint:826926-2" V 9650 2200 60  0001 C CNN
+F 3 "" H 9800 2050 60  0001 C CNN
+F 4 "Farnell" H 9950 2400 50  0001 C CNN "Fournisseur"
+F 5 "1248140" H 10100 2650 50  0001 C CNN "CodeCommande"
+	1    9900 2150
+	-1   0    0    1   
+$EndComp
+Text Label 9750 2200 2    60   ~ 0
+Vin
+Wire Wire Line
+	9750 2100 9500 2100
+Wire Wire Line
+	8900 2100 9100 2100
+$Comp
+L power:+5VP #PWR017
+U 1 1 5F9910C5
+P 8900 2100
+F 0 "#PWR017" H 8900 1950 50  0001 C CNN
+F 1 "+5VP" V 8915 2228 50  0000 L CNN
+F 2 "" H 8900 2100 50  0001 C CNN
+F 3 "" H 8900 2100 50  0001 C CNN
+	1    8900 2100
+	0    -1   -1   0   
+$EndComp
+$EndSCHEMATC

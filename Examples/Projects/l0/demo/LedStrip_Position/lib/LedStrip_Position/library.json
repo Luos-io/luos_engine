@@ -1,0 +1,17 @@
+{
+    "name": "ledstrip_position",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,cJSON",
+    "description": "A Luos app for changing the ledstrip depending on a distance sensor",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://www.luos.io/us/"
+    },
+    "licence": "MIT",
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}
