@@ -52,6 +52,9 @@ jobs:
           # Examples
           git clone https://github.com/Luos-io/Examples.git
 
+          # HAL
+          git clone https://github.com/Luos-io/LuosHAL.git
+
       - name: Run PlatformIO
         env:
           PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
