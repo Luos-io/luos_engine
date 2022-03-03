@@ -4,7 +4,7 @@ name: Build_fix
 on:
   workflow_dispatch:
     description: 'manual build'
-
+  pull_request:
 
 jobs:
   fix:
