@@ -1,21 +1,24 @@
-./Examples/Projects/**/**/src
-./Examples/Projects/**/**/inc
-./Examples/Hardware
-# third party libs
-./Examples/Apps/Gate/JSON/cJSON.h
-./Examples/Apps/Gate/JSON/cJSON.c
-./Examples/Apps/Gate/TinyJSON/tiny-json.h
-./Examples/Apps/Gate/TinyJSON/tiny-json.c
-./Examples/Projects/l0/Distance/lib/Distance/VL53L0X_1.0.2
-./Examples/Projects/l0/Imu/lib/Imu/motion_driver_6.12
-./Examples/Projects/l0/Load/lib/Load/HX711
-./Examples/Projects/l0/Dxl/lib/Dxl/Dynamixel_Servo
-./Examples/Projects/l0/Button_FreeRTOS/lib/FreeRTOS/Source
+# Files
 ./.*
 *.json
 */.vscode
 */.pio
 .github
+
+# Examples
+./Examples/Projects/**/**/src
+./Examples/Projects/**/**/inc
+./Examples/Hardware
+./Examples/Projects/l0/Distance/lib/Distance/VL53L0X_1.0.2
+./Examples/Projects/l0/Imu/lib/Imu/motion_driver_6.12
+./Examples/Projects/l0/Load/lib/Load/HX711
+./Examples/Projects/l0/Dxl/lib/Dxl/Dynamixel_Servo
+./Examples/Projects/l0/Button_FreeRTOS/lib/FreeRTOS/Source
 ./Examples/Projects/l0/demo/**/src
 ./Examples/Projects/l0/demo/**/inc
 ./Examples/Projects/l0/demo/**/include
+
+
+# Third party libs
+./Tool_services/Apps/Gate/TinyJSON/tiny-json.h
+./Tool_services/Apps/Gate/TinyJSON/tiny-json.c
