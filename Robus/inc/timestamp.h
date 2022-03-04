@@ -38,5 +38,6 @@ bool Timestamp_IsTimestampMsg(msg_t *msg);
 void Timestamp_TagMsg(msg_t *msg);
 void Timestamp_EncodeMsg(msg_t *msg, void *target);
 void Timestamp_DecodeMsg(msg_t *msg, int64_t *timestamp);
+void Timestamp_CreateEvent(int64_t, timestamp_token_t *, void *);
 
 #endif /* _TIMESTAMP_H_ */

@@ -93,7 +93,6 @@ timestamp_token_t *token_list_head = 0;
 static inline void Timestamp_AddToken(timestamp_token_t *);
 static int64_t Timestamp_GetTimeFromToken(void *);
 static bool Timestamp_DeleteTokenFromList(void *);
-static void Timestamp_CreateEvent(int64_t, timestamp_token_t *, void *);
 
 /******************************************************************************
  * @brief link a token to a target until its comsumption in a message
