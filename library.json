@@ -10,7 +10,7 @@
     "build": {
         "flags": [
             "-I inc",
-            "-I Robus/inc",
+            "-I Network/Robus/inc",
             "-I OD",
             "-I Profiles/Core",
             "-I Profiles/State",
@@ -22,7 +22,7 @@
         ],
         "srcFilter": [
             "+<*.c>",
-            "+<../Robus/src/*.c>",
+            "+<../Network/Robus/src/*.c>",
             "+<../Profiles/Core/*.c>",
             "+<../Profiles/State/*.c>",
             "+<../Profiles/Motor/*.c>",
