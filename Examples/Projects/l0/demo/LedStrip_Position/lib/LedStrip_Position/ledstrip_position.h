@@ -7,7 +7,7 @@
 #ifndef LedStripPosition
 #define LedStripPosition
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

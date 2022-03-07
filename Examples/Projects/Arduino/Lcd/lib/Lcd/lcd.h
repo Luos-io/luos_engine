@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file lcd
  * @brief This is a driver example for an LCD display. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/Arduino-Luos-Biometric-Security-System
  * @version 0.0.0
@@ -9,7 +9,7 @@
 #ifndef LCD_H
 #define LCD_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

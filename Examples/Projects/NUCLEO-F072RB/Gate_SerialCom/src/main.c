@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "luos.h"
+#include "luos_engine.h"
 #include "pipe.h"
 #include "gate.h"
 /* USER CODE END Includes */

@@ -9,7 +9,7 @@
 #define PROFILE_CORE_H
 
 #include <stdbool.h>
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

@@ -7,7 +7,7 @@
 #ifndef LED_H
 #define LED_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

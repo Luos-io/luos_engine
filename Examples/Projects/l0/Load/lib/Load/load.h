@@ -7,7 +7,7 @@
 #ifndef LOAD_H
 #define LOAD_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

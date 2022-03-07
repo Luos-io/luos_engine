@@ -14,7 +14,7 @@
 #include "stm32f0xx_ll_system.h"
 #include "analog.h"
 #include "main.h"
-#include "luos.h"
+#include "luos_engine.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/

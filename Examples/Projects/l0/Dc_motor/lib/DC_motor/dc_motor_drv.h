@@ -7,7 +7,7 @@
 #ifndef DC_MOTOR_DRV_H
 #define DC_MOTOR_DRV_H
 
-#include "luos.h"
+#include "luos_engine.h"
 #include "stm32f0xx_hal.h"
 /*******************************************************************************
  * Definitions

@@ -10,7 +10,7 @@
 
 #include "bootloader_core.h"
 #include "luos_hal.h"
-#include "luos.h"
+#include "luos_engine.h"
 #include "routing_table.h"
 
 /*******************************************************************************

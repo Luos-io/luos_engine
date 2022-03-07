@@ -7,7 +7,7 @@
 #include <unity.h>
 #include "luos_hal.h"
 #include "luos_hal_config.h"
-#include "luos.h"
+#include "luos_engine.h"
 #include "luos_utils.h"
 #include "robus_struct.h"
 

@@ -5,7 +5,7 @@ extern "C"
 {
 #endif
 
-#include <luos.h>
+#include "luos_engine.h"
 #include "fingerprint.h"
 
 #ifdef __cplusplus

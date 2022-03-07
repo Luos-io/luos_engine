@@ -6,7 +6,7 @@
 #ifndef GATE_CONFIG_H
 #define GATE_CONFIG_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Gate DEFINITION

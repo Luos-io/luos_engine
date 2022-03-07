@@ -7,7 +7,7 @@
 #ifndef LEDFADER_DRV_H
 #define LEDFADER_DRV_H
 
-#include "luos.h"
+#include "luos_engine.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_ll_exti.h"
 #include "stm32f0xx_ll_system.h"

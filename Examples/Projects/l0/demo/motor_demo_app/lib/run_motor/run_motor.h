@@ -7,7 +7,7 @@
 #ifndef RUN_MOTOR_H
 #define RUN_MOTOR_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

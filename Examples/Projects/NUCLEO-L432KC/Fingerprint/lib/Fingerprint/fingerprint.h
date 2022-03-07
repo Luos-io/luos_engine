@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file fingerprint
  * @brief This is a driver example for a fingerprint sensor. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/L432KC-Luos-Biometric-Security-System
  * @author mariebidouille
@@ -10,7 +10,7 @@
 #ifndef FINGERPRINT_H_
 #define FINGERPRINT_H_
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

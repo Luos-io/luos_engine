@@ -7,7 +7,7 @@
 #ifndef LED_STRIP_H
 #define LED_STRIP_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

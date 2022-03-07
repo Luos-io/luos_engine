@@ -7,7 +7,7 @@
 #ifndef START_CONTROLLER_H
 #define START_CONTROLLER_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

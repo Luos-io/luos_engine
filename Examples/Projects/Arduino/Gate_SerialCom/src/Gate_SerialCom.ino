@@ -8,7 +8,7 @@ extern "C"
 
 #include <pipe.h>
 #include <gate.h>
-#include <luos.h>
+#include "luos_engine.h"
 
 #ifdef __cplusplus
 }

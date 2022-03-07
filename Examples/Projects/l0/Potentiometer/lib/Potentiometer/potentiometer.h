@@ -1,7 +1,7 @@
 #ifndef POTENTIOMETER_H
 #define POTENTIOMETER_H
 
-#include "luos.h"
+#include "luos_engine.h"
 #include "potentiometer_drv.h"
 
 /*******************************************************************************

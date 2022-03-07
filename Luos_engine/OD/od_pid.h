@@ -7,7 +7,7 @@
 #ifndef OD_OD_PID_H_
 #define OD_OD_PID_H_
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions
