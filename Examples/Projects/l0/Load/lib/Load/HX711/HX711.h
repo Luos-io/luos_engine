@@ -9,7 +9,7 @@
 #define HX711_h
 
 #include "stm32f0xx_hal.h"
-#include "luos.h"
+#include "luos_engine.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -78,12 +78,12 @@ void hx711_power_down();
 // wakes up the chip after power down mode
 void hx711_power_up();
 
-//driver API
-// Initialize library with data output pin, clock input pin and gain factor.
-// Channel selection is made by passing the appropriate gain:
-// - With a gain factor of 64 or 128, channel A is selected
-// - With a gain factor of 32, channel B is selected
-// The library default is "128" (Channel A).
+// driver API
+//  Initialize library with data output pin, clock input pin and gain factor.
+//  Channel selection is made by passing the appropriate gain:
+//  - With a gain factor of 64 or 128, channel A is selected
+//  - With a gain factor of 32, channel B is selected
+//  The library default is "128" (Channel A).
 void hx711_Init(void);
 uint8_t hx711_ReadValue(force_t *load);
 

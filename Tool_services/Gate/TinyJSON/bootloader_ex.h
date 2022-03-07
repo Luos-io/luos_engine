@@ -8,7 +8,7 @@
 #define BOOTLOADER_EX_H
 
 #include "robus_struct.h"
-#include "luos.h"
+#include "luos_engine.h"
 #include "tiny-json.h"
 /*******************************************************************************
  * Definitions

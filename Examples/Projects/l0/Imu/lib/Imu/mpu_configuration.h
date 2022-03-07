@@ -1,7 +1,7 @@
 #ifndef __MPU_SETUP_H__
 #define __MPU_SETUP_H__
 
-#include <luos.h>
+#include "luos_engine.h"
 #include <eMPL_outputs.h>
 #include <inv_mpu_dmp_motion_driver.h>
 #include <inv_mpu.h>

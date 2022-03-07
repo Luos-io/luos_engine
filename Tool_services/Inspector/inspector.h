@@ -6,7 +6,7 @@
 #ifndef INSPECTOR_H
 #define INSPECTOR_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

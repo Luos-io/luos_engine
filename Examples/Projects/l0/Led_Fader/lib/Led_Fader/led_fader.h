@@ -7,7 +7,7 @@
 #ifndef LED_FADER_H
 #define LED_FADER_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

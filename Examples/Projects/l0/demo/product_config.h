@@ -6,7 +6,7 @@
  ******************************************************************************/
 #ifndef PRODUCT_CONFIG_H
 #define PRODUCT_CONFIG_H
-#include "luos.h"
+#include "luos_engine.h"
 
 enum
 {
@@ -38,4 +38,4 @@ typedef struct
     ledstrip_position_OperationMode_t parameter; // Default value is DISTANCE_DISPLAY
 } ledstrip_position_Parameter_t;
 
-#endif //PRODUCT_CONFIG_H
+#endif // PRODUCT_CONFIG_H

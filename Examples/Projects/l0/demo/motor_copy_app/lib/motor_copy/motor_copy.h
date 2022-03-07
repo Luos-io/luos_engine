@@ -7,7 +7,7 @@
 #ifndef MOTOR_COPY_H
 #define MOTOR_COPY_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

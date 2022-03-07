@@ -7,7 +7,7 @@
 #ifndef ALARM_CONTROLLER_H
 #define ALARM_CONTROLLER_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions

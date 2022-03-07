@@ -7,7 +7,7 @@
 #ifndef SELFTEST_H
 #define SELFTEST_H
 
-#include "luos.h"
+#include "luos_engine.h"
 
 void selftest_SetRxFlag(void);
 void selftest_run(void (*ok_callback)(void), void (*ko_callback)(void));

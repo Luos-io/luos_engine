@@ -7,7 +7,7 @@
 #ifndef PIPE_H
 #define PIPE_H
 
-#include "luos.h"
+#include "luos_engine.h"
 #include <stdbool.h>
 /*******************************************************************************
  * Definitions

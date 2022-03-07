@@ -1,11 +1,10 @@
 /******************************************************************************
- * @file luos
- * @brief User functionalities of the Luos library
+ * @file luos_engine
+ * @brief User functionalities of the Luos engine library
  * @author Luos
- * @version 0.0.0
  ******************************************************************************/
-#ifndef LUOS_H
-#define LUOS_H
+#ifndef LUOS_ENGINE_H
+#define LUOS_ENGINE_H
 
 #include "luos_utils.h"
 #include "luos_list.h"
@@ -72,4 +71,4 @@ void Luos_SetFilterState(uint8_t state, service_t *service);
 void Luos_Run(void);
 void Luos_Detect(service_t *service);
 
-#endif /* LUOS_H */
+#endif /* LUOS_ENGINE_H */
