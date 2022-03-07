@@ -11,7 +11,7 @@
 #define SERVO_DRV_H
 
 #include "luos_engine.h"
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 /*******************************************************************************
  * Definitions

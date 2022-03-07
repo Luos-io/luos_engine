@@ -12,7 +12,7 @@
 #include "reception.h"
 #include "port_manager.h"
 #include "context.h"
-#include "luos_hal.h"
+#include "robus_hal.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
 #include "timestamp.h"
@@ -81,7 +81,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     MsgAlloc_Init(memory_stats);
 
     // Init hal
-    LuosHAL_Init();
+    RobusHAL_Init();
 
     // init detection structure
     PortMng_Init();
@@ -320,8 +320,8 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
         MsgAlloc_Init(NULL);
 
         // wait for some 2ms to be sure all previous messages are received and treated
-        uint32_t start_tick = LuosHAL_GetSystick();
-        while (LuosHAL_GetSystick() - start_tick < 2)
+        uint32_t start_tick = RobusHAL_GetSystick();
+        while (RobusHAL_GetSystick() - start_tick < 2)
             ;
         try_nbr++;
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
@@ -372,11 +372,11 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
 
         // when Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
         // We just have to wait the end of the treatment of the entire branch
-        uint32_t start_tick = LuosHAL_GetSystick();
+        uint32_t start_tick = RobusHAL_GetSystick();
         while (ctx.port.keepLine)
         {
             Robus_Loop();
-            if (LuosHAL_GetSystick() - start_tick > NETWORK_TIMEOUT)
+            if (RobusHAL_GetSystick() - start_tick > NETWORK_TIMEOUT)
             {
                 // topology detection is too long, we should abort it and restart
                 return FAILED;
@@ -459,7 +459,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             while (MsgAlloc_TxAllComplete() == FAILED)
                 ;
             memcpy(&baudrate, input->data, sizeof(uint32_t));
-            LuosHAL_ComInit(baudrate);
+            RobusHAL_ComInit(baudrate);
             return SUCCEED;
             break;
         default:
@@ -486,9 +486,9 @@ void Robus_Flush(void)
 {
     while (ctx.tx.lock != false)
         ;
-    LuosHAL_SetIrqState(false);
+    RobusHAL_SetIrqState(false);
     MsgAlloc_Init(NULL);
-    LuosHAL_SetIrqState(true);
+    RobusHAL_SetIrqState(true);
 }
 
 /******************************************************************************
@@ -530,7 +530,7 @@ inline void Robus_SetNodeDetected(network_state_t state)
         case LOCAL_DETECTION:
         case EXTERNAL_DETECTION:
             ctx.node_connected.timeout_run = true;
-            ctx.node_connected.timeout     = LuosHAL_GetSystick();
+            ctx.node_connected.timeout     = RobusHAL_GetSystick();
             break;
         case DETECTION_OK:
             ctx.node_connected.timeout_run = false;
@@ -552,7 +552,7 @@ void Robus_RunNetworkTimeout(void)
     if (ctx.node_connected.timeout_run)
     {
         // if timeout is reached, go back to link-down state
-        if (LuosHAL_GetSystick() - ctx.node_connected.timeout > NETWORK_TIMEOUT)
+        if (RobusHAL_GetSystick() - ctx.node_connected.timeout > NETWORK_TIMEOUT)
         {
             Robus_SetNodeDetected(NO_DETECTION);
         }

@@ -8,7 +8,7 @@
 #include "port_manager.h"
 #include "transmission.h"
 #include "context.h"
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 /*******************************************************************************
  * Definitions
@@ -65,7 +65,7 @@ void PortMng_PtpHandler(uint8_t PortNbr)
     else if (Port_ExpectedState == POKE)
     {
         // we receive a poke, pull the line to notify your presence
-        LuosHAL_PushPTP(PortNbr);
+        RobusHAL_PushPTP(PortNbr);
         ctx.port.activ = PortNbr;
     }
 }
@@ -77,22 +77,22 @@ void PortMng_PtpHandler(uint8_t PortNbr)
 uint8_t PortMng_PokePort(uint8_t PortNbr)
 {
     // push the ptp line
-    LuosHAL_PushPTP(PortNbr);
+    RobusHAL_PushPTP(PortNbr);
     // wait a little just to be sure everyone can read it
-    uint32_t start_tick = LuosHAL_GetSystick();
-    while (LuosHAL_GetSystick() - start_tick < 2)
+    uint32_t start_tick = RobusHAL_GetSystick();
+    while (RobusHAL_GetSystick() - start_tick < 2)
         ;
     // release the ptp line
-    LuosHAL_SetPTPDefaultState(PortNbr);
-    while (LuosHAL_GetSystick() - start_tick < 3)
+    RobusHAL_SetPTPDefaultState(PortNbr);
+    while (RobusHAL_GetSystick() - start_tick < 3)
         ;
     // Save port as empty by default
     ctx.node.port_table[PortNbr] = 0xFFFF;
     // read the line state
-    if (LuosHAL_GetPTPState(PortNbr))
+    if (RobusHAL_GetPTPState(PortNbr))
     {
         // Someone reply, reverse the detection to wake up on line release
-        LuosHAL_SetPTPReverseState(PortNbr);
+        RobusHAL_SetPTPReverseState(PortNbr);
         Port_ExpectedState = RELEASE;
         // Port poked by node
         ctx.port.activ    = PortNbr;
@@ -144,6 +144,6 @@ void PortMng_Reset(void)
     // if it is finished reset all lines
     for (uint8_t port = 0; port < NBR_PORT; port++)
     {
-        LuosHAL_SetPTPDefaultState(port);
+        RobusHAL_SetPTPDefaultState(port);
     }
 }

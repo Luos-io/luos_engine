@@ -8,7 +8,7 @@
 #include "selftest.h"
 #include "context.h"
 #include "stdbool.h"
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 /*******************************************************************************
  * Definitions
@@ -69,15 +69,15 @@ result_t selftest_com(void)
 
     Luos_SendMsg(0, &msg);
 
-    uint32_t tickstart = LuosHAL_GetSystick();
+    uint32_t tickstart = RobusHAL_GetSystick();
     while (!rx_flag)
     {
-        if ((LuosHAL_GetSystick() - tickstart) > 2000)
+        if ((RobusHAL_GetSystick() - tickstart) > 2000)
         {
             return KO;
         }
     }
-    while ((LuosHAL_GetSystick() - tickstart) < 2000)
+    while ((RobusHAL_GetSystick() - tickstart) < 2000)
         ;
 
     if (ctx.tx.lock == true)
@@ -95,30 +95,30 @@ result_t selftest_com(void)
  ******************************************************************************/
 result_t selftest_ptp(void)
 {
-    uint32_t start_tick = LuosHAL_GetSystick();
+    uint32_t start_tick = RobusHAL_GetSystick();
 
-    LuosHAL_SetPTPDefaultState(0);
-    LuosHAL_SetPTPDefaultState(1);
-    LuosHAL_PushPTP(0);
+    RobusHAL_SetPTPDefaultState(0);
+    RobusHAL_SetPTPDefaultState(1);
+    RobusHAL_PushPTP(0);
 
-    while (LuosHAL_GetSystick() - start_tick < 2)
+    while (RobusHAL_GetSystick() - start_tick < 2)
         ;
-    LuosHAL_SetPTPDefaultState(0);
+    RobusHAL_SetPTPDefaultState(0);
     // Test  pinout and IRQ
-    if (!LuosHAL_GetPTPState(0))
+    if (!RobusHAL_GetPTPState(0))
     {
         return KO;
     }
 
-    LuosHAL_SetPTPDefaultState(0);
-    LuosHAL_SetPTPDefaultState(1);
-    LuosHAL_PushPTP(1);
+    RobusHAL_SetPTPDefaultState(0);
+    RobusHAL_SetPTPDefaultState(1);
+    RobusHAL_PushPTP(1);
 
-    while (LuosHAL_GetSystick() - start_tick < 3)
+    while (RobusHAL_GetSystick() - start_tick < 3)
         ;
-    LuosHAL_SetPTPDefaultState(1);
+    RobusHAL_SetPTPDefaultState(1);
     // Test  pinout and IRQ
-    if (!LuosHAL_GetPTPState(1))
+    if (!RobusHAL_GetPTPState(1))
     {
         return KO;
     }

@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file lcd_drv
  * @brief This is a driver example for an LCD display. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/STM32F0-Luos-Biometric-Security-System
  * @author mariebidouille
@@ -10,7 +10,7 @@
 #ifndef LCD_DRV_H
 #define LCD_DRV_H
 
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 /*******************************************************************************
  * Definitions
