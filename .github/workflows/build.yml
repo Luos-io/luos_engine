@@ -68,24 +68,46 @@ jobs:
           platformio run -d Examples/Projects/l0/Bike_alarm/Start_controller
           # arduino
           platformio run -d Examples/Projects/Arduino/Button
+          platformio run -d Examples/Projects/Arduino/Fingerprint
           platformio run -d Examples/Projects/Arduino/Gate_SerialCom
+          platformio run -d Examples/Projects/Arduino/Inspector_SerialCom
+          platformio run -d Examples/Projects/Arduino/Lcd
+          platformio run -d Examples/Projects/Arduino/Led
+          platformio run -d Examples/Projects/Arduino/Servo_motor
           # NUCLEO-L432KC
           platformio run -d Examples/Projects/NUCLEO-L432KC/Button
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Fingerprint
           platformio run -d Examples/Projects/NUCLEO-L432KC/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Gpio
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Lcd
           platformio run -d Examples/Projects/NUCLEO-L432KC/Led
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Servo
           # STM32F4-discovery
           platformio run -d Examples/Projects/STM32F4-discovery/Button
           platformio run -d Examples/Projects/STM32F4-discovery/Gate_SerialCom
+          platformio run -d Examples/Projects/STM32F4-discovery/Inspector_SerialCom
           # NUCLEO-F401RE
           platformio run -d Examples/Projects/NUCLEO-F401RE/Button
           platformio run -d Examples/Projects/NUCLEO-F401RE/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F401RE/Inspector_SerialCom
           platformio run -d Examples/Projects/NUCLEO-F401RE/Led
           # NUCLEO-F401RB
           platformio run -d Examples/Projects/NUCLEO-F410RB/Button
           platformio run -d Examples/Projects/NUCLEO-F410RB/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F410RB/Inspector_SerialCom
           # NUCLEO-G431KB
           platformio run -d Examples/Projects/NUCLEO-G431KB/Button
           platformio run -d Examples/Projects/NUCLEO-G431KB/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-G431KB/Inspector_SerialCom
+          # NUCLEO-G474RE
+          platformio run -d Examples/Projects/NUCLEO-G474RE/Button
+          platformio run -d Examples/Projects/NUCLEO-G474RE/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-G474RE/Inspector_SerialCom
+          # NUCLEO-F072RB
+          platformio run -d Examples/Projects/NUCLEO-FO72RB/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-FO72RB/Inspector_SerialCom
+
 
       - name: Run PlatformIO Unit Tests
         env:
