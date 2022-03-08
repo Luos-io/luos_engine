@@ -8,7 +8,7 @@
 #include "ll_motor.h"
 #include "profile_servo_motor.h"
 
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "stdbool.h"
 #include "math.h"
 #include <float.h>

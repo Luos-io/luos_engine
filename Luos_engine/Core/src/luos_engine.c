@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include "msg_alloc.h"
 #include "robus.h"
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "bootloader_core.h"
 
 /*******************************************************************************
@@ -66,6 +66,7 @@ void Luos_Init(void)
 {
     service_number = 0;
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
+    LuosHAL_Init();
     Robus_Init(&luos_stats.memory);
     uint32_t init_time = 0;
     // initialize the timer
@@ -90,21 +91,21 @@ void Luos_Loop(void)
     if (launch_boot_flag)
     {
         launch_boot_flag = false;
-        boot_start_date  = RobusHAL_GetSystick();
+        boot_start_date  = LuosHAL_GetSystick();
         boot_run         = true;
     }
 
-    if (((RobusHAL_GetSystick() - boot_start_date) > BOOT_TIMEOUT) && boot_run)
+    if (((LuosHAL_GetSystick() - boot_start_date) > BOOT_TIMEOUT) && boot_run)
     {
-        RobusHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
+        LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
         boot_run = false;
     }
 #endif
 
     // check loop call time stat
-    if ((RobusHAL_GetSystick() - last_loop_date) > luos_stats.max_loop_time_ms)
+    if ((LuosHAL_GetSystick() - last_loop_date) > luos_stats.max_loop_time_ms)
     {
-        luos_stats.max_loop_time_ms = RobusHAL_GetSystick() - last_loop_date;
+        luos_stats.max_loop_time_ms = LuosHAL_GetSystick() - last_loop_date;
     }
     if (MsgAlloc_IsReseted() == SUCCEED)
     {
@@ -171,7 +172,7 @@ void Luos_Loop(void)
     // manage timed auto update
     Luos_AutoUpdateManager();
     // save loop date
-    last_loop_date = RobusHAL_GetSystick();
+    last_loop_date = LuosHAL_GetSystick();
 }
 /******************************************************************************
  * @brief Check if this command concern luos
@@ -417,7 +418,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             TimeOD_TimeFromMsg(&time, input);
             service->auto_refresh.target      = input->header.source;
             service->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
-            service->auto_refresh.last_update = RobusHAL_GetSystick();
+            service->auto_refresh.last_update = LuosHAL_GetSystick();
             consume                           = SUCCEED;
             break;
         case VERBOSE:
@@ -510,7 +511,7 @@ static void Luos_AutoUpdateManager(void)
             // check if there is a timed update setted and if it's time to update it.
             if (service_table[i].auto_refresh.time_ms)
             {
-                if ((RobusHAL_GetSystick() - service_table[i].auto_refresh.last_update) >= service_table[i].auto_refresh.time_ms)
+                if ((LuosHAL_GetSystick() - service_table[i].auto_refresh.last_update) >= service_table[i].auto_refresh.time_ms)
                 {
                     // This service need to send an update
                     // Create a fake message for it from the service asking for update
@@ -530,7 +531,7 @@ static void Luos_AutoUpdateManager(void)
                         //  todo this can't work for now because this message is not permanent.
                         // mngr_set(&service_table[i], &updt_msg);
                     }
-                    service_table[i].auto_refresh.last_update = RobusHAL_GetSystick();
+                    service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
             }
         }
@@ -959,7 +960,7 @@ static error_return_t Luos_SaveAlias(service_t *service, uint8_t *alias)
 static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias)
 {
     uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
-    RobusHAL_FlashWriteLuosMemoryInfo(addr, 16, (uint8_t *)alias);
+    LuosHAL_FlashWriteLuosMemoryInfo(addr, 16, (uint8_t *)alias);
 }
 /******************************************************************************
  * @brief read alias from flash
@@ -970,7 +971,7 @@ static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias)
 static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias)
 {
     uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
-    RobusHAL_FlashReadLuosMemoryInfo(addr, 16, (uint8_t *)alias);
+    LuosHAL_FlashReadLuosMemoryInfo(addr, 16, (uint8_t *)alias);
     // Check name integrity
     if ((((alias[0] < 'A') | (alias[0] > 'Z')) & ((alias[0] < 'a') | (alias[0] > 'z'))) | (alias[0] == '\0'))
     {
@@ -1032,7 +1033,7 @@ uint16_t Luos_NbrAvailableMsg(void)
  ******************************************************************************/
 uint32_t Luos_GetSystick(void)
 {
-    return RobusHAL_GetSystick();
+    return LuosHAL_GetSystick();
 }
 /******************************************************************************
  * @brief return True if all message are complete

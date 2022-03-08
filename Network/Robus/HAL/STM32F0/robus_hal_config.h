@@ -20,9 +20,6 @@
 #define USE_CRC_HW 1
 #endif
 
-#ifndef MCUFREQ
-#define MCUFREQ 48000000 // MCU frequence
-#endif
 #ifndef TIMERDIV
 #define TIMERDIV 1 // clock divider for timer clock chosen
 #endif
@@ -125,7 +122,7 @@
 #define LUOS_COM_IRQHANDLER()       USART1_IRQHandler()
 #endif
 /*******************************************************************************
- * FLASH CONFIG
+ * DMA CONFIG
  ******************************************************************************/
 #ifndef LUOS_DMA_CLOCK_ENABLE
 #define LUOS_DMA_CLOCK_ENABLE()     __HAL_RCC_DMA1_CLK_ENABLE();
@@ -139,6 +136,7 @@
 #ifndef LUOS_DMA_REMAP
 #define LUOS_DMA_REMAP              0
 #endif
+
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
@@ -154,22 +152,5 @@
 #ifndef LUOS_TIMER_IRQHANDLER
 #define LUOS_TIMER_IRQHANDLER()     TIM6_DAC_IRQHandler()
 #endif
-/*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE                   (uint32_t) FLASH_PAGE_SIZE
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH     ((uint32_t)(FLASH_BANK1_END - FLASH_PAGE_SIZE + 1))
-#endif
-
-/*******************************************************************************
- * BOOTLOADER CONFIG
- ******************************************************************************/
-#define FLASH_END 0x0801FFFF
-
-#define SHARED_MEMORY_ADDRESS ((uint32_t)(ADDRESS_LAST_PAGE_FLASH - FLASH_PAGE_SIZE))
-#define APP_ADDRESS           (uint32_t)0x0800C800
 
 #endif /* _RobusHAL_CONFIG_H_ */

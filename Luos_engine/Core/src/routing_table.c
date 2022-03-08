@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "context.h"
 
 /*******************************************************************************
@@ -222,8 +222,8 @@ static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
     const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;
     Luos_SendMsg(service, intro_msg);
-    uint32_t timestamp = RobusHAL_GetSystick();
-    while ((RobusHAL_GetSystick() - timestamp) < timeout)
+    uint32_t timestamp = LuosHAL_GetSystick();
+    while ((LuosHAL_GetSystick() - timestamp) < timeout)
     {
         // If this request is for a service in this board allow him to respond.
         Luos_Loop();

@@ -6,6 +6,7 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "robus_hal.h"
+#include "luos_hal.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -47,18 +48,12 @@ Port_t PTP[NBR_PORT];
 
 volatile uint16_t data_size_to_transmit = 0;
 volatile uint8_t *tx_data               = 0;
-
-// timestamp variable
-static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void RobusHAL_SystickInit(void);
-static void RobusHAL_FlashInit(void);
 static void RobusHAL_CRCInit(void);
 static void RobusHAL_TimeoutInit(void);
 static void RobusHAL_GPIOInit(void);
-static void RobusHAL_FlashEraseLuosMemoryInfo(void);
 static void RobusHAL_RegisterPTP(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
@@ -70,57 +65,16 @@ static void RobusHAL_RegisterPTP(void);
  ******************************************************************************/
 void RobusHAL_Init(void)
 {
-    // Systick Initialization
-    RobusHAL_SystickInit();
-
     // IO Initialization
     RobusHAL_GPIOInit();
-
-    // Flash Initialization
-    RobusHAL_FlashInit();
 
     // CRC Initialization
     RobusHAL_CRCInit();
 
     // Com Initialization
     RobusHAL_ComInit(DEFAULTBAUDRATE);
+}
 
-    // start timestamp
-    RobusHAL_StartTimestamp();
-}
-/******************************************************************************
- * @brief Luos HAL general disable IRQ
- * @param None
- * @return None
- ******************************************************************************/
-void RobusHAL_SetIrqState(uint8_t Enable)
-{
-    if (Enable == true)
-    {
-        __enable_irq();
-    }
-    else
-    {
-        __disable_irq();
-    }
-}
-/******************************************************************************
- * @brief Luos HAL general systick tick at 1ms initialize
- * @param None
- * @return tick Counter
- ******************************************************************************/
-static void RobusHAL_SystickInit(void)
-{
-}
-/******************************************************************************
- * @brief Luos HAL general systick tick at 1ms
- * @param None
- * @return tick Counter
- ******************************************************************************/
-uint32_t RobusHAL_GetSystick(void)
-{
-    return HAL_GetTick();
-}
 /******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
  * @param Select a baudrate for the Com
@@ -453,41 +407,6 @@ void LUOS_TIMER_IRQHANDLER()
 }
 
 /******************************************************************************
- * @brief Luos GetTimestamp
- * @param None
- * @return uint64_t
- ******************************************************************************/
-uint64_t RobusHAL_GetTimestamp(void)
-{
-    ll_timestamp.lower_timestamp  = (SysTick->LOAD - SysTick->VAL) * (1000000000 / MCUFREQ);
-    ll_timestamp.higher_timestamp = RobusHAL_GetSystick() - ll_timestamp.start_offset;
-
-    return ll_timestamp.higher_timestamp * 1000000 + (uint64_t)ll_timestamp.lower_timestamp;
-}
-
-/******************************************************************************
- * @brief Luos start Timestamp
- * @param None
- * @return None
- ******************************************************************************/
-void RobusHAL_StartTimestamp(void)
-{
-    ll_timestamp.start_offset = RobusHAL_GetSystick();
-}
-
-/******************************************************************************
- * @brief Luos stop Timestamp
- * @param None
- * @return None
- ******************************************************************************/
-void RobusHAL_StopTimestamp(void)
-{
-    ll_timestamp.lower_timestamp  = 0;
-    ll_timestamp.higher_timestamp = 0;
-    ll_timestamp.start_offset     = 0;
-}
-
-/******************************************************************************
  * @brief Initialisation GPIO
  * @param None
  * @return None
@@ -721,264 +640,3 @@ void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     }
 #endif
 }
-/******************************************************************************
- * @brief Flash Initialisation
- * @param None
- * @return None
- ******************************************************************************/
-static void RobusHAL_FlashInit(void)
-{
-}
-/******************************************************************************
- * @brief Erase flash page where Luos keep permanente information
- * @param None
- * @return None
- ******************************************************************************/
-static void RobusHAL_FlashEraseLuosMemoryInfo(void)
-{
-    uint32_t page_error = 0;
-    FLASH_EraseInitTypeDef s_eraseinit;
-
-    s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
-    s_eraseinit.Page      = NB_OF_PAGE - 1;
-    s_eraseinit.NbPages   = 1;
-
-    // Erase Page
-    HAL_FLASH_Unlock();
-    HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
-    HAL_FLASH_Lock();
-}
-/******************************************************************************
- * @brief Write flash page where Luos keep permanente information
- * @param Address page / size to write / pointer to data to write
- * @return
- ******************************************************************************/
-void RobusHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    // Before writing we have to erase the entire page
-    // to do that we have to backup current values by copying it into RAM
-    uint8_t page_backup[PAGE_SIZE];
-    memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, PAGE_SIZE);
-
-    // Now we can erase the page
-    RobusHAL_FlashEraseLuosMemoryInfo();
-
-    // Then add input data into backuped value on RAM
-    uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
-    memcpy(&page_backup[RAMaddr], data, size);
-
-    // and copy it into flash
-    HAL_FLASH_Unlock();
-
-    // ST hal flash program function write data by uint64_t raw data
-    for (uint32_t i = 0; i < PAGE_SIZE; i += sizeof(uint64_t))
-    {
-        while (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, i + ADDRESS_ALIASES_FLASH, *(uint64_t *)(&page_backup[i])) != HAL_OK)
-            ;
-    }
-    HAL_FLASH_Lock();
-}
-/******************************************************************************
- * @brief read information from page where Luos keep permanente information
- * @param Address info / size to read / pointer callback data to read
- * @return
- ******************************************************************************/
-void RobusHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    memcpy(data, (void *)(addr), size);
-}
-
-/******************************************************************************
- * @brief Set boot mode in shared flash memory
- * @param
- * @return
- ******************************************************************************/
-void RobusHAL_SetMode(uint8_t mode)
-{
-    uint64_t data_to_write = ~BOOT_MODE_MASK | (mode << BOOT_MODE_OFFSET);
-    uint32_t page_error    = 0;
-    FLASH_EraseInitTypeDef s_eraseinit;
-
-    s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
-    s_eraseinit.Page      = SHARED_MEMORY_ADDRESS / (uint32_t)PAGE_SIZE;
-    s_eraseinit.NbPages   = 1;
-
-    // Unlock flash
-    HAL_FLASH_Unlock();
-    // Erase Page
-    HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
-    // ST hal flash program function write data by uint64_t raw data
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, (uint32_t)SHARED_MEMORY_ADDRESS, data_to_write);
-    // re-lock FLASH
-    HAL_FLASH_Lock();
-}
-
-/******************************************************************************
- * @brief Save node ID in shared flash memory
- * @param Address, node_id
- * @return
- ******************************************************************************/
-void RobusHAL_SaveNodeID(uint16_t node_id)
-{
-    uint32_t page_error = 0;
-    FLASH_EraseInitTypeDef s_eraseinit;
-    uint32_t *p_start = (uint32_t *)SHARED_MEMORY_ADDRESS;
-
-    uint32_t saved_data    = *p_start;
-    uint32_t data_tmp      = ~NODE_ID_MASK | (node_id << NODE_ID_OFFSET);
-    uint32_t data_to_write = saved_data & data_tmp;
-
-    s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
-    s_eraseinit.Page      = SHARED_MEMORY_ADDRESS / (uint32_t)PAGE_SIZE;
-    s_eraseinit.NbPages   = 1;
-
-    // Unlock flash
-    HAL_FLASH_Unlock();
-    // Erase Page
-    HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
-    // ST hal flash program function write data by uint64_t raw data
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, (uint32_t)SHARED_MEMORY_ADDRESS, (uint64_t)data_to_write);
-    // re-lock FLASH
-    HAL_FLASH_Lock();
-}
-
-/******************************************************************************
- * @brief software reboot the microprocessor
- * @param
- * @return
- ******************************************************************************/
-void RobusHAL_Reboot(void)
-{
-    // DeInit RCC and HAL
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-
-    // reset systick
-    SysTick->CTRL = 0;
-    SysTick->LOAD = 0;
-    SysTick->VAL  = 0;
-
-    // reset in bootloader mode
-    NVIC_SystemReset();
-}
-
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
- * @brief DeInit Bootloader peripherals
- * @param
- * @return
- ******************************************************************************/
-void RobusHAL_DeInit(void)
-{
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-}
-
-/******************************************************************************
- * @brief DeInit Bootloader peripherals
- * @param
- * @return
- ******************************************************************************/
-typedef void (*pFunction)(void); /*!< Function pointer definition */
-
-void RobusHAL_JumpToApp(uint32_t app_addr)
-{
-    uint32_t JumpAddress = *(__IO uint32_t *)(app_addr + 4);
-    pFunction Jump       = (pFunction)JumpAddress;
-
-    __disable_irq();
-
-    SysTick->CTRL = 0;
-    SysTick->LOAD = 0;
-    SysTick->VAL  = 0;
-
-    SCB->VTOR = app_addr;
-
-    __set_MSP(*(__IO uint32_t *)app_addr);
-
-    __enable_irq();
-
-    Jump();
-}
-
-/******************************************************************************
- * @brief Return bootloader mode saved in flash
- * @param
- * @return
- ******************************************************************************/
-uint8_t RobusHAL_GetMode(void)
-{
-    uint32_t *p_start = (uint32_t *)SHARED_MEMORY_ADDRESS;
-    uint32_t data     = (*p_start & BOOT_MODE_MASK) >> BOOT_MODE_OFFSET;
-
-    return (uint8_t)data;
-}
-
-/******************************************************************************
- * @brief Get node id saved in flash memory
- * @param Address
- * @return node_id
- ******************************************************************************/
-uint16_t RobusHAL_GetNodeID(void)
-{
-    uint32_t *p_start = (uint32_t *)SHARED_MEMORY_ADDRESS;
-    uint32_t data     = *p_start & NODE_ID_MASK;
-    uint16_t node_id  = (uint16_t)(data >> NODE_ID_OFFSET);
-
-    return node_id;
-}
-
-/******************************************************************************
- * @brief erase sectors in flash memory
- * @param Address, size
- * @return
- ******************************************************************************/
-void RobusHAL_EraseMemory(uint32_t address, uint16_t size)
-{
-    uint32_t nb_sectors_to_erase = 0;
-    uint32_t page_to_erase       = address / (uint32_t)PAGE_SIZE;
-
-    // compute number of sectors to erase
-    nb_sectors_to_erase = (ADDRESS_LAST_PAGE_FLASH - address) / (uint32_t)PAGE_SIZE;
-
-    uint32_t page_error = 0;
-    FLASH_EraseInitTypeDef s_eraseinit;
-    s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
-    s_eraseinit.NbPages   = 1;
-
-    int i = 0;
-    for (i = 0; i < nb_sectors_to_erase; i++)
-    {
-        s_eraseinit.Page = page_to_erase;
-
-        // Unlock flash
-        HAL_FLASH_Unlock();
-        // Erase Page
-        HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
-        // re-lock FLASH
-        HAL_FLASH_Lock();
-
-        // update page to erase
-        page_to_erase += 1;
-    }
-}
-
-/******************************************************************************
- * @brief Save binary data in shared flash memory
- * @param Address, size, data[]
- * @return
- ******************************************************************************/
-void RobusHAL_ProgramFlash(uint32_t address, uint16_t size, uint8_t *data)
-{
-    // Unlock flash
-    HAL_FLASH_Unlock();
-    // ST hal flash program function write data by uint64_t raw data
-    for (uint32_t i = 0; i < size; i += sizeof(uint64_t))
-    {
-        while (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, i + address, *(uint64_t *)(&data[i])) != HAL_OK)
-            ;
-    }
-    // re-lock FLASH
-    HAL_FLASH_Lock();
-}
-#endif

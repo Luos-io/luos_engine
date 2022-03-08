@@ -9,6 +9,7 @@
 #include "transmission.h"
 #include "context.h"
 #include "robus_hal.h"
+#include "luos_hal.h"
 
 /*******************************************************************************
  * Definitions
@@ -79,12 +80,12 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     // push the ptp line
     RobusHAL_PushPTP(PortNbr);
     // wait a little just to be sure everyone can read it
-    uint32_t start_tick = RobusHAL_GetSystick();
-    while (RobusHAL_GetSystick() - start_tick < 2)
+    uint32_t start_tick = LuosHAL_GetSystick();
+    while (LuosHAL_GetSystick() - start_tick < 2)
         ;
     // release the ptp line
     RobusHAL_SetPTPDefaultState(PortNbr);
-    while (RobusHAL_GetSystick() - start_tick < 3)
+    while (LuosHAL_GetSystick() - start_tick < 3)
         ;
     // Save port as empty by default
     ctx.node.port_table[PortNbr] = 0xFFFF;

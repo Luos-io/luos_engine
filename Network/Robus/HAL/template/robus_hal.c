@@ -6,6 +6,7 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "robus_hal.h"
+#include "luos_hal.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -37,12 +38,9 @@ volatile uint8_t *tx_data               = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void RobusHAL_SystickInit(void);
-static void RobusHAL_FlashInit(void);
 static void RobusHAL_CRCInit(void);
 static void RobusHAL_TimeoutInit(void);
 static void RobusHAL_GPIOInit(void);
-static void RobusHAL_FlashEraseLuosMemoryInfo(void);
 static void RobusHAL_RegisterPTP(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
@@ -54,54 +52,14 @@ static void RobusHAL_RegisterPTP(void);
  ******************************************************************************/
 void RobusHAL_Init(void)
 {
-    // Systick Initialization
-    RobusHAL_SystickInit();
-
     // IO Initialization
     RobusHAL_GPIOInit();
-
-    // Flash Initialization
-    RobusHAL_FlashInit();
 
     // CRC Initialization
     RobusHAL_CRCInit();
 
     // Com Initialization
     RobusHAL_ComInit(DEFAULTBAUDRATE);
-}
-/******************************************************************************
- * @brief Luos HAL general disable IRQ
- * @param None
- * @return None
- ******************************************************************************/
-void RobusHAL_SetIrqState(uint8_t Enable)
-{
-    if (Enable == true)
-    {
-        __enable_irq();
-    }
-    else
-    {
-        __disable_irq();
-    }
-}
-/******************************************************************************
- * @brief Luos HAL general systick tick at 1ms initialize
- * @param None
- * @return tick Counter
- ******************************************************************************/
-static void RobusHAL_SystickInit(void)
-{
-    // Systick timer initialization
-}
-/******************************************************************************
- * @brief Luos HAL general systick tick at 1ms
- * @param None
- * @return tick Counter
- ******************************************************************************/
-uint32_t RobusHAL_GetSystick(void)
-{
-    return; // return  tick
 }
 /******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
@@ -531,52 +489,3 @@ void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     }
 #endif
 }
-/******************************************************************************
- * @brief Flash Initialisation
- * @param None
- * @return None
- ******************************************************************************/
-static void RobusHAL_FlashInit(void)
-{
-}
-/******************************************************************************
- * @brief Erase flash page where Luos keep permanente information
- * @param None
- * @return None
- ******************************************************************************/
-static void RobusHAL_FlashEraseLuosMemoryInfo(void)
-{
-    uint32_t page_error = 0;
-    // routine to erase flash page
-}
-/******************************************************************************
- * @brief Write flash page where Luos keep permanente information
- * @param Address page / size to write / pointer to data to write
- * @return
- ******************************************************************************/
-void RobusHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    // Before writing we have to erase the entire page
-    // to do that we have to backup current falues by copying it into RAM
-    uint8_t page_backup[PAGE_SIZE];
-    memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, PAGE_SIZE);
-
-    // Now we can erase the page
-
-    // Then add input data into backuped value on RAM
-    uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
-    memcpy(&page_backup[RAMaddr], data, size);
-
-    // and copy it into flash
-
-    // write data
-
-    /******************************************************************************
-     * @brief read information from page where Luos keep permanente information
-     * @param Address info / size to read / pointer callback data to read
-     * @return
-     ******************************************************************************/
-    void RobusHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t * data)
-    {
-        memcpy(data, (void *)(addr), size);
-    }
