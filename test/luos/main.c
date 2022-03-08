@@ -111,8 +111,7 @@ void unittest_Luos_ReceiveData()
         uint32_t bin_data[64] = {0xDEADBEEF};
 
         NEW_STEP("Verify if we assert");
-        Luos_ReceiveData(NULL, 0, bin_data);
-        TEST_ASSERT_TRUE(IS_ASSERT());
+        TEST_ASSERT_EQUAL(Luos_ReceiveData(NULL, 0, bin_data), -1);
         RESET_ASSERT();
     }
 
