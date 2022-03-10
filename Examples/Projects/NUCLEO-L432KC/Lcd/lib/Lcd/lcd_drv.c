@@ -313,7 +313,7 @@ void LcdDrv_SendCommand(uint8_t value)
  ******************************************************************************/
 void LcdDrv_DelayMs(int delay)
 {
-    volatile int t = RobusHAL_GetSystick();
-    while ((RobusHAL_GetSystick() - t) < delay)
+    volatile int t = LuosHAL_GetSystick();
+    while ((LuosHAL_GetSystick() - t) < delay)
         ;
 }

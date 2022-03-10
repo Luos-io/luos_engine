@@ -1,0 +1,20 @@
+{
+    "name": "Servo_motor",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "description": "a simple servomotor driver",
+    "version": "1.0.0",
+    "licence": "MIT",
+    "build": {},
+    "dependencies": [
+        {
+            "owner": "arduino-libraries",
+            "name": "Servo",
+            "version": "*"
+        },
+        {
+            "owner": "luos",
+            "name": "Luos_engine",
+            "version": "^2.2.0"
+        }
+    ]
+}
