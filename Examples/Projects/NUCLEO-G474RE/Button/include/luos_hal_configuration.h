@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file luosHAL_Config
- * @brief This file allow you to configure RobusHAL according to your design
+ * @brief This file allow you to configure LuosHAL according to your design
  *        this is the default configuration created by Luos team for this MCU Family
  *        Do not modify this file if you want to ovewrite change define in you project
  * @MCU Family STM32G4

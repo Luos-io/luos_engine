@@ -109,8 +109,8 @@ jobs:
           platformio run -d Examples/Projects/NUCLEO-G474RE/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-G474RE/Inspector_SerialCom
           # NUCLEO-F072RB
-          platformio run -d Examples/Projects/NUCLEO-FO72RB/Gate_SerialCom
-          platformio run -d Examples/Projects/NUCLEO-FO72RB/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F072RB/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F072RB/Inspector_SerialCom
 
       - name: Run PlatformIO Unit Tests
         env:
