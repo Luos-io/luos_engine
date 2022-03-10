@@ -1,17 +1,23 @@
 {
     "name": "Inspector",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,cJSON",
-    "description": "Luos turn your embedded system as services like microservice do it in software.",
-    "version": "1.1.0",
+    "description": "A Luos service application allowing a computer to inspect a product.",
+    "version": "1.1.1",
     "authors": {
         "name": "Luos",
-        "url": "https://www.luos.io/us/"
+        "url": "https://luos.io"
     },
+    "homepage": "https://docs.luos.io",
     "licence": "MIT",
+    "headers": "inspector.h",
     "dependencies": [
         {
             "name": "luos/Luos_engine",
             "version": "^2.2.0"
         }
-    ]
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Luos-io/luos"
+    }
 }

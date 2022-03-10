@@ -1,6 +1,6 @@
 {
     "name": "Luos_engine",
-    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST, luos_engine",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,luos engine",
     "description": "Luos turns your embedded system into services like microservices architecture does it in software.",
     "version": "2.3.0",
     "authors": {
@@ -29,5 +29,25 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/Luos-io/luos"
+    },
+    "export": {
+        "include": [
+            "Examples/Apps/*",
+            "Examples/Projects/Arduino/*",
+            "Examples/Projects/l0/*",
+            "Examples/Projects/NUCLEO-F072RB/*",
+            "Examples/Projects/NUCLEO-F401RE/*",
+            "Examples/Projects/NUCLEO-F410RB/*",
+            "Examples/Projects/NUCLEO-G431KB/*",
+            "Examples/Projects/NUCLEO-G474RE/*",
+            "Examples/Projects/NUCLEO-L432KC/*",
+            "Examples/Projects/STM32F4-discovery/*",
+            "Examples/README.md",
+            "Luos_engine/*",
+            "Network/*",
+            "source_filter_script.py",
+            "LICENSE",
+            "README.md"
+        ]
     }
 }

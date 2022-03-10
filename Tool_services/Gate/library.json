@@ -1,13 +1,15 @@
 {
     "name": "Gate",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,cJSON",
-    "description": "Luos turn your embedded system as services like microservice do it in software.",
+    "description": "A translation Luos app service allowing you to easily connect your computer to your hardware product.",
     "version": "1.1.0",
     "authors": {
         "name": "Luos",
-        "url": "https://www.luos.io/us/"
+        "url": "https://luos.io"
     },
-    "licence": "MIT",
+    "homepage": "https://docs.luos.io",
+    "license": "MIT",
+    "headers": "gate.h",
     "build": {
         "extraScript": "select_format_script.py"
     },
@@ -16,5 +18,9 @@
             "name": "luos/Luos_engine",
             "version": "^2.2.0"
         }
-    ]
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Luos-io/luos"
+    }
 }
