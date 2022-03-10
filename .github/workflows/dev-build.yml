@@ -6,7 +6,7 @@ on:
       - master # change it to main
 
 jobs:
-  build:
+  dev-build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

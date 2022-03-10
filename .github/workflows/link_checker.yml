@@ -1,0 +1,15 @@
+name: Markdown link checker
+
+on: push
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: gaurav-nelson/github-action-markdown-link-check@v1
+      with:
+        use-quiet-mode: 'yes'
+        folder-path: 'Engine, Examples/Apps, Examples/Projects, Network, test, Tool_services, .github'
+        file-path: './README.md, ./LICENSE'
+        config-file: '.github/workflows/mlc_config.json'
