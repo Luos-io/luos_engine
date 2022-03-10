@@ -41,8 +41,6 @@ static dmac_descriptor_registers_t write_back_section __ALIGNED(8);
 static dmac_descriptor_registers_t descriptor_section __ALIGNED(8);
 #endif
 
-// timestamp variable
-static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -139,8 +137,8 @@ void RobusHAL_SetTxState(uint8_t Enable)
 {
     if (Enable == true)
     {
-        PORT->Group[COM_TX_PORT].PINCFG[COM_TX_PIN] = PORT_PINCFG_RESETVALUE_Msk; // no pin mux / no input /  no pull / low streght
-        PORT->Group[COM_TX_PORT].PINCFG[COM_TX_PIN] |= PORT_PINCFG_PMUXEN_Msk;    // mux en
+        PORT_REGS->GROUP[COM_TX_PORT].PORT_PINCFG[COM_TX_PIN] = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
+        PORT_REGS->GROUP[COM_TX_PORT].PORT_PINCFG[COM_TX_PIN] |= PORT_PINCFG_PMUXEN_Msk;    // mux en
         if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
         {
             PORT_REGS->GROUP[TX_EN_PORT].PORT_OUTSET = (1 << TX_EN_PIN); // enable Tx
@@ -148,9 +146,9 @@ void RobusHAL_SetTxState(uint8_t Enable)
     }
     else
     {
-        PORT->Group[COM_TX_PORT].PINCFG[COM_TX_PIN] = PORT_PINCFG_RESETVALUE_Msk; // no pin mux / no input /  no pull / low streght
-        PORT->Group[COM_TX_PORT].PINCFG[COM_TX_PIN] |= PORT_PINCFG_PULLEN_Msk;    // Enable Pull
-        PORT->Group[COM_TX_PORT].OUTSET = (1 << COM_TX_PIN);                      // Pull up
+        PORT_REGS->GROUP[COM_TX_PORT].PORT_PINCFG[COM_TX_PIN] = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
+        PORT_REGS->GROUP[COM_TX_PORT].PORT_PINCFG[COM_TX_PIN] |= PORT_PINCFG_PULLEN_Msk;    // Enable Pull
+        PORT_REGS->GROUP[COM_TX_PORT].PORT_OUTSET = (1 << COM_TX_PIN);                      // Pull up
         if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
         {
             PORT_REGS->GROUP[TX_EN_PORT].PORT_OUTCLR = (1 << TX_EN_PIN); // disable Tx
@@ -472,8 +470,8 @@ static void RobusHAL_GPIOInit(void)
 
     /*Configure GPIO pin : TxPin */
     PORT_REGS->GROUP[COM_TX_PORT].PORT_PINCFG[COM_TX_PIN] = PORT_PINCFG_RESETVALUE;                    // no pin mux / no input /  no pull / low streght
-    PORT->Group[COM_TX_PORT].PINCFG[COM_TX_PIN] |= PORT_PINCFG_PULLEN_Msk;                             // Enable Pull
-    PORT->Group[COM_TX_PORT].OUTSET = (1 << COM_TX_PIN);                                               // Pull up
+    PORT_REGS->GROUP[COM_TX_PORT].PORT_PINCFG[COM_TX_PIN] |= PORT_PINCFG_PULLEN_Msk;                             // Enable Pull
+    PORT_REGS->GROUP[COM_TX_PORT].PORT_OUTSET = (1 << COM_TX_PIN);                                               // Pull up
     PORT_REGS->GROUP[COM_TX_PORT].PORT_PMUX[COM_TX_PIN >> 1] |= (COM_TX_AF << (4 * (COM_TX_PIN % 2))); // mux to sercom
 
     /*Configure GPIO pin : RxPin */

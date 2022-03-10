@@ -209,7 +209,8 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
         alias[strlen(alias)] = '\0';
     }
     // Add a number at the end of the alias
-    sprintf(alias, "%s%d", alias, num);
+    char *alias_copy = alias;
+    sprintf(alias, "%s%d", alias_copy, num);
 }
 /******************************************************************************
  * @brief time out to receive en route table from
