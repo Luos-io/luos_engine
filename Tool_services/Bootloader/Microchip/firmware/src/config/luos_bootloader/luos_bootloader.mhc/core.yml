@@ -1,0 +1,325 @@
+format_version: v1.0
+type: UniqueComponent
+attributes: {id: core}
+children:
+- type: Symbols
+  children:
+  - type: KeyValueSet
+    attributes: {id: COMPILER_CHOICE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Boolean
+    attributes: {id: CONFIG_CLOCK_DFLL_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'true'}
+  - type: Boolean
+    attributes: {id: CONFIG_CLOCK_OSC8M_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: Integer
+    attributes: {id: CPU_CLOCK_FREQUENCY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '48000000'}
+  - type: Menu
+    attributes: {id: CoreIARMenu}
+    children:
+    - type: Attributes
+      children:
+      - type: Boolean
+        attributes: {id: visible}
+        children:
+        - {type: Value, value: 'false'}
+  - type: Menu
+    attributes: {id: CoreKEILMenu}
+    children:
+    - type: Attributes
+      children:
+      - type: Boolean
+        attributes: {id: visible}
+        children:
+        - {type: Value, value: 'false'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_BOD33_ACTION}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '1'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_BOD33_EN}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '1'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_BOD33_HYST}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_SECURITY_CMD}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_WDT_ALWAYSON}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_WDT_ENABLE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_WDT_WEN}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: KeyValueSet
+    attributes: {id: DEVICE_WDT_WINDOW_0}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '1'}
+  - type: Hex
+    attributes: {id: DEVICE_WDT_WINDOW_1}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '4'}
+  - type: Integer
+    attributes: {id: DFLL_CLOCK_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '48000000'}
+  - type: Integer
+    attributes: {id: DPLL_CLOCK_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_0_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '48000000'}
+  - type: KeyValueSet
+    attributes: {id: GCLK_0_SRC}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '7'}
+  - type: Integer
+    attributes: {id: GCLK_1_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_2_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_3_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_4_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_5_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_6_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_7_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_8_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: ListEntry
+    attributes: {id: GCLK_CODE}
+    children:
+    - type: Attributes
+      children:
+      - type: StringArray
+        attributes: {id: values}
+        children:
+        - type: Values
+          children:
+          - {type: Value, value: '    DFLL_Initialize();'}
+          - {type: Value, value: '    GCLK0_Initialize();'}
+  - type: Boolean
+    attributes: {id: GCLK_CYCLE_FORMED}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'false'}
+  - type: Integer
+    attributes: {id: GCLK_IO_0_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_1_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_2_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_3_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_4_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_5_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_6_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Integer
+    attributes: {id: GCLK_IO_7_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: String
+    attributes: {id: KEIL_STACK_HEAP_SIZE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0x1200'}
+  - type: Integer
+    attributes: {id: OSC8M_CLOCK_FREQ}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0'}
+  - type: Boolean
+    attributes: {id: PORT_GROUP_0}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'true'}
+  - type: Boolean
+    attributes: {id: PORT_GROUP_1}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: 'true'}
+  - type: String
+    attributes: {id: PORT_REG_NAME}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: PORT}
+  - type: String
+    attributes: {id: SYSTICK_PERIOD}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '0xBB80'}
+  - type: Integer
+    attributes: {id: SYSTICK_PERIOD_US}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: core, value: '1000'}
+- type: ElementPosition
+  attributes: {x: '500', y: '20', id: core}

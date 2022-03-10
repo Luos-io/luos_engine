@@ -1,0 +1,95 @@
+format_version: v1.0
+type: UniqueComponent
+attributes: {id: sercom3}
+children:
+- type: Symbols
+  children:
+  - type: Hex
+    attributes: {id: I2CM_BAUD}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: '232'}
+  - type: Integer
+    attributes: {id: SPI_BAUD_REG_VALUE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: '23'}
+  - type: Integer
+    attributes: {id: USART_BAUD_RATE}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: '1000000'}
+  - type: Integer
+    attributes: {id: USART_BAUD_VALUE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: '43690'}
+  - type: KeyValueSet
+    attributes: {id: USART_FORM}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: '0'}
+  - type: Boolean
+    attributes: {id: USART_INTERRUPT_MODE}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: 'false'}
+  - type: Boolean
+    attributes: {id: USART_LIN_MASTER_SUPPORTED}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: 'false'}
+  - type: Boolean
+    attributes: {id: USART_RING_BUFFER_ENABLE}
+    children:
+    - type: Attributes
+      children:
+      - type: Boolean
+        attributes: {id: readOnly}
+        children:
+        - {type: Value, value: 'false'}
+      - type: Boolean
+        attributes: {id: visible}
+        children:
+        - {type: Value, value: 'false'}
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: 'false'}
+  - type: KeyValueSet
+    attributes: {id: USART_RXPO}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: '1'}
+  - type: Integer
+    attributes: {id: USART_SAMPLE_COUNT}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: '16'}
+  - type: Integer
+    attributes: {id: USART_SAMPLE_RATE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom3, value: '0'}
+- type: ElementPosition
+  attributes: {x: '723', y: '20', id: sercom3}

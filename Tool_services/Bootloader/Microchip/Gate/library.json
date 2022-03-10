@@ -1,0 +1,27 @@
+{
+    "name": "Gate",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,container,ST,cJSON",
+    "description": "Luos turn your embedded system as containers like microservice do it in software.",
+    "version": "0.8.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://www.luos.io/us/"
+    },
+    "licence": "MIT",
+    "build": {
+        "flags": [
+            "-I cJSON",
+            "-Wl,-u,_printf_float",
+            "-DREV={0,8,0}"
+        ],
+        "src_filter": [
+            "+<cJSON>"
+        ]
+    },
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "~2.2.0"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+format_version: v1.0
+type: UniqueComponent
+attributes: {id: nvmctrl}
+children:
+- type: Symbols
+  children:
+  - type: Integer
+    attributes: {id: NVM_RWS}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: nvmctrl, value: '1'}
+- type: ElementPosition
+  attributes: {x: '20', y: '20', id: nvmctrl}
