@@ -108,6 +108,14 @@ jobs:
           platformio run -d Examples/Projects/NUCLEO-F072RB/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-F072RB/Inspector_SerialCom
 
+          # Bootloader projects
+          platformio run -d Tool_services/Bootloader/luos_bootloader_F072RB
+          platformio run -d Tool_services/Bootloader/luos_bootloader_F401RE
+          platformio run -d Tool_services/Bootloader/luos_bootloader_F432KC
+          platformio run -d Tool_services/Bootloader/luos_bootloader_G431KB
+          platformio run -d Tool_services/Bootloader/luos_bootloader_G474RE
+          platformio run -d Tool_services/Bootloader/luos_bootloader_l0
+
       - name: Run PlatformIO Unit Tests
         env:
           PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}

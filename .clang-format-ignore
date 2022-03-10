@@ -18,6 +18,9 @@
 ./Examples/Projects/l0/demo/**/inc
 ./Examples/Projects/l0/demo/**/include
 
+# Bootloader
+./Tool_services/Bootloader/**/src
+./Tool_services/Bootloader/**/include
 
 # Third party libs
 ./Tool_services/Apps/Gate/TinyJSON/tiny-json.h

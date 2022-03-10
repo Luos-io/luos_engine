@@ -108,6 +108,13 @@ jobs:
           platformio run -d Examples/Projects/NUCLEO-FO72RB/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-FO72RB/Inspector_SerialCom
 
+          # Bootloader projects
+          platformio run -d Tool_services/Bootloader/luos_bootloader_F072RB
+          platformio run -d Tool_services/Bootloader/luos_bootloader_F401RE
+          platformio run -d Tool_services/Bootloader/luos_bootloader_F432KC
+          platformio run -d Tool_services/Bootloader/luos_bootloader_G431KB
+          platformio run -d Tool_services/Bootloader/luos_bootloader_G474RE
+
 
       - name: Run PlatformIO Unit Tests
         env:
