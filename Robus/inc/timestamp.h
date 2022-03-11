@@ -21,6 +21,7 @@ typedef struct timestamp_token
     struct timestamp_token *next;
 } timestamp_token_t;
 
+#define TIMESTAMP_PROTOCOL 0xF
 /*******************************************************************************
  * Variables
  ******************************************************************************/

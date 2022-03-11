@@ -179,7 +179,11 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 
     // ********** Prepare the message ********************
     // Set protocol revision and source ID on the message
-    msg->header.protocol = PROTOCOL_REVISION;
+    if (!Timestamp_IsTimestampMsg(msg))
+    {
+        msg->header.protocol = PROTOCOL_REVISION;
+    }
+
     if (ll_service->id != 0)
     {
         msg->header.source = ll_service->id;

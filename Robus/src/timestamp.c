@@ -244,7 +244,7 @@ timestamp_token_t *Timestamp_GetToken(void *target)
  ******************************************************************************/
 bool Timestamp_IsTimestampMsg(msg_t *msg)
 {
-    if (msg->header.cmd == TIMESTAMP_CMD)
+    if (msg->header.protocol == TIMESTAMP_PROTOCOL)
     {
         return true;
     }
@@ -281,16 +281,14 @@ void Timestamp_TagMsg(msg_t *msg)
 void Timestamp_EncodeMsg(msg_t *msg, void *target)
 {
     int64_t timestamp = Timestamp_GetTimeFromToken(target);
-    uint8_t cmd       = msg->header.cmd;
 
-    // copy timestamp command
-    msg->header.cmd = TIMESTAMP_CMD;
-    // copy subcommand
-    memcpy(&msg->data[msg->header.size], &cmd, sizeof(uint8_t));
+    // update robus header
+    msg->header.protocol = TIMESTAMP_PROTOCOL;
+
     // copy timestamp
-    memcpy(&msg->data[msg->header.size + sizeof(uint8_t)], &timestamp, sizeof(int64_t));
+    memcpy(&msg->data[msg->header.size], &timestamp, sizeof(int64_t));
     // update msg size
-    msg->header.size = msg->header.size + sizeof(int64_t) + sizeof(uint8_t);
+    msg->header.size = msg->header.size + sizeof(int64_t);
 }
 
 /******************************************************************************
@@ -301,7 +299,6 @@ void Timestamp_EncodeMsg(msg_t *msg, void *target)
 void Timestamp_DecodeMsg(msg_t *msg, int64_t *timestamp)
 {
     // deserialize data
-    msg->header.size = msg->header.size - sizeof(int64_t) - sizeof(uint8_t);
-    memcpy(&msg->header.cmd, &msg->data[msg->header.size], sizeof(uint8_t));
-    memcpy(timestamp, &msg->data[msg->header.size + sizeof(uint8_t)], sizeof(int64_t));
+    msg->header.size = msg->header.size - sizeof(int64_t);
+    memcpy(timestamp, &msg->data[msg->header.size], sizeof(int64_t));
 }

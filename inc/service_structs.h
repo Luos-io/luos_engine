@@ -141,8 +141,6 @@ typedef enum
     BOOTLOADER_CMD,
     BOOTLOADER_RESP,
 
-    // Timestamp command
-    TIMESTAMP_CMD,
     // Verbose command
     VERBOSE,
 
