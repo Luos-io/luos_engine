@@ -1,0 +1,71 @@
+format_version: v1.0
+type: UniqueComponent
+attributes: {id: sercom5}
+children:
+- type: Symbols
+  children:
+  - type: Hex
+    attributes: {id: I2CM_BAUD}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: '232'}
+  - type: Integer
+    attributes: {id: SPI_BAUD_REG_VALUE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: '23'}
+  - type: Integer
+    attributes: {id: USART_BAUD_VALUE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: '63019'}
+  - type: KeyValueSet
+    attributes: {id: USART_FORM}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: '0'}
+  - type: Boolean
+    attributes: {id: USART_LIN_MASTER_SUPPORTED}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: 'false'}
+  - type: KeyValueSet
+    attributes: {id: USART_RXPO}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: '3'}
+  - type: Integer
+    attributes: {id: USART_SAMPLE_COUNT}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: '16'}
+  - type: Integer
+    attributes: {id: USART_SAMPLE_RATE}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: sercom5, value: '0'}
+  - type: KeyValueSet
+    attributes: {id: USART_TXPO}
+    children:
+    - type: Values
+      children:
+      - type: User
+        attributes: {value: '1'}
+- type: ElementPosition
+  attributes: {x: '880', y: '20', id: sercom5}

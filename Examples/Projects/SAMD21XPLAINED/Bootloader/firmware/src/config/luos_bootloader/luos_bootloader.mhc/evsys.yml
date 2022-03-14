@@ -1,0 +1,92 @@
+format_version: v1.0
+type: UniqueComponent
+attributes: {id: evsys}
+children:
+- type: Symbols
+  children:
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_0_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_10_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_11_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_1_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_2_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_3_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_4_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_5_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_6_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_7_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_8_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+  - type: Boolean
+    attributes: {id: EVSYS_CHANNEL_9_USER_READY}
+    children:
+    - type: Values
+      children:
+      - type: Dynamic
+        attributes: {id: evsys, value: 'false'}
+- type: ElementPosition
+  attributes: {x: '160', y: '20', id: evsys}

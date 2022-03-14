@@ -1,0 +1,14 @@
+configName: default
+folderName: Button
+format_version: v1.0
+frameworkPath: ..\..\..\..\Users\thoma\Harmony3
+processor: ATSAMD21J18A
+projectName: Button
+settings:
+  PackageFilter: csp;quick_docs;
+  FORCE_OPTIMIZATION: 'false'
+  GENERATE_BACKUP: 'true'
+  TRUSTZONE: 'false'
+  CMSISPath: .\dev_packs\arm\CMSIS\5.7.0
+  MERGE_STRATEGY: USER_ALL
+  DFPPath: .\dev_packs\Microchip\SAMD21_DFP\3.4.104\samd21a\atdf\ATSAMD21J18A.atdf

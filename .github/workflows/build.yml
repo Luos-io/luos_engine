@@ -70,6 +70,7 @@ jobs:
           platformio run -d Examples/Projects/l0/demo/LedStrip_Position
           platformio run -d Examples/Projects/l0/demo/motor_copy_app
           platformio run -d Examples/Projects/l0/demo/motor_demo_app
+          platformio run -d Examples/Projects/l0/Bootloader
           # arduino
           platformio run -d Examples/Projects/Arduino/Button
           platformio run -d Examples/Projects/Arduino/Fingerprint
@@ -87,30 +88,40 @@ jobs:
           platformio run -d Examples/Projects/NUCLEO-L432KC/Lcd
           platformio run -d Examples/Projects/NUCLEO-L432KC/Led
           platformio run -d Examples/Projects/NUCLEO-L432KC/Servo
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Bootloader
           # STM32F4-discovery
           platformio run -d Examples/Projects/STM32F4-discovery/Button
           platformio run -d Examples/Projects/STM32F4-discovery/Gate_SerialCom
           platformio run -d Examples/Projects/STM32F4-discovery/Inspector_SerialCom
+          # ******** missing bootloader ********
           # NUCLEO-F401RE
           platformio run -d Examples/Projects/NUCLEO-F401RE/Button
           platformio run -d Examples/Projects/NUCLEO-F401RE/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-F401RE/Inspector_SerialCom
           platformio run -d Examples/Projects/NUCLEO-F401RE/Led
-          # NUCLEO-F401RB
+          platformio run -d Examples/Projects/NUCLEO-F401RE/Bootloader
+          # NUCLEO-F410RB
           platformio run -d Examples/Projects/NUCLEO-F410RB/Button
           platformio run -d Examples/Projects/NUCLEO-F410RB/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-F410RB/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F410RB/Bootloader
+          # ******** missing bootloader ********
           # NUCLEO-G431KB
           platformio run -d Examples/Projects/NUCLEO-G431KB/Button
           platformio run -d Examples/Projects/NUCLEO-G431KB/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-G431KB/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-G431KB/Bootloader
           # NUCLEO-G474RE
           platformio run -d Examples/Projects/NUCLEO-G474RE/Button
           platformio run -d Examples/Projects/NUCLEO-G474RE/Gate_SerialCom
           platformio run -d Examples/Projects/NUCLEO-G474RE/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-G474RE/Bootloader
           # NUCLEO-F072RB
-          platformio run -d Examples/Projects/NUCLEO-FO72RB/Gate_SerialCom
-          platformio run -d Examples/Projects/NUCLEO-FO72RB/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F072RB/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F072RB/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F072RB/Bootloader
+          # SAMD21XPLAINED
+          # ******** missing bootloader CI ********
 
 
       - name: Run PlatformIO Unit Tests

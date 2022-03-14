@@ -1,0 +1,14 @@
+configName: luos_bootloader
+folderName: luos_bootloader_samd21j18a
+format_version: v1.0
+frameworkPath: ..\..\02_tools\02_MPLAB_lib
+processor: ATSAMD21J18A
+projectName: luos_bootloader_samd21j18a
+settings:
+  PackageFilter: csp;quick_docs
+  FORCE_OPTIMIZATION: 'false'
+  GENERATE_BACKUP: 'true'
+  TRUSTZONE: 'false'
+  CMSISPath: .\dev_packs\arm\CMSIS\5.7.0
+  MERGE_STRATEGY: USER_ALL
+  DFPPath: .\dev_packs\Microchip\SAMD21_DFP\3.4.116\samd21a\atdf\ATSAMD21J18A.atdf
