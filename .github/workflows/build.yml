@@ -66,6 +66,10 @@ jobs:
           platformio run -d Examples/Projects/l0/Stepper
           platformio run -d Examples/Projects/l0/Bike_alarm/Alarm_controller
           platformio run -d Examples/Projects/l0/Bike_alarm/Start_controller
+          platformio run -d Examples/Projects/l0/demo/Detection_Button
+          platformio run -d Examples/Projects/l0/demo/LedStrip_Position
+          platformio run -d Examples/Projects/l0/demo/motor_copy_app
+          platformio run -d Examples/Projects/l0/demo/motor_demo_app
           # arduino
           platformio run -d Examples/Projects/Arduino/Button
           platformio run -d Examples/Projects/Arduino/Fingerprint
