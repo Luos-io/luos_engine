@@ -9,8 +9,8 @@
 
 enum detection_activation
 {
-    NO_DETECTION = 0,
-    DETECTION
+    STATE_NO_DETECTION = 0,
+    STATE_DETECTION
 };
 
 /*******************************************************************************
