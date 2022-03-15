@@ -157,6 +157,13 @@ typedef enum
     ROBUS_PROTOCOL_NB = 13,
 } robus_cmd_t;
 
+typedef enum
+{
+    // Protocol version
+    BASE_PROCOTOL = PROTOCOL_REVISION,
+    TIMESTAMP_PROTOCOL,
+} robus_protocol_t;
+
 typedef void (*RX_CB)(ll_service_t *ll_service, msg_t *msg);
 /*******************************************************************************
  * Variables
