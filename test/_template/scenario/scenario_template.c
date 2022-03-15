@@ -17,7 +17,7 @@ enum detection_machine_state
     NOT_DETECTED = 0,
     DETECT_FIRST_APP,
     DETECT_SECOND_APP,
-    DETECTION_OK
+    DETECTION_IS_OK
 };
 
 typedef enum
@@ -31,7 +31,7 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint8_t detection_state = NO_DETECTION;
+uint8_t detection_state = STATE_NO_DETECTION;
 
 /*******************************************************************************
  * Function
@@ -85,7 +85,7 @@ void Scenario_template_Context_Init(int detection)
     dummy_App_1_Init();
     dummy_App_2_Init();
 
-    if (detection == DETECTION)
+    if (detection == STATE_DETECTION)
     {
         launch_detection();
     }
@@ -138,7 +138,7 @@ void Scenario_template_Loop(int *stop)
 
     switch (detection_state)
     {
-        case DETECTION_OK:
+        case DETECTION_IS_OK:
             *stop = 1;
             break;
 
@@ -238,7 +238,7 @@ static void dummy_App_2_MsgHandler(service_t *service, msg_t *msg)
     if (msg->header.cmd == SET_CMD)
     {
         printf("[ Rx ] - [Dummy App 2]  - Receive data: %d\n", msg->data[0]);
-        detection_state = DETECTION_OK;
+        detection_state = DETECTION_IS_OK;
     }
     //printf("*** MsgHandler - APP 2: %d\n", msg->header.cmd);
 }
