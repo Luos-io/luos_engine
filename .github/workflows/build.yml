@@ -108,8 +108,10 @@ jobs:
           platformio run -t clean -c .\test\msg_alloc\config\platformio.ini
           platformio run -t clean -c .\test\luos\config\platformio.ini
           platformio run -t clean -c .\test\routing_table\config\platformio.ini
+          platformio run -t clean -c .\test\timestamp\config\platformio.ini
 
           # Run Unit tests
           platformio test -e native -c .\test\msg_alloc\config\platformio.ini     -f msg_alloc     --verbose
           platformio test -e native -c .\test\luos\config\platformio.ini          -f luos          --verbose
-          platformio test -e native -c .\test\routing_table\config\platformio.ini -f routing_table --verbose          
+          platformio test -e native -c .\test\routing_table\config\platformio.ini -f routing_table --verbose
+          platformio test -e native -c .\test\timestamp\config\platformio.ini     -f timestamp     --verbose
