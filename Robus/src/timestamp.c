@@ -7,7 +7,7 @@
 #include "timestamp.h"
 #include "luos_hal.h"
 #include "string.h"
-
+#include "service_structs.h"
 /******************************* Description of Timestamp process ************************************
  *
  * Timestamp is a mechanism which enables to track events in the system. The feature is build around
