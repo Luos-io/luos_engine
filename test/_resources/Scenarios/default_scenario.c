@@ -93,17 +93,17 @@ void Init_Context(void)
     //        +------------+             +------------+
     //
 
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[sizeof(msg_t)]));
-    //Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]));
-    // Create TX_TASK_NUMBER Tx Tasks
+    // Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
+    // Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[sizeof(msg_t)]));
+    // Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]));
+    //  Create TX_TASK_NUMBER Tx Tasks
     /*for (uint16_t i = 0; i < TX_TASK_NUMBER; i++)
     {
         Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (sizeof(msg_t) * i)));
     }*/
 
-    //MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
-    // Create LUOS_TASK_NUMBER Luos Tasks
+    // MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(&msg_buffer[0]));
+    //  Create LUOS_TASK_NUMBER Luos Tasks
     /*for (uint16_t i = 0; i < LUOS_TASK_NUMBER; i++)
     {
         MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (i) * (sizeof(msg_t) + 1)));
@@ -163,8 +163,8 @@ void Init_Messages(void)
     // Init tx messages pointers
     default_sc.App_1.tx_msg = (msg_t *)(&msg_buffer[0]);
     default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[sizeof(msg_t)]);
-    //default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[4]);
-    //default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]);
+    // default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[4]);
+    // default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[2 * sizeof(msg_t)]);
     default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[0]);
 
     // Init rx messages pointers
@@ -174,7 +174,7 @@ void Init_Messages(void)
 
     // App 1 : Send message to App 2
     // -------------------------------
-    default_sc.App_1.tx_msg->header.protocol    = PROTOCOL_REVISION;
+    default_sc.App_1.tx_msg->header.config      = PROTOCOL_REVISION;
     default_sc.App_1.tx_msg->header.source      = 1;
     default_sc.App_1.tx_msg->header.target      = 2;
     default_sc.App_1.tx_msg->header.target_mode = IDACK;
@@ -183,7 +183,7 @@ void Init_Messages(void)
 
     // App 2 : Send message to App 1
     // -------------------------------
-    default_sc.App_2.tx_msg->header.protocol    = PROTOCOL_REVISION;
+    default_sc.App_2.tx_msg->header.config      = PROTOCOL_REVISION;
     default_sc.App_2.tx_msg->header.source      = 2;
     default_sc.App_2.tx_msg->header.target      = 1;
     default_sc.App_2.tx_msg->header.target_mode = IDACK;
@@ -192,7 +192,7 @@ void Init_Messages(void)
 
     // App 3 : Send message to App 2
     // -------------------------------
-    default_sc.App_3.tx_msg->header.protocol    = PROTOCOL_REVISION;
+    default_sc.App_3.tx_msg->header.config      = PROTOCOL_REVISION;
     default_sc.App_3.tx_msg->header.source      = 3;
     default_sc.App_3.tx_msg->header.target      = 2;
     default_sc.App_3.tx_msg->header.target_mode = IDACK;
@@ -275,7 +275,7 @@ void App_3_Loop(void)
  ******************************************************************************/
 static void App_1_MsgHandler(service_t *service, msg_t *msg)
 {
-    default_sc.App_1.last_rx_msg->header.protocol    = msg->header.protocol;
+    default_sc.App_1.last_rx_msg->header.config      = msg->header.config;
     default_sc.App_1.last_rx_msg->header.source      = msg->header.source;
     default_sc.App_1.last_rx_msg->header.target      = msg->header.target;
     default_sc.App_1.last_rx_msg->header.target_mode = msg->header.target_mode;
@@ -295,7 +295,7 @@ static void App_1_MsgHandler(service_t *service, msg_t *msg)
  ******************************************************************************/
 static void App_2_MsgHandler(service_t *service, msg_t *msg)
 {
-    default_sc.App_2.last_rx_msg->header.protocol    = msg->header.protocol;
+    default_sc.App_2.last_rx_msg->header.config      = msg->header.config;
     default_sc.App_2.last_rx_msg->header.source      = msg->header.source;
     default_sc.App_2.last_rx_msg->header.target      = msg->header.target;
     default_sc.App_2.last_rx_msg->header.target_mode = msg->header.target_mode;
@@ -316,7 +316,7 @@ static void App_2_MsgHandler(service_t *service, msg_t *msg)
 static void App_3_MsgHandler(service_t *service, msg_t *msg)
 {
     // Save last message
-    default_sc.App_3.last_rx_msg->header.protocol    = msg->header.protocol;
+    default_sc.App_3.last_rx_msg->header.config      = msg->header.config;
     default_sc.App_3.last_rx_msg->header.source      = msg->header.source;
     default_sc.App_3.last_rx_msg->header.target      = msg->header.target;
     default_sc.App_3.last_rx_msg->header.target_mode = msg->header.target_mode;

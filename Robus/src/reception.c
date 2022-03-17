@@ -92,7 +92,7 @@ void Recep_GetHeader(volatile uint8_t *data)
         case (sizeof(header_t)): // Process at the header
 #ifdef DEBUG
             printf("*******header data*******\n");
-            printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
+            printf("protocol : 0x%04x\n", current_msg->header.config);         /*!< Protocol version. */
             printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
             printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
             printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
