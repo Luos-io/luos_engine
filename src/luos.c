@@ -609,7 +609,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 {
     // set protocol version
-    msg->header.protocol = BASE_PROCOTOL;
+    msg->header.config = BASE_PROCOTOL;
 
     if (service == 0)
     {
@@ -639,7 +639,7 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg)
 {
     // set protocol version
-    msg->header.protocol = TIMESTAMP_PROTOCOL;
+    msg->header.config = TIMESTAMP_PROTOCOL;
 
     if (service == 0)
     {

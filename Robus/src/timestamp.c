@@ -244,7 +244,7 @@ timestamp_token_t *Timestamp_GetToken(void *target)
  ******************************************************************************/
 bool Timestamp_IsTimestampMsg(msg_t *msg)
 {
-    if (msg->header.protocol == TIMESTAMP_PROTOCOL)
+    if (msg->header.config == TIMESTAMP_PROTOCOL)
     {
         return true;
     }
@@ -283,7 +283,7 @@ void Timestamp_EncodeMsg(msg_t *msg, void *target)
     int64_t timestamp = Timestamp_GetTimeFromToken(target);
 
     // update robus header
-    msg->header.protocol = TIMESTAMP_PROTOCOL;
+    msg->header.config = TIMESTAMP_PROTOCOL;
 
     // copy timestamp
     memcpy(&msg->data[msg->header.size], &timestamp, sizeof(int64_t));
