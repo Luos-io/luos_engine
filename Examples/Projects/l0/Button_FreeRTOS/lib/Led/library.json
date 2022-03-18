@@ -1,7 +1,7 @@
 {
-    "name": "Button",
+    "name": "Led",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
-    "description": "a simple button driver",
+    "description": "a simple led driver",
     "version": "1.0.0",
     "authors": {
         "name": "Luos",

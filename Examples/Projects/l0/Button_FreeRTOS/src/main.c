@@ -25,8 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "luos_engine.h"
-#include "button.h"
 #include "cmsis_os.h"
 /* USER CODE END Includes */
 
@@ -54,7 +52,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void MX_FREERTOS_Init(void);
+void Firmware_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -86,7 +84,7 @@ int main(void)
 
     /* USER CODE BEGIN SysInit */
     osKernelInitialize();
-    MX_FREERTOS_Init();
+    Firmware_Init();
     osKernelStart();
     /* USER CODE END SysInit */
 
