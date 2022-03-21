@@ -32,6 +32,10 @@ typedef struct
 
 Port_t PTP[NBR_PORT];
 
+uint8_t PTP_ll[NBR_PORT] = {
+    ARDUINO_PTPA_PIN,
+    ARDUINO_PTPB_PIN};
+
 volatile uint16_t timoutclockcnt        = 0;
 volatile uint16_t data_size_to_transmit = 0;
 volatile uint8_t *tx_data               = 0;
@@ -529,7 +533,7 @@ static void RobusHAL_RegisterPTP(void)
  * @param GPIO IT line
  * @return None
  ******************************************************************************/
-void PINOUT_IRQHANDLER()
+void RobusHAL_PinoutIRQHandler()
 {
     uint32_t FlagIT = 0;
     ////Process for Tx Lock Detec
@@ -537,8 +541,6 @@ void PINOUT_IRQHANDLER()
     {
         ctx.tx.lock = true;
         RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
-        EIC->INTFLAG.reg  = (uint32_t)(1 << TX_LOCK_DETECT_IRQ);
-        EIC->INTENCLR.reg = (1 << TX_LOCK_DETECT_IRQ);
     }
     else
     {
@@ -547,7 +549,6 @@ void PINOUT_IRQHANDLER()
             FlagIT = (EIC->INTFLAG.reg & (1 << PTP[i].Irq));
             if (FlagIT)
             {
-                EIC->INTFLAG.reg = (uint32_t)(1 << PTP[i].Irq);
                 PortMng_PtpHandler(i);
                 break;
             }
@@ -561,28 +562,10 @@ void PINOUT_IRQHANDLER()
  ******************************************************************************/
 void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
-    uint32_t Position = 0;
-    uint32_t Config   = 0;
-
     // Pull Down / IT mode / Rising Edge
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PMUXEN;    // mux en
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PULLEN;    // pull en
-    PORT->Group[PTP[PTPNbr].Port].OUTCLR.reg = (1 << PTP[PTPNbr].Pin);                  // pull down
-    if (PTP[PTPNbr].Irq < 8)
-    {
-        Config   = 0;
-        Position = PTP[PTPNbr].Irq << 2;
-    }
-    else
-    {
-        Config   = 1;
-        Position = (PTP[PTPNbr].Irq - 8) << 2;
-    }
-    EIC->CONFIG[Config].reg &= ~(EIC_CONFIG_SENSE0_Msk << Position);   // reset sense mode
-    EIC->CONFIG[Config].reg |= EIC_CONFIG_SENSE0_RISE_Val << Position; // Rising EDGE
-    EIC->INTFLAG.reg  = (1 << PTP[PTPNbr].Irq);                        // clear IT flag
-    EIC->INTENSET.reg = (1 << PTP[PTPNbr].Irq);                        // enable IT
+    pinMode(PTP_ll[PTPNbr], INPUT_PULLDOWN);
+    EIC->INTFLAG.reg = (1 << PTP[PTPNbr].Irq); // clear IT flag
+    attachInterrupt(digitalPinToInterrupt(PTP_ll[PTPNbr]), RobusHAL_PinoutIRQHandler, RISING);
 }
 /******************************************************************************
  * @brief Set PTP for reverse detection on branch
@@ -591,28 +574,10 @@ void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
  ******************************************************************************/
 void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
-    uint32_t Position = 0;
-    uint32_t Config   = 0;
-
     // Pull Down / IT mode / Falling Edge
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PMUXEN;    // mux en
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PULLEN;    // pull en
-    PORT->Group[PTP[PTPNbr].Port].OUTCLR.reg = (1 << PTP[PTPNbr].Pin);                  // pull down
-    if (PTP[PTPNbr].Irq < 8)
-    {
-        Config   = 0;
-        Position = PTP[PTPNbr].Irq << 2;
-    }
-    else
-    {
-        Config   = 1;
-        Position = (PTP[PTPNbr].Irq - 8) << 2;
-    }
-    EIC->CONFIG[Config].reg &= ~(EIC_CONFIG_SENSE0_Msk << Position);   // reset sense mode
-    EIC->CONFIG[Config].reg |= EIC_CONFIG_SENSE0_FALL_Val << Position; // Falling EDGE
-    EIC->INTFLAG.reg  = (1 << PTP[PTPNbr].Irq);                        // clear IT flag
-    EIC->INTENSET.reg = (1 << PTP[PTPNbr].Irq);                        // enable IT
+    pinMode(PTP_ll[PTPNbr], INPUT_PULLDOWN);
+    EIC->INTFLAG.reg = (1 << PTP[PTPNbr].Irq); // clear IT flag
+    attachInterrupt(digitalPinToInterrupt(PTP_ll[PTPNbr]), RobusHAL_PinoutIRQHandler, FALLING);
 }
 /******************************************************************************
  * @brief Set PTP line
@@ -622,12 +587,10 @@ void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 void RobusHAL_PushPTP(uint8_t PTPNbr)
 {
     // Pull Down / Output mode
-    EIC->INTENCLR.reg                                         = (1 << PTP[PTPNbr].Irq); // disable IT
-    EIC->INTFLAG.reg                                          = (1 << PTP[PTPNbr].Irq); // clear IT flag
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
-    // PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin] |= PORT_PINCFG_PULLEN; //pull en
-    PORT->Group[PTP[PTPNbr].Port].DIRSET.reg = (1 << PTP[PTPNbr].Pin); // Output
-    PORT->Group[PTP[PTPNbr].Port].OUTSET.reg = (1 << PTP[PTPNbr].Pin); // pull down
+    detachInterrupt(digitalPinToInterrupt(PTP_ll[PTPNbr]));
+
+    pinMode(PTP_ll[PTPNbr], OUTPUT);
+    digitalWrite(PTP_ll[PTPNbr], HIGH);
 }
 /******************************************************************************
  * @brief Get PTP line
@@ -637,14 +600,10 @@ void RobusHAL_PushPTP(uint8_t PTPNbr)
 uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
 {
     // Pull Down / Input mode
-    EIC->INTENCLR.reg                                         = (1 << PTP[PTPNbr].Irq); // disable IT
-    EIC->INTFLAG.reg                                          = (1 << PTP[PTPNbr].Irq); // clear IT flag
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_INEN;      // input
-    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PULLEN;    // pull en
-    PORT->Group[PTP[PTPNbr].Port].DIRCLR.reg = (1 << PTP[PTPNbr].Pin);                  // Output
-    PORT->Group[PTP[PTPNbr].Port].OUTCLR.reg = (1 << PTP[PTPNbr].Pin);                  // pull down
-    return (((PORT->Group[PTP[PTPNbr].Port].IN.reg >> PTP[PTPNbr].Pin)) & 0x01);
+    detachInterrupt(digitalPinToInterrupt(PTP_ll[PTPNbr]));
+
+    pinMode(PTP_ll[PTPNbr], INPUT_PULLDOWN);
+    return digitalRead(PTP_ll[PTPNbr]);
 }
 /******************************************************************************
  * @brief Initialize CRC Process

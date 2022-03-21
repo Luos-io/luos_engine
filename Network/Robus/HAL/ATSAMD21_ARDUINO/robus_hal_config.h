@@ -50,24 +50,31 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
 #endif
 
 // PTP pin definition
+#ifndef ARDUINO_PTPA_PIN
+#define ARDUINO_PTPA_PIN 6
+#endif
+#ifndef ARDUINO_PTPB_PIN
+#define ARDUINO_PTPB_PIN 7
+#endif
+
 #ifndef PTPA_PIN
-#define PTPA_PIN g_APinDescription[6].ulPin
+#define PTPA_PIN g_APinDescription[ARDUINO_PTPA_PIN].ulPin
 #endif
 #ifndef PTPA_PORT
-#define PTPA_PORT g_APinDescription[6].ulPort
+#define PTPA_PORT g_APinDescription[ARDUINO_PTPA_PIN].ulPort
 #endif
 #ifndef PTPA_IRQ
-#define PTPA_IRQ g_APinDescription[6].ulExtInt // see EXTINT
+#define PTPA_IRQ g_APinDescription[ARDUINO_PTPA_PIN].ulExtInt // see EXTINT
 #endif
 
 #ifndef PTPB_PIN
-#define PTPB_PIN g_APinDescription[7].ulPin
+#define PTPB_PIN g_APinDescription[ARDUINO_PTPB_PIN].ulPin
 #endif
 #ifndef PTPB_PORT
-#define PTPB_PORT g_APinDescription[7].ulPort
+#define PTPB_PORT g_APinDescription[ARDUINO_PTPB_PIN].ulPort
 #endif
 #ifndef PTPB_IRQ
-#define PTPB_IRQ g_APinDescription[7].ulExtInt // see EXTINT
+#define PTPB_IRQ g_APinDescription[ARDUINO_PTPB_PIN].ulExtInt // see EXTINT
 #endif
 
 // COM pin definition
@@ -121,9 +128,9 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
 #define COM_RX_POS 3 // PAD3
 #endif
 
-#ifndef PINOUT_IRQHANDLER
-#define PINOUT_IRQHANDLER() EIC_Handler()
-#endif
+// #ifndef PINOUT_IRQHANDLER
+// #define PINOUT_IRQHANDLER() EIC_Handler()
+// #endif
 
 /*******************************************************************************
  * COM CONFIG
