@@ -68,12 +68,6 @@ void Luos_Init(void)
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     LuosHAL_Init();
     Robus_Init(&luos_stats.memory);
-    uint32_t init_time = 0;
-    // initialize the timer
-    init_time = Luos_GetSystick();
-    // wait for 2 ms
-    while ((Luos_GetSystick() - init_time) < 2)
-        ;
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
