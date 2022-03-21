@@ -49,6 +49,7 @@ jobs:
         run: |
           # L0
           platformio run -d Examples/Projects/l0/Button
+          platformio run -d Examples/Projects/l0/Button_FreeRTOS
           platformio run -d Examples/Projects/l0/Controller_motor
           platformio run -d Examples/Projects/l0/Dc_motor
           platformio run -d Examples/Projects/l0/Distance
