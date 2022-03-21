@@ -37,7 +37,8 @@ typedef struct ll_timestamp
 {
     uint32_t lower_timestamp;
     uint64_t higher_timestamp;
-    uint64_t start_offset;
+    uint32_t start_offset;
+    ;
 } ll_timestamp_t;
 
 /*******************************************************************************

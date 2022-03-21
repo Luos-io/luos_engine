@@ -85,7 +85,7 @@ uint32_t LuosHAL_GetSystick(void)
 uint64_t LuosHAL_GetTimestamp(void)
 {
     ll_timestamp.lower_timestamp  = (SysTick->LOAD - SysTick->VAL) * (1000000000 / MCUFREQ);
-    ll_timestamp.higher_timestamp = LuosHAL_GetSystick() - ll_timestamp.start_offset;
+    ll_timestamp.higher_timestamp = (uint64_t)(LuosHAL_GetSystick() - ll_timestamp.start_offset);
 
     return ll_timestamp.higher_timestamp * 1000000 + (uint64_t)ll_timestamp.lower_timestamp;
 }
