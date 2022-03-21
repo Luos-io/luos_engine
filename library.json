@@ -17,7 +17,8 @@
             "-I Profiles/Motor",
             "-I Profiles/Servo_motor",
             "-I Profiles/Voltage",
-            "-I Bootloader"
+            "-I Bootloader",
+            "-I SelfTest"
         ],
         "srcFilter": [
             "+<*.c>",
@@ -27,7 +28,8 @@
             "+<../Profiles/Motor/*.c>",
             "+<../Profiles/Servo_motor/*.c>",
             "+<../Profiles/Voltage/*.c>",
-            "+<../Bootloader/*.c>"
+            "+<../Bootloader/*.c>",
+            "+<../SelfTest/*.c>"
         ]
     },
     "repository": {
