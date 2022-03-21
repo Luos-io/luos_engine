@@ -1,6 +1,18 @@
+import sys
+import subprocess
 from os import system, listdir
 from os.path import join, realpath
 Import('env')
+
+# install pyluos
+try:
+    from pyluos import version
+    print("\nPyluos revision " + str(version.version) + " already installed.")
+    subprocess.check_call([sys.executable, "-m", "pip",
+                          "install", "pyluos", "--upgrade", "--quiet"])
+except ImportError:  # module doesn't exist, deal with it.
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyluos"])
+    pass
 
 sources = ["+<*.c>",
            "+<../../../Network/Robus/src/*.c>",
