@@ -178,8 +178,6 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     }
 
     // ********** Prepare the message ********************
-    // Set protocol revision and source ID on the message
-    msg->header.protocol = PROTOCOL_REVISION;
     if (ll_service->id != 0)
     {
         msg->header.source = ll_service->id;
@@ -206,7 +204,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 
     if (Timestamp_IsTimestampMsg(msg))
     {
-        crc_max_index = full_size - (sizeof(uint64_t) + sizeof(uint8_t));
+        crc_max_index = full_size - sizeof(int64_t);
     }
     else
     {

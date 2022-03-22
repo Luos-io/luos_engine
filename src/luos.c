@@ -608,6 +608,9 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
  ******************************************************************************/
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 {
+    // set protocol version
+    msg->header.config = BASE_PROCOTOL;
+
     if (service == 0)
     {
         // There is no service specified here, take the first one
@@ -626,6 +629,37 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 
     return SUCCEED;
 }
+
+/******************************************************************************
+ * @brief Send msg through network
+ * @param Service who send
+ * @param Message to send
+ * @return None
+ ******************************************************************************/
+error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg)
+{
+    // set protocol version
+    msg->header.config = TIMESTAMP_PROTOCOL;
+
+    if (service == 0)
+    {
+        // There is no service specified here, take the first one
+        service = &service_table[0];
+    }
+    if ((service->ll_service->id == 0) && (msg->header.cmd >= LUOS_LAST_RESERVED_CMD))
+    {
+        // We are in detection mode and this command come from user
+        // We can't send it
+        return PROHIBITED;
+    }
+    if (Robus_SendMsg(service->ll_service, msg) == FAILED)
+    {
+        return FAILED;
+    }
+
+    return SUCCEED;
+}
+
 /******************************************************************************
  * @brief read last msg from buffer for a service
  * @param service who receive the message we are looking for

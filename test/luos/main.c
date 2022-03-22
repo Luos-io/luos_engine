@@ -78,19 +78,21 @@ void unittest_Streaming_SendStreamingSize()
         NEW_STEP("Try to send 0 byte : it does nothing");
 
         //  Init variable new step
-        ExpectedMaxSize = 0;
+        ExpectedMaxSize                        = 0;
+        default_sc.App_1.tx_msg->header.target = 3;
 
         // Add samples
         Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
         Luos_SendStreamingSize(default_sc.App_1.app, default_sc.App_1.tx_msg, default_sc.streamChannel1, 0);
         Luos_Loop();
         // Verify
-        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg->header.size);
+        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_3.last_rx_msg->header.size);
 
         NEW_STEP("try to send 128 byte the max size of a msg");
 
         //  Init variable
-        ExpectedMaxSize = 128;
+        ExpectedMaxSize                        = 128;
+        default_sc.App_1.tx_msg->header.target = 2;
 
         // Add samples
         Stream_AddAvailableSampleNB(default_sc.streamChannel1, 128);
@@ -111,8 +113,7 @@ void unittest_Luos_ReceiveData()
         uint32_t bin_data[64] = {0xDEADBEEF};
 
         NEW_STEP("Verify if we assert");
-        Luos_ReceiveData(NULL, 0, bin_data);
-        TEST_ASSERT_TRUE(IS_ASSERT());
+        TEST_ASSERT_EQUAL(Luos_ReceiveData(NULL, 0, bin_data), -1);
         RESET_ASSERT();
     }
 

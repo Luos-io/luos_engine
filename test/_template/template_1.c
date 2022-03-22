@@ -10,7 +10,7 @@ void unittest_TEMPLATE(void)
 
         // Init default dummy context
         //----------------------------
-        Scenario_template_Context_Init(DETECTION);
+        Scenario_template_Context_Init(STATE_DETECTION);
 
         search_result_t result;
         RTFilter_Reset(&result);

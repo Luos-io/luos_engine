@@ -2,7 +2,7 @@
     "name": "Luos",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
     "description": "Luos turns your embedded system into services like microservices architecture does it in software.",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "authors": {
         "name": "Luos",
         "url": "https://luos.io"
@@ -17,7 +17,8 @@
             "-I Profiles/Motor",
             "-I Profiles/Servo_motor",
             "-I Profiles/Voltage",
-            "-I Bootloader"
+            "-I Bootloader",
+            "-I SelfTest"
         ],
         "srcFilter": [
             "+<*.c>",
@@ -27,7 +28,8 @@
             "+<../Profiles/Motor/*.c>",
             "+<../Profiles/Servo_motor/*.c>",
             "+<../Profiles/Voltage/*.c>",
-            "+<../Bootloader/*.c>"
+            "+<../Bootloader/*.c>",
+            "+<../SelfTest/*.c>"
         ]
     },
     "repository": {
@@ -35,6 +37,6 @@
         "url": "https://github.com/Luos-io/luos"
     },
     "dependencies": {
-        "luos/LuosHAL": "^0.5.2"
+        "luos/LuosHAL": "^0.5.3"
     }
 }

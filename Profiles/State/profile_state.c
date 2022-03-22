@@ -29,10 +29,13 @@ void ProfileState_Handler(service_t *service, msg_t *msg)
                 if (Timestamp_GetToken(&profile_state->state))
                 {
                     Timestamp_EncodeMsg(&pub_msg, &profile_state->state);
+                    Luos_SendTimestampMsg(service, &pub_msg);
                 }
-
-                // send message on the network
-                Luos_SendMsg(service, &pub_msg);
+                else
+                {
+                    // send message on the network
+                    Luos_SendMsg(service, &pub_msg);
+                }
             }
             break;
         case IO_STATE:
