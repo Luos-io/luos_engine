@@ -65,7 +65,7 @@ typedef struct __attribute__((__packed__))
     {
         struct __attribute__((__packed__))
         {
-            uint16_t protocol : 4;    /*!< Protocol version. */
+            uint16_t config : 4;      /*!< Protocol version. */
             uint16_t target : 12;     /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
             uint16_t target_mode : 4; /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
             uint16_t source : 12;     /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
@@ -156,6 +156,13 @@ typedef enum
     /*!< Compatibility area*/
     ROBUS_PROTOCOL_NB = 13,
 } robus_cmd_t;
+
+typedef enum
+{
+    // Protocol version
+    BASE_PROCOTOL = PROTOCOL_REVISION,
+    TIMESTAMP_PROTOCOL,
+} robus_protocol_t;
 
 typedef void (*RX_CB)(ll_service_t *ll_service, msg_t *msg);
 /*******************************************************************************

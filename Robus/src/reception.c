@@ -32,11 +32,11 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint16_t data_count             = 0;
-uint16_t data_size              = 0;
-uint16_t crc_val                = 0;
-static uint64_t ll_rx_timestamp = 0;
-uint16_t large_data_num         = 0;
+uint16_t data_count            = 0;
+uint16_t data_size             = 0;
+uint16_t crc_val               = 0;
+static int64_t ll_rx_timestamp = 0;
+uint16_t large_data_num        = 0;
 
 /*******************************************************************************
  * Function
@@ -92,7 +92,7 @@ void Recep_GetHeader(volatile uint8_t *data)
         case (sizeof(header_t)): // Process at the header
 #ifdef DEBUG
             printf("*******header data*******\n");
-            printf("protocol : 0x%04x\n", current_msg->header.protocol);       /*!< Protocol version. */
+            printf("protocol : 0x%04x\n", current_msg->header.config);         /*!< Protocol version. */
             printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
             printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
             printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
@@ -159,12 +159,12 @@ void Recep_GetData(volatile uint8_t *data)
             // if message is timestamped, update the timestamp
             if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
             {
-                uint64_t latency = 0;
+                int64_t latency = 0;
                 // get timestamp in message stream
                 // timestamp is placed at the end of the payload, just before the crc.
-                memcpy(&latency, (msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], sizeof(uint64_t));
-                ll_rx_timestamp = (ll_rx_timestamp >= latency) ? ll_rx_timestamp - latency : 0;
-                memcpy((msg_t *)&current_msg->data[current_msg->header.size - sizeof(uint64_t)], &ll_rx_timestamp, sizeof(uint64_t));
+                memcpy(&latency, (msg_t *)&current_msg->data[current_msg->header.size - sizeof(int64_t)], sizeof(int64_t));
+                ll_rx_timestamp = (ll_rx_timestamp + latency > 0) ? ll_rx_timestamp + latency : 0;
+                memcpy((msg_t *)&current_msg->data[current_msg->header.size - sizeof(int64_t)], &ll_rx_timestamp, sizeof(int64_t));
             }
 
             if (Recep_IsAckNeeded())

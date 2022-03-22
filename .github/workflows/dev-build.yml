@@ -92,6 +92,7 @@ jobs:
           platformio run -d Projects/l0/Gate_SerialCom
           platformio run -d Projects/l0/Gpio
           platformio run -d Projects/l0/Imu
+          platformio run -d Projects/l0/Inspector_SerialCom
           platformio run -d Projects/l0/Led
           platformio run -d Projects/l0/Led_strip
           platformio run -d Projects/l0/Light_sensor
@@ -102,26 +103,35 @@ jobs:
           platformio run -d Projects/l0/Stepper
           platformio run -d Projects/l0/Bike_alarm/Alarm_controller
           platformio run -d Projects/l0/Bike_alarm/Start_controller
+
           # arduino
           platformio run -d Projects/Arduino/Button
           platformio run -d Projects/Arduino/Gate_SerialCom
+          platformio run -d Projects/Arduino/Inspector_SerialCom
+
           # NUCLEO-L432KC
           platformio run -d Projects/NUCLEO-L432KC/Button
           platformio run -d Projects/NUCLEO-L432KC/Gate_SerialCom
+          platformio run -d Projects/NUCLEO-L432KC/Inspector_SerialCom
           platformio run -d Projects/NUCLEO-L432KC/Led
           # STM32F4-discovery
           platformio run -d Projects/STM32F4-discovery/Button
           platformio run -d Projects/STM32F4-discovery/Gate_SerialCom
+          platformio run -d Projects/NUCLEO-F401RE/Inspector_SerialCom
+
           # NUCLEO-F401RE
           platformio run -d Projects/NUCLEO-F401RE/Button
           platformio run -d Projects/NUCLEO-F401RE/Gate_SerialCom
+          platformio run -d Projects/NUCLEO-F410RB/Inspector_SerialCom
           platformio run -d Projects/NUCLEO-F401RE/Led
           # NUCLEO-F401RB
           platformio run -d Projects/NUCLEO-F410RB/Button
           platformio run -d Projects/NUCLEO-F410RB/Gate_SerialCom
+
           # NUCLEO-G431KB
           platformio run -d Projects/NUCLEO-G431KB/Button
           platformio run -d Projects/NUCLEO-G431KB/Gate_SerialCom
+          platformio run -d Projects/NUCLEO-G431KB/Inspector_SerialCom
 
       - name: Run PlatformIO Unit Tests
         env:
@@ -134,8 +144,10 @@ jobs:
           platformio run -t clean -c .\test\msg_alloc\config\platformio.ini
           platformio run -t clean -c .\test\luos\config\platformio.ini
           platformio run -t clean -c .\test\routing_table\config\platformio.ini
+          platformio run -t clean -c .\test\timestamp\config\platformio.ini
 
           # Run Unit tests
           platformio test -e native -c .\test\msg_alloc\config\platformio.ini     -f msg_alloc     --verbose
           platformio test -e native -c .\test\luos\config\platformio.ini          -f luos          --verbose
           platformio test -e native -c .\test\routing_table\config\platformio.ini -f routing_table --verbose
+          platformio test -e native -c .\test\timestamp\config\platformio.ini     -f timestamp     --verbose

@@ -499,7 +499,7 @@ void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *dat
  ******************************************************************************/
 void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
 {
-    memcpy(data, (void *)(addr), size);
+    memset(data, 0xFF, size);
 }
 
 void __enable_irq()
@@ -543,7 +543,7 @@ void LuosHAL_Reboot(void)
  ******************************************************************************/
 uint64_t LuosHAL_GetTimestamp(void)
 {
-    return 0;
+    return (LuosHAL_GetSystick() * 1000);
 }
 
 /******************************************************************************

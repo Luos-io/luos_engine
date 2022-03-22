@@ -51,6 +51,7 @@ void Luos_Loop(void);
 void Luos_ServicesClear(void);
 service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *alias, revision_t revision);
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
+error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg);
 error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg);
 error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **returned_msg);
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
