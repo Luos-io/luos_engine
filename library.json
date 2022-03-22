@@ -37,6 +37,6 @@
         "url": "https://github.com/Luos-io/luos"
     },
     "dependencies": {
-        "luos/LuosHAL": "^0.5.2"
+        "luos/LuosHAL": "^0.5.3"
     }
 }
