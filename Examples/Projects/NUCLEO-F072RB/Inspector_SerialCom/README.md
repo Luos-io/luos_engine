@@ -1,9 +1,16 @@
-<a href="https://luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/602f8d74abdf72db7f5e3ed9_Luos_Logo_animation_Black.gif" alt="Luos logo" title="Luos" align="right" height="60" /></a>
+<a href="https://luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
 
-![](https://github.com/Luos-io/Mod_Gate_SerialCom/workflows/Build/badge.svg)
+![](https://github.com/Luos-io/Luos/actions/workflows/build.yml/badge.svg)
+[![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/Luos/blob/master/LICENSE)
+
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
-[![](https://img.shields.io/github/license/Luos-io/Examples)](
-https://github.com/Luos-io/Examples/blob/master/LICENSE)
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/Luos.svg)](https://registry.platformio.org/libraries/luos/Luos_engine)
+
+[![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
+[![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
+[![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
+[![](https://img.shields.io/badge/LinkedIn-Share-0077B5?style=social&logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fluos-io)
 
 
 
@@ -17,7 +24,7 @@ This project demonstrate how to make and use a simple Gate_SerialCom through Luo
  3. Build (Platformio will do the rest)
 
 ## How to open the electronic design :electric_plug:
-You can open [a working example electronic design](https://github.com/Luos-io/Electronics) with Kicad. This design use Luos_components library for more information to install and use it read [our doc](https://docs.luos.io).
+You can open [a working example electronic design](https://github.com/Luos-io/Luos/tree/main/Examples/Hardware) with Kicad. This design use Luos_components library for more information to install and use it read [our doc](https://docs.luos.io).
 
 ## Linked driver
 This project is linked to the [Gate_SerialCom driver](../../Drivers/Gate_SerialCom).

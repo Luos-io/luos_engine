@@ -23,5 +23,5 @@
 <br><br />
 ## Documentation
 - [ ] Documentation is up to date
-- [ ] Changelog for next release is up-to-date : [fill here](https://github.com/Luos-io/Luos/pull/115)
-- [ ] If needed, tests are briefly described in [test repository](https://github.com/Luos-io/tests)
+- [ ] Changelog for next release is up-to-date
+- [ ] If needed, tests are briefly described in test repository
