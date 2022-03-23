@@ -15,7 +15,7 @@
     },
     "dependencies": [
         {
-            "name": "luos/Luos",
+            "name": "luos/Luos_engine",
             "version": "^2.2.0"
         }
     ]

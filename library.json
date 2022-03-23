@@ -1,24 +1,28 @@
 {
-    "name": "Luos",
-    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "name": "Luos_engine",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST, luos_engine",
     "description": "Luos turns your embedded system into services like microservices architecture does it in software.",
     "version": "2.3.0",
     "authors": {
         "name": "Luos",
         "url": "https://luos.io"
     },
+    "homepage": "https://docs.luos.io",
+    "license": "Apache-2.0",
+    "headers": "Luos_engine/Core/inc/Luos_engine.h",
     "build": {
+        "srcDir": "Luos_engine/Core/src",
         "flags": [
-            "-I inc",
             "-I Network/Robus/inc",
-            "-I OD",
-            "-I Profiles/Core",
-            "-I Profiles/State",
-            "-I Profiles/Motor",
-            "-I Profiles/Servo_motor",
-            "-I Profiles/Voltage",
-            "-I Bootloader",
-            "-I SelfTest"
+            "-I Network/Robus/SelfTest",
+            "-I Luos_engine/OD",
+            "-I Luos_engine/Core/inc",
+            "-I Luos_engine/Profiles/State",
+            "-I Luos_engine/Profiles/Core",
+            "-I Luos_engine/Profiles/Motor",
+            "-I Luos_engine/Profiles/Servo_motor",
+            "-I Luos_engine/Profiles/Voltage",
+            "-I Luos_engine/Bootloader"
         ],
         "extraScript": "source_filter_script.py"
     },
