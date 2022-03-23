@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #include "bootloader_core.h"
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "luos_engine.h"
 #include "routing_table.h"
 
@@ -70,7 +70,7 @@ void LuosBootloader_SaveNodeID(void)
     node_t *node     = Robus_GetNode();
     uint16_t node_id = node->node_id;
 
-    RobusHAL_SaveNodeID(node_id);
+    LuosHAL_SaveNodeID(node_id);
 }
 
 #ifdef BOOTLOADER_CONFIG
@@ -95,7 +95,7 @@ void LuosBootloader_Init(void)
  ******************************************************************************/
 uint8_t LuosBootloader_GetMode(void)
 {
-    return RobusHAL_GetMode();
+    return LuosHAL_GetMode();
 }
 
 /******************************************************************************
@@ -105,7 +105,7 @@ uint8_t LuosBootloader_GetMode(void)
  ******************************************************************************/
 void LuosBootloader_DeInit(void)
 {
-    RobusHAL_DeInit();
+    LuosHAL_DeInit();
 }
 
 /******************************************************************************
@@ -115,7 +115,7 @@ void LuosBootloader_DeInit(void)
  ******************************************************************************/
 void LuosBootloader_JumpToApp(void)
 {
-    RobusHAL_JumpToApp(APP_ADDRESS);
+    LuosHAL_JumpToApp(APP_ADDRESS);
 }
 
 /******************************************************************************
@@ -125,7 +125,7 @@ void LuosBootloader_JumpToApp(void)
  ******************************************************************************/
 void LuosBootloader_SetNodeID(void)
 {
-    uint16_t node_id = RobusHAL_GetNodeID();
+    uint16_t node_id = LuosHAL_GetNodeID();
     node_t *node     = Robus_GetNode();
 
     node->node_id = node_id;
@@ -156,7 +156,7 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
  ******************************************************************************/
 void LuosBootloader_EraseMemory(void)
 {
-    RobusHAL_EraseMemory(APP_ADDRESS, nb_bytes);
+    LuosHAL_EraseMemory(APP_ADDRESS, nb_bytes);
 }
 
 /******************************************************************************
@@ -182,7 +182,7 @@ void LuosBootloader_ProcessData(void)
         memcpy(&data_buff[data_index], bootloader_data, residual_space);
 
         // save the completed page in flash memory
-        RobusHAL_ProgramFlash(flash_addr, (uint16_t)BUFFER_SIZE, data_buff);
+        LuosHAL_ProgramFlash(flash_addr, (uint16_t)BUFFER_SIZE, data_buff);
 
         // prepare next page buffer
         flash_addr += BUFFER_SIZE;
@@ -205,7 +205,7 @@ void LuosBootloader_ProcessData(void)
  ******************************************************************************/
 void LuosBootloader_SaveLastData(void)
 {
-    RobusHAL_ProgramFlash(flash_addr, (uint16_t)BUFFER_SIZE, data_buff);
+    LuosHAL_ProgramFlash(flash_addr, (uint16_t)BUFFER_SIZE, data_buff);
 }
 
 /******************************************************************************
@@ -346,9 +346,9 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
-            RobusHAL_SetMode((uint8_t)APP_RELOAD_MODE);
+            LuosHAL_SetMode((uint8_t)APP_RELOAD_MODE);
             LuosBootloader_SaveNodeID();
-            RobusHAL_Reboot();
+            LuosHAL_Reboot();
             break;
 #else
             // we're in the bootloader,
@@ -417,8 +417,8 @@ void LuosBootloader_MsgHandler(msg_t *input)
 
         case BOOTLOADER_STOP:
             // wait for the command to be send to all nodes
-            tickstart = RobusHAL_GetSystick();
-            while ((RobusHAL_GetSystick() - tickstart) < 1000)
+            tickstart = LuosHAL_GetSystick();
+            while ((LuosHAL_GetSystick() - tickstart) < 1000)
                 ;
 
             // save bootloader mode in flash
@@ -430,9 +430,9 @@ void LuosBootloader_MsgHandler(msg_t *input)
             }
             else
             {
-                RobusHAL_SetMode((uint8_t)BOOT_MODE);
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
                 // reboot the node
-                RobusHAL_Reboot();
+                LuosHAL_Reboot();
             }
             break;
 #endif

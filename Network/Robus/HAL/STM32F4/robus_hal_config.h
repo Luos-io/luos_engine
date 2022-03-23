@@ -11,6 +11,7 @@
 #define _RobusHAL_CONFIG_H_
 
 #include "stm32f4xx_hal.h"
+// clang-format off
 
 #define DISABLE 0x00
 
@@ -20,9 +21,6 @@
 #define USE_CRC_HW 0
 #endif
 
-#ifndef MCUFREQ
-#define MCUFREQ 168000000 // MCU frequence 168000000
-#endif
 #ifndef TIMERDIV
 #define TIMERDIV 2 // clock divider for timer clock chosen 2
 #endif
@@ -125,7 +123,7 @@
 #define LUOS_COM_IRQHANDLER() USART1_IRQHandler()
 #endif
 /*******************************************************************************
- * FLASH CONFIG
+ * DMA CONFIG
  ******************************************************************************/
 #ifndef LUOS_DMA_CLOCK_ENABLE
 #define LUOS_DMA_CLOCK_ENABLE() __HAL_RCC_DMA2_CLK_ENABLE();
@@ -157,33 +155,4 @@
 #ifndef LUOS_TIMER_IRQHANDLER
 #define LUOS_TIMER_IRQHANDLER() TIM5_IRQHandler()
 #endif
-/*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t)0x400
-#endif
-#ifndef FLASH_SECTOR
-#define FLASH_SECTOR FLASH_SECTOR_7
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH ((uint32_t)(FLASH_END - PAGE_SIZE))
-#endif
-
-/*******************************************************************************
- * BOOTLOADER CONFIG
- ******************************************************************************/
-#ifndef SHARED_MEMORY_ADDRESS
-#define SHARED_MEMORY_ADDRESS 0x0800C000
-#endif
-#ifndef SHARED_MEMORY_SECTOR
-#define SHARED_MEMORY_SECTOR FLASH_SECTOR_3
-#endif
-#ifndef APP_ADDRESS
-#define APP_ADDRESS (uint32_t)0x08010000
-#endif
-#ifndef APP_ADRESS_SECTOR
-#define APP_ADRESS_SECTOR FLASH_SECTOR_4
-#endif
-
 #endif /* _RobusHAL_CONFIG_H_ */

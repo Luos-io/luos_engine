@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "robus_hal.h"
+#include "luos_hal.h"
 #include "target.h"
 #include "transmission.h"
 #include "msg_alloc.h"
@@ -72,7 +73,7 @@ void Recep_GetHeader(volatile uint8_t *data)
         case 1: // reset CRC computation
             // when we catch the first byte we timestamp the msg
             //  -8 : time to transmit 8 bits at 1 us/bit
-            ll_rx_timestamp = RobusHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+            ll_rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
 
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
@@ -175,8 +176,8 @@ void Recep_GetData(volatile uint8_t *data)
             // Make an exception for bootloader command
             if ((current_msg->header.cmd == BOOTLOADER_CMD) && (current_msg->data[0] == BOOTLOADER_RESET))
             {
-                RobusHAL_SetMode((uint8_t)BOOT_MODE);
-                RobusHAL_Reboot();
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
+                LuosHAL_Reboot();
             }
 
             // Make an exception for reset detection command

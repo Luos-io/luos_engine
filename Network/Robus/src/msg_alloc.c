@@ -46,7 +46,7 @@
 #include <stdbool.h>
 #include "config.h"
 #include "msg_alloc.h"
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "luos_utils.h"
 
 #include "context.h"
@@ -239,14 +239,14 @@ static inline void MsgAlloc_ValidDataIntegrity(void)
         copy_task_pointer = NULL;
     }
     // Do we have to check data dropping?
-    RobusHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     if (mem_clear_needed == true)
     {
         mem_clear_needed           = false;
         error_return_t clear_state = MsgAlloc_ClearMsgSpace((void *)current_msg, (void *)data_end_estimation);
         LUOS_ASSERT(clear_state == SUCCEED);
     }
-    RobusHAL_SetIrqState(true);
+    LuosHAL_SetIrqState(true);
 }
 /******************************************************************************
  * @brief compute remaing space on msg_buffer.
@@ -257,7 +257,7 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
 {
     uint32_t stack_free_space = 0;
 
-    RobusHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     if ((uint32_t)oldest_msg != 0xFFFFFFFF)
     {
         LUOS_ASSERT(((uint32_t)oldest_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)oldest_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
@@ -275,7 +275,7 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
             //               data_end_estimation    oldest_task
             //
             stack_free_space = (uint32_t)oldest_msg - (uint32_t)data_end_estimation;
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
         else
         {
@@ -292,14 +292,14 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
             //                      oldest_task     current_message   data_end_estimation
             //
             stack_free_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)data_end_estimation);
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
     }
     else
     {
         // There is no task yet just compute the actual reception
         stack_free_space = MSG_BUFFER_SIZE - ((uint32_t)data_end_estimation - (uint32_t)current_msg);
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
     }
     return stack_free_space;
 }
@@ -318,34 +318,34 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
         if ((uint32_t)oldest_stack_msg_pt > (uint32_t)current_msg)
         {
             // The oldest task is between `data_end_estimation` and the end of the buffer
-            RobusHAL_SetIrqState(false);
+            LuosHAL_SetIrqState(false);
             stack_delta_space = (uint32_t)oldest_stack_msg_pt - (uint32_t)current_msg;
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
         else
         {
             // The oldest task is between the begin of the buffer and `data_end_estimation`
             // we have to decay it to be able to define delta
-            RobusHAL_SetIrqState(false);
+            LuosHAL_SetIrqState(false);
             stack_delta_space = ((uint32_t)oldest_stack_msg_pt - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
         // recompute oldest_msg into delta byte from current message
         uint32_t oldest_msg_delta_space;
         if ((uint32_t)oldest_msg > (uint32_t)current_msg)
         {
             // The oldest msg is between `data_end_estimation` and the end of the buffer
-            RobusHAL_SetIrqState(false);
+            LuosHAL_SetIrqState(false);
             oldest_msg_delta_space = (uint32_t)oldest_msg - (uint32_t)current_msg;
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
         else
         {
             // The oldest msg is between the begin of the buffer and `data_end_estimation`
             // we have to decay it to be able to define delta
-            RobusHAL_SetIrqState(false);
+            LuosHAL_SetIrqState(false);
             oldest_msg_delta_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
         // Compare deltas
         if (stack_delta_space < oldest_msg_delta_space)
@@ -859,15 +859,15 @@ static inline void MsgAlloc_ClearMsgTask(void)
     //
     for (uint16_t rm = 0; rm < msg_tasks_stack_id; rm++)
     {
-        RobusHAL_SetIrqState(true);
-        RobusHAL_SetIrqState(false);
+        LuosHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(false);
         msg_tasks[rm] = msg_tasks[rm + 1];
     }
 
     msg_tasks_stack_id--;
     msg_tasks[msg_tasks_stack_id] = 0;
 
-    RobusHAL_SetIrqState(true);
+    LuosHAL_SetIrqState(true);
     MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
@@ -944,18 +944,18 @@ static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
     //
     for (uint16_t rm = luos_task_id; rm < luos_tasks_stack_id; rm++)
     {
-        RobusHAL_SetIrqState(false);
+        LuosHAL_SetIrqState(false);
         luos_tasks[rm] = luos_tasks[rm + 1];
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
     }
-    RobusHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     if (luos_tasks_stack_id != 0)
     {
         luos_tasks_stack_id--;
         luos_tasks[luos_tasks_stack_id].msg_pt        = 0;
         luos_tasks[luos_tasks_stack_id].ll_service_pt = 0;
     }
-    RobusHAL_SetIrqState(true);
+    LuosHAL_SetIrqState(true);
     MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
@@ -978,7 +978,7 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
         }
     }
     // fill the informations of the message in this slot
-    RobusHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     LUOS_ASSERT(luos_tasks_stack_id < MAX_MSG_NB);
     luos_tasks[luos_tasks_stack_id].msg_pt        = concerned_msg;
     luos_tasks[luos_tasks_stack_id].ll_service_pt = service_concerned_by_current_msg;
@@ -987,7 +987,7 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
         MsgAlloc_OldestMsgCandidate(luos_tasks[0].msg_pt);
     }
     luos_tasks_stack_id++;
-    RobusHAL_SetIrqState(true);
+    LuosHAL_SetIrqState(true);
     // luos task memory usage
     uint8_t stat = (uint8_t)(((uint32_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
     if (stat > mem_stat->luos_stack_ratio)
@@ -1394,7 +1394,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         return FAILED;
     }
     // Stop it
-    RobusHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     // compute RX progression
     progression_size = (uint32_t)data_ptr - (uint32_t)current_msg;
     estimated_size   = (uint32_t)data_end_estimation - (uint32_t)current_msg;
@@ -1473,7 +1473,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             //                             |            |
             //                       current_msg      FAILED (there is a task)
             //
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
             return FAILED;
         }
 
@@ -1490,7 +1490,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             //                                       FAILED (there is a task)
             //
             // There is no space available for now
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
             return FAILED;
         }
         // move everything at the begining of the buffer
@@ -1534,7 +1534,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 //                             |            |
                 //                          tx_msg      FAILED (there is a task)
                 //
-                RobusHAL_SetIrqState(true);
+                LuosHAL_SetIrqState(true);
                 return FAILED;
             }
             // Check if there is a task between tx and end of buffer
@@ -1549,7 +1549,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 //                             |                                                            |
                 //                          tx_msg                                                   FAILED (there is a task)
                 //
-                RobusHAL_SetIrqState(true);
+                LuosHAL_SetIrqState(true);
                 return FAILED;
             }
             // Check space for the RX message
@@ -1564,7 +1564,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 //                                     |
                 //                                FAILED (there is a task)
                 //
-                RobusHAL_SetIrqState(true);
+                LuosHAL_SetIrqState(true);
                 return FAILED;
             }
             current_msg         = (msg_t *)msg_buffer;
@@ -1586,7 +1586,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 //                        |            |
                 //                        tx_msg     FAILED (there is a task)
                 //
-                RobusHAL_SetIrqState(true);
+                LuosHAL_SetIrqState(true);
                 return FAILED;
             }
             current_msg         = (msg_t *)((uint32_t)current_msg + decay_size);
@@ -1608,7 +1608,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         // Copy the header before reenabling IRQ
         memcpy((void *)current_msg_cpy, rx_msg_bkp, sizeof(header_t));
         // re-enable IRQ
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
         // Now we can copy additional datas
         memcpy((void *)((uint32_t)current_msg_cpy + sizeof(header_t)), (void *)((uint32_t)rx_msg_bkp + sizeof(header_t)), (progression_size - sizeof(header_t)));
     }
@@ -1617,7 +1617,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         // Copy previously received incomplete header bytes
         memcpy((void *)current_msg_cpy, rx_msg_bkp, progression_size);
         // re-enable IRQ
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
     }
 
     // Secondly : deals with Tx
@@ -1634,7 +1634,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         // if VERBOSE_LOCALHOST is NOT defined : create a tx task to transmit on network, except for LOCALHOST
         //
         // Now we are ready to transmit, we can create the tx task
-        RobusHAL_SetIrqState(false);
+        LuosHAL_SetIrqState(false);
         tx_tasks[tx_tasks_stack_id].size          = size;
         tx_tasks[tx_tasks_stack_id].data_pt       = (uint8_t *)tx_msg;
         tx_tasks[tx_tasks_stack_id].ll_service_pt = ll_service_pt;
@@ -1646,7 +1646,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         }
         tx_tasks_stack_id++;
         LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
@@ -1685,11 +1685,11 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     {
         // This is a localhost (LOCALHOST or MULTIHOST) message copy it as a message task
         LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
-        RobusHAL_SetIrqState(false);
+        LuosHAL_SetIrqState(false);
         LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
         msg_tasks[msg_tasks_stack_id] = tx_msg;
         msg_tasks_stack_id++;
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
     }
     MsgAlloc_FindNewOldestMsg();
     return SUCCEED;
@@ -1721,19 +1721,19 @@ void MsgAlloc_PullMsgFromTxTask(void)
     // Decay tasks
     for (int i = 0; i < tx_tasks_stack_id; i++)
     {
-        RobusHAL_SetIrqState(false);
+        LuosHAL_SetIrqState(false);
         tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
         tx_tasks[i].size    = tx_tasks[i + 1].size;
-        RobusHAL_SetIrqState(true);
+        LuosHAL_SetIrqState(true);
     }
-    RobusHAL_SetIrqState(false);
+    LuosHAL_SetIrqState(false);
     if (tx_tasks_stack_id != 0)
     {
         tx_tasks_stack_id--;
         tx_tasks[tx_tasks_stack_id].data_pt = 0;
         tx_tasks[tx_tasks_stack_id].size    = 0;
     }
-    RobusHAL_SetIrqState(true);
+    LuosHAL_SetIrqState(true);
     MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
@@ -1769,19 +1769,19 @@ void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
             // Decay tasks
             for (uint8_t i = task_id; i < tx_tasks_stack_id; i++)
             {
-                RobusHAL_SetIrqState(false);
+                LuosHAL_SetIrqState(false);
                 tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
                 tx_tasks[i].size    = tx_tasks[i + 1].size;
-                RobusHAL_SetIrqState(true);
+                LuosHAL_SetIrqState(true);
             }
-            RobusHAL_SetIrqState(false);
+            LuosHAL_SetIrqState(false);
             if (tx_tasks_stack_id != 0)
             {
                 tx_tasks_stack_id--;
                 tx_tasks[tx_tasks_stack_id].data_pt = 0;
                 tx_tasks[tx_tasks_stack_id].size    = 0;
             }
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
         }
         else
         {

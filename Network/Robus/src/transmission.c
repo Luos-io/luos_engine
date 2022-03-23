@@ -44,6 +44,7 @@
 #include <transmission.h>
 
 #include "robus_hal.h"
+#include "luos_hal.h"
 #include <string.h>
 #include <stdbool.h>
 #include "context.h"
@@ -162,9 +163,9 @@ void Transmit_Process()
             ctx.tx.lock = true;
             RobusHAL_SetRxDetecPin(false);
             // Switch reception in collision detection mode
-            RobusHAL_SetIrqState(false);
+            LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
-            RobusHAL_SetIrqState(true);
+            LuosHAL_SetIrqState(true);
             ctx.tx.data = data;
 
             // put timestamping on data here

@@ -5,7 +5,7 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "timestamp.h"
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "string.h"
 #include "service_structs.h"
 /******************************* Description of Timestamp process ************************************
@@ -106,7 +106,7 @@ void Timestamp_CreateEvent(int64_t relative_date, timestamp_token_t *token, void
 {
     // update token only if it's not locked
     token->target    = target;
-    token->timestamp = (((int64_t)RobusHAL_GetTimestamp()) + relative_date > 0) ? ((int64_t)RobusHAL_GetTimestamp()) + relative_date : 0;
+    token->timestamp = (((int64_t)LuosHAL_GetTimestamp()) + relative_date > 0) ? ((int64_t)LuosHAL_GetTimestamp()) + relative_date : 0;
 
     // if it's a new token, add it to the list
     if (!Timestamp_GetToken(target))
@@ -268,7 +268,7 @@ void Timestamp_TagMsg(msg_t *msg)
     // get timestamp in message stream
     memcpy(&data_timestamp, &msg->stream[full_size - sizeof(uint16_t) - sizeof(int64_t)], sizeof(int64_t));
     // update timestamp
-    latency = data_timestamp - (int64_t)RobusHAL_GetTimestamp();
+    latency = data_timestamp - (int64_t)LuosHAL_GetTimestamp();
     // copy timestamp in message
     memcpy(&msg->stream[full_size - sizeof(int16_t) - sizeof(int64_t)], &latency, sizeof(int64_t));
 }

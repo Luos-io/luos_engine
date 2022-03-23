@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "robus_hal.h"
+#include "luos_hal.h"
 #include "context.h"
 
 /*******************************************************************************
@@ -209,7 +209,8 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
         alias[strlen(alias)] = '\0';
     }
     // Add a number at the end of the alias
-    sprintf(alias, "%s%d", alias, num);
+    char *alias_copy = alias;
+    sprintf(alias, "%s%d", alias_copy, num);
 }
 /******************************************************************************
  * @brief time out to receive en route table from
@@ -222,8 +223,8 @@ static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
     const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;
     Luos_SendMsg(service, intro_msg);
-    uint32_t timestamp = RobusHAL_GetSystick();
-    while ((RobusHAL_GetSystick() - timestamp) < timeout)
+    uint32_t timestamp = LuosHAL_GetSystick();
+    while ((LuosHAL_GetSystick() - timestamp) < timeout)
     {
         // If this request is for a service in this board allow him to respond.
         Luos_Loop();

@@ -9,16 +9,13 @@
  ******************************************************************************/
 #ifndef _RobusHAL_CONFIG_H_
 #define _RobusHAL_CONFIG_H_
+// clang-format off
 
-// include file relative to your MCU family
+// include files relative to your MCU family
 
 // If your MCU do not Have DMA for tx transmit define USE_TX_IT
 
 #define DISABLE 0x00
-
-#ifndef MCUFREQ
-#define MCUFREQ // MCU frequence
-#endif
 #ifndef TIMERDIV
 #define TIMERDIV // clock divider for timer clock chosen
 #endif
@@ -122,7 +119,7 @@ while (0U)
 #define LUOS_COM_IRQHANDLER()
 #endif
 /*******************************************************************************
- * FLASH CONFIG
+ * DMA CONFIG
  ******************************************************************************/
 #ifndef LUOS_DMA_CLOCK_ENABLE
 #define LUOS_DMA_CLOCK_ENABLE() \
@@ -155,15 +152,6 @@ while (0U)
 #endif
 #ifndef LUOS_TIMER_IRQHANDLER
 #define LUOS_TIMER_IRQHANDLER()
-#endif
-/*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH ((uint32_t)(FLASH_BANK1_END - FLASH_PAGE_SIZE))
 #endif
 
 #endif /* _RobusHAL_CONFIG_H_ */

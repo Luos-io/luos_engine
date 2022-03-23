@@ -10,7 +10,7 @@
 #ifndef LCD_DRV_H
 #define LCD_DRV_H
 
-#include "robus_hal.h"
+#include "luos_hal.h"
 
 /*******************************************************************************
  * Definitions
