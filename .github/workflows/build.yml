@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - master
+      - master # change it to main
 
 jobs:
   build:
@@ -49,9 +49,6 @@ jobs:
           # Step back and get dependancies
           cd ..
 
-          # Examples
-          git clone https://github.com/Luos-io/Examples.git
-
           # HAL
           git clone https://github.com/Luos-io/LuosHAL.git
 
@@ -59,62 +56,51 @@ jobs:
         env:
           PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
         run: |
-          cd ../Examples/
           # L0
-          platformio run -d Projects/l0/Button
-          platformio run -d Projects/l0/Controller_motor
-          platformio run -d Projects/l0/Dc_motor
-          platformio run -d Projects/l0/Distance
-          platformio run -d Projects/l0/Dxl
-          platformio run -d Projects/l0/Gate_SerialCom
-          platformio run -d Projects/l0/Gpio
-          platformio run -d Projects/l0/Imu
-          platformio run -d Projects/l0/Inspector_SerialCom
-          platformio run -d Projects/l0/Led
-          platformio run -d Projects/l0/Led_strip
-          platformio run -d Projects/l0/Light_sensor
-          platformio run -d Projects/l0/Load
-          platformio run -d Projects/l0/Potentiometer
-          platformio run -d Projects/l0/Power_switch
-          platformio run -d Projects/l0/Servo
-          platformio run -d Projects/l0/Stepper
-          platformio run -d Projects/l0/Bike_alarm/Alarm_controller
-          platformio run -d Projects/l0/Bike_alarm/Start_controller
+          platformio run -d Examples/Projects/l0/Button
+          platformio run -d Examples/Projects/l0/Controller_motor
+          platformio run -d Examples/Projects/l0/Dc_motor
+          platformio run -d Examples/Projects/l0/Distance
+          platformio run -d Examples/Projects/l0/Dxl
+          platformio run -d Examples/Projects/l0/Gate_SerialCom
+          platformio run -d Examples/Projects/l0/Gpio
+          platformio run -d Examples/Projects/l0/Imu
+          platformio run -d Examples/Projects/l0/Led
+          platformio run -d Examples/Projects/l0/Led_strip
+          platformio run -d Examples/Projects/l0/Light_sensor
+          platformio run -d Examples/Projects/l0/Load
+          platformio run -d Examples/Projects/l0/Potentiometer
+          platformio run -d Examples/Projects/l0/Power_switch
+          platformio run -d Examples/Projects/l0/Servo
+          platformio run -d Examples/Projects/l0/Stepper
+          platformio run -d Examples/Projects/l0/Bike_alarm/Alarm_controller
+          platformio run -d Examples/Projects/l0/Bike_alarm/Start_controller
           # arduino
-          platformio run -d Projects/Arduino/Button
-          platformio run -d Projects/Arduino/Gate_SerialCom
-          platformio run -d Projects/Arduino/Inspector_SerialCom
-
+          platformio run -d Examples/Projects/Arduino/Button
+          platformio run -d Examples/Projects/Arduino/Gate_SerialCom
           # NUCLEO-L432KC
-          platformio run -d Projects/NUCLEO-L432KC/Button
-          platformio run -d Projects/NUCLEO-L432KC/Gate_SerialCom
-          platformio run -d Projects/NUCLEO-L432KC/Inspector_SerialCom
-          platformio run -d Projects/NUCLEO-L432KC/Led
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Button
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-L432KC/Led
           # STM32F4-discovery
-          platformio run -d Projects/STM32F4-discovery/Button
-          platformio run -d Projects/STM32F4-discovery/Gate_SerialCom
-          platformio run -d Projects/NUCLEO-F401RE/Inspector_SerialCom
-
+          platformio run -d Examples/Projects/STM32F4-discovery/Button
+          platformio run -d Examples/Projects/STM32F4-discovery/Gate_SerialCom
           # NUCLEO-F401RE
-          platformio run -d Projects/NUCLEO-F401RE/Button
-          platformio run -d Projects/NUCLEO-F401RE/Gate_SerialCom
-          platformio run -d Projects/NUCLEO-F410RB/Inspector_SerialCom
-          platformio run -d Projects/NUCLEO-F401RE/Led
+          platformio run -d Examples/Projects/NUCLEO-F401RE/Button
+          platformio run -d Examples/Projects/NUCLEO-F401RE/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F401RE/Led
           # NUCLEO-F401RB
-          platformio run -d Projects/NUCLEO-F410RB/Button
-          platformio run -d Projects/NUCLEO-F410RB/Gate_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-F410RB/Button
+          platformio run -d Examples/Projects/NUCLEO-F410RB/Gate_SerialCom
           # NUCLEO-G431KB
-          platformio run -d Projects/NUCLEO-G431KB/Button
-          platformio run -d Projects/NUCLEO-G431KB/Gate_SerialCom
-          platformio run -d Projects/NUCLEO-G431KB/Inspector_SerialCom
+          platformio run -d Examples/Projects/NUCLEO-G431KB/Button
+          platformio run -d Examples/Projects/NUCLEO-G431KB/Gate_SerialCom
 
       - name: Run PlatformIO Unit Tests
         env:
           PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
         if: ${{ runner.os == 'Windows' }}
         run: |
-          cd ../Luos/
-
           # Clean all projects
           platformio run -t clean -c .\test\msg_alloc\config\platformio.ini
           platformio run -t clean -c .\test\luos\config\platformio.ini

@@ -1,0 +1,37 @@
+{
+    "name": "Imu",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,motion_driver_6.12,motion_driver,motion,driver",
+    "description": "Luos turn your embedded system as services like microservice do it in software.",
+    "version": "1.0.0",
+    "licence": "MIT",
+    "build": {
+        "flags": [
+            "-I ../Inc",
+            "-I motion_driver_6.12/core/driver/eMPL",
+            "-I motion_driver_6.12/core/eMPL-hal",
+            "-I motion_driver_6.12/core/driver/include",
+            "-I motion_driver_6.12/core/mllite",
+            "-I motion_driver_6.12/core/mpl",
+            "-L motion_driver_6.12/core/mpl",
+            "-l liblibmplmpu",
+            "-D USE_DMP",
+            "-D MPU9250",
+            "-D EMPL",
+            "-D EMPL_TARGET_STM32F4",
+            "-D MPL_LOG_NDEBUG=1",
+            "-DREV={1,0,0}"
+        ],
+        "src_filter": [
+            "+<motion_driver_6.12/core/mllite/*>",
+            "+<motion_driver_6.12/core/eMPL-hal/*>",
+            "+<motion_driver_6.12/core/driver/eMPL/*>",
+            "+<../src/*>"
+        ]
+    },
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}

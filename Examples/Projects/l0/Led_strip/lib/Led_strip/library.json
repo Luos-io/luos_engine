@@ -1,0 +1,22 @@
+{
+    "name": "led_strip",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "description": "a simple led_strip",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "licence": "MIT",
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ],
+    "build": {
+        "flags": [
+            "-DREV={1,0,0}"
+        ]
+    }
+}

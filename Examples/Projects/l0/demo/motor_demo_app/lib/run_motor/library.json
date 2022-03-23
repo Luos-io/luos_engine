@@ -1,0 +1,17 @@
+{
+    "name": "run_motor",
+    "keywords": "",
+    "description": "Run a motor depanding on its position",
+    "version": "0.1.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://www.luos.io/us/"
+    },
+    "licence": "MIT",
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}

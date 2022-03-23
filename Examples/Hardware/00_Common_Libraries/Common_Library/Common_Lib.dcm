@@ -1,0 +1,143 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ASMB-MTB1-0A3A2
+D LED RVB
+K LED RVB
+F Documentation/LEDs/ASMB-MTB1-0A3A2.pdf
+$ENDCMP
+#
+$CMP C
+D Unpolarized capacitor
+K capacitor cap
+F ~
+$ENDCMP
+#
+$CMP C_POL
+D Polarised capacitor
+$ENDCMP
+#
+$CMP DC_Power_Jack
+D DC Barrel Jack
+K DC power barrel jack connector
+F ~
+$ENDCMP
+#
+$CMP DRV8833
+D Dual H-Bridge Motor Driver
+K Dual H-Bridge Motor Driver
+F Documentation/Controleur_Moteur/DRV8833.pdf
+$ENDCMP
+#
+$CMP D_Schottky
+D Schottky diode
+K diode Schottky
+F ~
+$ENDCMP
+#
+$CMP D_Zener
+D Zener diode
+K diode Zener
+F ~
+$ENDCMP
+#
+$CMP FT230X
+D Full Speed USB to Basic UART
+$ENDCMP
+#
+$CMP Jack-DC
+D DC Barrel Jack
+K DC power barrel jack connector
+F ~
+$ENDCMP
+#
+$CMP L
+D Inductor
+K inductor choke coil reactor magnetic
+F ~
+$ENDCMP
+#
+$CMP LED
+D Light emitting diode
+K LED diode
+F ~
+$ENDCMP
+#
+$CMP LMR23630APDRRT
+D DC/DC Buck (Step Down) Regulator, Adjustable, 4V to 36V In, 1V to 28V/3A Out, 400kHz, WSON-12
+K dc/dc
+$ENDCMP
+#
+$CMP MC33926
+D Contrôleur de moteur, MOSFET H-Bridge, PWM 20 kHz, 2 sorties, Alim 5V à 28V, Sortie 5 A, QFN-32
+$ENDCMP
+#
+$CMP MPU-9250
+D triple-axis MEMS gyroscope
+K gyroscope MEMS
+F Documentations/MPU9250.pdf
+$ENDCMP
+#
+$CMP NCP21WF104J03RA
+D Thermistance 100K - 5% - 4250K - -40°C to 124°C
+K Thermistance
+F Documentation/Temp/MURATA_NTC.pdf
+$ENDCMP
+#
+$CMP NMOS_DGS
+D Transistor N-MOSFET
+K nmos n-mos n-mosfet transistor
+F ~
+$ENDCMP
+#
+$CMP NMOS_GSD
+D Transistor N-MOSFETwith substrate diode (general)
+K NMOS n-mos n-mosfet transistor
+F ~
+$ENDCMP
+#
+$CMP Q_NPN_BEC
+D NPN transistor, base/emitter/collector
+K transistor NPN
+F ~
+$ENDCMP
+#
+$CMP Q_Photo_NPN
+D NPN phototransistor, collector/emitter
+K phototransistor NPN
+F ~
+$ENDCMP
+#
+$CMP R
+D Resistor, small symbol
+K r resistor
+F ~
+$ENDCMP
+#
+$CMP R_PHOTO
+D Photoresistor, light sensitive resistor, LDR
+K resistor variable light opto LDR
+F ~
+$ENDCMP
+#
+$CMP STMPS2151STR
+D 500mA 5V curent limiter
+K current limiter 500mA
+$ENDCMP
+#
+$CMP Thermistor_PTC
+D Temperature dependent resistor, positive temperature coefficient
+K resistor PTC thermistor sensor RTD
+F ~
+$ENDCMP
+#
+$CMP USBLC6-2SC6
+D Bidirectional ESD Protection Diode, SOT-23-6
+K usb ethernet
+F http://www2.st.com/resource/en/datasheet/CD00050750.pdf
+$ENDCMP
+#
+$CMP esp32
+D ESP32-WROOM-32D
+$ENDCMP
+#
+#End Doc Library

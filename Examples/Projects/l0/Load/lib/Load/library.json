@@ -1,0 +1,25 @@
+{
+    "name": "Load",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,VL53L0X_1.0.2,VL53L0X",
+    "description": "Luos turn your embedded system as services like microservice do it in software.",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://www.luos.io/us/"
+    },
+    "licence": "MIT",
+    "build": {
+        "flags": [
+            "-I HX711"
+        ],
+        "src_filter": [
+            "+<HX711>"
+        ]
+    },
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}

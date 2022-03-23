@@ -1,0 +1,27 @@
+{
+    "name": "Distance",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,VL53L0X_1.0.2,VL53L0X",
+    "description": "Luos turn your embedded system as services like microservice do it in software.",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "licence": "MIT",
+    "build": {
+        "flags": [
+            "-I VL53L0X_1.0.2/Api/platform/inc",
+            "-I VL53L0X_1.0.2/Api/core/inc"
+        ],
+        "src_filter": [
+            "+<VL53L0X_1.0.2/Api/core/src/*>",
+            "+<VL53L0X_1.0.2/Api/platform/src/*>"
+        ]
+    },
+    "dependencies": [
+        {
+            "name": "luos/Luos",
+            "version": "^2.2.0"
+        }
+    ]
+}
