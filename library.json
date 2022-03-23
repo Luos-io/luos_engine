@@ -20,23 +20,10 @@
             "-I Bootloader",
             "-I SelfTest"
         ],
-        "srcFilter": [
-            "+<*.c>",
-            "+<../Network/Robus/src/*.c>",
-            "+<../Profiles/Core/*.c>",
-            "+<../Profiles/State/*.c>",
-            "+<../Profiles/Motor/*.c>",
-            "+<../Profiles/Servo_motor/*.c>",
-            "+<../Profiles/Voltage/*.c>",
-            "+<../Bootloader/*.c>",
-            "+<../SelfTest/*.c>"
-        ]
+        "extraScript": "source_filter_script.py"
     },
     "repository": {
         "type": "git",
         "url": "https://github.com/Luos-io/luos"
-    },
-    "dependencies": {
-        "luos/LuosHAL": "^0.5.3"
     }
 }
