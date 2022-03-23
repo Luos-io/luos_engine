@@ -1,22 +1,18 @@
 {
-    "ignorePatterns": [
-        {
-            "pattern": "^../"
-        },
-        {
-            "pattern": "^./"
-        },
-        {
-            "pattern": "^/"
-        }
-    ],
-    "timeout": "10s",
-    "retryOn429": true,
-    "retryCount": 2,
-    "fallbackRetryDelay": "15s",
-    "aliveStatusCodes": [
-        200,
-        206,
-        999
-    ]
+  "ignorePatterns": [
+    {
+      "pattern": "^../"
+    },
+    {
+      "pattern": "^./"
+    },
+    {
+      "pattern": "^/"
+    }
+  ],
+  "timeout": "10s",
+  "retryOn429": true,
+  "retryCount": 2,
+  "fallbackRetryDelay": "15s",
+  "aliveStatusCodes": [0, 200, 206, 301, 308, 999]
 }
