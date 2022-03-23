@@ -16,7 +16,7 @@ for item in env.get("CPPDEFINES", []):
     if isinstance(item, tuple) and item[0] == "LUOSHAL":
         print("Selected HAL for Luos and Robus is : %s" % item[1])
         env.Append(CPPPATH=[realpath("Network/Robus/HAL/" + item[1])])
-        env.Append(CPPPATH=[realpath("Luos_engine/HAL/" + item[1])])
+        env.Append(CPPPATH=[realpath("Engine/HAL/" + item[1])])
         env.Replace(SRC_FILTER=sources)
         env.Append(
             SRC_FILTER=["+<../../../Network/Robus/HAL/%s/*.c>" % item[1]])

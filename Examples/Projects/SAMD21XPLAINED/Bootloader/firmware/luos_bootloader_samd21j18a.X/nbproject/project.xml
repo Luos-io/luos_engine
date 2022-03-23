@@ -14,8 +14,8 @@
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>../src</sourceRootElem>
-                <sourceRootElem>../../../../../Luos_engine</sourceRootElem>
-                <sourceRootElem>../../../../../Network</sourceRootElem>
+                <sourceRootElem>../../../../../../Engine</sourceRootElem>
+                <sourceRootElem>../../../../../../Network</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
