@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <stdbool.h>
-#include "luos_hal.h"
+#include "robus_hal.h"
 #include "target.h"
 #include "transmission.h"
 #include "msg_alloc.h"
@@ -72,7 +72,7 @@ void Recep_GetHeader(volatile uint8_t *data)
         case 1: // reset CRC computation
             // when we catch the first byte we timestamp the msg
             //  -8 : time to transmit 8 bits at 1 us/bit
-            ll_rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+            ll_rx_timestamp = RobusHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
 
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
@@ -134,7 +134,7 @@ void Recep_GetHeader(volatile uint8_t *data)
         default:
             break;
     }
-    LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
+    RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
 }
 /******************************************************************************
  * @brief Callback to get a complete data
@@ -149,7 +149,7 @@ void Recep_GetData(volatile uint8_t *data)
     if (data_count < data_size)
     {
         // Continue CRC computation until the end of data
-        LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
+        RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
     }
     else if (data_count > data_size)
     {
@@ -175,8 +175,8 @@ void Recep_GetData(volatile uint8_t *data)
             // Make an exception for bootloader command
             if ((current_msg->header.cmd == BOOTLOADER_CMD) && (current_msg->data[0] == BOOTLOADER_RESET))
             {
-                LuosHAL_SetMode((uint8_t)BOOT_MODE);
-                LuosHAL_Reboot();
+                RobusHAL_SetMode((uint8_t)BOOT_MODE);
+                RobusHAL_Reboot();
             }
 
             // Make an exception for reset detection command
@@ -240,7 +240,7 @@ void Recep_GetCollision(volatile uint8_t *data)
         // Data dont match, or we don't start to send the message, there is a collision
         ctx.tx.collision = true;
         // Stop TX trying to save input datas
-        LuosHAL_SetTxState(false);
+        RobusHAL_SetTxState(false);
         // Save the received data into the allocator to be able to continue the reception
         for (uint8_t i = 0; i < data_count - 1; i++)
         {
@@ -268,8 +268,8 @@ void Recep_GetCollision(volatile uint8_t *data)
             selftest_SetRxFlag();
 #endif
             // collision detection end
-            LuosHAL_SetRxState(false);
-            LuosHAL_ResetTimeout(0);
+            RobusHAL_SetRxState(false);
+            RobusHAL_ResetTimeout(0);
             if (ctx.tx.status == TX_NOK)
             {
                 // switch to catch Ack.
@@ -283,7 +283,7 @@ void Recep_GetCollision(volatile uint8_t *data)
             return;
         }
     }
-    LuosHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
+    RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
 }
 /******************************************************************************
  * @brief Callback to get a complete header
@@ -321,7 +321,7 @@ void Recep_Reset(void)
     ctx.tx.lock                    = false;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.callback                = Recep_GetHeader;
-    LuosHAL_SetRxDetecPin(true);
+    RobusHAL_SetRxDetecPin(true);
 }
 /******************************************************************************
  * @brief Catch ack when needed for the sent msg

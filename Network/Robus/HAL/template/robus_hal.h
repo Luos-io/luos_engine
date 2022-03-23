@@ -1,12 +1,12 @@
 /******************************************************************************
- * @file luosHAL
- * @brief Luos Hardware Abstration Layer. Describe Low layer fonction
- * @Family x86
+ * @file robus_HAL
+ * @brief Robus Hardware Abstration Layer. Describe Low layer fonction
+ * @MCU Family XXX
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _LUOSHAL_H_
-#define _LUOSHAL_H_
+#ifndef _RobusHAL_H_
+#define _RobusHAL_H_
 
 #include <stdint.h>
 #include "robus_hal_config.h"
@@ -14,7 +14,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define LUOS_UUID ((uint32_t *)0x00000001)
+#define LUOS_UUID
 
 #define ADDRESS_ALIASES_FLASH   ADDRESS_LAST_PAGE_FLASH
 #define ADDRESS_BOOT_FLAG_FLASH (ADDRESS_LAST_PAGE_FLASH + PAGE_SIZE) - 4
@@ -44,14 +44,4 @@ void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc);
 void RobusHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 void RobusHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 
-// bootloader functions
-void RobusHAL_SetMode(uint8_t mode);
-void RobusHAL_Reboot(void);
-void RobusHAL_SaveNodeID(uint16_t);
-
-// timestamp functions
-uint64_t RobusHAL_GetTimestamp(void);
-void RobusHAL_StartTimestamp(void);
-void RobusHAL_StopTimestamp(void);
-
-#endif /* _LUOSHAL_H_ */
+#endif /* _HAL_H_ */

@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file luosHAL_Config
- * @brief This file allow you to configure LuosHAL according to your design
+ * @brief This file allow you to configure RobusHAL according to your design
  *        this is the default configuration created by Luos team for this MCU Family
  *        Do not modify this file if you want to ovewrite change define in you project
  * @Family x86
@@ -121,7 +121,7 @@
 #define LUOS_COM_IRQ X86_STUB // STUB
 #endif
 #ifndef LUOS_COM_IRQHANDLER
-#define LUOS_COM_IRQHANDLER() //STUB
+#define LUOS_COM_IRQHANDLER() // STUB
 #endif
 
 /*******************************************************************************
@@ -144,7 +144,7 @@
  * COM TIMEOUT CONFIG
  ******************************************************************************/
 #ifndef LUOS_TIMER_CLOCK_ENABLE
-#define LUOS_TIMER_LOCK_ENABLE() //STUB
+#define LUOS_TIMER_LOCK_ENABLE() // STUB
 #endif
 #ifndef LUOS_TIMER
 #define LUOS_TIMER X86_STUB // STUB

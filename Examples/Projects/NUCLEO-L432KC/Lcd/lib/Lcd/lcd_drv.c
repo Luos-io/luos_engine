@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file lcd_drv
  * @brief This is a driver example for an LCD display. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/L432KC-Luos-Biometric-Security-System
  * @author MarieBidouille
@@ -187,7 +187,7 @@ void LcdDrv_Print(char *text, int length)
 }
 
 /******************************************************************************
- * @brief Must be call to set parameters 
+ * @brief Must be call to set parameters
  * @param param
  * @param value
  * @return None
@@ -295,7 +295,7 @@ void LcdDrv_PulseEnable(void)
 
 /******************************************************************************
  * @brief Send command to the lcd with automatic 4/8 bit selection
- * @param value 
+ * @param value
  * @return None
  ******************************************************************************/
 void LcdDrv_SendCommand(uint8_t value)
@@ -313,7 +313,7 @@ void LcdDrv_SendCommand(uint8_t value)
  ******************************************************************************/
 void LcdDrv_DelayMs(int delay)
 {
-    volatile int t = LuosHAL_GetSystick();
-    while ((LuosHAL_GetSystick() - t) < delay)
+    volatile int t = RobusHAL_GetSystick();
+    while ((RobusHAL_GetSystick() - t) < delay)
         ;
 }

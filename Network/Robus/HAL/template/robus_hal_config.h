@@ -1,14 +1,14 @@
 /******************************************************************************
- * @file luosHAL_Config
- * @brief This file allow you to configure LuosHAL according to your design
+ * @file RobusHAL_Config
+ * @brief This file allow you to configure RobusHAL according to your design
  *        this is the default configuration created by Luos team for this MCU Family
  *        Do not modify this file if you want to ovewrite change define in you project
  * @MCU Family
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _LUOSHAL_CONFIG_H_
-#define _LUOSHAL_CONFIG_H_
+#ifndef _RobusHAL_CONFIG_H_
+#define _RobusHAL_CONFIG_H_
 
 // include file relative to your MCU family
 
@@ -166,4 +166,4 @@ while (0U)
 #define ADDRESS_LAST_PAGE_FLASH ((uint32_t)(FLASH_BANK1_END - FLASH_PAGE_SIZE))
 #endif
 
-#endif /* _LUOSHAL_CONFIG_H_ */
+#endif /* _RobusHAL_CONFIG_H_ */

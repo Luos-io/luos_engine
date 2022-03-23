@@ -1,5 +1,5 @@
 #include "profile_servo_motor.h"
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 /******************************************************************************
  * @brief Initilization function
@@ -48,9 +48,9 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
                 }
                 else
                 {
-                    LuosHAL_SetIrqState(false);
+                    RobusHAL_SetIrqState(false);
                     AngularOD_PositionToMsg((angular_position_t *)&servo_motor_profile->angular_position, &pub_msg);
-                    LuosHAL_SetIrqState(true);
+                    RobusHAL_SetIrqState(true);
                     Luos_SendMsg(service, &pub_msg);
                 }
             }

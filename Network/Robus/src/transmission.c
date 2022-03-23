@@ -43,7 +43,7 @@
 
 #include <transmission.h>
 
-#include "luos_hal.h"
+#include "robus_hal.h"
 #include <string.h>
 #include <stdbool.h>
 #include "context.h"
@@ -73,9 +73,9 @@ static uint8_t Transmit_GetLockStatus(void);
 void Transmit_SendAck(void)
 {
     // Info : We don't consider this transmission as a complete message transmission but as a complete message reception.
-    LuosHAL_SetRxState(false);
+    RobusHAL_SetRxState(false);
     // Transmit Ack data
-    LuosHAL_ComTransmit((unsigned char *)&ctx.rx.status.unmap, 1);
+    RobusHAL_ComTransmit((unsigned char *)&ctx.rx.status.unmap, 1);
     // Reset Ack status
     ctx.rx.status.unmap = 0x0F;
 }
@@ -160,11 +160,11 @@ void Transmit_Process()
             ctx.tx.status = initial_transmit_status;
             // Lock the bus
             ctx.tx.lock = true;
-            LuosHAL_SetRxDetecPin(false);
+            RobusHAL_SetRxDetecPin(false);
             // Switch reception in collision detection mode
-            LuosHAL_SetIrqState(false);
+            RobusHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
-            LuosHAL_SetIrqState(true);
+            RobusHAL_SetIrqState(true);
             ctx.tx.data = data;
 
             // put timestamping on data here
@@ -186,7 +186,7 @@ void Transmit_Process()
             }
 
             // Transmit data
-            LuosHAL_ComTransmit(data, size);
+            RobusHAL_ComTransmit(data, size);
         }
     }
 }
@@ -199,7 +199,7 @@ static uint8_t Transmit_GetLockStatus(void)
 {
     if (ctx.tx.lock != true)
     {
-        ctx.tx.lock |= LuosHAL_GetTxLockState();
+        ctx.tx.lock |= RobusHAL_GetTxLockState();
     }
     return ctx.tx.lock;
 }
@@ -223,7 +223,7 @@ void Transmit_End(void)
         // A tx_task failed
         nbrRetry++;
         // compute a delay before retry
-        LuosHAL_ResetTimeout(20 * nbrRetry * (ctx.node.node_id + 1));
+        RobusHAL_ResetTimeout(20 * nbrRetry * (ctx.node.node_id + 1));
         // Lock the trasmission to be sure no one can send something from this node.
         ctx.tx.lock   = true;
         ctx.tx.status = TX_DISABLE;

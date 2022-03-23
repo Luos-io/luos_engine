@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file lcd_drv
  * @brief This is a driver example for an LCD display. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/Arduino-Luos-Biometric-Security-System
  * @version 0.0.0
@@ -9,7 +9,7 @@
 #ifndef LCD_DRV_H
 #define LCD_DRV_H
 
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 /*******************************************************************************
  * Definitions
@@ -26,7 +26,7 @@
 #define N_COLS        16
 #define MAX_TEXT_SIZE 2 * N_COLS
 
-//scroll delay in ms
+// scroll delay in ms
 #define LCD_SCROLL_DELAY 100
 
 enum

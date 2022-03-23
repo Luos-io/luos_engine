@@ -1,11 +1,11 @@
 /******************************************************************************
- * @file luosHAL
- * @brief Luos Hardware Abstration Layer. Describe Low layer fonction
+ * @file robus_HAL
+ * @brief Robus Hardware Abstration Layer. Describe Low layer fonction
  * @MCU Family ATSAMD21
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include "luos_hal.h"
+#include "robus_hal.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -47,13 +47,13 @@ static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void LuosHAL_SystickInit(void);
-static void LuosHAL_FlashInit(void);
-static void LuosHAL_CRCInit(void);
-static void LuosHAL_TimeoutInit(void);
-static void LuosHAL_GPIOInit(void);
-static void LuosHAL_FlashEraseLuosMemoryInfo(void);
-static void LuosHAL_RegisterPTP(void);
+static void RobusHAL_SystickInit(void);
+static void RobusHAL_FlashInit(void);
+static void RobusHAL_CRCInit(void);
+static void RobusHAL_TimeoutInit(void);
+static void RobusHAL_GPIOInit(void);
+static void RobusHAL_FlashEraseLuosMemoryInfo(void);
+static void RobusHAL_RegisterPTP(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
 
@@ -62,32 +62,32 @@ static void LuosHAL_RegisterPTP(void);
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_Init(void)
+void RobusHAL_Init(void)
 {
     // Systick Initialization
-    LuosHAL_SystickInit();
+    RobusHAL_SystickInit();
 
     // IO Initialization
-    LuosHAL_GPIOInit();
+    RobusHAL_GPIOInit();
 
     // Flash Initialization
-    LuosHAL_FlashInit();
+    RobusHAL_FlashInit();
 
     // CRC Initialization
-    LuosHAL_CRCInit();
+    RobusHAL_CRCInit();
 
     // Com Initialization
-    LuosHAL_ComInit(DEFAULTBAUDRATE);
+    RobusHAL_ComInit(DEFAULTBAUDRATE);
 
     // start timestamp
-    LuosHAL_StartTimestamp();
+    RobusHAL_StartTimestamp();
 }
 /******************************************************************************
  * @brief Luos HAL general disable IRQ
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_SetIrqState(uint8_t Enable)
+void RobusHAL_SetIrqState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -103,7 +103,7 @@ void LuosHAL_SetIrqState(uint8_t Enable)
  * @param None
  * @return tick Counter
  ******************************************************************************/
-static void LuosHAL_SystickInit(void)
+static void RobusHAL_SystickInit(void)
 {
     SysTick->CTRL = 0;
     SysTick->VAL  = 0;
@@ -116,7 +116,7 @@ static void LuosHAL_SystickInit(void)
  * @param None
  * @return tick Counter
  ******************************************************************************/
-uint32_t LuosHAL_GetSystick(void)
+uint32_t RobusHAL_GetSystick(void)
 {
     return tick;
 }
@@ -134,7 +134,7 @@ void SysTick_Handler(void)
  * @param Select a baudrate for the Com
  * @return none
  ******************************************************************************/
-void LuosHAL_ComInit(uint32_t Baudrate)
+void RobusHAL_ComInit(uint32_t Baudrate)
 {
     uint32_t baud = 0;
     // initialize clock
@@ -176,7 +176,7 @@ void LuosHAL_ComInit(uint32_t Baudrate)
 
     // Timeout Initialization
     timoutclockcnt = MCUFREQ / Baudrate;
-    LuosHAL_TimeoutInit();
+    RobusHAL_TimeoutInit();
 
 #ifndef USE_TX_IT
     LUOS_DMA_CLOCK_ENABLE();
@@ -195,7 +195,7 @@ void LuosHAL_ComInit(uint32_t Baudrate)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_SetTxState(uint8_t Enable)
+void RobusHAL_SetTxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -234,7 +234,7 @@ void LuosHAL_SetTxState(uint8_t Enable)
  * @param
  * @return
  ******************************************************************************/
-void LuosHAL_SetRxState(uint8_t Enable)
+void RobusHAL_SetRxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -257,7 +257,7 @@ void LuosHAL_SetRxState(uint8_t Enable)
 void LUOS_COM_IRQHANDLER()
 {
     // Reset timeout to it's default value
-    LuosHAL_ResetTimeout(DEFAULT_TIMEOUT);
+    RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 
     // reception management
     if (((LUOS_COM->USART_INT.SERCOM_INTFLAG & SERCOM_USART_INT_INTFLAG_RXC_Msk) == SERCOM_USART_INT_INTFLAG_RXC_Msk) && ((LUOS_COM->USART_INT.SERCOM_INTENSET & SERCOM_USART_INT_INTENSET_RXC_Msk) == SERCOM_USART_INT_INTENSET_RXC_Msk))
@@ -282,8 +282,8 @@ void LUOS_COM_IRQHANDLER()
     {
         // Transmission complete
         // Switch to reception mode
-        LuosHAL_SetTxState(false);
-        LuosHAL_SetRxState(true);
+        RobusHAL_SetTxState(false);
+        RobusHAL_SetRxState(true);
         // Disable transmission complete IRQ
         LUOS_COM->USART_INT.SERCOM_INTFLAG  = SERCOM_USART_INT_INTFLAG_TXC_Msk;  // clear flag
         LUOS_COM->USART_INT.SERCOM_INTENCLR = SERCOM_USART_INT_INTENCLR_TXC_Msk; // disable IT
@@ -313,7 +313,7 @@ void LUOS_COM_IRQHANDLER()
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_ComTransmit(uint8_t *data, uint16_t size)
+void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
     while ((LUOS_COM->USART_INT.SERCOM_INTFLAG & SERCOM_USART_INT_INTFLAG_DRE_Msk) != SERCOM_USART_INT_INTFLAG_DRE_Msk)
         ;
@@ -340,7 +340,7 @@ void LuosHAL_ComTransmit(uint8_t *data, uint16_t size)
         descriptor_section.DMAC_DSTADDR = (uint32_t)&LUOS_COM->USART_INT.SERCOM_DATA;
         descriptor_section.DMAC_BTCNT   = size;
         // Enable TX
-        LuosHAL_SetTxState(true);
+        RobusHAL_SetTxState(true);
         LUOS_DMA->DMAC_CHCTRLA |= DMAC_CHCTRLA_ENABLE_Msk;
         LUOS_COM->USART_INT.SERCOM_INTENSET = SERCOM_USART_INT_INTENSET_TXC_Msk; // enable IT
 #endif
@@ -352,20 +352,20 @@ void LuosHAL_ComTransmit(uint8_t *data, uint16_t size)
         while (LUOS_TIMER->COUNT16.TC_COUNT < (0xFFFF - (timoutclockcnt * (DEFAULT_TIMEOUT - TIMEOUT_ACK))))
             ;
         // Enable TX
-        LuosHAL_SetTxState(true);
+        RobusHAL_SetTxState(true);
         // Transmit the only byte we have
         LUOS_COM->USART_INT.SERCOM_DATA = *data;
         // Enable Transmission complete interrupt because we only have one.
         LUOS_COM->USART_INT.SERCOM_INTENSET = SERCOM_USART_INT_INTENSET_TXC_Msk; // enable IT
     }
-    LuosHAL_ResetTimeout(DEFAULT_TIMEOUT);
+    RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }
 /******************************************************************************
  * @brief set state of Txlock detection pin
  * @param None
  * @return Lock status
  ******************************************************************************/
-void LuosHAL_SetRxDetecPin(uint8_t Enable)
+void RobusHAL_SetRxDetecPin(uint8_t Enable)
 {
     if (TX_LOCK_DETECT_IRQ != DISABLE)
     {
@@ -385,13 +385,13 @@ void LuosHAL_SetRxDetecPin(uint8_t Enable)
  * @param None
  * @return Lock status
  ******************************************************************************/
-uint8_t LuosHAL_GetTxLockState(void)
+uint8_t RobusHAL_GetTxLockState(void)
 {
     uint8_t result = false;
     if ((LUOS_COM->USART_INT.SERCOM_INTFLAG & SERCOM_USART_INT_INTFLAG_RXS_Msk) == SERCOM_USART_INT_INTFLAG_RXS_Msk)
     {
         LUOS_COM->USART_INT.SERCOM_INTFLAG = SERCOM_USART_INT_INTFLAG_RXS_Msk;
-        LuosHAL_ResetTimeout(DEFAULT_TIMEOUT);
+        RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
         result = true;
     }
     else
@@ -406,7 +406,7 @@ uint8_t LuosHAL_GetTxLockState(void)
             {
                 if (result == true)
                 {
-                    LuosHAL_ResetTimeout(DEFAULT_TIMEOUT);
+                    RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
                 }
             }
         }
@@ -418,7 +418,7 @@ uint8_t LuosHAL_GetTxLockState(void)
  * @param None
  * @return None
  ******************************************************************************/
-static void LuosHAL_TimeoutInit(void)
+static void RobusHAL_TimeoutInit(void)
 {
     // initialize clock
     LUOS_TIMER_CLOCK_ENABLE();
@@ -443,7 +443,7 @@ static void LuosHAL_TimeoutInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_ResetTimeout(uint16_t nbrbit)
+void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
     NVIC_ClearPendingIRQ(LUOS_TIMER_IRQ);                // clear IT pending
     LUOS_TIMER->COUNT16.TC_INTFLAG = TC_INTFLAG_OVF_Msk; // clear flag
@@ -464,10 +464,10 @@ void LUOS_TIMER_IRQHANDLER()
     if ((LUOS_TIMER->COUNT16.TC_INTFLAG & TC_INTFLAG_OVF_Msk) == TC_INTFLAG_OVF_Msk)
     {
         LUOS_TIMER->COUNT16.TC_INTFLAG = TC_INTFLAG_OVF_Msk; // clear
-        if ((ctx.tx.lock == true) && (LuosHAL_GetTxLockState() == false))
+        if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
         {
-            LuosHAL_SetTxState(false);
-            LuosHAL_SetRxState(true);
+            RobusHAL_SetTxState(false);
+            RobusHAL_SetRxState(true);
             Recep_Timeout();
         }
     }
@@ -478,10 +478,10 @@ void LUOS_TIMER_IRQHANDLER()
  * @param None
  * @return uint64_t
  ******************************************************************************/
-uint64_t LuosHAL_GetTimestamp(void)
+uint64_t RobusHAL_GetTimestamp(void)
 {
     ll_timestamp.lower_timestamp  = (SysTick->LOAD - SysTick->VAL) * (1000000000 / MCUFREQ);
-    ll_timestamp.higher_timestamp = LuosHAL_GetSystick() - ll_timestamp.start_offset;
+    ll_timestamp.higher_timestamp = RobusHAL_GetSystick() - ll_timestamp.start_offset;
 
     return ll_timestamp.higher_timestamp * 1000000 + (uint64_t)ll_timestamp.lower_timestamp;
 }
@@ -491,9 +491,9 @@ uint64_t LuosHAL_GetTimestamp(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_StartTimestamp(void)
+void RobusHAL_StartTimestamp(void)
 {
-    ll_timestamp.start_offset = LuosHAL_GetSystick();
+    ll_timestamp.start_offset = RobusHAL_GetSystick();
 }
 
 /******************************************************************************
@@ -501,7 +501,7 @@ void LuosHAL_StartTimestamp(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_StopTimestamp(void)
+void RobusHAL_StopTimestamp(void)
 {
     ll_timestamp.lower_timestamp  = 0;
     ll_timestamp.higher_timestamp = 0;
@@ -513,12 +513,12 @@ void LuosHAL_StopTimestamp(void)
  * @param None
  * @return None
  ******************************************************************************/
-static void LuosHAL_GPIOInit(void)
+static void RobusHAL_GPIOInit(void)
 {
     uint32_t Position = 0;
     uint32_t Config   = 0;
 
-    // Activate Clock for PIN choosen in luosHAL
+    // Activate Clock for PIN choosen in RobusHAL
     PORT_CLOCK_ENABLE();
 
     if ((RX_EN_PIN != DISABLE) || (RX_EN_PORT != DISABLE))
@@ -577,12 +577,12 @@ static void LuosHAL_GPIOInit(void)
     PORT_REGS->GROUP[COM_RX_PORT].PORT_PMUX[COM_RX_PIN >> 1] |= (COM_TX_AF << (4 * (COM_RX_PIN % 2))); // mux to sercom
 
     // configure PTP
-    LuosHAL_RegisterPTP();
+    RobusHAL_RegisterPTP();
     for (uint8_t i = 0; i < NBR_PORT; i++) /*Configure GPIO pins : PTP_Pin */
     {
         // Setup PTP lines //Mux all PTP to EIC
         PORT_REGS->GROUP[PTP[NBR_PORT].Port].PORT_PMUX[PTP[NBR_PORT].Pin >> 1] |= (0 << (4 * (PTP[NBR_PORT].Pin % 2)));
-        LuosHAL_SetPTPDefaultState(i);
+        RobusHAL_SetPTPDefaultState(i);
     }
 
     NVIC_SetPriority(EIC_IRQn, 3);
@@ -596,7 +596,7 @@ static void LuosHAL_GPIOInit(void)
  * @param void
  * @return None
  ******************************************************************************/
-static void LuosHAL_RegisterPTP(void)
+static void RobusHAL_RegisterPTP(void)
 {
 #if (NBR_PORT >= 1)
     PTP[0].Pin  = PTPA_PIN;
@@ -634,7 +634,7 @@ void PINOUT_IRQHANDLER()
     if (((EIC_REGS->EIC_INTFLAG & (1 << TX_LOCK_DETECT_IRQ))) && (TX_LOCK_DETECT_IRQ != DISABLE))
     {
         ctx.tx.lock = true;
-        LuosHAL_ResetTimeout(DEFAULT_TIMEOUT);
+        RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
         EIC_REGS->EIC_INTFLAG  = (uint32_t)(1 << TX_LOCK_DETECT_IRQ);
         EIC_REGS->EIC_INTENCLR = (1 << TX_LOCK_DETECT_IRQ);
     }
@@ -657,7 +657,7 @@ void PINOUT_IRQHANDLER()
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void LuosHAL_SetPTPDefaultState(uint8_t PTPNbr)
+void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
     uint32_t Position = 0;
     uint32_t Config   = 0;
@@ -687,7 +687,7 @@ void LuosHAL_SetPTPDefaultState(uint8_t PTPNbr)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void LuosHAL_SetPTPReverseState(uint8_t PTPNbr)
+void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
     uint32_t Position = 0;
     uint32_t Config   = 0;
@@ -716,7 +716,7 @@ void LuosHAL_SetPTPReverseState(uint8_t PTPNbr)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void LuosHAL_PushPTP(uint8_t PTPNbr)
+void RobusHAL_PushPTP(uint8_t PTPNbr)
 {
     // Pull Down / Output mode
     EIC_REGS->EIC_INTENCLR                                          = (1 << PTP[PTPNbr].Irq); // disable IT
@@ -731,7 +731,7 @@ void LuosHAL_PushPTP(uint8_t PTPNbr)
  * @param PTP branch
  * @return Line state
  ******************************************************************************/
-uint8_t LuosHAL_GetPTPState(uint8_t PTPNbr)
+uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
 {
     // Pull Down / Input mode
     EIC_REGS->EIC_INTENCLR                                          = (1 << PTP[PTPNbr].Irq);  // disable IT
@@ -748,7 +748,7 @@ uint8_t LuosHAL_GetPTPState(uint8_t PTPNbr)
  * @param None
  * @return None
  ******************************************************************************/
-static void LuosHAL_CRCInit(void)
+static void RobusHAL_CRCInit(void)
 {
 }
 /******************************************************************************
@@ -756,7 +756,7 @@ static void LuosHAL_CRCInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
+void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
 {
     uint16_t dbyte = *data;
     *(uint16_t *)crc ^= dbyte << 8;
@@ -773,7 +773,7 @@ void LuosHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
  * @param None
  * @return None
  ******************************************************************************/
-static void LuosHAL_FlashInit(void)
+static void RobusHAL_FlashInit(void)
 {
     NVMCTRL_REGS->NVMCTRL_CTRLB = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY | NVMCTRL_CTRLB_SLEEPPRM_WAKEONACCESS
                                   | NVMCTRL_CTRLB_RWS(1) | NVMCTRL_CTRLB_MANW_Msk;
@@ -783,7 +783,7 @@ static void LuosHAL_FlashInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-static void LuosHAL_FlashEraseLuosMemoryInfo(void)
+static void RobusHAL_FlashEraseLuosMemoryInfo(void)
 {
     uint32_t address            = ADDRESS_ALIASES_FLASH;
     NVMCTRL_REGS->NVMCTRL_ADDR  = address >> 1;
@@ -800,7 +800,7 @@ static void LuosHAL_FlashEraseLuosMemoryInfo(void)
  * @param Address page / size to write / pointer to data to write
  * @return
  ******************************************************************************/
-void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
+void RobusHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
 {
     uint32_t i         = 0;
     uint32_t *paddress = (uint32_t *)addr;
@@ -811,7 +811,7 @@ void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *dat
     memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, 16 * PAGE_SIZE);
 
     // Now we can erase the page
-    LuosHAL_FlashEraseLuosMemoryInfo();
+    RobusHAL_FlashEraseLuosMemoryInfo();
 
     // Then add input data into backuped value on RAM
     uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
@@ -833,7 +833,7 @@ void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *dat
  * @param Address info / size to read / pointer callback data to read
  * @return
  ******************************************************************************/
-void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
+void RobusHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
 {
     memcpy(data, (void *)(addr), size);
 }
@@ -843,7 +843,7 @@ void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data
  * @param
  * @return
  ******************************************************************************/
-void LuosHAL_SetMode(uint8_t mode)
+void RobusHAL_SetMode(uint8_t mode)
 {
     uint32_t data_to_write = ~BOOT_MODE_MASK | (mode << BOOT_MODE_OFFSET);
     uint32_t address       = SHARED_MEMORY_ADDRESS;
@@ -866,7 +866,7 @@ void LuosHAL_SetMode(uint8_t mode)
  * @param Address, node_id
  * @return
  ******************************************************************************/
-void LuosHAL_SaveNodeID(uint16_t node_id)
+void RobusHAL_SaveNodeID(uint16_t node_id)
 {
     uint32_t address       = SHARED_MEMORY_ADDRESS;
     uint32_t *paddress     = (uint32_t *)address;
@@ -891,7 +891,7 @@ void LuosHAL_SaveNodeID(uint16_t node_id)
  * @param
  * @return
  ******************************************************************************/
-void LuosHAL_Reboot(void)
+void RobusHAL_Reboot(void)
 {
     // DeInit RCC and HAL
 
@@ -910,7 +910,7 @@ void LuosHAL_Reboot(void)
  * @param
  * @return
  ******************************************************************************/
-void LuosHAL_DeInit(void)
+void RobusHAL_DeInit(void)
 {
 }
 
@@ -921,7 +921,7 @@ void LuosHAL_DeInit(void)
  ******************************************************************************/
 typedef void (*pFunction)(void); /*!< Function pointer definition */
 
-void LuosHAL_JumpToApp(uint32_t app_addr)
+void RobusHAL_JumpToApp(uint32_t app_addr)
 {
     uint32_t JumpAddress = *(__IO uint32_t *)(app_addr + 4);
     pFunction Jump       = (pFunction)JumpAddress;
@@ -946,7 +946,7 @@ void LuosHAL_JumpToApp(uint32_t app_addr)
  * @param
  * @return
  ******************************************************************************/
-uint8_t LuosHAL_GetMode(void)
+uint8_t RobusHAL_GetMode(void)
 {
     uint32_t *p_start = (uint32_t *)SHARED_MEMORY_ADDRESS;
     uint32_t data     = (*p_start & BOOT_MODE_MASK) >> BOOT_MODE_OFFSET;
@@ -959,7 +959,7 @@ uint8_t LuosHAL_GetMode(void)
  * @param Address
  * @return node_id
  ******************************************************************************/
-uint16_t LuosHAL_GetNodeID(void)
+uint16_t RobusHAL_GetNodeID(void)
 {
     uint32_t *p_start = (uint32_t *)SHARED_MEMORY_ADDRESS;
     uint32_t data     = *p_start & NODE_ID_MASK;
@@ -973,7 +973,7 @@ uint16_t LuosHAL_GetNodeID(void)
  * @param Address, size
  * @return
  ******************************************************************************/
-void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
+void RobusHAL_EraseMemory(uint32_t address, uint16_t size)
 {
     uint32_t erase_address  = APP_ADDRESS;
     const uint32_t row_size = 256;
@@ -997,7 +997,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
  * @param Address, node_id
  * @return
  ******************************************************************************/
-void LuosHAL_ProgramFlash(uint32_t address, uint16_t size, uint8_t *data)
+void RobusHAL_ProgramFlash(uint32_t address, uint16_t size, uint8_t *data)
 {
     uint32_t *paddress  = (uint32_t *)address;
     uint32_t data_index = 0;

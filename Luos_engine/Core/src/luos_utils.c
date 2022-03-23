@@ -8,7 +8,7 @@
 #include "luos_engine.h"
 #include "port_manager.h"
 #include "string.h"
-#include "luos_hal.h"
+#include "robus_hal.h"
 #include "msg_alloc.h"
 #include "stdbool.h"
 
@@ -54,7 +54,7 @@ __attribute__((weak)) void Luos_assert(char *file, uint32_t line)
     // wait for the transmission to finish before killing IRQ
     while (MsgAlloc_TxAllComplete() == FAILED)
         ;
-    LuosHAL_SetIrqState(false);
+    RobusHAL_SetIrqState(false);
     while (1)
     {
     }

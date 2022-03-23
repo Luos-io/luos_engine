@@ -43,15 +43,6 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: python .github/workflows/run-clang-format.py -r .
 
-      - name: Create env repo
-        shell: bash
-        run: |
-          # Step back and get dependancies
-          cd ..
-
-          # HAL
-          git clone https://github.com/Luos-io/LuosHAL.git
-
       - name: Run PlatformIO
         env:
           PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
