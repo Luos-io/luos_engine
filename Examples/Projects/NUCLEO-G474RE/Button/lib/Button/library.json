@@ -7,16 +7,13 @@
         "name": "Luos",
         "url": "https://luos.io"
     },
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    },
     "licence": "MIT",
     "build": {
         "flags": [
             "-DREV={0,7,0}"
         ]
-    },
-    "dependencies": [
-        {
-            "name": "luos/Luos_engine",
-            "version": "^1.0.0"
-        }
-    ]
+    }
 }

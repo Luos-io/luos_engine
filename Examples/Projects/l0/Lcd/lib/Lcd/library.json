@@ -1,5 +1,5 @@
 {
-    "name": "Dxl",
+    "name": "Lcd",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,Dynamixel_Servo,Dynamixel",
     "description": "Luos turn your embedded system as services like microservice do it in software.",
     "version": "1.0.0",
@@ -10,13 +10,5 @@
     "licence": "MIT",
     "dependencies": {
         "luos/Luos_engine": "^2.3.0"
-    },
-    "build": {
-        "flags": [
-            "-I Dynamixel_Servo"
-        ],
-        "src_filter": [
-            "+<Dynamixel_Servo>"
-        ]
     }
 }

@@ -27,7 +27,7 @@
 #include <stdlib.h>      // Defines EXIT_FAILURE
 #include "definitions.h" // SYS function prototypes
 
-#include "luos.h"
+#include "luos_engine.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -37,18 +37,18 @@
 
 int main(void)
 {
-  /* Initialize all modules */
-  SYS_Initialize(NULL);
+    /* Initialize all modules */
+    SYS_Initialize(NULL);
 
-  // launch bootloader app
-  while(1)
-  {
-    LUOS_RUN()
-  }
+    // launch bootloader app
+    while (1)
+    {
+        LUOS_RUN()
+    }
 
-  /* Execution should not come here during normal operation */
+    /* Execution should not come here during normal operation */
 
-  return (EXIT_FAILURE);
+    return (EXIT_FAILURE);
 }
 
 /*******************************************************************************

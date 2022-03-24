@@ -5,13 +5,10 @@
     "version": "1.0.0",
     "authors": {
         "name": "Luos",
-        "url": "https://www.luos.io/us/"
+        "url": "https://www.luos.io"
     },
-    "licence": "MIT",
-    "dependencies": [
-        {
-            "name": "luos/Luos_engine",
-            "version": "^2.2.0"
-        }
-    ]
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    },
+    "licence": "MIT"
 }

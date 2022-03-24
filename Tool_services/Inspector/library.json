@@ -10,12 +10,9 @@
     "homepage": "https://docs.luos.io",
     "licence": "MIT",
     "headers": "inspector.h",
-    "dependencies": [
-        {
-            "name": "luos/Luos_engine",
-            "version": "^2.2.0"
-        }
-    ],
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/Luos-io/luos"

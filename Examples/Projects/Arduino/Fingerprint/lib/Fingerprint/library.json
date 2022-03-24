@@ -4,17 +4,8 @@
     "description": "a simple fingerprint driver",
     "version": "1.0.0",
     "licence": "MIT",
-    "build": {},
-    "dependencies": [
-        {
-            "owner": "adafruit",
-            "name": "Adafruit Fingerprint Sensor Library",
-            "version": "*"
-        },
-        {
-            "owner": "luos",
-            "name": "Luos_engine",
-            "version": "^2.2.0"
-        }
-    ]
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0",
+        "adafruit/Adafruit Fingerprint Sensor Library": "*"
+    }
 }

@@ -8,11 +8,7 @@
         "url": "https://github.com/mariebidouille"
     },
     "licence": "MIT",
-    "build": {},
-    "dependencies": [
-        {
-            "name": "luos/Luos_engine",
-            "version": "^2.2.0"
-        }
-    ]
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    }
 }

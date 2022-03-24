@@ -5,9 +5,12 @@
     "version": "1.0.0",
     "authors": {
         "name": "Luos",
-        "url": "https://www.luos.io/us/"
+        "url": "https://luos.io"
     },
     "licence": "MIT",
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    },
     "build": {
         "flags": [
             "-I HX711"
@@ -15,11 +18,5 @@
         "src_filter": [
             "+<HX711>"
         ]
-    },
-    "dependencies": [
-        {
-            "name": "luos/Luos_engine",
-            "version": "^2.2.0"
-        }
-    ]
+    }
 }

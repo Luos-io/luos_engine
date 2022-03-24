@@ -7,6 +7,9 @@
         "name": "Luos",
         "url": "https://luos.io"
     },
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    },
     "licence": "MIT",
     "build": {
         "flags": [
@@ -17,11 +20,5 @@
             "+<VL53L0X_1.0.2/Api/core/src/*>",
             "+<VL53L0X_1.0.2/Api/platform/src/*>"
         ]
-    },
-    "dependencies": [
-        {
-            "name": "luos/Luos_engine",
-            "version": "^2.2.0"
-        }
-    ]
+    }
 }
