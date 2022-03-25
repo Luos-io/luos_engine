@@ -14,7 +14,7 @@ using namespace std;
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define GEAR_RATE 10.0
+#define GEAR_RATE 1.0
 
 /*******************************************************************************
  * Variables
@@ -24,11 +24,9 @@ StepperDriver4PWM driver = StepperDriver4PWM(5, 6, 9, 10);
 StepperMotor motor       = StepperMotor(50);
 
 // angular prosition command
-float reduction       = GEAR_RATE;
-float angle_command   = 0.0f;
-float angle_read      = 0.0f;
-asserv_pid_t coef_pid = {0.2f, 20, 0};
-float speed_limit     = 20.0;
+float reduction     = GEAR_RATE;
+float angle_command = 0.0f;
+float speed_limit   = 20.0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -59,7 +57,7 @@ void Motor_Init(void)
     motor.voltage_limit = 6.0; // [V]
     // limit/set the velocity of the transition in between
     // target angles
-    motor.velocity_limit = 20; // [rad/s] cca 50rpm
+    motor.velocity_limit = speed_limit; // [rad/s] cca 50rpm
     // open loop control config
     motor.controller = MotionControlType::angle_openloop;
 
@@ -98,24 +96,9 @@ static void Motor_MsgHandler(service_t *service, msg_t *msg)
             AngularOD_PositionFromMsg((angular_position_t *)&angle_command, msg);
             break;
 
-        case GET_CMD:
-            // Report management
-            msg_t pub_msg;
-            pub_msg.header.target_mode = msg->header.target_mode;
-            pub_msg.header.target      = msg->header.source;
-
-            AngularOD_PositionToMsg((angular_position_t *)&angle_read, &pub_msg);
-            Luos_SendMsg(service, &pub_msg);
-            break;
-
         case REDUCTION:
             // set the motor reduction
             memcpy((void *)&reduction, msg->data, sizeof(float));
-            break;
-
-        case PID:
-            // only position control is enable, we can save PID for positioning
-            PidOD_PidFromMsg(&coef_pid, msg);
             break;
 
         case ANGULAR_SPEED_LIMIT:
