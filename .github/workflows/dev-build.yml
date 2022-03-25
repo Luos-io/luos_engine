@@ -44,8 +44,6 @@ jobs:
         run: python .github/workflows/run-clang-format.py -r .
 
       - name: Run PlatformIO
-        env:
-          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
         run: |
           # L0
           platformio run -d Examples/Projects/l0/Button
