@@ -1,0 +1,10 @@
+{
+    "name": "Servo",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "description": "a simple Servo driver",
+    "version": "1.0.0",
+    "licence": "MIT",
+    "dependencies": {
+        "luos/Luos_engine": "^2.3.0"
+    }
+}
