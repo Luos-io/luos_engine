@@ -23,6 +23,7 @@ using namespace std;
 #define SAMPLING_PERIOD_MS   10.0
 #define BUFFER_SIZE          1000
 
+#define TRAJECTORY_PERIOD_CALLBACK 1
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -39,14 +40,18 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 // Trajectory management (can be position or speed)
 volatile float trajectory_buf[BUFFER_SIZE];
 volatile angular_position_t last_position = 0.0;
+float motion_target_position              = 0.0;
 
 // measurement management (can be position or speed)
 volatile float measurement_buf[BUFFER_SIZE];
 
+// initialize a variable to save delay start
+float tickstart = 0.0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static void Motor_MsgHandler(service_t *service, msg_t *msg);
+void Motor_TrajectoryCallback(void);
 /******************************************************************************
  * @brief init must be call in project init
  * @param None
@@ -103,6 +108,9 @@ void Motor_Init(void)
     servo_motor.sampling_period = TimeOD_TimeFrom_ms(SAMPLING_PERIOD_MS);
     servo_motor.trajectory      = Stream_CreateStreamingChannel((float *)trajectory_buf, BUFFER_SIZE, sizeof(float));
     servo_motor.measurement     = Stream_CreateStreamingChannel((float *)measurement_buf, BUFFER_SIZE, sizeof(float));
+
+    // initialize tick variable
+    tickstart = millis();
 
     // initialize sensor
     sensor.init(&SPI_FOC);
@@ -179,7 +187,7 @@ void Motor_Loop(void)
     // You can also use motor.move() and set the motor.target in the code
     if (motor.controller == MotionControlType::angle)
     {
-        motor.move(AngularOD_PositionTo_rad(servo_motor.target_angular_position) * servo_motor.motor_reduction);
+        motor.move(AngularOD_PositionTo_rad(motion_target_position) * servo_motor.motor_reduction);
     }
 
     if (motor.controller == MotionControlType::velocity)
@@ -193,7 +201,14 @@ void Motor_Loop(void)
     servo_motor.angular_speed    = AngularOD_PositionFrom_rad(sensor.getVelocity()) / servo_motor.motor_reduction;
     servo_motor.linear_speed     = (servo_motor.angular_speed * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
 
-    // TODO streaming
+    // call streaming handler each millisecond
+    if ((millis() - tickstart) > TRAJECTORY_PERIOD_CALLBACK)
+    {
+        // reset tickstart
+        tickstart = millis();
+        // call trajectory handler
+        Motor_TrajectoryCallback();
+    }
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service
@@ -203,4 +218,93 @@ void Motor_Loop(void)
  ******************************************************************************/
 static void Motor_MsgHandler(service_t *service, msg_t *msg)
 {
+    if (msg->header.cmd == PARAMETERS)
+    {
+        if (servo_motor.mode.mode_compliant == 0)
+        {
+            last_position = servo_motor.angular_position;
+        }
+    }
+    if (msg->header.cmd == REINIT)
+    {
+        // reinit asserv calculation
+        last_position = 0.0;
+    }
+
+    // here we shunt the trajectory mode
+    if ((msg->header.cmd == ANGULAR_POSITION) || (msg->header.cmd == LINEAR_POSITION))
+    {
+        if ((servo_motor.mode.mode_angular_position | servo_motor.mode.mode_angular_position) && (msg->header.size == sizeof(angular_position_t)))
+        {
+            // set the motor target angular position
+            last_position = servo_motor.angular_position;
+        }
+    }
+}
+
+/******************************************************************************
+ * @brief Callback called each millisecond to handle trajectory
+ * @param void
+ * @return None
+ ******************************************************************************/
+void Motor_TrajectoryCallback(void)
+{
+    // ************* motion planning *************
+    // ****** recorder management *********
+    static uint32_t last_rec_systick = 0;
+    if (servo_motor.control.rec && ((Luos_GetSystick() - last_rec_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)))
+    {
+        // We have to save a sample of current position
+        Stream_PutSample(&servo_motor.measurement, (angular_position_t *)&servo_motor.angular_position, 1);
+        last_rec_systick = Luos_GetSystick();
+    }
+    // ****** trajectory management *********
+    static uint32_t last_systick = 0;
+    if (servo_motor.control.flux == STOP)
+    {
+        Stream_ResetStreamingChannel(&servo_motor.trajectory);
+    }
+    if ((Stream_GetAvailableSampleNB(&servo_motor.trajectory) > 0) && ((Luos_GetSystick() - last_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)) && (servo_motor.control.flux == PLAY))
+    {
+        if (servo_motor.mode.mode_linear_position == 1)
+        {
+            linear_position_t linear_position_tmp;
+            Stream_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
+            servo_motor.target_angular_position = (linear_position_tmp * 360.0) / (3.141592653589793 * servo_motor.wheel_diameter);
+        }
+        else
+        {
+            Stream_GetSample(&servo_motor.trajectory, (angular_position_t *)&servo_motor.target_angular_position, 1);
+        }
+        last_systick = Luos_GetSystick();
+    }
+    // ****** Linear interpolation *********
+    if ((servo_motor.mode.mode_angular_position || servo_motor.mode.mode_linear_position)
+        && (servo_motor.mode.mode_angular_speed || servo_motor.mode.mode_linear_speed))
+    {
+        // speed control and position control are enabled
+        // we need to move target position following target speed
+        float increment = (fabs(servo_motor.target_angular_speed) / 1000.0);
+
+        // shunt the trajectory mode
+        if (fabs(servo_motor.target_angular_position - last_position) <= increment)
+        {
+            // target_position is the final target position
+            motion_target_position = servo_motor.target_angular_position;
+        }
+        else if ((servo_motor.target_angular_position - servo_motor.angular_position) < 0.0)
+        {
+            motion_target_position = last_position - increment;
+        }
+        else
+        {
+            motion_target_position = last_position + increment;
+        }
+    }
+    else
+    {
+        // target_position is the final target position
+        motion_target_position = servo_motor.target_angular_position;
+    }
+    last_position = motion_target_position;
 }
