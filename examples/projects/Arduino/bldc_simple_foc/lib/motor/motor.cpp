@@ -190,9 +190,8 @@ void Motor_Loop(void)
     // update sensor position
     servo_motor.angular_position = AngularOD_PositionFrom_rad(sensor.getAngle()) / servo_motor.motor_reduction;
     servo_motor.linear_position  = (servo_motor.angular_position * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
-
-    // TODO linear and angular speed measures
-    // use a timer to compute speed based on position ?
+    servo_motor.angular_speed    = AngularOD_PositionFrom_rad(sensor.getVelocity()) / servo_motor.motor_reduction;
+    servo_motor.linear_speed     = (servo_motor.angular_speed * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
 
     // TODO streaming
 }
