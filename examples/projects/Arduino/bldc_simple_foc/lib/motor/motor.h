@@ -9,7 +9,7 @@
 
 extern "C"
 {
-#include "luos.h"
+#include "profile_servo_motor.h"
 }
 /*******************************************************************************
  * Definitions
