@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file luosHAL_Config
+ * @file robusHAL_Config
  * @brief This file allow you to configure RobusHAL according to your design
  *        this is the default configuration created by Luos team for this MCU Family
  *        Do not modify this file if you want to ovewrite change define in you project
@@ -7,10 +7,13 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _LUOSHAL_CONFIG_H_
-#define _LUOSHAL_CONFIG_H_
+#ifndef _ROBUSHAL_CONFIG_H_
+#define _ROBUSHAL_CONFIG_H_
 
-// include file relative to your MCU family
+// STUB Value for x86 stub only
+#define X86_STUB 0x00
+
+#define DISABLE 0x00
 
 // If your MCU do not Have DMA for tx transmit define USE_TX_IT
 #define USE_TX_IT
@@ -20,14 +23,6 @@
 #define USE_CRC_HW 0
 #endif
 
-// STUB Value for x86 stub only
-#define X86_STUB 0x00
-
-#define DISABLE 0x00
-
-#ifndef MCUFREQ
-#define MCUFREQ 100000000 // MCU frequence
-#endif
 #ifndef TIMERDIV
 #define TIMERDIV 1 // clock divider for timer clock chosen
 #endif
@@ -156,26 +151,4 @@
 #define LUOS_TIMER_IRQHANDLER() x86_Timer_IRQHandler()
 #endif
 
-/*******************************************************************************
- * DEFINE STUB FLASH FOR X86
- ******************************************************************************/
-#ifndef FLASH_PAGE_SIZE
-#define FLASH_PAGE_SIZE 0x100
-#endif
-#ifndef FLASH_PAGE_NUMBER
-#define FLASH_PAGE_NUMBER 8
-#endif
-static uint32_t stub_flash_x86[FLASH_PAGE_NUMBER][FLASH_PAGE_SIZE];
-static uint32_t *last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE];
-
-/*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH (uint32_t) last_page_stub_flash_x86
-#endif
-
-#endif /* _LUOSHAL_CONFIG_H_ */
+#endif /* _ROBUSHAL_CONFIG_H_ */
