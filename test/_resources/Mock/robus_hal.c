@@ -23,8 +23,6 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV; //(freq MCU/freq timer)/divider timer clock source
-
 typedef struct
 {
     uint16_t Pin;
@@ -34,8 +32,7 @@ typedef struct
 
 Port_t PTP[NBR_PORT];
 
-volatile uint16_t data_size_to_transmit = 0;
-volatile uint8_t *tx_data               = 0;
+volatile uint8_t *tx_data = 0;
 
 /*******************************************************************************
  * Function
