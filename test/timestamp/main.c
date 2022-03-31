@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <default_scenario.h>
 
-#include "../Robus/src/timestamp.c"
+#include "../../Network/Robus/src/timestamp.c"
 
 extern default_scenario_t default_sc;
 
