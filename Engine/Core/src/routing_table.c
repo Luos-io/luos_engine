@@ -31,7 +31,7 @@ uint16_t RoutingTB_IDFromAlias(char *alias);
 char *RoutingTB_AliasFromId(uint16_t id);
 static uint16_t RoutingTB_BigestNodeID(void);
 uint16_t RoutingTB_GetServiceIndex(uint16_t id);
-static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
+bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node);
 static void RoutingTB_Share(service_t *service, uint16_t nb_node);
@@ -218,7 +218,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
  * @param intro msg in route table
  * @return None
  ******************************************************************************/
-static bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
+__attribute__((weak)) bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
 {
     const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;

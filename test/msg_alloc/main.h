@@ -1,6 +1,11 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+// Node config to default values
+#define MAX_SERVICE_NUMBER 5
+#define MSG_BUFFER_SIZE    3 * sizeof(msg_t)
+#define MAX_MSG_NB         10
+
 // Static functions
 void unittest_DoWeHaveSpace(void);
 void unittest_CheckMsgSpace(void);

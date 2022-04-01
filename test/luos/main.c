@@ -108,11 +108,14 @@ void unittest_Luos_ReceiveData()
     NEW_TEST_CASE("Try to send a void message argument");
     {
         Reset_Context();
+        //  Init default scenario context
+        Init_Context();
         revision_t revision   = {.major = 1, .minor = 0, .build = 0};
         service_t *service    = Luos_CreateService(0, VOID_TYPE, "Dummy_App", revision);
         uint32_t bin_data[64] = {0xDEADBEEF};
 
         NEW_STEP("Verify if we assert");
+        RESET_ASSERT();
         TEST_ASSERT_EQUAL(Luos_ReceiveData(NULL, 0, bin_data), -1);
         RESET_ASSERT();
     }
@@ -120,10 +123,12 @@ void unittest_Luos_ReceiveData()
     NEW_TEST_CASE("Try to send a void table argument");
     {
         Reset_Context();
+        //  Init default scenario context
+        Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
         service_t *service  = Luos_CreateService(0, VOID_TYPE, "Dummy_App", revision);
         msg_t msg;
-        NEW_STEP("Verify if we assert");
+        NEW_STEP("Verify function returns -1");
         Luos_ReceiveData(service, &msg, 0);
         TEST_ASSERT_TRUE(IS_ASSERT());
         RESET_ASSERT();
@@ -132,6 +137,8 @@ void unittest_Luos_ReceiveData()
     NEW_TEST_CASE("Try to send a shity service argument");
     {
         Reset_Context();
+        //  Init default scenario context
+        Init_Context();
         msg_t msg;
         uint32_t bin_data[64] = {0xDEADBEEF};
         NEW_STEP("Verify if we return an error");
@@ -141,6 +148,8 @@ void unittest_Luos_ReceiveData()
     NEW_TEST_CASE("Test the regular usage");
     {
         Reset_Context();
+        //  Init default scenario context
+        Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
         service_t *service  = Luos_CreateService(0, VOID_TYPE, "Dummy_App", revision);
         msg_t msg;
@@ -166,6 +175,8 @@ void unittest_Luos_ReceiveData()
     NEW_TEST_CASE("Try to send a void service argument to reset the data reception");
     {
         Reset_Context();
+        //  Init default scenario context
+        Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
         service_t *service  = Luos_CreateService(0, VOID_TYPE, "Dummy_App", revision);
         msg_t msg;
