@@ -70,40 +70,6 @@ void Init_Context(void)
     // Fill basic messages
     Init_Messages();
 
-    // * Msg buffer is filled with 3 Tx messages
-    // * Each message is filled with 7 bytes for header + 64 data bytes (0,1,2,3...) + 64 data bytes to 0
-    //
-    //        msg_buffer
-    //        +-----------------------------------+
-    //        |  Msg  Tx  |  Msg  Tx  |  Msg  Tx  |
-    //        |      1    |      2    |      3    |
-    //        +-----------------------------------+
-    //
-    //        Tx Tasks                   Luos Tasks
-    //        +------------+             +------------+
-    //        |  Msg Tx 1  |             |  Msg Rx 1  |
-    //        |------------|             |------------|
-    //        |  Msg Tx 2  |             |  Msg Rx 2  |
-    //        |------------|             |------------|
-    //        |  Msg Tx 3  |             |  Msg Rx 3  |
-    //        |------------|             |------------|
-    //        |     0      |             |     0      |
-    //        |------------|             |------------|
-    //        |   etc...   |             |   etc...   |
-    //        +------------+             +------------+
-    //
-
-    // Create TX_TASK_NUMBER Tx Tasks
-    for (uint16_t i = 0; i < TX_TASK_NUMBER - 1; i++)
-    {
-        Robus_SendMsg(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (sizeof(msg_t) * i)));
-    }
-
-    // Create LUOS_TASK_NUMBER Luos Tasks
-    for (uint16_t i = 0; i < LUOS_TASK_NUMBER; i++)
-    {
-        MsgAlloc_LuosTaskAlloc(default_sc.App_1.app->ll_service, (msg_t *)(transmit_msg + (i) * (sizeof(msg_t) + 1)));
-    }
     if (IS_ASSERT())
     {
         printf("[FATAL] Can't initialize scenario context\n");
