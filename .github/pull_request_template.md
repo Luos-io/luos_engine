@@ -1,27 +1,28 @@
-# Comments for current PR
-* *add your comments here*
-* ...
- 
+# PR Checklist 
 
-<br><br />
-<br><br />
-               *!!! WARNING : DO NOT EDIT THE CHECKLIST BELOW !!!*
-# Checklist : Merge to DEVELOP branch
-## Code Quality
-- [ ] Each function has a header (description, inputs, outputs) 
-- [ ] Code is commented (particularly in hard to understand areas)
-- [ ] There are no new warnings that can be corrected
-- [ ] Commits policy is respected (constitancy commits, clear commits comments)
-<br><br />
-## Tests Review
-- [ ]  Manual Tests for new features have been *reviewed*
-- [ ]  Automatic Tests for new features have been *reviewed*
-<br><br />
-## Tests are passed the best as I can
-- [ ]  Non regression existing tests are *passed OK*
-- [ ]  New tests for new features & bug fixes are *passed OK*
-<br><br />
-## Documentation
-- [ ] Documentation is up to date
-- [ ] Changelog for next release is up-to-date
-- [ ] If needed, tests are briefly described in test repository
+### _1- PR Comments_
+    *If needed, to be filled by developer*  
+
+<br><hr/>
+*WARNING : Do not edit the checklist below.*  
+<hr/><br>
+
+### _2- Developer section_
+
+- [ ] [Documentation] is up to date with new feature
+- [ ] [Tests] are *passed OK* (Non regression, new features & bug fixes)
+- [ ] [Code Quality] Remind to check if :
+    * Each function has a header (description, inputs, outputs) 
+    * Code is commented (particularly in hard to understand areas)
+    * There are no new warnings that can be corrected
+    * Commits policy is respected (constitancy commits, clear commits comments)
+<hr/><br>
+
+### _3- QA section_
+
+- [ ] [Review] tests for new features have been *reviewed*
+- [ ] [Changelog] is up-to-date with expected tags  
+    🆕 Feature: [Feature] Description...  
+    🆕 Added: [Feature] Description...  
+    🆕 Changed: [Feature] Description...  
+    🛠️ Fix: [Feature] Description...  
