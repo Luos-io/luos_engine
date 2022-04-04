@@ -1020,6 +1020,7 @@ void Luos_SendBaudrate(service_t *service, uint32_t baudrate)
 {
     msg_t msg;
     memcpy(msg.data, &baudrate, sizeof(uint32_t));
+    msg.header.config      = BASE_PROCOTOL;
     msg.header.target_mode = BROADCAST;
     msg.header.target      = BROADCAST_VAL;
     msg.header.cmd         = SET_BAUDRATE;
@@ -1037,6 +1038,7 @@ void Luos_SendBaudrate(service_t *service, uint32_t baudrate)
 void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t target, uint16_t newid)
 {
     msg_t msg;
+    msg.header.config      = BASE_PROCOTOL;
     msg.header.target      = target;
     msg.header.target_mode = target_mode;
     msg.header.cmd         = WRITE_NODE_ID;
