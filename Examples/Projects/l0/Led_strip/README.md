@@ -5,7 +5,7 @@
 
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
-[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/Luos.svg)](https://registry.platformio.org/libraries/luos/Luos_engine)
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/Luos.svg)](https://registry.platformio.org/libraries/luos/luos_engine)
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
 [![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)

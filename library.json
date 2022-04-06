@@ -1,5 +1,5 @@
 {
-    "name": "Luos_engine",
+    "name": "luos_engine",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,luos engine",
     "description": "Luos engine turns your embedded system into services like microservices architecture does it in software.",
     "version": "2.3.0",
@@ -9,7 +9,7 @@
     },
     "homepage": "https://docs.luos.io",
     "license": "Apache-2.0",
-    "headers": "Engine/Core/inc/Luos_engine.h",
+    "headers": "Engine/Core/inc/luos_engine.h",
     "build": {
         "srcDir": "Engine/Core/src",
         "flags": [

@@ -14,7 +14,7 @@
         "extraScript": "select_format_script.py"
     },
     "dependencies": {
-        "luos/Luos_engine": "^2.3.0"
+        "luos/luos_engine": "^2.3.0"
     },
     "repository": {
         "type": "git",
