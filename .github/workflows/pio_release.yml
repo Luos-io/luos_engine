@@ -31,53 +31,53 @@ jobs:
 
 
         # ***** Gate publcation *****
-        cd Tool_services/Gate
+        cd tool_services/gate
         mkdir Examples
 
         # Arduino
         mkdir Examples/Arduino
         mkdir Examples/Arduino/Serial
-        cp -r ../../Examples/Projects/Arduino/Gate_SerialCom/* Examples/Arduino/Serial/
+        cp -r ../../examples/projects/Arduino/gate_serialcom/* Examples/Arduino/Serial/
 
         # l0
         mkdir Examples/l0
         mkdir Examples/l0/Serial
-        cp -r ../../Examples/Projects/l0/Gate_SerialCom/* Examples/l0/Serial/
+        cp -r ../../examples/projects/l0/gate_serialcom/* Examples/l0/Serial/
 
         # NUCLEO-F072RB
         mkdir Examples/NUCLEO-F072RB
         mkdir Examples/NUCLEO-F072RB/Serial
-        cp -r ../../Examples/Projects/NUCLEO-F072RB/Gate_SerialCom/* Examples/NUCLEO-F072RB/Serial/
+        cp -r ../../examples/projects/NUCLEO-F072RB/gate_serialcom/* Examples/NUCLEO-F072RB/Serial/
 
         # NUCLEO-F401RE
         mkdir Examples/NUCLEO-F401RE
         mkdir Examples/NUCLEO-F401RE/Serial
-        cp -r ../../Examples/Projects/NUCLEO-F401RE/Gate_SerialCom/* Examples/NUCLEO-F401RE/Serial/
+        cp -r ../../examples/projects/NUCLEO-F401RE/gate_serialcom/* Examples/NUCLEO-F401RE/Serial/
 
         # NUCLEO-F410RB
         mkdir Examples/NUCLEO-F410RB
         mkdir Examples/NUCLEO-F410RB/Serial
-        cp -r ../../Examples/Projects/NUCLEO-F410RB/Gate_SerialCom/* Examples/NUCLEO-F410RB/Serial/
+        cp -r ../../examples/projects/NUCLEO-F410RB/gate_serialcom/* Examples/NUCLEO-F410RB/Serial/
 
         # NUCLEO-G431KB
         mkdir Examples/NUCLEO-G431KB
         mkdir Examples/NUCLEO-G431KB/Serial
-        cp -r ../../Examples/Projects/NUCLEO-G431KB/Gate_SerialCom/* Examples/NUCLEO-G431KB/Serial/
+        cp -r ../../examples/projects/NUCLEO-G431KB/gate_serialcom/* Examples/NUCLEO-G431KB/Serial/
 
         # NUCLEO-G474RE
         mkdir Examples/NUCLEO-G474RE
         mkdir Examples/NUCLEO-G474RE/Serial
-        cp -r ../../Examples/Projects/NUCLEO-G474RE/Gate_SerialCom/* Examples/NUCLEO-G474RE/Serial/
+        cp -r ../../examples/projects/NUCLEO-G474RE/gate_serialcom/* Examples/NUCLEO-G474RE/Serial/
 
         # NUCLEO-L432KC
         mkdir Examples/NUCLEO-L432KC
         mkdir Examples/NUCLEO-L432KC/Serial
-        cp -r ../../Examples/Projects/NUCLEO-L432KC/Gate_SerialCom/* Examples/NUCLEO-L432KC/Serial/
+        cp -r ../../examples/projects/NUCLEO-L432KC/gate_serialcom/* Examples/NUCLEO-L432KC/Serial/
 
         # STM32F4-discovery
         mkdir Examples/STM32F4-discovery
         mkdir Examples/STM32F4-discovery/Serial
-        cp -r ../../Examples/Projects/STM32F4-discovery/Gate_SerialCom/* Examples/STM32F4-discovery/Serial/
+        cp -r ../../examples/projects/STM32F4-discovery/gate_serialcom/* Examples/STM32F4-discovery/Serial/
 
         pio package pack
         pio package publish --owner luos --non-interactive
@@ -85,53 +85,53 @@ jobs:
 
 
         # ***** Inspector publication *****
-        cd Tool_services/Inspector
+        cd tool_services/inspector
         mkdir Examples
 
         # Arduino
         mkdir Examples/Arduino
         mkdir Examples/Arduino/Serial
-        cp -r ../../Examples/Projects/Arduino/Inspector_SerialCom/* Examples/Arduino/Serial/
+        cp -r ../../examples/projects/Arduino/inspector_serialcom/* Examples/Arduino/Serial/
 
         # l0
         mkdir Examples/l0
         mkdir Examples/l0/Serial
-        cp -r ../../Examples/Projects/l0/Inspector_SerialCom/* Examples/l0/Serial/
+        cp -r ../../examples/projects/l0/inspector_serialcom/* Examples/l0/Serial/
 
         # NUCLEO-F072RB
         mkdir Examples/NUCLEO-F072RB
         mkdir Examples/NUCLEO-F072RB/Serial
-        cp -r ../../Examples/Projects/NUCLEO-F072RB/Inspector_SerialCom/* Examples/NUCLEO-F072RB/Serial/
+        cp -r ../../examples/projects/NUCLEO-F072RB/inspector_serialcom/* Examples/NUCLEO-F072RB/Serial/
 
         # NUCLEO-F401RE
         mkdir Examples/NUCLEO-F401RE
         mkdir Examples/NUCLEO-F401RE/Serial
-        cp -r ../../Examples/Projects/NUCLEO-F401RE/Inspector_SerialCom/* Examples/NUCLEO-F401RE/Serial/
+        cp -r ../../examples/projects/NUCLEO-F401RE/inspector_serialcom/* Examples/NUCLEO-F401RE/Serial/
 
         # NUCLEO-F410RB
         mkdir Examples/NUCLEO-F410RB
         mkdir Examples/NUCLEO-F410RB/Serial
-        cp -r ../../Examples/Projects/NUCLEO-F410RB/Inspector_SerialCom/* Examples/NUCLEO-F410RB/Serial/
+        cp -r ../../examples/projects/NUCLEO-F410RB/inspector_serialcom/* Examples/NUCLEO-F410RB/Serial/
 
         # NUCLEO-G431KB
         mkdir Examples/NUCLEO-G431KB
         mkdir Examples/NUCLEO-G431KB/Serial
-        cp -r ../../Examples/Projects/NUCLEO-G431KB/Inspector_SerialCom/* Examples/NUCLEO-G431KB/Serial/
+        cp -r ../../examples/projects/NUCLEO-G431KB/inspector_serialcom/* Examples/NUCLEO-G431KB/Serial/
 
         # NUCLEO-G474RE
         mkdir Examples/NUCLEO-G474RE
         mkdir Examples/NUCLEO-G474RE/Serial
-        cp -r ../../Examples/Projects/NUCLEO-G474RE/Inspector_SerialCom/* Examples/NUCLEO-G474RE/Serial/
+        cp -r ../../examples/projects/NUCLEO-G474RE/inspector_serialcom/* Examples/NUCLEO-G474RE/Serial/
 
         # NUCLEO-L432KC
         mkdir Examples/NUCLEO-L432KC
         mkdir Examples/NUCLEO-L432KC/Serial
-        cp -r ../../Examples/Projects/NUCLEO-L432KC/Inspector_SerialCom/* Examples/NUCLEO-L432KC/Serial/
+        cp -r ../../examples/projects/NUCLEO-L432KC/inspector_serialcom/* Examples/NUCLEO-L432KC/Serial/
 
         # STM32F4-discovery
         mkdir Examples/STM32F4-discovery
         mkdir Examples/STM32F4-discovery/Serial
-        cp -r ../../Examples/Projects/STM32F4-discovery/Inspector_SerialCom/* Examples/STM32F4-discovery/Serial/
+        cp -r ../../examples/projects/STM32F4-discovery/inspector_serialcom/* Examples/STM32F4-discovery/Serial/
 
         pio package pack
         pio package publish --owner luos --non-interactive

@@ -6,23 +6,20 @@
 .github
 
 # Examples
-./Examples/Projects/**/**/src
-./Examples/Projects/**/**/inc
-./Examples/Projects/**/**/include
-./Examples/Hardware
-./Examples/Projects/l0/Distance/lib/Distance/VL53L0X_1.0.2
-./Examples/Projects/l0/Imu/lib/Imu/motion_driver_6.12
-./Examples/Projects/l0/Load/lib/Load/HX711
-./Examples/Projects/l0/Dxl/lib/Dxl/Dynamixel_Servo
-./Examples/Projects/l0/Button_FreeRTOS/lib/FreeRTOS/Source
-./Examples/Projects/l0/demo/**/src
-./Examples/Projects/l0/demo/**/inc
-./Examples/Projects/l0/demo/**/include
+./examples/projects/**/**/src
+./examples/projects/**/**/inc
+./examples/projects/**/**/include
+./Examples/hardware
+./examples/projects/l0/distance/lib/distance/VL53L0X_1.0.2
+./examples/projects/l0/imu/lib/Imu/motion_driver_6.12
+./examples/projects/l0/load/lib/load/HX711
+./examples/projects/l0/dxl/lib/dxl/Dynamixel_Servo
+./examples/projects/l0/button_freertos/lib/FreeRTOS/Source
+./examples/projects/l0/demo/**/src
+./examples/projects/l0/demo/**/inc
+./examples/projects/l0/demo/**/include
 
-# Bootloader
-./Tool_services/Bootloader/**/src
-./Tool_services/Bootloader/**/include
 
 # Third party libs
-./Tool_services/Apps/Gate/TinyJSON/tiny-json.h
-./Tool_services/Apps/Gate/TinyJSON/tiny-json.c
+./tool_services/gate/TinyJSON/tiny-json.h
+./tool_services/gate/TinyJSON/tiny-json.c

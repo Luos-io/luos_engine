@@ -10,6 +10,6 @@ jobs:
       - uses: gaurav-nelson/github-action-markdown-link-check@1.0.14
         with:
           use-quiet-mode: 'yes'
-          folder-path: 'Engine, Examples/Apps, Examples/Projects, Network, test, Tool_services, .github'
+          folder-path: 'engine, examples/apps, examples/projects, network, test, tool_services, .github'
           file-path: './README.md, ./LICENSE'
           config-file: '.github/workflows/mlc_config.json'
