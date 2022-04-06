@@ -18,7 +18,6 @@
             "-I engine/OD",
             "-I engine/core/inc",
             "-I engine/profiles/state",
-            "-I engine/profiles/core",
             "-I engine/profiles/motor",
             "-I engine/profiles/servo_motor",
             "-I engine/profiles/voltage",
