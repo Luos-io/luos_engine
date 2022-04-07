@@ -47,11 +47,18 @@ volatile float measurement_buf[BUFFER_SIZE];
 
 // initialize a variable to save delay start
 float tickstart = 0.0;
+
+// velocity computation
+float velocity_angle_prev     = 0.0;
+float velocity_full_rotations = 0.0;
+float vel                     = 0.0;
+float velocity_tickstart      = 0.0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static void Motor_MsgHandler(service_t *service, msg_t *msg);
 void Motor_TrajectoryCallback(void);
+float Motor_getVelocity(void);
 /******************************************************************************
  * @brief init must be call in project init
  * @param None
@@ -154,6 +161,10 @@ void Motor_Init(void)
     // align sensor and start FOC
     motor.initFOC();
 
+    // velocity initialization
+    velocity_angle_prev = sensor.getMechanicalAngle();
+    velocity_tickstart  = millis();
+
     // initialize service
     revision_t revision = {1, 0, 0};
     ProfileServo_CreateService(&servo_motor, Motor_MsgHandler, "FOC_motor", revision);
@@ -198,7 +209,7 @@ void Motor_Loop(void)
     // update sensor position
     servo_motor.angular_position = AngularOD_PositionFrom_rad(sensor.getAngle()) / servo_motor.motor_reduction;
     servo_motor.linear_position  = (servo_motor.angular_position * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
-    servo_motor.angular_speed    = AngularOD_PositionFrom_rad(sensor.getVelocity()) / servo_motor.motor_reduction;
+    servo_motor.angular_speed    = AngularOD_PositionFrom_rad(Motor_getVelocity()) / servo_motor.motor_reduction;
     servo_motor.linear_speed     = (servo_motor.angular_speed * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
 
     // call streaming handler each millisecond
@@ -307,4 +318,26 @@ void Motor_TrajectoryCallback(void)
         motion_target_position = servo_motor.target_angular_position;
     }
     last_position = motion_target_position;
+}
+
+/******************************************************************************
+ * @brief Compute motor velocity
+ * @param void
+ * @return velocity
+ ******************************************************************************/
+float Motor_getVelocity(void)
+{
+    if ((millis() - velocity_tickstart) > 100)
+    {
+        velocity_tickstart = millis();
+        // get full rotations count
+        float full_rotations = (sensor.getAngle() - sensor.getMechanicalAngle()) / _2PI;
+        // velocity calculation
+        vel = ((float)(full_rotations - velocity_full_rotations) * _2PI + (sensor.getMechanicalAngle() - velocity_angle_prev)) / ((float)0.1);
+        // save variables for future pass
+        velocity_angle_prev     = sensor.getMechanicalAngle();
+        velocity_full_rotations = full_rotations;
+    }
+
+    return vel;
 }

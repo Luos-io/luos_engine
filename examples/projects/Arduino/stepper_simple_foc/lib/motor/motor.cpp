@@ -173,6 +173,8 @@ void Motor_Loop(void)
     // measures
     servo_motor.angular_position = servo_motor.target_angular_position;
     servo_motor.linear_position  = (servo_motor.angular_position * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
+    servo_motor.angular_speed    = servo_motor.target_angular_speed;
+    servo_motor.linear_speed     = (servo_motor.angular_speed * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
 
     // call streaming handler each millisecond
     if ((millis() - tickstart) > TRAJECTORY_PERIOD_CALLBACK)
