@@ -79,6 +79,8 @@ jobs:
           platformio run -d examples/projects/Arduino/lcd
           platformio run -d examples/projects/Arduino/led
           platformio run -d examples/projects/Arduino/servo_motor
+          platformio run -d examples/projects/Arduino/bldc_simple_foc
+          platformio run -d examples/projects/Arduino/stepper_simple_foc
           # NUCLEO-L432KC
           platformio run -d examples/projects/NUCLEO-L432KC/button
           platformio run -d examples/projects/NUCLEO-L432KC/fingerprint
