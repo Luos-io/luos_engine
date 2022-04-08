@@ -14,7 +14,7 @@
 #include "transmission.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
-#include "timestamp.h"
+#include "_timestamp.h"
 #include "robus.h"
 #include "bootloader_core.h"
 /*******************************************************************************
@@ -157,15 +157,11 @@ void Recep_GetData(volatile uint8_t *data)
         uint16_t crc = ((uint16_t)current_msg->data[data_size]) | ((uint16_t)current_msg->data[data_size + 1] << 8);
         if (crc == crc_val)
         {
-            // if message is timestamped, update the timestamp
+            // If message is timestamped, convert the latency to date
             if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
             {
-                int64_t latency = 0;
-                // get timestamp in message stream
-                // timestamp is placed at the end of the payload, just before the crc.
-                memcpy(&latency, (msg_t *)&current_msg->data[current_msg->header.size - sizeof(int64_t)], sizeof(int64_t));
-                ll_rx_timestamp = (ll_rx_timestamp + latency > 0) ? ll_rx_timestamp + latency : 0;
-                memcpy((msg_t *)&current_msg->data[current_msg->header.size - sizeof(int64_t)], &ll_rx_timestamp, sizeof(int64_t));
+                // This conversion also remove the timestamp from the message size.
+                Timestamp_ConvertToDate((msg_t *)current_msg, ll_rx_timestamp);
             }
 
             if (Recep_IsAckNeeded())

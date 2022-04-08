@@ -4,7 +4,7 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include "timestamp.h"
+#include "_timestamp.h"
 #include "luos_hal.h"
 #include "string.h"
 #include "service_structs.h"
@@ -116,227 +116,103 @@
  ***************************************************************************************************/
 
 /*******************************************************************************
- * Definitions
- ******************************************************************************/
-
-/*******************************************************************************
- * Variables
- ******************************************************************************/
-// initialize a global variable to track token list
-timestamp_token_t *token_list_head = 0;
-
-/*******************************************************************************
  * Function
  ******************************************************************************/
-static inline void Timestamp_AddToken(timestamp_token_t *);
-static int64_t Timestamp_GetTimeFromToken(void *);
-static bool Timestamp_DeleteTokenFromList(void *);
 
 /******************************************************************************
- * @brief link a token to a target until its comsumption in a message
- * @brief and save the associated timestamp with the relative event date
- * @param relative_date of the event
- * @param token instance
- * @param target to link to the token
- * @return None
+ * @brief Get the present timestamp
+ * @return time_luos_t
  ******************************************************************************/
-void Timestamp_CreateEvent(int64_t relative_date, timestamp_token_t *token, void *target)
+time_luos_t Timestamp_now(void)
 {
-    // update token only if it's not locked
-    token->target    = target;
-    token->timestamp = (((int64_t)LuosHAL_GetTimestamp()) + relative_date > 0) ? ((int64_t)LuosHAL_GetTimestamp()) + relative_date : 0;
-
-    // if it's a new token, add it to the list
-    if (!Timestamp_GetToken(target))
-    {
-        Timestamp_AddToken(token);
-    }
+    return TimeOD_TimeFrom_ns((double)LuosHAL_GetTimestamp());
 }
-
 /******************************************************************************
- * @brief link a token to a target until its comsumption in a message
- * @brief and save the associated timestamp
- * @param token instance
- * @param target to link to the token
- * @return None
+ * @brief Check if the message is a timestamp message
+ * @param msg Message to check
+ * @return bool
  ******************************************************************************/
-void Timestamp_Tag(timestamp_token_t *token, void *target)
+inline bool Timestamp_IsTimestampMsg(msg_t *msg)
 {
-    Timestamp_CreateEvent(0, token, target);
+    return (msg->header.config == TIMESTAMP_PROTOCOL);
 }
-
 /******************************************************************************
- * @brief Add a token to the chained list
- * @param token instance
- * @return None
+ * @brief Get the timestamp associated to a message
+ * @param msg Message to get the timestamp from
+ * @return time_luos_t
  ******************************************************************************/
-void Timestamp_AddToken(timestamp_token_t *token)
+time_luos_t Timestamp_GetTimestamp(msg_t *msg)
 {
-    timestamp_token_t *current_token;
-
-    if (!token_list_head)
+    if (Timestamp_IsTimestampMsg(msg))
     {
-        // first token in the list
-        token_list_head = token;
-    }
-    else
-    {
-        current_token = token_list_head;
-        while (current_token->next)
-        {
-            // go to the next element of the list
-            current_token = current_token->next;
-        }
-        // we found an available token
-        current_token->next = token;
-    }
-}
-
-/******************************************************************************
- * @brief find the timestamp linked to the target
- * @param target associated with the timestamp to find
- * @return timestamp linked to the target
- ******************************************************************************/
-int64_t Timestamp_GetTimeFromToken(void *target)
-{
-    timestamp_token_t *token = Timestamp_GetToken(target);
-    int64_t timestamp        = 0;
-    if (token)
-    {
-        // get the timestamp from the token
-        timestamp = token->timestamp;
-        // delete the token from the list
-        Timestamp_DeleteTokenFromList(target);
-        // reset the token
-        token->timestamp = 0;
-        token->target    = 0;
-
+        time_luos_t timestamp = 0.0f;
+        // Timestamp is at the end of the message
+        memcpy(&timestamp, (msg->data + 1), sizeof(time_luos_t));
         return timestamp;
     }
     else
     {
-        // cannot find the token
-        return 0;
+        return 0.0f;
     }
 }
 
-/******************************************************************************
- * @brief delete a token from the linked list
- * @param target
- * @return true / false
- ******************************************************************************/
-bool Timestamp_DeleteTokenFromList(void *target)
-{
-    timestamp_token_t *token      = token_list_head;
-    timestamp_token_t *prev_token = token_list_head;
-    // find token linked to the target if it exists
-    while (token != 0)
-    {
-        if (token->target != target)
-        {
-            // go to the next token
-            prev_token = token;
-            token      = token->next;
-        }
-        else
-        {
-            // we found the token
-            prev_token->next = token->next;
-            return true;
-        }
-    }
-    // we didn't find the token
-    return false;
-}
-
-/******************************************************************************
- * @brief find a token linked to the target
- * @param target
- * @return Timestamp_token
- ******************************************************************************/
-timestamp_token_t *Timestamp_GetToken(void *target)
-{
-    timestamp_token_t *token = token_list_head;
-    // find token linked to the target if it exists
-    while (token != 0)
-    {
-        if (token->target != target)
-        {
-            // go to the next token
-            token = token->next;
-        }
-        else
-        {
-            // we found the token
-            return token;
-        }
-    }
-    // we didn't find the token
-    return 0;
-}
-
-/******************************************************************************
- * @brief check if a message needs a timestamp
- * @param data in the message
- * @return true / false
- ******************************************************************************/
-bool Timestamp_IsTimestampMsg(msg_t *msg)
-{
-    if (msg->header.config == TIMESTAMP_PROTOCOL)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/******************************************************************************
- * @brief check if a message needs a timestamp
- * @param data in the message
- * @return None
- ******************************************************************************/
-void Timestamp_TagMsg(msg_t *msg)
-{
-    uint16_t full_size     = sizeof(header_t) + msg->header.size + sizeof(uint16_t);
-    int64_t data_timestamp = 0;
-    int64_t latency        = 0;
-
-    // get timestamp in message stream
-    memcpy(&data_timestamp, &msg->stream[full_size - sizeof(uint16_t) - sizeof(int64_t)], sizeof(int64_t));
-    // update timestamp
-    latency = data_timestamp - (int64_t)LuosHAL_GetTimestamp();
-    // copy timestamp in message
-    memcpy(&msg->stream[full_size - sizeof(int16_t) - sizeof(int64_t)], &latency, sizeof(int64_t));
-}
+//************************* Private functions *********************************/
 
 /******************************************************************************
  * @brief modifies luos message according to timestamp payload
  * @param message to modify
  * @return None
  ******************************************************************************/
-void Timestamp_EncodeMsg(msg_t *msg, void *target)
+void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
 {
-    int64_t timestamp = Timestamp_GetTimeFromToken(target);
-
-    // update robus header
+    // Update message header protocol
     msg->header.config = TIMESTAMP_PROTOCOL;
-
-    // copy timestamp
-    memcpy(&msg->data[msg->header.size], &timestamp, sizeof(int64_t));
-    // update msg size
-    msg->header.size = msg->header.size + sizeof(int64_t);
+    // Timestamp is at the end of the message copy it
+    memcpy(&msg->data[1], &timestamp, sizeof(time_luos_t));
+    // Add timestamp size to message size
+    msg->header.size += sizeof(time_luos_t);
 }
 
 /******************************************************************************
- * @brief modifies luos message according to timestamp payload
- * @param message to modify
+ * @brief Compute and write the latency in the message
+ * @param msg Message that will be sent
  * @return None
  ******************************************************************************/
-void Timestamp_DecodeMsg(msg_t *msg, int64_t *timestamp)
+void Timestamp_ConvertToLatency(msg_t *msg)
 {
-    // deserialize data
-    msg->header.size = msg->header.size - sizeof(int64_t);
-    memcpy(timestamp, &msg->data[msg->header.size], sizeof(int64_t));
+    static time_luos_t timestamp_date = 0.0f;
+    static msg_t *last_msg            = NULL;
+
+    if (last_msg != msg)
+    {
+        // This is a new message, backup the timestamp date
+        memcpy(&timestamp_date, &msg->data[msg->header.size], sizeof(time_luos_t));
+        // Increase the size of the message to consider the latency
+        msg->header.size = msg->header.size + sizeof(time_luos_t);
+        // Keep the message pointer to know if we already manage this one or not.
+        last_msg = msg;
+    }
+    // Compute the latency from date
+    time_luos_t latency = timestamp_date - Timestamp_now();
+    // Write latency on the message
+    memcpy(&msg->data[msg->header.size], &latency, sizeof(time_luos_t));
+}
+
+/******************************************************************************
+ * @brief Compute and write the date in the message
+ * @param msg Received message
+ * @param reception_date Date of reception in ns
+ * @return None
+ ******************************************************************************/
+inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)
+{
+    time_luos_t timestamp_latency = 0.0f;
+    // Update msg size
+    msg->header.size = msg->header.size - sizeof(time_luos_t);
+    // Get latency
+    memcpy(&timestamp_latency, &msg->data[msg->header.size], sizeof(time_luos_t));
+    // Compute the date from latency
+    time_luos_t timestamp_date = timestamp_latency + TimeOD_TimeFrom_ns(reception_date);
+    // Write the date on the message
+    memcpy(&msg->data[msg->header.size], &timestamp_date, sizeof(time_luos_t));
 }

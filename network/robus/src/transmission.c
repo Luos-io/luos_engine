@@ -50,6 +50,7 @@
 #include "context.h"
 #include "reception.h"
 #include "msg_alloc.h"
+#include "_timestamp.h"
 #include "timestamp.h"
 
 /*******************************************************************************
@@ -168,13 +169,13 @@ void Transmit_Process()
             LuosHAL_SetIrqState(true);
             ctx.tx.data = data;
 
-            // put timestamping on data here
+            // Put timestamping on data here
             if (Timestamp_IsTimestampMsg((msg_t *)data) && (!nbrRetry))
             {
-                // compute timestamp
-                Timestamp_TagMsg((msg_t *)data);
+                // Convert date to latency
+                Timestamp_ConvertToLatency((msg_t *)data);
 
-                // compute crc
+                // Complete the CRC computation with the latency
                 msg_t *msg                       = (msg_t *)data;
                 uint16_t full_size               = sizeof(header_t) + msg->header.size + CRC_SIZE;
                 uint16_t index_without_timestamp = full_size - sizeof(uint64_t) - CRC_SIZE;

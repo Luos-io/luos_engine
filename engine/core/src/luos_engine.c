@@ -11,6 +11,7 @@
 #include "robus.h"
 #include "luos_hal.h"
 #include "bootloader_core.h"
+#include "_timestamp.h"
 
 /*******************************************************************************
  * Definitions
@@ -631,10 +632,10 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
  * @param Message to send
  * @return None
  ******************************************************************************/
-error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg)
+error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp)
 {
-    // set protocol version
-    msg->header.config = TIMESTAMP_PROTOCOL;
+    // set timestamp in message
+    Timestamp_EncodeMsg(msg, timestamp);
 
     if (service == 0)
     {
