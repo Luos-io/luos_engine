@@ -2,6 +2,7 @@ import sys
 import subprocess
 import platform as pf
 from os import system, listdir, path, scandir, getcwd
+import click
 
 from os.path import join, realpath
 Import('env')
@@ -14,20 +15,18 @@ if not visited_key in global_env:
     # install pyluos
     try:
         import pyluos
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "pyluos", "--upgrade", "--quiet"])
+        env.Execute("$PYTHONEXE -m pip install pyluos --upgrade --quiet")
     except ImportError:  # module doesn't exist, deal with it.
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "pyluos"])
+        env.Execute("$PYTHONEXE -m pip install pyluos")
         pass
-    print('\n\033[4mLuos engine build configuration:\033[0m\n')
+    click.secho("Luos engine build configuration:\n", underline=True)
     try:
         from pyluos import version
-        print("\t*\033[0;32m Pyluos revision " +
-              str(version.version) + " ready.\033[0m")
+        click.secho("\t* Pyluos revision " +
+                    str(version.version) + " ready.", fg="green")
     except ImportError:  # module doesn't exist, deal with it.
-        print(
-            "\t*\033[0;32m Pyluos install failed. Platformio will be unable to use bootloader flash feature.\033[0m")
+        click.secho(
+            "\t* Pyluos install failed. Platformio will be unable to use bootloader flash feature.", fg="red")
 
 sources = ["+<*.c>",
            "+<../../../network/robus/src/*.c>",
@@ -45,11 +44,11 @@ for item in env.get("CPPDEFINES", []):
         find_HAL = True
         if (path.exists("network/robus/HAL/" + item[1]) and path.exists("engine/HAL/" + item[1])):
             if not visited_key in global_env:
-                print(
-                    "\t*\033[0;32m %s HAL selected for Luos and Robus.\033[0m\n" % item[1])
+                click.secho(
+                    "\t* %s HAL selected for Luos and Robus.\n" % item[1], fg="green")
         else:
             if not visited_key in global_env:
-                print("\t*\033[1;31m %s HAL not found\033[0m\n" % item[1])
+                click.secho("\t* %s HAL not found\n" % item[1], fg="red")
         env.Append(CPPPATH=[realpath("network/robus/HAL/" + item[1])])
         env.Append(CPPPATH=[realpath("engine/HAL/" + item[1])])
         env.Replace(SRC_FILTER=sources)
@@ -67,8 +66,8 @@ for item in env.get("CPPDEFINES", []):
     if (item == 'UNIT_TEST'):
         current_os = pf.system()
         if find_MOCK_HAL == False:
-            print(
-                "\t*\033[0;32m Mock HAL for %s is selected for Luos and Robus.\033[0m\n" % current_os)
+            click.secho(
+                "\t* Mock HAL for %s is selected for Luos and Robus.\n" % current_os, fg="green")
         find_MOCK_HAL = True
         find_HAL = True
         env.Replace(SRC_FILTER=sources)
@@ -88,21 +87,23 @@ for item in env.get("CPPDEFINES", []):
 
             def generateCoverageInfo(source, target, env):
                 for file in os.listdir("test"):
-                    os.system(".pio/build/native/program test/"+file)
-                os.system("lcov -d .pio/build/native/ -c -o lcov.info")
-                os.system(
+                    env.Execute(".pio/build/native/program test/"+file)
+                env.Execute("lcov -d .pio/build/native/ -c -o lcov.info")
+                env.Execute(
                     "lcov --remove lcov.info '*/tool-unity/*' '*/test/*' -o filtered_lcov.info")
-                os.system("genhtml -o cov/ --demangle-cpp filtered_lcov.info")
+                env.Execute(
+                    "genhtml -o cov/ --demangle-cpp filtered_lcov.info")
 
             # Generate code coverage when testing workflow is ended
             # CODE COVERAGE WILL BE ADDED SOON
             #env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
         else:
-            print("Unit tests are not supported on your os ", current_os)
+            click.echo("Unit tests are not supported on your os ", current_os)
         break
 
 if not visited_key in global_env:
     if (find_HAL == False):
-        print("\033[1;31mNo HAL selected. Please add a \033[0;30;47m-DLUOSHAL\033[0m\033[1;31m compilation flag\033[0m\n")
+        click.echo(click.style("\t* No HAL selected. Please add a ", fg="red") + click.style(
+            "-DLUOSHAL", fg="red", bold=True) + click.style(" compilation flag\n", fg="red"))
 
 global_env[visited_key] = True
