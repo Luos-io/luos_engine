@@ -149,7 +149,9 @@ void motor_init(uint8_t motor_target)
 {
     msg_t msg;
     // Do not send motor configuration to dxl
-    if (strstr(RoutingTB_AliasFromId(motor_target), "dxl") == 0)
+    search_result_t result;
+    RTFilter_ID(RTFilter_Reset(&result), motor_target);
+    if (strstr(result.result_table[0]->alias, "dxl") == 0)
     {
         // Send sensor resolution
         float resolution       = 12.0;
