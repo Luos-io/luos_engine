@@ -1,0 +1,18 @@
+{
+    "name": "SimpleFOC_Stepper",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "description": "a simpleFOC stepper motor driver",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "licence": "MIT",
+    "build": {},
+    "dependencies": {
+        "askuric/Simple FOC": "^2.2.1",
+        "luos/Luos_engine": "^2.3.0",
+        "Wire": "*",
+        "SPI": "*"
+    }
+}
