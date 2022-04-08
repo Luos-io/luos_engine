@@ -10,7 +10,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-typedef float time_luos_t;
+typedef double time_luos_t;
 
 /*******************************************************************************
  * Variables
@@ -23,67 +23,67 @@ typedef float time_luos_t;
 //******** Conversions ***********
 
 // sec
-static inline float TimeOD_TimeTo_s(time_luos_t self)
+static inline double TimeOD_TimeTo_s(time_luos_t self)
 {
     return self;
 }
 
-static inline time_luos_t TimeOD_TimeFrom_s(float sec)
+static inline time_luos_t TimeOD_TimeFrom_s(double sec)
 {
     return sec;
 }
 
 // ms
-static inline float TimeOD_TimeTo_ms(time_luos_t self)
+static inline double TimeOD_TimeTo_ms(time_luos_t self)
 {
     return self * 1000.0f;
 }
 
-static inline time_luos_t TimeOD_TimeFrom_ms(float ms)
+static inline time_luos_t TimeOD_TimeFrom_ms(double ms)
 {
     return ms / 1000.0f;
 }
 
 // µs
-static inline float TimeOD_TimeTo_us(time_luos_t self)
+static inline double TimeOD_TimeTo_us(time_luos_t self)
 {
     return self * 1000000.0f;
 }
 
-static inline time_luos_t TimeOD_TimeFrom_us(float us)
+static inline time_luos_t TimeOD_TimeFrom_us(double us)
 {
     return us / 1000000.0f;
 }
 
 // min
-static inline float TimeOD_TimeTo_min(time_luos_t self)
+static inline double TimeOD_TimeTo_min(time_luos_t self)
 {
     return self / 60.0f;
 }
 
-static inline time_luos_t TimeOD_TimeFrom_min(float min)
+static inline time_luos_t TimeOD_TimeFrom_min(double min)
 {
     return min * 60.0f;
 }
 
 // hour
-static inline float TimeOD_TimeTo_h(time_luos_t self)
+static inline double TimeOD_TimeTo_h(time_luos_t self)
 {
     return self / 3600.0f;
 }
 
-static inline time_luos_t TimeOD_TimeFrom_h(float hour)
+static inline time_luos_t TimeOD_TimeFrom_h(double hour)
 {
     return hour * 3600.0f;
 }
 
 // day
-static inline float TimeOD_TimeTo_day(time_luos_t self)
+static inline double TimeOD_TimeTo_day(time_luos_t self)
 {
     return self / 86400.0f;
 }
 
-static inline time_luos_t TimeOD_TimeFrom_day(float day)
+static inline time_luos_t TimeOD_TimeFrom_day(double day)
 {
     return day * 86400.0f;
 }
