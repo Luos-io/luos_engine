@@ -11,7 +11,7 @@ https://github.com/Luos-io/examples/blob/master/LICENSE)
 This app constantly watches for movements and raises an alarm if there is.
 
 # Link project
-This app is linked to the [bike_alarm/Alarm_controller project](../../Projects/bike_alarm/Alarm_controller).
+This app is linked to the [bike_alarm/Alarm_controller project](../../projects/l0/bike_alarm/alarm_controller).
 
 [![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://community.luos.io)
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
