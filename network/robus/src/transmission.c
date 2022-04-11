@@ -109,8 +109,6 @@ uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
 
 /******************************************************************************
  * @brief transmission process
- * @param pointer data to send
- * @param size of data to send
  * @return None
  ******************************************************************************/
 void Transmit_Process()

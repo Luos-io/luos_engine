@@ -200,7 +200,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     // Add the CRC to the total size of the message
     uint16_t full_size = sizeof(header_t) + data_size + CRC_SIZE;
 
-    // if we send a timestamped message, don't compute the crc on the complete message
+    // If we send a timestamped message, don't compute the crc on the complete message
     uint16_t crc_max_index = 0;
 
     if (Timestamp_IsTimestampMsg(msg))
@@ -212,7 +212,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
         crc_max_index = full_size;
     }
 
-    // compute the CRC
+    // Compute the CRC
     crc_val = ll_crc_compute(&msg->stream[0], crc_max_index - CRC_SIZE, 0xFFFF);
 
     // Check the localhost situation
