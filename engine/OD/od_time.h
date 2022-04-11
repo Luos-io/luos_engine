@@ -55,6 +55,17 @@ static inline time_luos_t TimeOD_TimeFrom_us(double us)
     return us / 1000000.0f;
 }
 
+// ns
+static inline double TimeOD_TimeTo_ns(time_luos_t self)
+{
+    return self * 1000000000.0f;
+}
+
+static inline time_luos_t TimeOD_TimeFrom_ns(double ns)
+{
+    return ns / 1000000000.0f;
+}
+
 // min
 static inline double TimeOD_TimeTo_min(time_luos_t self)
 {
