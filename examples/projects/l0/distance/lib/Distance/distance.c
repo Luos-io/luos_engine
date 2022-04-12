@@ -19,7 +19,7 @@
 
 linear_position_t dist = -0.001;
 bool new_data_ready    = false;
-timestamp_token_t distance_timestamp;
+time_luos_t distance_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -46,8 +46,8 @@ void Distance_Loop(void)
 {
     if (vl53l0x_DrvRead(&dist) == SUCCEED)
     {
-        new_data_ready = true;
-        Timestamp_Tag(&distance_timestamp, &dist);
+        new_data_ready     = true;
+        distance_timestamp = Timestamp_now();
     }
 }
 /******************************************************************************
@@ -68,11 +68,7 @@ static void Distance_MsgHandler(service_t *service, msg_t *msg)
             pub_msg.header.target      = msg->header.source;
             LinearOD_PositionToMsg(&dist, &pub_msg);
             new_data_ready = false;
-            if (Timestamp_GetToken(&dist))
-            {
-                Timestamp_EncodeMsg(&pub_msg, &dist);
-            }
-            Luos_SendMsg(service, &pub_msg);
+            Luos_SendTimestampMsg(service, &pub_msg, distance_timestamp);
         }
     }
 }
