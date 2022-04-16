@@ -10,109 +10,43 @@
 #include "service_structs.h"
 /******************************* Description of Timestamp process ************************************
  *
- * Timestamp is a mechanism which enables to track events in the system. The feature is build around
- * the concept of tokens. A token is an object wich can be linked to an event and can store a
- * timestamp. Each time a token is created and linked to an event, it's placed in a list with other
- * tokens to form a linked list with all tokens presents in the system. The token is timestamped at
- * the same moment.
+ * Timestamp is a mechanism which enables to track events in the system. To use it users have to get and save a timestamp in
+ * a time_luos_t variable.
+ * You can get a timestamp by calling the Timestamp_now() function. Then you can deal with the returned value as you want, allowing
+ * you to tag a date in the past or in the future.
  *
- * When you need to read the timestamp associated with an event, you can use the Timestamp_GetToken()
- * function. This function will search the token linked to the event in the list and return the
- * timestamp saved in it.
+ * Then you can send a message with a data and it's associated timestamp, luos can handle this by slighly modifiyng its
+ * protocol. To send a message with it's timestamp, use Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp)
+ * function. This function will enable te message in timestamp mode and slightly modify it before sending it.
  *
-
-                                              Event_A         Event_B
-
-                                                 │               │
-                                                 ▼               ▼
-                                            ───────────────────────────────────────────────►  Time
-                                                 |               |
-                                                 │               │
-               Token list                        │               │
-                                                 │               │
-               ┌───────┐                         │               │
-    Timestamp  │ Token │ ◄───────────────────────┘               │
-               ├───────┤                                         │
-    Timestamp  │ Token │ ◄───────────────────────────────────────┘
-               ├───────┤
-    Timestamp  │ Token │          Timestamp_Tag(token, Event_B)
-               ├───────┤
-    Timestamp  │ Token │
-               └───────┘
-                   .
-                   .
-                   .
-
-               ┌───────┐
-    Timestamp  │ Token │ ────────────────► Timestamp_GetToken(Event_B)
-               ├───────┤
-    Timestamp  │ Token │
-               ├───────┤
-    Timestamp  │ Token │
-               └───────┘
-
- *
- * You can also send a message with a data and it's associated timestamp, luos can handle this by slighly modifiyng its
- * protocol. To encode a message with the timestamp protocol, use Timestamp_EncodeMsg() function, it will change the
- * message and save the timestamp in it.
- * An example is shown beneath: the sended data is a color, the command saved in the header is COLOR_TYPE. What
- * Timestamp_EncodeMsg() does is modifying the protocol field. This allows the receiving service to process the message
+ * An example is shown beneath: the sended data is a color, the command saved in the header is COLOR_TYPE. To support timstamp
+ * Luos engine is modifying the protocol field. This allows the receiving service to process the message
  * in a dedicated way and extract the timestamp information. The timestamp value is placed at the end of the message,
- * after data and data_cmd sections.
+ * after data. Also the Size header field is modified to include the timestamp size in the data field.
  *
-
-
-          Timestamp protocol
-
-                  │
-                  │
-                  │
-                  │
-                  ▼
+          Timestamp protocol                           Updated size
+                  │                                          │
+                  ▼                                          ▼
            ┌────────────┬─────────┬───────┬─────────┬─────┬──────┬─────────────────────────────────────────┬─────────────────┐
            │  Protocol  │  Target │  Mode │  Source │ Cmd │ Size │ Payload                                 │     Timestamp   │
            └────────────┴─────────┴───────┴─────────┴─────┴──────┴─────────────────────────────────────────┴─────────────────┘
-
  *
- * Timestamp_DecodeMsg allows you to get the timestamp associated to a data saved in the message. It also recovers the
- * original message before its transposition in the Timestamp protocol, as shown here after.
+ * At reception the timestamp message will be decoded allowing you to get the timestamp associated to the data saved in the message. It also recovers the
+ * original message before its transposition in the Timestamp protocol with the correct size, as shown here after. Timestamp still stored at the end of message,
+ * but users don't see it.
+ * User can check if message are timestamped using the function Luos_IsTimestampMsg(msg_t *msg).
+ * User can get back the timestamp value using the function Luos_GetTimestamp(msg_t *msg).
  *
-                                          Color type           Color value
- ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬────────────────────────┐
- │Protocol │ Target  │  Mode   │ Source  │   Cmd   │  Size   │         Data           │
- └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴────────────────────────┘
-
+                                                        Color size      Color value
+                                                             │              │
+                                                             ▼              ▼
+           ┌────────────┬─────────┬───────┬─────────┬─────┬──────┬─────────────────────────────────────────┬-----------------┐
+           │  Protocol  │  Target │  Mode │  Source │ Cmd │ Size │ Payload                                 │                 │
+           └────────────┴─────────┴───────┴─────────┴─────┴──────┴─────────────────────────────────────────┴-----------------┘
 *
-* Timestamp API also allows you to tag an event instead of a data. The idea is to create a command, attach a timestamp
-* information to it and send it to a service. The service which receives this information can **execute** the command
-* at the date specified by the timestamp. This is a really interesting feature if you want to execute actions at precise
-* dates. It also releases the constraints on messages exchanged on the network as you can send them by batch: each message
-* carries a timestamped event which will be processed at the defined date. In the API, **Timestamp_CreateEvent** enables
-* you to use this feature. You have to give to this function same arguments as you give to **timestamp_tag** plus an
-* argument called **relative_date**. This last one carries information about when the event has to be processed, its unit
-* is **nanoseconds**. If you want your event to be processed in 1 second, put 1000000000 in this argument.
+* Timestamp values are transformed from date to latency at message send and from latency to date at message reception.
+* This allow to track events in the system and put them at a representative date for the node using it.
 *
-
-             ┌────────────────┐                                              ┌──────────────────┐
-             │                │                                              │                  │
-             │   Service A    │                                              │    Service B     ├────────┐
-             │                │                                              │                  │        │
-             └────────────────┘                                              └──────────────────┘        │
-                                                                                                         │
-                                                                                                         │    Service B uses the
-                                                                                                         │
-                                                                                                         │    timestamp to process
-                                                                                                         │
-                                                                                                         │    the event in the message
-         ┌────────────────────────┐                                         ┌────────────────────┐       │
-         │                        │                                         │                    │       │    at a precise date
-         │   Timestamped message  ├────────────────────────────────────────►│  Received message  │       │
-         │                        │                                         │                    │       │
-         └────────────────────────┘                                         └────────────────────┘       │
-                                                                                                         │
-                                                                                  Timestamp  ◄───────────┘
-
-
  ***************************************************************************************************/
 
 /*******************************************************************************
