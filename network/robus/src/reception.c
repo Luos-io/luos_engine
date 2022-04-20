@@ -157,16 +157,15 @@ void Recep_GetData(volatile uint8_t *data)
         uint16_t crc = ((uint16_t)current_msg->data[data_size]) | ((uint16_t)current_msg->data[data_size + 1] << 8);
         if (crc == crc_val)
         {
+            if (Recep_IsAckNeeded())
+            {
+                Transmit_SendAck();
+            }
             // If message is timestamped, convert the latency to date
             if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
             {
                 // This conversion also remove the timestamp from the message size.
                 Timestamp_ConvertToDate((msg_t *)current_msg, ll_rx_timestamp);
-            }
-
-            if (Recep_IsAckNeeded())
-            {
-                Transmit_SendAck();
             }
 
             // Make an exception for bootloader command

@@ -176,7 +176,7 @@ void Transmit_Process()
                 // Complete the CRC computation with the latency
                 msg_t *msg                       = (msg_t *)data;
                 uint16_t full_size               = sizeof(header_t) + msg->header.size + CRC_SIZE;
-                uint16_t index_without_timestamp = full_size - sizeof(uint64_t) - CRC_SIZE;
+                uint16_t index_without_timestamp = full_size - sizeof(time_luos_t) - CRC_SIZE;
                 uint16_t crc_seed                = 0;
                 memcpy(&crc_seed, &msg->stream[full_size - CRC_SIZE], CRC_SIZE);
                 uint16_t crc_val = ll_crc_compute(&msg->stream[index_without_timestamp], full_size - CRC_SIZE - index_without_timestamp, crc_seed);
