@@ -562,9 +562,14 @@ void RobusHAL_PinoutIRQHandler()
  ******************************************************************************/
 void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
-    // Pull Down / IT mode / Rising Edge
-    pinMode(PTP_ll[PTPNbr], INPUT_PULLDOWN);
-    EIC->INTFLAG.reg = (1 << PTP[PTPNbr].Irq); // clear IT flag
+    // configure the port in INPUT_PULLDOWN mode
+    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
+    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PMUXEN;    // mux en
+    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PULLEN;    // pull en
+    PORT->Group[PTP[PTPNbr].Port].OUTCLR.reg = (1 << PTP[PTPNbr].Pin);                  // pull down
+    EIC->INTFLAG.reg                         = (1 << PTP[PTPNbr].Irq);                  // clear IT flag
+
+    // attach the callback and enable interrupt on rising edge
     attachInterrupt(digitalPinToInterrupt(PTP_ll[PTPNbr]), RobusHAL_PinoutIRQHandler, RISING);
 }
 /******************************************************************************
@@ -574,9 +579,14 @@ void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
  ******************************************************************************/
 void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
-    // Pull Down / IT mode / Falling Edge
-    pinMode(PTP_ll[PTPNbr], INPUT_PULLDOWN);
-    EIC->INTFLAG.reg = (1 << PTP[PTPNbr].Irq); // clear IT flag
+    // configure the port in INPUT_PULLDOWN mode
+    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg = PORT_PINCFG_RESETVALUE; // no pin mux / no input /  no pull / low streght
+    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PMUXEN;    // mux en
+    PORT->Group[PTP[PTPNbr].Port].PINCFG[PTP[PTPNbr].Pin].reg |= PORT_PINCFG_PULLEN;    // pull en
+    PORT->Group[PTP[PTPNbr].Port].OUTCLR.reg = (1 << PTP[PTPNbr].Pin);                  // pull down
+    EIC->INTFLAG.reg                         = (1 << PTP[PTPNbr].Irq);                  // clear IT flag
+
+    // attach the callback and enable interrupt on falling edge
     attachInterrupt(digitalPinToInterrupt(PTP_ll[PTPNbr]), RobusHAL_PinoutIRQHandler, FALLING);
 }
 /******************************************************************************
