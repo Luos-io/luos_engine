@@ -618,12 +618,7 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
         // We can't send it
         return PROHIBITED;
     }
-    if (Robus_SendMsg(service->ll_service, msg) == FAILED)
-    {
-        return FAILED;
-    }
-
-    return SUCCEED;
+    return Robus_SendMsg(service->ll_service, msg);
 }
 
 /******************************************************************************
