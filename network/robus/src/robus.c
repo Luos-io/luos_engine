@@ -175,7 +175,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     // don't send luos messages if network is down
     if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != DETECTION_OK))
     {
-        return FAILED;
+        return PROHIBITED;
     }
 
     // ********** Prepare the message ********************
