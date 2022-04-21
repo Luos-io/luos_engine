@@ -997,14 +997,18 @@ static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias)
     uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
     LuosHAL_FlashReadLuosMemoryInfo(addr, 16, (uint8_t *)alias);
     // Check name integrity
-    if ((((alias[0] < 'A') | (alias[0] > 'Z')) & ((alias[0] < 'a') | (alias[0] > 'z'))) | (alias[0] == '\0'))
+    for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
     {
-        return FAILED;
+        if ((((alias[i] < 'A') | (alias[i] > 'Z')) & ((alias[i] < 'a') | (alias[i] > 'z'))))
+        {
+            return FAILED;
+        }
+        if (alias[i] == '\0')
+        {
+            break;
+        }
     }
-    else
-    {
-        return SUCCEED;
-    }
+    return SUCCEED;
 }
 /******************************************************************************
  * @brief send network bauderate
