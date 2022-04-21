@@ -76,6 +76,8 @@ void unittest_Timestamp()
         // Get the message received
         msg_t *rx_msg;
         rx_msg = default_sc.App_1.last_rx_msg;
+        uint64_t low_level_rx_timestamp;
+        Timestamp_ConvertToDate(rx_msg, low_level_rx_timestamp);
         // Get back the 1st timestamp
         time_luos_t rx_event_a_timestamp = Timestamp_GetTimestamp(rx_msg);
 
@@ -85,6 +87,8 @@ void unittest_Timestamp()
         Luos_Loop();
         // Get the message received
         rx_msg = default_sc.App_1.last_rx_msg;
+        low_level_rx_timestamp;
+        Timestamp_ConvertToDate(rx_msg, low_level_rx_timestamp);
         // Get back the 2nd timestamp
         time_luos_t rx_event_b_timestamp = Timestamp_GetTimestamp(rx_msg);
 
