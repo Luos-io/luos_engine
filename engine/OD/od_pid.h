@@ -8,6 +8,7 @@
 #define OD_OD_PID_H_
 
 #include "luos_engine.h"
+#include <string.h>
 
 /*******************************************************************************
  * Definitions

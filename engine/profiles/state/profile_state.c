@@ -1,6 +1,5 @@
 #include "profile_state.h"
 
-#include "timestamp.h"
 /******************************************************************************
  * @brief function converting Luos messages into data and reverse.
  * @param service the target service
@@ -25,17 +24,8 @@ void ProfileState_Handler(service_t *service, msg_t *msg)
                 pub_msg.header.size        = sizeof(bool);
                 memcpy(&pub_msg.data, &profile_state->state, sizeof(bool));
 
-                // if data are timestamped,  create a dedicated luos message to handle it
-                if (Timestamp_GetToken(&profile_state->state))
-                {
-                    Timestamp_EncodeMsg(&pub_msg, &profile_state->state);
-                    Luos_SendTimestampMsg(service, &pub_msg);
-                }
-                else
-                {
-                    // send message on the network
-                    Luos_SendMsg(service, &pub_msg);
-                }
+                // send message on the network
+                Luos_SendMsg(service, &pub_msg);
             }
             break;
         case IO_STATE:

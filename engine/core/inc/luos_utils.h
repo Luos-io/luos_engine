@@ -17,7 +17,7 @@
 #if defined(LUOS_ASSERTION)
 #define LUOS_ASSERT(expr) \
     if (!(expr))          \
-    Luos_assert(__FILE__, __LINE__)
+    Luos_assert((char *)__FILE__, __LINE__)
 #else
 #define LUOS_ASSERT(expr) ()
 #endif

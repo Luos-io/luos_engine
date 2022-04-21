@@ -17,7 +17,7 @@
  * Variables
  ******************************************************************************/
 illuminance_t lux = 0.0;
-timestamp_token_t lux_timestamp;
+time_luos_t lux_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -44,8 +44,8 @@ void LightSensor_Init(void)
 void LightSensor_Loop(void)
 {
     // read and store the value that captured by the sensor
-    lux = LightSensorDrv_Read();
-    Timestamp_Tag(&lux_timestamp, &lux);
+    lux           = LightSensorDrv_Read();
+    lux_timestamp = Timestamp_now();
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service
@@ -59,18 +59,13 @@ static void LightSensor_MsgHandler(service_t *service, msg_t *msg)
     if (msg->header.cmd == GET_CMD)
     {
         msg_t pub_msg;
-        // fill the message infos
+        // Fill the message infos
         pub_msg.header.target_mode = ID;
         pub_msg.header.target      = msg->header.source;
-        // transform the illuminance value to message format using Luos Object Dictionary
+        // Transform the illuminance value to message format using Luos Object Dictionary
         IlluminanceOD_IlluminanceToMsg((illuminance_t *)&lux, &pub_msg);
-        // find if this value is timestamped
-        if (Timestamp_GetToken(&lux))
-        {
-            Timestamp_EncodeMsg(&pub_msg, &lux);
-        }
-        // send the illuminance that the sensor captured
-        Luos_SendMsg(service, &pub_msg);
+        // Send the illuminance that the sensor captured
+        Luos_SendTimestampMsg(service, &pub_msg, lux_timestamp);
         return;
     }
 }

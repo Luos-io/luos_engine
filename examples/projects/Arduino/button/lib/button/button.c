@@ -55,7 +55,9 @@ static void Button_MsgHandler(service_t *service, msg_t *msg)
         pub_msg.header.target      = msg->header.source;
         pub_msg.header.size        = sizeof(char);
         pub_msg.data[0]            = digitalRead(BTN_PIN);
-        Luos_SendMsg(service, &pub_msg);
+        time_luos_t timestamp      = Timestamp_now();
+
+        Luos_SendTimestampMsg(service, &pub_msg, timestamp);
         return;
     }
 }

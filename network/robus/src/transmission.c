@@ -50,6 +50,7 @@
 #include "context.h"
 #include "reception.h"
 #include "msg_alloc.h"
+#include "_timestamp.h"
 #include "timestamp.h"
 
 /*******************************************************************************
@@ -108,8 +109,6 @@ uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
 
 /******************************************************************************
  * @brief transmission process
- * @param pointer data to send
- * @param size of data to send
  * @return None
  ******************************************************************************/
 void Transmit_Process()
@@ -168,16 +167,16 @@ void Transmit_Process()
             LuosHAL_SetIrqState(true);
             ctx.tx.data = data;
 
-            // put timestamping on data here
+            // Put timestamping on data here
             if (Timestamp_IsTimestampMsg((msg_t *)data) && (!nbrRetry))
             {
-                // compute timestamp
-                Timestamp_TagMsg((msg_t *)data);
+                // Convert date to latency
+                Timestamp_ConvertToLatency((msg_t *)data);
 
-                // compute crc
+                // Complete the CRC computation with the latency
                 msg_t *msg                       = (msg_t *)data;
                 uint16_t full_size               = sizeof(header_t) + msg->header.size + CRC_SIZE;
-                uint16_t index_without_timestamp = full_size - sizeof(uint64_t) - CRC_SIZE;
+                uint16_t index_without_timestamp = full_size - sizeof(time_luos_t) - CRC_SIZE;
                 uint16_t crc_seed                = 0;
                 memcpy(&crc_seed, &msg->stream[full_size - CRC_SIZE], CRC_SIZE);
                 uint16_t crc_val = ll_crc_compute(&msg->stream[index_without_timestamp], full_size - CRC_SIZE - index_without_timestamp, crc_seed);

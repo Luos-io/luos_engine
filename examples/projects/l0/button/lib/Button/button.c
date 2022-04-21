@@ -9,7 +9,6 @@
 #include "ll_button.h"
 #include "profile_state.h"
 
-#include "timestamp.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -19,7 +18,6 @@
  ******************************************************************************/
 profile_state_t button;
 
-timestamp_token_t button_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -49,5 +47,4 @@ void Button_Init(void)
 void Button_Loop(void)
 {
     ll_button_read(&button.state);
-    Timestamp_Tag(&button_timestamp, &button.state);
 }
