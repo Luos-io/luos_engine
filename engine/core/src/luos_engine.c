@@ -766,8 +766,7 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
         while (Luos_SendMsg(service, msg) == FAILED)
         {
             // No more memory space available
-            Luos_Loop();
-            // 500 here represent 500ms of timeout after start trying to load our data in memory.
+            // 500ms of timeout after start trying to load our data in memory. Perhaps the buffer is full of RX messages try to increate the buffer size.
             LUOS_ASSERT(((volatile uint32_t)Luos_GetSystick() - tickstart) < 500);
         }
 
@@ -914,9 +913,12 @@ void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t 
         msg->header.size = data_size;
 
         // Send message
+        uint32_t tickstart = Luos_GetSystick();
         while (Luos_SendMsg(service, msg) == FAILED)
         {
-            Luos_Loop();
+            // No more memory space available
+            // 500ms of timeout after start trying to load our data in memory. Perhaps the buffer is full of RX messages try to increate the buffer size.
+            LUOS_ASSERT(((volatile uint32_t)Luos_GetSystick() - tickstart) < 500);
         }
 
         // check end of data
