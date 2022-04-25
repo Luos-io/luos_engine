@@ -64,19 +64,19 @@ uint8_t PipeBuffer_GetP2LMsg(uint16_t *size)
                 if (SizeUntilEnd > 1)
                 {
                     *size = (uint16_t)(*((uint8_t *)(StreamChannel->sample_ptr + 1)));
+                    if (SizeUntilEnd > 2)
+                    {
+                        *size |= (uint16_t)(*((uint8_t *)(StreamChannel->sample_ptr + 2)) << 8);
+                    }
+                    else
+                    {
+                        *size |= (uint16_t)(*((uint8_t *)(StreamChannel->ring_buffer)) << 8);
+                    }
                 }
                 else
                 {
                     *size = (uint16_t)(*((uint8_t *)(StreamChannel->ring_buffer)));
-                }
-
-                if (SizeUntilEnd > 2)
-                {
-                    *size |= (uint16_t)(*((uint8_t *)(StreamChannel->sample_ptr + 2)) << 8);
-                }
-                else
-                {
-                    *size |= (uint16_t)(*((uint8_t *)(StreamChannel->ring_buffer)) << 8);
+                    *size |= (uint16_t)(*((uint8_t *)(StreamChannel->ring_buffer + 1)) << 8);
                 }
 
                 if (TotalSize > *size)
