@@ -68,7 +68,7 @@ uint16_t RoutingTB_IDFromAlias(char *alias)
  ******************************************************************************/
 uint16_t RoutingTB_NodeIDFromID(uint16_t id)
 {
-    for (uint16_t i = RoutingTB_GetServiceIndex(id); i >= 0; i--)
+    for (int32_t i = (int32_t)RoutingTB_GetServiceIndex(id); i >= 0; i--)
     {
         if (routing_table[i].mode == NODE)
         {
