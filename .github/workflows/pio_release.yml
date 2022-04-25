@@ -20,17 +20,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install platformio
-    - name: publish
+    - name: publish luos engine
       env:
         PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
       run: |
-
         # ***** Luos engine publication *****
         pio package pack
         pio package publish --owner luos --non-interactive
+      continue-on-error: true
 
-
-        # ***** Gate publcation *****
+    - name: publish gate tool
+      env:
+        PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
+      run: |
+        # ***** Gate publication *****
         cd tool_services/gate
         mkdir Examples
 
@@ -84,6 +87,10 @@ jobs:
         cd ../..
 
 
+    - name: publish inspector tool
+      env:
+        PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
+      run: |
         # ***** Inspector publication *****
         cd tool_services/inspector
         mkdir Examples
