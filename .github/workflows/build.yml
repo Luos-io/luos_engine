@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - master # change it to main
+      - main
 
 jobs:
   build:
