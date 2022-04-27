@@ -160,32 +160,21 @@ void Robus_ServicesClear(void)
     ctx.ll_service_number = 0;
 }
 /******************************************************************************
- * @brief Send Msg to a service
+ * @brief Formalize message Set tx task and send
  * @param service to send
  * @param msg to send
  * @return none
  ******************************************************************************/
-error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
+error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
 {
     uint8_t ack        = 0;
     uint16_t data_size = 0;
     uint16_t crc_val   = 0xFFFF;
-
     // ***************************************************
     // don't send luos messages if network is down
     if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != DETECTION_OK))
     {
         return FAILED;
-    }
-
-    // ********** Prepare the message ********************
-    if (ll_service->id != 0)
-    {
-        msg->header.source = ll_service->id;
-    }
-    else
-    {
-        msg->header.source = ctx.node.node_id;
     }
 
     // Compute the full message size based on the header size info.
@@ -239,6 +228,29 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
+    return SUCCEED;
+}
+/******************************************************************************
+ * @brief Send Msg to a service
+ * @param service to send
+ * @param msg to send
+ * @return none
+ ******************************************************************************/
+error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
+{
+    // ********** Prepare the message ********************
+    if (ll_service->id != 0)
+    {
+        msg->header.source = ll_service->id;
+    }
+    else
+    {
+        msg->header.source = ctx.node.node_id;
+    }
+    if (Robus_SetTxTask(ll_service, msg) == FAILED)
+    {
+        return FAILED;
+    }
     return SUCCEED;
 }
 /******************************************************************************
