@@ -3,7 +3,7 @@ name: Dev Build
 on:
   push:
     branches-ignore:
-      - master # change it to main
+      - main
 
 jobs:
   dev-build:
