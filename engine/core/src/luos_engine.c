@@ -511,6 +511,7 @@ static void Luos_AutoUpdateManager(void)
                     // This service need to send an update
                     // Create a fake message for it from the service asking for update
                     msg_t updt_msg;
+                    updt_msg.header.config      = BASE_PROCOTOL;
                     updt_msg.header.target      = service_table[i].ll_service->id;
                     updt_msg.header.source      = service_table[i].auto_refresh.target;
                     updt_msg.header.target_mode = IDACK;
@@ -522,9 +523,8 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        // store service and msg pointer
-                        //  todo this can't work for now because this message is not permanent.
-                        // mngr_set(&service_table[i], &updt_msg);
+                        // directly transmit the message in Localhost
+                        Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
                     }
                     service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
