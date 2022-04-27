@@ -88,18 +88,25 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
 #define TX_LOCK_DETECT_IRQ DISABLE
 #endif
 
+#ifndef ARDUINO_RX_EN
+#define ARDUINO_RX_EN 2
+#endif
+#ifndef ARDUINO_TX_EN
+#define ARDUINO_TX_EN 3
+#endif
+
 #ifndef RX_EN_PIN
-#define RX_EN_PIN g_APinDescription[2].ulPin
+#define RX_EN_PIN g_APinDescription[ARDUINO_RX_EN].ulPin
 #endif
 #ifndef RX_EN_PORT
-#define RX_EN_PORT g_APinDescription[2].ulPort
+#define RX_EN_PORT g_APinDescription[ARDUINO_RX_EN].ulPort
 #endif
 
 #ifndef TX_EN_PIN
-#define TX_EN_PIN g_APinDescription[3].ulPin
+#define TX_EN_PIN g_APinDescription[ARDUINO_TX_EN].ulPin
 #endif
 #ifndef TX_EN_PORT
-#define TX_EN_PORT g_APinDescription[3].ulPort
+#define TX_EN_PORT g_APinDescription[ARDUINO_TX_EN].ulPort
 #endif
 
 #ifndef COM_TX_PIN
