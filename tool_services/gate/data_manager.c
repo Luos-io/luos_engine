@@ -125,6 +125,7 @@ void DataManager_RunPipeOnly(service_t *service)
 void DataManager_Format(service_t *service)
 {
     static uint32_t FirstNoReceptionDate = 0;
+    static uint32_t LastVoidMsg          = 0;
     char data[GATE_BUFF_SIZE];
     char *data_ptr  = data;
     msg_t *data_msg = 0;
@@ -218,9 +219,13 @@ void DataManager_Format(service_t *service)
             {
                 FirstNoReceptionDate = Luos_GetSystick();
             }
-            else if (Luos_GetSystick() - FirstNoReceptionDate > 1000)
+            else if ((Luos_GetSystick() - FirstNoReceptionDate) > 1000)
             {
-                Convert_VoidData(service);
+                if ((Luos_GetSystick() - LastVoidMsg) > 10)
+                {
+                    LastVoidMsg = Luos_GetSystick();
+                    Convert_VoidData(service);
+                }
             }
         }
     }
@@ -234,7 +239,11 @@ void DataManager_Format(service_t *service)
         }
         else if (Luos_GetSystick() - FirstNoReceptionDate > 1000)
         {
-            Convert_VoidData(service);
+            if ((Luos_GetSystick() - LastVoidMsg) > 10)
+            {
+                LastVoidMsg = Luos_GetSystick();
+                Convert_VoidData(service);
+            }
         }
     }
 }

@@ -67,6 +67,11 @@ uint16_t PipeLink_Find(service_t *service)
     {
         // pipe is not in the same node
         RTFilter_Type(RTFilter_Reset(&result), PIPE_TYPE);
+        if (result.result_nbr == 0)
+        {
+            // No pipe found
+            return 0;
+        }
     }
     // keep pipe_id
     pipe_id = result.result_table[0]->id;
@@ -92,6 +97,7 @@ uint16_t PipeLink_Find(service_t *service)
             msg.header.target_mode = IDACK;
             msg.header.cmd         = PARAMETERS;
             msg.header.size        = 0;
+            LUOS_ASSERT(service->ll_service->id != 0);
             while (Luos_SendMsg(service, &msg) != SUCCEED)
                 ;
         }
