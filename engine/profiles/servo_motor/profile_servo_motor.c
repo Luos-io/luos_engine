@@ -253,14 +253,13 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
         break;
         default:
         {
+            if ((profile->profile_ops.Callback != 0))
+            {
+                profile->profile_ops.Callback(service, msg);
+            }
             return;
         }
         break;
-    }
-
-    if ((profile->profile_ops.Callback != 0))
-    {
-        profile->profile_ops.Callback(service, msg);
     }
 }
 
