@@ -106,10 +106,10 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
         case REINIT:
         {
             // set state to 0
-            __disable_irq();
+            LuosHAL_SetIrqState(false);
             servo_motor_profile->angular_position        = 0.0;
             servo_motor_profile->target_angular_position = 0.0;
-            __enable_irq();
+            LuosHAL_SetIrqState(true);
         }
         break;
         case DIMENSION:
@@ -126,9 +126,9 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
                 if (msg->header.size == sizeof(angular_position_t))
                 {
                     // set the motor target angular position
-                    __disable_irq();
+                    LuosHAL_SetIrqState(false);
                     AngularOD_PositionFromMsg((angular_position_t *)&servo_motor_profile->target_angular_position, msg);
-                    __enable_irq();
+                    LuosHAL_SetIrqState(true);
                 }
                 else
                 {
@@ -253,14 +253,13 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
         break;
         default:
         {
+            if ((profile->profile_ops.Callback != 0))
+            {
+                profile->profile_ops.Callback(service, msg);
+            }
             return;
         }
         break;
-    }
-
-    if ((profile->profile_ops.Callback != 0))
-    {
-        profile->profile_ops.Callback(service, msg);
     }
 }
 
