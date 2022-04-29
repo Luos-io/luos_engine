@@ -133,7 +133,6 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
 // Find the oldest message curretly stored
 static inline void MsgAlloc_FindNewOldestMsg(void);
 
-
 /*******************************************************************************
  * Functions --> generic
  ******************************************************************************/
