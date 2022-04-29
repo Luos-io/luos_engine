@@ -511,7 +511,7 @@ static void Luos_AutoUpdateManager(void)
                     // This service need to send an update
                     // Create a fake message for it from the service asking for update
                     msg_t updt_msg;
-                    updt_msg.header.config      = BASE_PROCOTOL;
+                    updt_msg.header.config      = BASE_PROTOCOL;
                     updt_msg.header.target      = service_table[i].ll_service->id;
                     updt_msg.header.source      = service_table[i].auto_refresh.target;
                     updt_msg.header.target_mode = IDACK;
@@ -605,7 +605,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 {
     // set protocol version
-    msg->header.config = BASE_PROCOTOL;
+    msg->header.config = BASE_PROTOCOL;
 
     if (service == 0)
     {
@@ -1021,7 +1021,7 @@ void Luos_SendBaudrate(service_t *service, uint32_t baudrate)
 {
     msg_t msg;
     memcpy(msg.data, &baudrate, sizeof(uint32_t));
-    msg.header.config      = BASE_PROCOTOL;
+    msg.header.config      = BASE_PROTOCOL;
     msg.header.target_mode = BROADCAST;
     msg.header.target      = BROADCAST_VAL;
     msg.header.cmd         = SET_BAUDRATE;
@@ -1039,7 +1039,7 @@ void Luos_SendBaudrate(service_t *service, uint32_t baudrate)
 void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t target, uint16_t newid)
 {
     msg_t msg;
-    msg.header.config      = BASE_PROCOTOL;
+    msg.header.config      = BASE_PROTOCOL;
     msg.header.target      = target;
     msg.header.target_mode = target_mode;
     msg.header.cmd         = WRITE_NODE_ID;
