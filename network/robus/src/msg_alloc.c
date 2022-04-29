@@ -133,8 +133,6 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
 // Find the oldest message curretly stored
 static inline void MsgAlloc_FindNewOldestMsg(void);
 
-// Perform some cleaning and copy thing before tasks pull and get
-static inline void MsgAlloc_ValidDataIntegrity(void);
 
 /*******************************************************************************
  * Functions --> generic
@@ -213,7 +211,7 @@ void MsgAlloc_loop(void)
  * @param None
  * @return None
  ******************************************************************************/
-static inline void MsgAlloc_ValidDataIntegrity(void)
+void MsgAlloc_ValidDataIntegrity(void)
 {
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
