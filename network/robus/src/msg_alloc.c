@@ -1660,7 +1660,9 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         //        +-------------------------------------------------------------+
         //
         // Finish the copy of the message to transmit
+        LuosHAL_SetIrqState(false);
         memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 6); // 3 bytes already copied - 2 bytes CRC - 1 byte ack
+        LuosHAL_SetIrqState(true);
         ((char *)tx_msg)[size - 3] = (uint8_t)(crc);
         ((char *)tx_msg)[size - 2] = (uint8_t)(crc >> 8);
         ((char *)tx_msg)[size - 1] = ack;
