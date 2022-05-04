@@ -160,7 +160,7 @@ typedef enum
 typedef enum
 {
     // Protocol version
-    BASE_PROCOTOL = PROTOCOL_REVISION,
+    BASE_PROTOCOL = PROTOCOL_REVISION,
     TIMESTAMP_PROTOCOL,
 } robus_protocol_t;
 

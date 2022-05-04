@@ -161,6 +161,7 @@ void Recep_GetData(volatile uint8_t *data)
             {
                 Transmit_SendAck();
             }
+            MsgAlloc_ValidDataIntegrity();
             // If message is timestamped, convert the latency to date
             if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
             {

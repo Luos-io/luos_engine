@@ -133,9 +133,6 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
 // Find the oldest message curretly stored
 static inline void MsgAlloc_FindNewOldestMsg(void);
 
-// Perform some cleaning and copy thing before tasks pull and get
-static inline void MsgAlloc_ValidDataIntegrity(void);
-
 /*******************************************************************************
  * Functions --> generic
  ******************************************************************************/
@@ -213,7 +210,7 @@ void MsgAlloc_loop(void)
  * @param None
  * @return None
  ******************************************************************************/
-static inline void MsgAlloc_ValidDataIntegrity(void)
+void MsgAlloc_ValidDataIntegrity(void)
 {
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
@@ -1660,7 +1657,9 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         //        +-------------------------------------------------------------+
         //
         // Finish the copy of the message to transmit
+        LuosHAL_SetIrqState(false);
         memcpy((void *)&((char *)tx_msg)[3], (void *)&data[3], size - 6); // 3 bytes already copied - 2 bytes CRC - 1 byte ack
+        LuosHAL_SetIrqState(true);
         ((char *)tx_msg)[size - 3] = (uint8_t)(crc);
         ((char *)tx_msg)[size - 2] = (uint8_t)(crc >> 8);
         ((char *)tx_msg)[size - 1] = ack;

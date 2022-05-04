@@ -45,6 +45,9 @@ void LuosHAL_Init(void)
 
     // Flash Initialization
     LuosHAL_FlashInit();
+
+    // start timestamp
+    LuosHAL_StartTimestamp();
 }
 /******************************************************************************
  * @brief Luos HAL general disable IRQ

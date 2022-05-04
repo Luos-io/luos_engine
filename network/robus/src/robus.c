@@ -160,32 +160,21 @@ void Robus_ServicesClear(void)
     ctx.ll_service_number = 0;
 }
 /******************************************************************************
- * @brief Send Msg to a service
+ * @brief Formalize message Set tx task and send
  * @param service to send
  * @param msg to send
  * @return none
  ******************************************************************************/
-error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
+error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
 {
     uint8_t ack        = 0;
     uint16_t data_size = 0;
     uint16_t crc_val   = 0xFFFF;
-
     // ***************************************************
     // don't send luos messages if network is down
     if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != DETECTION_OK))
     {
         return FAILED;
-    }
-
-    // ********** Prepare the message ********************
-    if (ll_service->id != 0)
-    {
-        msg->header.source = ll_service->id;
-    }
-    else
-    {
-        msg->header.source = ctx.node.node_id;
     }
 
     // Compute the full message size based on the header size info.
@@ -239,6 +228,29 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
+    return SUCCEED;
+}
+/******************************************************************************
+ * @brief Send Msg to a service
+ * @param service to send
+ * @param msg to send
+ * @return none
+ ******************************************************************************/
+error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
+{
+    // ********** Prepare the message ********************
+    if (ll_service->id != 0)
+    {
+        msg->header.source = ll_service->id;
+    }
+    else
+    {
+        msg->header.source = ctx.node.node_id;
+    }
+    if (Robus_SetTxTask(ll_service, msg) == FAILED)
+    {
+        return FAILED;
+    }
     return SUCCEED;
 }
 /******************************************************************************
@@ -297,7 +309,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
     msg_t msg;
     uint8_t try_nbr = 0;
 
-    msg.header.config      = BASE_PROCOTOL;
+    msg.header.config      = BASE_PROTOCOL;
     msg.header.target      = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
     msg.header.cmd         = START_DETECTION;
@@ -351,7 +363,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         ll_service->dead_service_spotted = 0;
         // Ask an ID  to the detector service.
         msg_t msg;
-        msg.header.config      = BASE_PROCOTOL;
+        msg.header.config      = BASE_PROTOCOL;
         msg.header.target_mode = NODEIDACK;
         msg.header.target      = 1;
         msg.header.cmd         = WRITE_NODE_ID;
@@ -407,7 +419,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     // Someone asking us a new node id (we are the detecting service)
                     // Increase the number of node_nb and send it back
                     last_node++;
-                    output_msg.header.config      = BASE_PROCOTOL;
+                    output_msg.header.config      = BASE_PROTOCOL;
                     output_msg.header.cmd         = WRITE_NODE_ID;
                     output_msg.header.size        = sizeof(uint16_t);
                     output_msg.header.target      = input->header.source;
@@ -424,7 +436,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     // Now we can send it to the next node
                     memcpy((void *)&node_bootstrap.nodeid, (void *)&input->data[0], sizeof(uint16_t));
                     node_bootstrap.prev_nodeid    = ctx.node.node_id;
-                    output_msg.header.config      = BASE_PROCOTOL;
+                    output_msg.header.config      = BASE_PROTOCOL;
                     output_msg.header.cmd         = WRITE_NODE_ID;
                     output_msg.header.size        = sizeof(node_bootstrap_t);
                     output_msg.header.target      = 0;
