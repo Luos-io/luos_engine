@@ -111,9 +111,5 @@
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
-#define FLASH_SECTOR FLASH_SECTOR_7
-
-#define SHARED_MEMORY_ADDRESS 0x08060000
-#define SHARED_MEMORY_SECTOR  FLASH_SECTOR_7
 
 #endif /* _NODE_CONFIG_H_ */

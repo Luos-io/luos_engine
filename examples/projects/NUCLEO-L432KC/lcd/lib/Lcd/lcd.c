@@ -36,8 +36,10 @@ void Lcd_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Lcd_Init(void)
 {
-    LcdDrv_Init();
     revision_t revision = {{0, 0, 0}};
+    service_lcd = Luos_CreateService(Lcd_MsgHandler, LCD_TYPE, "lcd", revision);
+    
+    LcdDrv_Init();
 
     mode.mode_display        = 1;
     mode.mode_cursor         = 0;
@@ -45,8 +47,6 @@ void Lcd_Init(void)
     mode.mode_autoscroll     = 0;
     mode.mode_scroll_display = 0;
     mode.mode_right_to_left  = 0;
-
-    service_lcd = Luos_CreateService(Lcd_MsgHandler, LCD_TYPE, "lcd", revision);
 }
 
 /******************************************************************************

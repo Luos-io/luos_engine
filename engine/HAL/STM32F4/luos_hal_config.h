@@ -21,7 +21,7 @@
  * BOOTLOADER CONFIG
  ******************************************************************************/
 #ifndef SHARED_MEMORY_ADDRESS
-#define SHARED_MEMORY_ADDRESS 0x0800C000
+#define SHARED_MEMORY_ADDRESS (uint32_t)0x0800C000
 #endif
 #ifndef SHARED_MEMORY_SECTOR
 #define SHARED_MEMORY_SECTOR FLASH_SECTOR_3
@@ -29,8 +29,8 @@
 #ifndef APP_ADDRESS
 #define APP_ADDRESS (uint32_t)0x08010000
 #endif
-#ifndef APP_ADRESS_SECTOR
-#define APP_ADRESS_SECTOR FLASH_SECTOR_4
+#ifndef APP_ADDRESS_SECTOR
+#define APP_ADDRESS_SECTOR FLASH_SECTOR_4
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */
