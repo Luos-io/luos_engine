@@ -20,7 +20,12 @@
 /*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
+#ifndef SHARED_MEMORY_ADDRESS
 #define SHARED_MEMORY_ADDRESS ((uint32_t)(ADDRESS_LAST_PAGE_FLASH - FLASH_PAGE_SIZE))
+#endif
+
+#ifndef APP_ADDRESS
 #define APP_ADDRESS           (uint32_t)0x0800C800
+#endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */
