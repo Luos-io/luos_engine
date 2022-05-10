@@ -29,7 +29,10 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#ifdef BOOTLOADER_MODE
+#define RSVD_SECTION ".rsvd.data,\"aw\",%nobits//"
+#define _RSVD        __attribute__((used, section(RSVD_SECTION)))
+#endif
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
