@@ -186,7 +186,11 @@ void Transmit_Process()
             }
 
             // Transmit data
-            RobusHAL_ComTransmit(data, size);
+            if (MsgAlloc_TxAllComplete() == FAILED)
+            {
+                // There is no more task to send. the network have been reseted
+                RobusHAL_ComTransmit(data, size);
+            }
         }
     }
 }

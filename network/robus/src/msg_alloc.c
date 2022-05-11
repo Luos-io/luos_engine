@@ -1636,14 +1636,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         tx_tasks[tx_tasks_stack_id].data_pt       = (uint8_t *)tx_msg;
         tx_tasks[tx_tasks_stack_id].ll_service_pt = ll_service_pt;
         tx_tasks[tx_tasks_stack_id].localhost     = (localhost != EXTERNALHOST);
+        tx_tasks_stack_id++;
+        LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
+        LuosHAL_SetIrqState(true);
         // Check if last tx task is the oldest msg of the buffer
         if (tx_tasks_stack_id == 0)
         {
             MsgAlloc_OldestMsgCandidate((msg_t *)tx_tasks[0].data_pt);
         }
-        tx_tasks_stack_id++;
-        LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
-        LuosHAL_SetIrqState(true);
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
@@ -1802,11 +1802,6 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
 
-    if (reset_needed)
-    {
-        MsgAlloc_Reset();
-    }
-
     //
     // example if luos_tasks_stack_id = 0
     //             luos_tasks
@@ -1820,14 +1815,17 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
     //             |   LAST  |
     //             +---------+
     //
+    LuosHAL_SetIrqState(false);
     if (tx_tasks_stack_id > 0)
     {
         *data          = tx_tasks[0].data_pt;
         *size          = tx_tasks[0].size;
         *ll_service_pt = tx_tasks[0].ll_service_pt;
         *localhost     = tx_tasks[0].localhost;
+        LuosHAL_SetIrqState(true);
         return SUCCEED;
     }
+    LuosHAL_SetIrqState(true);
     //
     //             luos_tasks
     //             +---------+<--luos_tasks_stack_id  (no message, function return FAILED)
