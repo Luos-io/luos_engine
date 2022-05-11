@@ -142,11 +142,18 @@ void PipeCom_SendL2P(uint8_t *data, uint16_t size)
     LL_DMA_SetMemoryAddress(L2P_DMA, L2P_DMA_CHANNEL, (uint32_t)data);
     LL_DMA_SetDataLength(L2P_DMA, L2P_DMA_CHANNEL, size);
     LL_DMA_EnableChannel(L2P_DMA, L2P_DMA_CHANNEL);
+} /******************************************************************************
+   * @brief loop must be call in project loop
+   * @param None
+   * @return None
+   ******************************************************************************/
+void PipeCom_Loop(void)
+{
 }
 /******************************************************************************
- * @brief init must be call in project init
+ * @brief check if pipe is sending
  * @param None
- * @return None
+ * @return true/false
  ******************************************************************************/
 volatile uint8_t PipeCom_SendL2PPending(void)
 {

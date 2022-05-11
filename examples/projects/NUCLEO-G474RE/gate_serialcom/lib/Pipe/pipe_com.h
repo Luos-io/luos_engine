@@ -59,6 +59,7 @@
  * Function
  ******************************************************************************/
 void PipeCom_Init(void);
+void PipeCom_Loop(void);
 void PipeCom_SendL2P(uint8_t *data, uint16_t size);
 volatile uint8_t PipeCom_SendL2PPending(void);
 streaming_channel_t *get_L2P_StreamChannel(void);

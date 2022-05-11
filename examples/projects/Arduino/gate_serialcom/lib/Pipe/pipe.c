@@ -18,7 +18,6 @@
 streaming_channel_t P2L_StreamChannel;
 streaming_channel_t L2P_StreamChannel;
 
-uint8_t L2P_CompleteMsg = true;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -43,21 +42,7 @@ void Pipe_Init(void)
  ******************************************************************************/
 void Pipe_Loop(void)
 {
-    uint16_t size = 0;
-
-    // check receive on serial
-    PipeCom_ReceiveP2L();
-
-    // check need to transmit
-    if (PipeCom_SendL2PPending() == false)
-    {
-        size = Stream_GetAvailableSampleNB(&L2P_StreamChannel);
-        if (size != 0)
-        {
-            PipeCom_SendL2P(L2P_StreamChannel.sample_ptr, size);
-            Stream_RmvAvailableSampleNB(&L2P_StreamChannel, size);
-        }
-    }
+    PipeCom_Loop();
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service
@@ -69,6 +54,7 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
 {
     SerialProtocol_t SerialProtocol = {SERIAL_HEADER, 0, SERIAL_FOOTER};
     uint16_t size                   = 0;
+    static bool L2P_CompleteMsg     = true;
 
     if (msg->header.cmd == GET_CMD)
     {
@@ -98,6 +84,14 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
                 L2P_CompleteMsg = true;
             }
         }
+        if (PipeCom_SendL2PPending() == false)
+        {
+            size = Stream_GetAvailableSampleNBUntilEndBuffer(&L2P_StreamChannel);
+            if (size > 0)
+            {
+                PipeCom_SendL2P(L2P_StreamChannel.sample_ptr, size);
+            }
+        }
     }
     else if (msg->header.cmd == PARAMETERS)
     {
@@ -117,18 +111,18 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
     }
 }
 /******************************************************************************
- * @brief get_L2P_StreamChannel
+ * @brief get Luos to Pipe StreamChannel
  * @param None
- * @return None
+ * @return streaming_channel_t*
  ******************************************************************************/
 streaming_channel_t *get_L2P_StreamChannel(void)
 {
     return &L2P_StreamChannel;
 }
 /******************************************************************************
- * @brief get_P2L_StreamChannel
+ * @brief get Pipe to Luos StreamChannel
  * @param None
- * @return None
+ * @return streaming_channel_t*
  ******************************************************************************/
 streaming_channel_t *get_P2L_StreamChannel(void)
 {
