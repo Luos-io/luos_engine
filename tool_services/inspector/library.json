@@ -7,7 +7,7 @@
         "name": "Luos",
         "url": "https://luos.io"
     },
-    "homepage": "https://docs.luos.io",
+    "homepage": "https://luos.io",
     "licence": "MIT",
     "headers": "inspector.h",
     "dependencies": {
@@ -15,6 +15,6 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Luos-io/luos"
+        "url": "https://github.com/Luos-io/luos_engine"
     }
 }
