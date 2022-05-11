@@ -26,7 +26,7 @@ extern "C"
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-volatile uint8_t is_sending = false;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -39,15 +39,40 @@ volatile uint8_t is_sending = false;
 void PipeCom_Init(void)
 {
     Serial.begin(1000000);
+} /******************************************************************************
+   * @brief loop must be call in project loop
+   * @param None
+   * @return None
+   ******************************************************************************/
+void PipeCom_Loop(void)
+{
+    uint16_t size = 0;
+    uint8_t data  = 0;
+    while (Serial.available() > 0)
+    {
+        data = Serial.read();
+        Stream_PutSample(get_P2L_StreamChannel(), &data, 1);
+    }
+    // Check if we need to transmit
+    if (PipeCom_SendL2PPending() == false)
+    {
+        streaming_channel_t *stream_channel = get_L2P_StreamChannel();
+        size                                = Stream_GetAvailableSampleNB(stream_channel);
+        if (size != 0)
+        {
+            PipeCom_SendL2P(stream_channel->sample_ptr, size);
+            Stream_RmvAvailableSampleNB(stream_channel, size);
+        }
+    }
 }
 /******************************************************************************
- * @brief init must be call in project init
+ * @brief check if pipe is sending
  * @param None
- * @return None
+ * @return true/false
  ******************************************************************************/
 volatile uint8_t PipeCom_SendL2PPending(void)
 {
-    return is_sending;
+    return false;
 }
 /******************************************************************************
  * @brief init must be call in project init
@@ -56,12 +81,6 @@ volatile uint8_t PipeCom_SendL2PPending(void)
  ******************************************************************************/
 void PipeCom_ReceiveP2L(void)
 {
-    uint8_t data = 0;
-    while (Serial.available() > 0)
-    {
-        data = Serial.read();
-        Stream_PutSample(get_P2L_StreamChannel(), &data, 1);
-    }
 }
 /******************************************************************************
  * @brief PipeCom_SendL2P
@@ -70,7 +89,7 @@ void PipeCom_ReceiveP2L(void)
  ******************************************************************************/
 void PipeCom_SendL2P(uint8_t *data, uint16_t size)
 {
-    is_sending = true;
     Serial.write(data, size);
-    is_sending = false;
+    streaming_channel_t *stream_channel = get_L2P_StreamChannel();
+    Stream_RmvAvailableSampleNB(stream_channel, size);
 }

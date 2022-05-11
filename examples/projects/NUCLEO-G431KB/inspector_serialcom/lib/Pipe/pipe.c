@@ -43,6 +43,7 @@ void Pipe_Init(void)
  ******************************************************************************/
 void Pipe_Loop(void)
 {
+    PipeCom_Loop();
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service
