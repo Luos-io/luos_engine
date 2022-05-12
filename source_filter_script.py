@@ -12,6 +12,8 @@ visited_key = "__LUOS_CORE_SCRIPT_CALLED"
 global_env = DefaultEnvironment()
 
 if not visited_key in global_env:
+    click.secho("")
+    click.secho("Luos engine build configuration:", underline=True)
     # install pyluos
     try:
         import pyluos
@@ -19,7 +21,6 @@ if not visited_key in global_env:
     except ImportError:  # module doesn't exist, deal with it.
         env.Execute("$PYTHONEXE -m pip install pyluos")
         pass
-    click.secho("Luos engine build configuration:\n", underline=True)
     try:
         from pyluos import version
         click.secho("\t* Pyluos revision " +
@@ -44,10 +45,10 @@ for item in env.get("CPPDEFINES", []):
         if (path.exists("network/robus/HAL/" + item[1]) and path.exists("engine/HAL/" + item[1])):
             if not visited_key in global_env:
                 click.secho(
-                    "\t* %s HAL selected for Luos and Robus.\n" % item[1], fg="green")
+                    "\t* %s HAL selected for Luos and Robus." % item[1], fg="green")
         else:
             if not visited_key in global_env:
-                click.secho("\t* %s HAL not found\n" % item[1], fg="red")
+                click.secho("\t* %s HAL not found" % item[1], fg="red")
         env.Append(CPPPATH=[realpath("network/robus/HAL/" + item[1])])
         env.Append(CPPPATH=[realpath("engine/HAL/" + item[1])])
         env.Replace(SRC_FILTER=sources)
@@ -66,7 +67,7 @@ for item in env.get("CPPDEFINES", []):
         current_os = pf.system()
         if find_MOCK_HAL == False:
             click.secho(
-                "\t* Mock HAL for %s is selected for Luos and Robus.\n" % current_os, fg="green")
+                "\t* Mock HAL for %s is selected for Luos and Robus." % current_os, fg="green")
         find_MOCK_HAL = True
         find_HAL = True
         env.Replace(SRC_FILTER=sources)
@@ -103,6 +104,6 @@ for item in env.get("CPPDEFINES", []):
 if not visited_key in global_env:
     if (find_HAL == False):
         click.echo(click.style("\t* No HAL selected. Please add a ", fg="red") + click.style(
-            "-DLUOSHAL", fg="red", bold=True) + click.style(" compilation flag\n", fg="red"))
+            "-DLUOSHAL", fg="red", bold=True) + click.style(" compilation flag", fg="red"))
 
 global_env[visited_key] = True
