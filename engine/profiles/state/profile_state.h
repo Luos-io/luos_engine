@@ -18,7 +18,7 @@
  */
 typedef struct
 {
-    access_t access;
+    uint8_t access; // access_t
     bool state;
 } profile_state_t;
 /*******************************************************************************
