@@ -26,7 +26,7 @@ Most of the embedded developments are made from scratch. By using Luos, you will
 * → Join the [Luos Reddit Community](http://bit.ly/JoinLuosReddit)
 * → Join the [Luos Forum](http://bit.ly/JoinLuosForum)
 
-Need dedicated help with your project? Check out [Luos' support packages](https://www.luos.io/support).
+Need dedicated help with your project? Check out [Luos' support packages](https://discord.com/invite/luos).
 
 ## Good practices with Luos​
 Luos proposes organized and effective development practices, guaranteeing development flexibility and evolutivity of your hardware product, from the idea to the maintenance of the industrialized product fleet.
