@@ -7,6 +7,9 @@ assignees: nicolas-rabault
 
 ---
 
+** Which version the bug has been detected **
+Luos engine X.Y.Z
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
