@@ -1699,41 +1699,44 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
  ******************************************************************************/
 void MsgAlloc_PullMsgFromTxTask(void)
 {
-    LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
-    //
-    //
-    //                      tx_tasks                         tx_tasks                         tx_tasks
-    //                     +---------+                      +---------+                      +---------+<--tx_tasks_stack_id = 0
-    //                     |   Tx1   |                      |   Tx2   |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |   Tx2   |                      |   Tx3   |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |   Tx3   |                      |   Tx4   |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |  etc... |                      |  etc... |       etc...         |  etc... |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |  etc... |  tx_tasks_stack_id-->|  etc... |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    // tx_tasks_stack_id-->|  LAST   |                      |    0    |                      |    0    |
-    //                     +---------+                      +---------+                      +---------+
-    //
-    // Decay tasks
-    for (int i = 0; i < tx_tasks_stack_id; i++)
-    {
-        LuosHAL_SetIrqState(false);
-        tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
-        tx_tasks[i].size    = tx_tasks[i + 1].size;
-        LuosHAL_SetIrqState(true);
-    }
-    LuosHAL_SetIrqState(false);
     if (tx_tasks_stack_id != 0)
     {
-        tx_tasks_stack_id--;
-        tx_tasks[tx_tasks_stack_id].data_pt = 0;
-        tx_tasks[tx_tasks_stack_id].size    = 0;
+        LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
+        //
+        //
+        //                      tx_tasks                         tx_tasks                         tx_tasks
+        //                     +---------+                      +---------+                      +---------+<--tx_tasks_stack_id = 0
+        //                     |   Tx1   |                      |   Tx2   |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |   Tx2   |                      |   Tx3   |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |   Tx3   |                      |   Tx4   |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |  etc... |                      |  etc... |       etc...         |  etc... |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |  etc... |  tx_tasks_stack_id-->|  etc... |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        // tx_tasks_stack_id-->|  LAST   |                      |    0    |                      |    0    |
+        //                     +---------+                      +---------+                      +---------+
+        //
+        // Decay tasks
+        for (int i = 0; i < tx_tasks_stack_id; i++)
+        {
+            LuosHAL_SetIrqState(false);
+            tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
+            tx_tasks[i].size    = tx_tasks[i + 1].size;
+            LuosHAL_SetIrqState(true);
+        }
+        LuosHAL_SetIrqState(false);
+        if (tx_tasks_stack_id != 0)
+        {
+            tx_tasks_stack_id--;
+            tx_tasks[tx_tasks_stack_id].data_pt = 0;
+            tx_tasks[tx_tasks_stack_id].size    = 0;
+        }
+        LuosHAL_SetIrqState(true);
+        MsgAlloc_FindNewOldestMsg();
     }
-    LuosHAL_SetIrqState(true);
-    MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
  * @brief remove all transmit task of a specific service
