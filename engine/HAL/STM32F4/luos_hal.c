@@ -269,7 +269,7 @@ uint16_t LuosHAL_GetNodeID(void)
  ******************************************************************************/
 void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 {
-    uint32_t nb_sectors_to_erase = FLASH_SECTOR_TOTAL - 1 - APP_ADDRESS_SECTOR;
+    uint32_t nb_sectors_to_erase = FLASH_SECTOR_TOTAL - APP_ADDRESS_SECTOR;
     uint32_t sector_to_erase     = APP_ADDRESS_SECTOR;
 
     uint32_t sector_error = 0;
