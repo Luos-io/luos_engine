@@ -1666,7 +1666,7 @@ void unittest_MsgAlloc_PullMsgFromTxTask()
     MsgAlloc_Init(NULL);
     {
         //              tx_tasks
-        //             +---------+<--tx_tasks_stack_id = 0 ==> Assert
+        //             +---------+
         //             |   Tx1   |
         //             |---------|
         //             |   Tx2   |
@@ -1678,20 +1678,13 @@ void unittest_MsgAlloc_PullMsgFromTxTask()
         //             |  LAST   |
         //             +---------+
         //                        <--tx_tasks_stack_id overflows ==> Assert
-
         for (uint16_t i = 0; i < MAX_MSG_NB + 2; i++)
         {
             MsgAlloc_Init(NULL);
             RESET_ASSERT();
             tx_tasks_stack_id = i;
 
-            if (tx_tasks_stack_id == 0)
-            {
-                MsgAlloc_PullMsgFromTxTask();
-                NEW_STEP_IN_LOOP("Check assert has occured when \"tx tasks stack id\" = 0", i);
-                TEST_ASSERT_TRUE(IS_ASSERT());
-            }
-            else if (tx_tasks_stack_id > MAX_MSG_NB)
+            if (tx_tasks_stack_id > MAX_MSG_NB)
             {
                 MsgAlloc_PullMsgFromTxTask();
                 NEW_STEP_IN_LOOP("Check assert has occured when \"tx tasks stack id\" overflows", i);
@@ -1768,6 +1761,48 @@ void unittest_MsgAlloc_PullMsgFromTxTask()
                     TEST_ASSERT_EQUAL(expected_tx_tasks[i].size, tx_tasks[i].size);
                 }
             }
+        }
+    }
+
+    NEW_TEST_CASE("Verify when Tx task is empty");
+    MsgAlloc_Init(NULL);
+    {
+        //              tx_tasks
+        //             +---------+<--tx_tasks_stack_id = 0 ==> return
+        //             |   Tx1   |
+        //             |---------|
+        //             |   Tx2   |
+        //             |---------|
+        //             |   Tx3   |
+        //             |---------|
+        //             |  etc... |
+        //             |---------|
+        //             |  LAST   |
+        //             +---------+
+        //
+
+        NEW_STEP("Check nothing happened when \"tx tasks stack id\" = 0");
+
+        // Init
+        tx_tasks_stack_id = 0;
+
+        for (uint8_t i = 0; i < MAX_MSG_NB; i++)
+        {
+            tx_tasks[i].data_pt = &msg_buffer[i];
+            tx_tasks[i].size    = i;
+        }
+
+        // Call function
+        //---------------------------
+        MsgAlloc_PullMsgFromTxTask();
+
+        // Verify
+        TEST_ASSERT_FALSE(IS_ASSERT());
+        TEST_ASSERT_EQUAL(0, tx_tasks_stack_id);
+        for (uint8_t i = 0; i < MAX_MSG_NB; i++)
+        {
+            TEST_ASSERT_EQUAL(&msg_buffer[i], tx_tasks[i].data_pt);
+            TEST_ASSERT_EQUAL(i, tx_tasks[i].size);
         }
     }
 }
