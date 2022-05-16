@@ -2,7 +2,7 @@
     "name": "Inspector",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,cJSON",
     "description": "A Luos service application allowing a computer to inspect a product.",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "authors": {
         "name": "Luos",
         "url": "https://luos.io"
