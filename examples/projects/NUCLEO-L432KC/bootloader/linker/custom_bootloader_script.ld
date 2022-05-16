@@ -44,6 +44,12 @@ MEMORY
 /* Sections */
 SECTIONS
 {
+  /* placing my boot flags section at given address: */
+  .boot_flags :
+  {
+    KEEP(*(.boot_flags)) /* keep my variable even if not referenced */
+  } > SHRD_MEM
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {

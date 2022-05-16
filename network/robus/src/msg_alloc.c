@@ -1636,14 +1636,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         tx_tasks[tx_tasks_stack_id].data_pt       = (uint8_t *)tx_msg;
         tx_tasks[tx_tasks_stack_id].ll_service_pt = ll_service_pt;
         tx_tasks[tx_tasks_stack_id].localhost     = (localhost != EXTERNALHOST);
+        tx_tasks_stack_id++;
+        LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
+        LuosHAL_SetIrqState(true);
         // Check if last tx task is the oldest msg of the buffer
         if (tx_tasks_stack_id == 0)
         {
             MsgAlloc_OldestMsgCandidate((msg_t *)tx_tasks[0].data_pt);
         }
-        tx_tasks_stack_id++;
-        LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
-        LuosHAL_SetIrqState(true);
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
@@ -1699,41 +1699,44 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
  ******************************************************************************/
 void MsgAlloc_PullMsgFromTxTask(void)
 {
-    LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
-    //
-    //
-    //                      tx_tasks                         tx_tasks                         tx_tasks
-    //                     +---------+                      +---------+                      +---------+<--tx_tasks_stack_id = 0
-    //                     |   Tx1   |                      |   Tx2   |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |   Tx2   |                      |   Tx3   |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |   Tx3   |                      |   Tx4   |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |  etc... |                      |  etc... |       etc...         |  etc... |
-    //                     |---------|                      |---------|                      |---------|
-    //                     |  etc... |  tx_tasks_stack_id-->|  etc... |                      |    0    |
-    //                     |---------|                      |---------|                      |---------|
-    // tx_tasks_stack_id-->|  LAST   |                      |    0    |                      |    0    |
-    //                     +---------+                      +---------+                      +---------+
-    //
-    // Decay tasks
-    for (int i = 0; i < tx_tasks_stack_id; i++)
-    {
-        LuosHAL_SetIrqState(false);
-        tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
-        tx_tasks[i].size    = tx_tasks[i + 1].size;
-        LuosHAL_SetIrqState(true);
-    }
-    LuosHAL_SetIrqState(false);
     if (tx_tasks_stack_id != 0)
     {
-        tx_tasks_stack_id--;
-        tx_tasks[tx_tasks_stack_id].data_pt = 0;
-        tx_tasks[tx_tasks_stack_id].size    = 0;
+        LUOS_ASSERT((tx_tasks_stack_id > 0) && (tx_tasks_stack_id <= MAX_MSG_NB));
+        //
+        //
+        //                      tx_tasks                         tx_tasks                         tx_tasks
+        //                     +---------+                      +---------+                      +---------+<--tx_tasks_stack_id = 0
+        //                     |   Tx1   |                      |   Tx2   |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |   Tx2   |                      |   Tx3   |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |   Tx3   |                      |   Tx4   |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |  etc... |                      |  etc... |       etc...         |  etc... |
+        //                     |---------|                      |---------|                      |---------|
+        //                     |  etc... |  tx_tasks_stack_id-->|  etc... |                      |    0    |
+        //                     |---------|                      |---------|                      |---------|
+        // tx_tasks_stack_id-->|  LAST   |                      |    0    |                      |    0    |
+        //                     +---------+                      +---------+                      +---------+
+        //
+        // Decay tasks
+        for (int i = 0; i < tx_tasks_stack_id; i++)
+        {
+            LuosHAL_SetIrqState(false);
+            tx_tasks[i].data_pt = tx_tasks[i + 1].data_pt;
+            tx_tasks[i].size    = tx_tasks[i + 1].size;
+            LuosHAL_SetIrqState(true);
+        }
+        LuosHAL_SetIrqState(false);
+        if (tx_tasks_stack_id != 0)
+        {
+            tx_tasks_stack_id--;
+            tx_tasks[tx_tasks_stack_id].data_pt = 0;
+            tx_tasks[tx_tasks_stack_id].size    = 0;
+        }
+        LuosHAL_SetIrqState(true);
+        MsgAlloc_FindNewOldestMsg();
     }
-    LuosHAL_SetIrqState(true);
-    MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
  * @brief remove all transmit task of a specific service
@@ -1802,11 +1805,6 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
 
-    if (reset_needed)
-    {
-        MsgAlloc_Reset();
-    }
-
     //
     // example if luos_tasks_stack_id = 0
     //             luos_tasks
@@ -1820,14 +1818,17 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
     //             |   LAST  |
     //             +---------+
     //
+    LuosHAL_SetIrqState(false);
     if (tx_tasks_stack_id > 0)
     {
         *data          = tx_tasks[0].data_pt;
         *size          = tx_tasks[0].size;
         *ll_service_pt = tx_tasks[0].ll_service_pt;
         *localhost     = tx_tasks[0].localhost;
+        LuosHAL_SetIrqState(true);
         return SUCCEED;
     }
+    LuosHAL_SetIrqState(true);
     //
     //             luos_tasks
     //             +---------+<--luos_tasks_stack_id  (no message, function return FAILED)

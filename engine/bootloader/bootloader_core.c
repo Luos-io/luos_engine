@@ -40,6 +40,10 @@ uint8_t crc             = 0;
 bool load_flag          = false;
 uint16_t source_id      = 0; // used to save source_id, ie gate_id
 uint32_t tickstart      = 0;
+
+// Create a variable of the size of mode flash value allowing to init the shared flash section
+const uint8_t __attribute__((used)) __attribute__((section(".boot_flags"))) sharedSection = BOOT_MODE;
+
 #endif
 
 /*******************************************************************************

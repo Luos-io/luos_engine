@@ -12,7 +12,7 @@
 [![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
 [![](https://img.shields.io/badge/LinkedIn-Share-0077B5?style=social&logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fluos-io)
 
-Version: 2.0.0
+Version: 2.4.2
 
 # Luos Technology
 ## The most for the developer​
@@ -26,7 +26,7 @@ Most of the embedded developments are made from scratch. By using Luos, you will
 * → Join the [Luos Reddit Community](http://bit.ly/JoinLuosReddit)
 * → Join the [Luos Forum](http://bit.ly/JoinLuosForum)
 
-Need dedicated help with your project? Check out [Luos' support packages](https://www.luos.io/support).
+Need dedicated help with your project? Check out [Luos' support packages](https://discord.com/invite/luos).
 
 ## Good practices with Luos​
 Luos proposes organized and effective development practices, guaranteeing development flexibility and evolutivity of your hardware product, from the idea to the maintenance of the industrialized product fleet.
