@@ -164,3 +164,27 @@ jobs:
           pio package pack
           pio package publish --owner luos --non-interactive
           cd ../..
+
+  deploy_pipe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+      - name: publish pipe driver
+        env:
+          PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
+        run: |
+          # ***** Pipe publication *****
+          cd tool_services/pipe
+          # We don't publish examples with this one.
+
+          pio package pack
+          pio package publish --owner luos --non-interactive
+          cd ../..
