@@ -84,5 +84,7 @@
  *    PAGE_SIZE               | FLASH page size
  *    ADDRESS_LAST_PAGE_FLASH | Page to write alias
 ******************************************************************************/
+#define SHARED_MEMORY_ADDRESS (uint32_t)0x0800C000
+#define SHARED_MEMORY_SECTOR  FLASH_SECTOR_3
 
 #endif /* _NODE_CONFIG_H_ */

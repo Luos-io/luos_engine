@@ -49,13 +49,18 @@ MEMORY
   CCMRAM      (xrw)     : ORIGIN = 0x10000000,   LENGTH = 64K
   RAM         (xrw)     : ORIGIN = 0x20000000,   LENGTH = 128K
   FLASH       (rx)      : ORIGIN = 0x08000000,   LENGTH = 48K
-  SHRD_FLASH  (rw)      : ORIGIN = 0x0800C000,   LENGTH = 16K
-  APP_FLASH   (rw)      : ORIGIN = 0x08010000,   LENGTH = 960K
+  SHRD_MEM  (rw)      : ORIGIN = 0x0800C000,   LENGTH = 16K
 }
 
 /* Sections */
 SECTIONS
 {
+  /* placing my boot flags section at given address: */
+  .boot_flags :
+  {
+    KEEP(*(.boot_flags)) /* keep my variable even if not referenced */
+  } >SHRD_MEM
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
@@ -198,12 +203,6 @@ SECTIONS
   } >RAM
 
   /* placing my boot flags section at given address: */
-  .boot_flags :
-  {
-    . = ALIGN(4);
-    KEEP(*(.boot_flags)) /* keep my variable even if not referenced */
-    . = ALIGN(4);
-  } > SHRD_FLASH
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :
