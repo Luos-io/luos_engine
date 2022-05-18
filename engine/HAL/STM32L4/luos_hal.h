@@ -24,7 +24,6 @@
 #define NB_OF_PAGE              64
 #define ADDR_FLASH_BANK1        ((uint32_t)0x08000000)
 #define ADDR_FLASH_BANK2        ((uint32_t)0x08040000)
-#define ADDRESS_ALIASES_FLASH   ADDRESS_LAST_PAGE_FLASH
 #define ADDRESS_BOOT_FLAG_FLASH (ADDRESS_LAST_PAGE_FLASH + PAGE_SIZE) - 4
 
 /*******************************************************************************
@@ -45,8 +44,6 @@ typedef struct ll_timestamp
 void LuosHAL_Init(void);
 void LuosHAL_SetIrqState(uint8_t Enable);
 uint32_t LuosHAL_GetSystick(void);
-void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
-void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 
 // bootloader functions
 void LuosHAL_SetMode(uint8_t mode);

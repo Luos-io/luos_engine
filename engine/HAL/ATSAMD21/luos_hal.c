@@ -29,7 +29,6 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
-static void LuosHAL_FlashEraseLuosMemoryInfo(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
 
@@ -141,66 +140,6 @@ static void LuosHAL_FlashInit(void)
     NVMCTRL_REGS->NVMCTRL_CTRLB = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY | NVMCTRL_CTRLB_SLEEPPRM_WAKEONACCESS
                                   | NVMCTRL_CTRLB_RWS(1) | NVMCTRL_CTRLB_MANW_Msk;
 }
-/******************************************************************************
- * @brief Erase flash page where Luos keep permanente information
- * @param None
- * @return None
- ******************************************************************************/
-static void LuosHAL_FlashEraseLuosMemoryInfo(void)
-{
-    uint32_t address            = ADDRESS_ALIASES_FLASH;
-    NVMCTRL_REGS->NVMCTRL_ADDR  = address >> 1;
-    NVMCTRL_REGS->NVMCTRL_CTRLA = NVMCTRL_CTRLA_CMD_ER_Val | NVMCTRL_CTRLA_CMDEX_KEY;
-    NVMCTRL_REGS->NVMCTRL_ADDR  = (address + 256) >> 1;
-    NVMCTRL_REGS->NVMCTRL_CTRLA = NVMCTRL_CTRLA_CMD_ER_Val | NVMCTRL_CTRLA_CMDEX_KEY;
-    NVMCTRL_REGS->NVMCTRL_ADDR  = (address + 512) >> 1;
-    NVMCTRL_REGS->NVMCTRL_CTRLA = NVMCTRL_CTRLA_CMD_ER_Val | NVMCTRL_CTRLA_CMDEX_KEY;
-    NVMCTRL_REGS->NVMCTRL_ADDR  = (address + 768) >> 1;
-    NVMCTRL_REGS->NVMCTRL_CTRLA = NVMCTRL_CTRLA_CMD_ER_Val | NVMCTRL_CTRLA_CMDEX_KEY;
-}
-/******************************************************************************
- * @brief Write flash page where Luos keep permanente information
- * @param Address page / size to write / pointer to data to write
- * @return
- ******************************************************************************/
-void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    uint32_t i         = 0;
-    uint32_t *paddress = (uint32_t *)addr;
-
-    // Before writing we have to erase the entire page
-    // to do that we have to backup current falues by copying it into RAM
-    uint8_t page_backup[16 * PAGE_SIZE];
-    memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, 16 * PAGE_SIZE);
-
-    // Now we can erase the page
-    LuosHAL_FlashEraseLuosMemoryInfo();
-
-    // Then add input data into backuped value on RAM
-    uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
-    memcpy(&page_backup[RAMaddr], data, size);
-
-    /* writing 32-bit data into the given address */
-    for (i = 0; i < (PAGE_SIZE / 4); i++)
-    {
-        *paddress++ = page_backup[i];
-    }
-
-    /* Set address and command */
-    NVMCTRL_REGS->NVMCTRL_ADDR = addr >> 1;
-
-    NVMCTRL_REGS->NVMCTRL_CTRLA = NVMCTRL_CTRLA_CMD_WP | NVMCTRL_CTRLA_CMDEX_KEY;
-}
-/******************************************************************************
- * @brief read information from page where Luos keep permanente information
- * @param Address info / size to read / pointer callback data to read
- * @return
- ******************************************************************************/
-void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    memcpy(data, (void *)(addr), size);
-}
-
 /******************************************************************************
  * @brief Set boot mode in shared flash memory
  * @param

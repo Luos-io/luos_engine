@@ -18,16 +18,6 @@
 #endif
 
 /*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH ((uint32_t)(FLASH_END - FLASH_PAGE_SIZE))
-#endif
-
-/*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
 #define SHARED_MEMORY_ADDRESS ((uint32_t)(ADDRESS_LAST_PAGE_FLASH - FLASH_PAGE_SIZE))

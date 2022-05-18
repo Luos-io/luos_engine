@@ -16,15 +16,6 @@
 #ifndef MCUFREQ
 #define MCUFREQ 170000000 // MCU frequence
 #endif
-/*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t) FLASH_PAGE_SIZE
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH ((uint32_t)((FLASH_BASE + FLASH_SIZE) - FLASH_PAGE_SIZE))
-#endif
 
 /*******************************************************************************
  * BOOTLOADER CONFIG
