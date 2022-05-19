@@ -6,6 +6,7 @@
  ******************************************************************************/
 #include "gpio.h"
 #include "led.h"
+#include "alias_save.h"
 
 /*******************************************************************************
  * Definitions
@@ -27,8 +28,11 @@ static void Led_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Led_Init(void)
 {
-    revision_t revision = {.unmap = REV};
-    Luos_CreateService(Led_MsgHandler, STATE_TYPE, "led", revision);
+    revision_t revision        = {.unmap = {1, 0, 0}};
+    service_t *myService       = Luos_CreateService(Led_MsgHandler, STATE_TYPE, "led", revision);
+    char alias[MAX_ALIAS_SIZE] = {0};
+    int size                   = Alias_read(0, alias);
+    Luos_UpdateAlias(myService, alias, size);
 }
 /******************************************************************************
  * @brief loop must be call in project loop
@@ -53,5 +57,9 @@ static void Led_MsgHandler(service_t *service, msg_t *msg)
             Led_last_state = msg->data[0];
             HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, Led_last_state);
         }
+    }
+    if (msg->header.cmd == WRITE_ALIAS)
+    {
+        Alias_write(0, msg->data, msg->header.size);
     }
 }
