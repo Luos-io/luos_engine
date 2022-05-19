@@ -17,6 +17,8 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+#define RSVD_SECTION ".rsvd.data,\"aw\",%nobits//"
+#define _RSVD        __attribute__((used, section(RSVD_SECTION)))
 // timestamp variable
 static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
@@ -24,6 +26,7 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
+static void LuosHAL_VectorTableRemap(void);
 /////////////////////////Luos Library Needed function///////////////////////////
 
 /******************************************************************************
@@ -33,6 +36,9 @@ static void LuosHAL_FlashInit(void);
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
+    // Remap Vector Table
+    LuosHAL_VectorTableRemap();
+
     // Systick Initialization
     LuosHAL_SystickInit();
 
@@ -65,6 +71,31 @@ void LuosHAL_SetIrqState(uint8_t Enable)
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
+}
+/******************************************************************************
+ * @brief Luos HAL remap Vector table in given address in flash
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void LuosHAL_VectorTableRemap(void)
+{
+    /* Copy the vector table from the Flash (mapped at the base of the application
+        load address 0x0800C800) to the base address of the SRAM at 0x20000000. */
+    // check if we are at the beginning of flash
+    if (LUOS_VECT_TAB > FLASH_BASE)
+    {
+        static volatile _RSVD uint32_t VectorTable[48];
+
+        for (uint32_t i = 0; i < 48; i++)
+        {
+            VectorTable[i] = *(__IO uint32_t *)(LUOS_VECT_TAB + (i << 2));
+        }
+
+        /* Enable the SYSCFG peripheral clock*/
+        __HAL_RCC_SYSCFG_CLK_ENABLE();
+        /* Remap SRAM at 0x00000000 */
+        __HAL_SYSCFG_REMAPMEMORY_SRAM();
+    }
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
@@ -193,7 +224,7 @@ void LuosHAL_Reboot(void)
     NVIC_SystemReset();
 }
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param
@@ -268,7 +299,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
     uint32_t page_to_erase       = address;
 
     // compute number of sectors to erase
-    nb_sectors_to_erase = (ADDRESS_LAST_PAGE_FLASH - address) / (uint32_t)PAGE_SIZE;
+    nb_sectors_to_erase = size / (uint32_t)FLASH_PAGE_SIZE + 1;
 
     uint32_t page_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;
