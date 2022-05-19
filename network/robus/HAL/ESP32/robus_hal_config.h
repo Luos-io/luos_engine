@@ -10,6 +10,7 @@
 #ifndef _RobusHAL_CONFIG_H_
 #define _RobusHAL_CONFIG_H_
 
+#include "board_config.h"
 #include "esp_attr.h"
 #include <soc/soc.h>
 
