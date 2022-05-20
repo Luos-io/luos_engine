@@ -37,6 +37,7 @@ void DataManager_SendRoutingTB(service_t *service)
     // store the address of the RoutingTB
     routing_table_t *routing_table = RoutingTB_Get();
     msg_t msg;
+    msg.header.config      = BASE_PROTOCOL;
     msg.header.target      = DEFAULTID;
     msg.header.target_mode = ID;
     msg.header.source      = result.result_table[0]->id;
