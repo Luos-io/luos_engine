@@ -38,6 +38,7 @@ void PipeLink_Send(service_t *service, void *data, uint32_t size)
     }
     else
     {
+        msg.header.config = BASE_PROTOCOL;
         // We have a localhost pipe
         // Copy the data directly into the local streaming channel without passing by Luos.
         PipeDirectPutSample(data, size);
