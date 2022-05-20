@@ -26,7 +26,7 @@ typedef struct profile_core
     // connect an another profile
     struct profile_core *connect;
     // profile structure
-    luos_type_t type;
+    uint8_t type; // luos_type_t
     void *profile_data;
     profile_ops_t profile_ops;
 } profile_core_t;

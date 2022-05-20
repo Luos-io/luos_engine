@@ -31,14 +31,14 @@ typedef enum
  */
 typedef struct __attribute__((__packed__))
 {
-    entry_mode_t mode;
+    uint8_t mode; // entry_mode_t
     union
     {
         struct __attribute__((__packed__))
         {                               // SERVICE mode entry
             uint16_t id;                // Service ID.
             uint16_t type;              // Service type.
-            access_t access;            // Service Access
+            uint8_t access;             // Service Access access_t
             char alias[MAX_ALIAS_SIZE]; // Service alias.
         };
         struct __attribute__((__packed__))
@@ -52,9 +52,9 @@ typedef struct __attribute__((__packed__))
                 uint16_t node_id : 12;  // Node id
                 uint16_t certified : 4; // True if the node have a certificate
             };
-            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 + sizeof(access_t) - 2) / 2]; // Node link table
+            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t) - 2) / 2]; // Node link table
         };
-        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2 + sizeof(access_t)];
+        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t)];
     };
 } routing_table_t;
 
