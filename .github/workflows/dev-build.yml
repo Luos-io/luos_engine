@@ -128,6 +128,7 @@ jobs:
           PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
         if: ${{ runner.os == 'Windows' }}
         run: |
+          # TO BE UPDATED
           # Clean all projects
           platformio run -t clean -c .\test\_resources\platformio.ini
 
