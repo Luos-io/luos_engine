@@ -30,7 +30,7 @@
 
 #define PTPA_PIN   GPIO_NUM_6
 #define PTPB_PIN   GPIO_NUM_7
-#define TX_EN_PIN  DISABLE
+#define TX_EN_PIN  GPIO_NUM_9
 #define COM_TX_PIN GPIO_NUM_4
 #define COM_RX_PIN GPIO_NUM_5
 

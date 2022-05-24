@@ -65,14 +65,7 @@ void LuosHAL_Init(void)
  ******************************************************************************/
 void LuosHAL_SetIrqState(uint8_t Enable)
 {
-    if (Enable == true)
-    {
-        portENABLE_INTERRUPTS();
-    }
-    else
-    {
-        portDISABLE_INTERRUPTS();
-    }
+    RobusHAL_SetIrqState(Enable);
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms initialize

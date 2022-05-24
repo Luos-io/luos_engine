@@ -49,9 +49,9 @@ typedef struct
 
 Port_t PTP[NBR_PORT];
 
-volatile uint16_t data_size_to_transmit = 0;
-volatile uint8_t *tx_data               = 0;
-uint32_t Rsize                          = 0;
+uint16_t data_size_to_transmit = 0;
+uint8_t *tx_data               = 0;
+uint32_t Rsize                 = 0;
 
 volatile uint8_t RxEn = true;
 /*******************************************************************************
@@ -99,6 +99,27 @@ void RobusHAL_Init(void)
 
     // Com Initialization
     RobusHAL_ComInit(DEFAULTBAUDRATE);
+}
+/******************************************************************************
+ * @brief Luos HAL general disable IRQ
+ * @param None
+ * @return None
+ ******************************************************************************/
+void RobusHAL_SetIrqState(uint8_t Enable)
+{
+    if (Enable == true)
+    {
+        timer_hal_intr_enable(&timeout_hal_context);
+        if (RxEn == true)
+        {
+            uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
+        }
+    }
+    else
+    {
+        uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
+        timer_hal_intr_disable(&timeout_hal_context);
+    }
 }
 /******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
@@ -149,7 +170,6 @@ void RobusHAL_SetTxState(uint8_t Enable)
     if (Enable == true)
     {
         // Put Tx in push pull
-        // ESP_IDF 4.2.0
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
         esp_rom_gpio_connect_out_signal(COM_TX_PIN, UART_PERIPH_SIGNAL(LUOS_COM, SOC_UART_TX_PIN_IDX), 0, 0);
 #else
@@ -181,18 +201,12 @@ void RobusHAL_SetTxState(uint8_t Enable)
  ******************************************************************************/
 void RobusHAL_SetRxState(uint8_t Enable)
 {
-#ifdef CONFIG_IDF_TARGET_ESP32
     RxEn = Enable;
+#ifdef CONFIG_IDF_TARGET_ESP32
     if (Enable == true)
     {
-        // uart_hal_rxfifo_rst(&uart_hal_context);
         uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
         uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-    }
-    else
-    {
-        // uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-        // uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
     }
 #else
     if (Enable == true)
@@ -280,7 +294,6 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
     RobusHAL_SetTxState(true);
     if (size > 1)
     {
-
         if (size <= 128)
         {
             uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
@@ -437,7 +450,7 @@ static void RobusHAL_GPIOInit(void)
     for (uint8_t i = 0; i < NBR_PORT; i++) /*Configure GPIO pins : PTP_Pin */
     {
         // Setup PTP lines
-        // gpio_reset_pin(PTP[i].Pin);
+        gpio_reset_pin(PTP[i].Pin);
         PinConfig.intr_type    = GPIO_INTR_POSEDGE;
         PinConfig.mode         = GPIO_MODE_INPUT;
         PinConfig.pin_bit_mask = (1ULL << PTP[i].Pin);
@@ -570,7 +583,7 @@ void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     *(uint16_t *)crc ^= dbyte << 8;
     for (uint8_t j = 0; j < 8; ++j)
     {
-        uint16_t mix     = *(uint16_t *)crc & 0x8000;
+        uint16_t mix = *(uint16_t *)crc & 0x8000;
         *(uint16_t *)crc = (*(uint16_t *)crc << 1);
         if (mix)
             *(uint16_t *)crc = *(uint16_t *)crc ^ 0x0007;

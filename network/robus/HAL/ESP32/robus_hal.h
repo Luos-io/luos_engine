@@ -28,4 +28,5 @@ void RobusHAL_SetPTPReverseState(uint8_t PTPNbr);
 void RobusHAL_PushPTP(uint8_t PTPNbr);
 uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr);
 void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc);
+void RobusHAL_SetIrqState(uint8_t Enable);
 #endif /* _RobusHAL_H_ */
