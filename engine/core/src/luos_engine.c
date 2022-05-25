@@ -79,7 +79,7 @@ void Luos_Loop(void)
     ll_service_t *oldest_ll_service = NULL;
     msg_t *returned_msg             = NULL;
 
-#ifndef BOOTLOADER_CONFIG
+#ifdef BOOT_APP
     if (launch_boot_flag)
     {
         launch_boot_flag = false;
@@ -1170,7 +1170,7 @@ void Luos_Run(void)
     {
         case NODE_INIT:
             Luos_Init();
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
             LuosBootloader_Init();
 #else
             Luos_PackageInit();
@@ -1180,7 +1180,7 @@ void Luos_Run(void)
             break;
         case NODE_RUN:
             Luos_Loop();
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
             LuosBootloader_Loop();
 #else
             Luos_PackageLoop();

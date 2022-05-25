@@ -56,8 +56,7 @@ for item in env.get("CPPDEFINES", []):
             SRC_FILTER=["+<../../../network/robus/HAL/%s/*.c>" % item[1]])
         env.Append(SRC_FILTER=["+<../../HAL/%s/*.c>" % item[1]])
         break
-
-
+        
 # native unit testing
 find_MOCK_HAL = False
 for item in env.get("CPPDEFINES", []):
