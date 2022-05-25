@@ -48,11 +48,11 @@ uint32_t LuosHAL_GetSystick(void);
 void LuosHAL_SetMode(uint8_t mode);
 void LuosHAL_Reboot(void);
 void LuosHAL_SaveNodeID(uint16_t);
+void LuosHAL_JumpToAddress(uint32_t);
+uint8_t LuosHAL_GetMode(void);
 
 #ifdef BOOTLOADER
 void LuosHAL_DeInit(void);
-void LuosHAL_JumpToApp(uint32_t);
-uint8_t LuosHAL_GetMode(void);
 uint16_t LuosHAL_GetNodeID(void);
 void LuosHAL_EraseMemory(uint32_t, uint16_t);
 void LuosHAL_ProgramFlash(uint32_t, uint16_t, uint8_t *);

@@ -66,6 +66,16 @@ void Luos_Init(void)
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     LuosHAL_Init();
     Robus_Init(&luos_stats.memory);
+
+#ifdef WITH_BOOTLOADER
+    if (APP_START_ADDRESS == (uint32_t)FLASH_BASE)
+    {
+        if (LuosHAL_GetMode() != JUMP_TO_APP_MODE)
+        {
+            LuosHAL_JumpToAddress(BOOT_START_ADDRESS);
+        }
+    }
+#endif
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -79,7 +89,7 @@ void Luos_Loop(void)
     ll_service_t *oldest_ll_service = NULL;
     msg_t *returned_msg             = NULL;
 
-#ifdef BOOT_APP
+#ifdef WITH_BOOTLOADER
     if (launch_boot_flag)
     {
         launch_boot_flag = false;

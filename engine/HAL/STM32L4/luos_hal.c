@@ -205,18 +205,6 @@ void LuosHAL_Reboot(void)
     NVIC_SystemReset();
 }
 
-#ifdef BOOTLOADER
-/******************************************************************************
- * @brief DeInit Bootloader peripherals
- * @param
- * @return
- ******************************************************************************/
-void LuosHAL_DeInit(void)
-{
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-}
-
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param
@@ -224,9 +212,9 @@ void LuosHAL_DeInit(void)
  ******************************************************************************/
 typedef void (*pFunction)(void); /*!< Function pointer definition */
 
-void LuosHAL_JumpToApp(uint32_t app_addr)
+void LuosHAL_JumpToAddress(uint32_t addr)
 {
-    uint32_t JumpAddress = *(__IO uint32_t *)(app_addr + 4);
+    uint32_t JumpAddress = *(__IO uint32_t *)(addr + 4);
     pFunction Jump       = (pFunction)JumpAddress;
 
     __disable_irq();
@@ -235,9 +223,9 @@ void LuosHAL_JumpToApp(uint32_t app_addr)
     SysTick->LOAD = 0;
     SysTick->VAL  = 0;
 
-    SCB->VTOR = app_addr;
+    SCB->VTOR = addr;
 
-    __set_MSP(*(__IO uint32_t *)app_addr);
+    __set_MSP(*(__IO uint32_t *)addr);
 
     __enable_irq();
 
@@ -255,6 +243,18 @@ uint8_t LuosHAL_GetMode(void)
     uint32_t data     = (*p_start & BOOT_MODE_MASK) >> BOOT_MODE_OFFSET;
 
     return (uint8_t)data;
+}
+
+#ifdef BOOTLOADER
+/******************************************************************************
+ * @brief DeInit Bootloader peripherals
+ * @param
+ * @return
+ ******************************************************************************/
+void LuosHAL_DeInit(void)
+{
+    HAL_RCC_DeInit();
+    HAL_DeInit();
 }
 
 /******************************************************************************
