@@ -170,16 +170,6 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  /* Initialized a section for shared memory */
-  .shared_mem_block : 
-  {
-    __my_shared_mem_start = .;
-    . = . + 0x0800;
-    *(.my_shared_mem)           /* .data sections */
-    *(.my_shared_mem*)           /* .data sections */
-    __my_shared_mem_end = .;
-  } >SHRD_FLASH
-
   /* Remove information from the compiler libraries */
   /DISCARD/ :
   {
