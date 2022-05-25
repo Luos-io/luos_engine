@@ -26,6 +26,7 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
+static void LuosHAL_VectorTableRemap(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
 
@@ -36,6 +37,9 @@ static void LuosHAL_FlashInit(void);
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
+    // Remap Vector Table
+    LuosHAL_VectorTableRemap();
+
     // Systick Initialization
     LuosHAL_SystickInit();
 
@@ -68,6 +72,16 @@ void LuosHAL_SetIrqState(uint8_t Enable)
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
+}
+
+/******************************************************************************
+ * @brief Luos HAL remap Vector table in given address in flash
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void LuosHAL_VectorTableRemap(void)
+{
+    SCB->VTOR = LUOS_VECT_TAB;
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
@@ -144,7 +158,7 @@ void LuosHAL_SetMode(uint8_t mode)
      * the application crashes, that's why we only erase the flash from the
      * bootloader
      ******************************* WARNING **************************************/
-    if ((mode == 0x01) && (mode == 0x02))
+    if (mode != 0x02)
     {
         // erase sector
         HAL_FLASH_Unlock();
@@ -196,7 +210,7 @@ void LuosHAL_Reboot(void)
     NVIC_SystemReset();
 }
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param
@@ -269,8 +283,8 @@ uint16_t LuosHAL_GetNodeID(void)
  ******************************************************************************/
 void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 {
-    uint32_t nb_sectors_to_erase = FLASH_SECTOR_TOTAL - APP_ADDRESS_SECTOR;
-    uint32_t sector_to_erase     = APP_ADDRESS_SECTOR;
+    uint32_t nb_sectors_to_erase = APP_END_SECTOR - APP_START_SECTOR + 1;
+    uint32_t sector_to_erase     = APP_START_SECTOR;
 
     uint32_t sector_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;
