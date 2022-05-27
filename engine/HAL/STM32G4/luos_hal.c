@@ -24,7 +24,7 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
-
+static void LuosHAL_VectorTableRemap(void);
 /////////////////////////Luos Library Needed function///////////////////////////
 
 /******************************************************************************
@@ -34,6 +34,9 @@ static void LuosHAL_FlashInit(void);
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
+    // Remap Vector Table
+    LuosHAL_VectorTableRemap();
+
     // Systick Initialization
     LuosHAL_SystickInit();
 
@@ -67,6 +70,17 @@ void LuosHAL_SetIrqState(uint8_t Enable)
 static void LuosHAL_SystickInit(void)
 {
 }
+
+/******************************************************************************
+ * @brief Luos HAL remap Vector table in given address in flash
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void LuosHAL_VectorTableRemap(void)
+{
+    SCB->VTOR = LUOS_VECT_TAB;
+}
+
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
  * @param None
@@ -133,7 +147,7 @@ void LuosHAL_SetMode(uint8_t mode)
 
     s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
     s_eraseinit.Banks     = FLASH_BANK_1;
-    s_eraseinit.Page      = SHARED_MEMORY_ADDRESS / (uint32_t)PAGE_SIZE;
+    s_eraseinit.Page      = SHARED_MEMORY_ADDRESS / (uint32_t)FLASH_PAGE_SIZE;
     s_eraseinit.NbPages   = 1;
 
     // Unlock flash
@@ -163,7 +177,7 @@ void LuosHAL_SaveNodeID(uint16_t node_id)
 
     s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
     s_eraseinit.Banks     = FLASH_BANK_1;
-    s_eraseinit.Page      = SHARED_MEMORY_ADDRESS / (uint32_t)PAGE_SIZE;
+    s_eraseinit.Page      = SHARED_MEMORY_ADDRESS / (uint32_t)FLASH_PAGE_SIZE;
     s_eraseinit.NbPages   = 1;
 
     // Unlock flash
@@ -196,7 +210,7 @@ void LuosHAL_Reboot(void)
     NVIC_SystemReset();
 }
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param
@@ -270,10 +284,10 @@ uint16_t LuosHAL_GetNodeID(void)
 void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 {
     uint32_t nb_sectors_to_erase = 0;
-    uint32_t page_to_erase       = address / (uint32_t)PAGE_SIZE;
+    uint32_t page_to_erase       = address / (uint32_t)FLASH_PAGE_SIZE;
 
     // compute number of sectors to erase
-    nb_sectors_to_erase = ((uint32_t)(FLASH_BASE + END_ERASE_BOOTLOADER) - (uint32_t)address) / (uint32_t)PAGE_SIZE;
+    nb_sectors_to_erase = size / (uint32_t)FLASH_PAGE_SIZE + 1;
 
     uint32_t page_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;

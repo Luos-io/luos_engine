@@ -7,6 +7,27 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+/*
+ * WITH_BOOTLOADER MODE FLASH
+ *
+ *
+ *             SHARED_MEMORY_ADDRESS
+ *             0x0800C000
+ *               |
+ *               |   APP_START_ADDRESS                  APP_END_ADDRESS
+ *               |   |0x0800C800                          |
+ *               |   |                                    |
+ *               v   v                                    v
+ *   +-----------+---+------------------------------------+
+ *   |   48Kb    |2Kb|                ...                 |
+ *   +-----------+---+------------------------------------+
+ *   ^
+ *   |
+ *   |
+ *   |
+ * BOOT_START_ADDRESS
+ * 0x08000000
+ */
 #ifndef _LUOSHAL_CONFIG_H_
 #define _LUOSHAL_CONFIG_H_
 
@@ -22,14 +43,31 @@
  ******************************************************************************/
 #define FLASH_END FLASH_SIZE - 1
 
+// The beginning of the bootloader code in flash
+#ifndef BOOT_START_ADDRESS
+#define BOOT_START_ADDRESS (uint32_t)FLASH_BASE 
+#endif
+
 #ifndef END_ERASE_BOOTLOADER
 #define END_ERASE_BOOTLOADER (uint32_t)0x20000
 #endif
+// Shared memory to store bootmode
 #ifndef SHARED_MEMORY_ADDRESS
 #define SHARED_MEMORY_ADDRESS (uint32_t)0x800C000
 #endif
-#ifndef APP_ADDRESS
-#define APP_ADDRESS (uint32_t)0x0800C800
+// begining of application in flash - by default after bootloader & shared mem
+#ifndef APP_START_ADDRESS
+#define APP_START_ADDRESS (uint32_t)0x0800C800
+#endif
+// last address of app in case of a bootloader
+#ifndef APP_END_ADDRESS
+#define APP_END_ADDRESS (uint32_t)FLASH_END
+#endif
+// Remapping address of vector table in flash
+#ifdef WITH_BOOTLOADER
+#define LUOS_VECT_TAB APP_START_ADDRESS
+#else
+#define LUOS_VECT_TAB BOOT_START_ADDRESS
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */

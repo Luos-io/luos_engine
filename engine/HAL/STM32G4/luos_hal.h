@@ -16,7 +16,6 @@
  ******************************************************************************/
 #define LUOS_UUID ((uint32_t *)0x1FFF7590)
 
-#define PAGE_SIZE        (uint32_t) FLASH_PAGE_SIZE
 #define ADDR_FLASH_BANK1 ((uint32_t)0x08000000)
 #define ADDR_FLASH_BANK2 ((uint32_t)0x08040000)
 #define NB_OF_PAGE       FLASH_PAGE_NB
@@ -25,8 +24,6 @@
 #define BOOT_MODE_OFFSET 0
 #define NODE_ID_MASK     0x00FFFF00
 #define NODE_ID_OFFSET   8
-
-#define ADDRESS_BOOT_FLAG_FLASH (ADDRESS_LAST_PAGE_FLASH + PAGE_SIZE) - 4
 
 /*******************************************************************************
  * Variables
@@ -52,7 +49,7 @@ void LuosHAL_SetMode(uint8_t mode);
 void LuosHAL_Reboot(void);
 void LuosHAL_SaveNodeID(uint16_t);
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 void LuosHAL_DeInit(void);
 void LuosHAL_JumpToApp(uint32_t);
 uint8_t LuosHAL_GetMode(void);

@@ -8,8 +8,7 @@
  * @version 0.0.0
  ******************************************************************************/
 /*
- *
- * BOOT_APP MODE FLASH
+ * WITH_BOOTLOADER MODE FLASH
  *
  *
  *             SHARED_MEMORY_ADDRESS
@@ -20,7 +19,7 @@
  *               |   |                                    |
  *               v   v                                    v
  *   +-----------+---+------------------------------------+
- *   |   48Kb    |2Kb|           206Kb                    |
+ *   |   48Kb    |2Kb|             ...                    |
  *   +-----------+---+------------------------------------+
  *   ^
  *   |
@@ -61,7 +60,7 @@
 #define APP_END_ADDRESS           (uint32_t)FLASH_END
 #endif
 // Remapping address of vector table in flash
-#ifdef BOOT_APP
+#ifdef WITH_BOOTLOADER
 #define LUOS_VECT_TAB APP_START_ADDRESS
 #else
 #define LUOS_VECT_TAB BOOT_START_ADDRESS
