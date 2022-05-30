@@ -1,10 +1,13 @@
-﻿name: Sandbox - Alpha upload platformio library
+name: sandbox
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - alpha_pipe_pkg
 
 jobs:
-  alpha_deploy_pipe:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -27,3 +30,4 @@ jobs:
           pio package pack
           pio package publish --owner luos --non-interactive
           cd ../..
+
