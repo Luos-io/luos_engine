@@ -37,8 +37,8 @@ void Lcd_MsgHandler(service_t *service, msg_t *msg);
 void Lcd_Init(void)
 {
     revision_t revision = {{0, 0, 0}};
-    service_lcd = Luos_CreateService(Lcd_MsgHandler, LCD_TYPE, "lcd", revision);
-    
+    service_lcd         = Luos_CreateService(Lcd_MsgHandler, LCD_TYPE, "lcd", revision);
+
     LcdDrv_Init();
 
     mode.mode_display        = 1;
