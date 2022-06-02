@@ -284,7 +284,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                                 index++;
                             }
                         }
-                        Robus_ShiftMaskCalculation(1, service_number);
+                        Robus_IDMaskCalculation(1, service_number);
                     }
                     else
                     {
@@ -293,7 +293,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                         {
                             service_table[i].ll_service->id = base_id + i;
                         }
-                        Robus_ShiftMaskCalculation(base_id, service_number);
+                        Robus_IDMaskCalculation(base_id, service_number);
                     }
                 case 0:
                     // send back a local routing table
@@ -1214,7 +1214,7 @@ void Luos_SetID(service_t *service, uint16_t id)
     // set id
     service->ll_service->id = 1;
     // change filter mask
-    Robus_ShiftMaskCalculation(id, service_number);
+    Robus_IDMaskCalculation(id, service_number);
 }
 /******************************************************************************
  * @brief Demand a detection
@@ -1237,4 +1237,24 @@ void Luos_Detect(service_t *service)
         detect_msg.header.target      = 1;
         Luos_SendMsg(service, &detect_msg);
     }
+}
+/******************************************************************************
+ * @brief Subscribe to a new topic
+ * @param Service
+ * @param topic
+ * @return None
+ ******************************************************************************/
+error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
+{
+    return Robus_TopicSubscribe(service->ll_service, topic);
+}
+/******************************************************************************
+ * @brief Subscribe to a new topic
+ * @param Service
+ * @param topic
+ * @return None
+ ******************************************************************************/
+error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic)
+{
+    return Robus_TopicUnsubscribe(service->ll_service, topic);
 }

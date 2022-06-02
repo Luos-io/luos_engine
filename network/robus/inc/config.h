@@ -15,10 +15,9 @@
 #define BROADCAST_VAL     0x0FFF
 #define DEFAULTBAUDRATE   1000000
 
-#define TIMEOUT_VAL           2
-#define MAX_ALIAS_SIZE        16
-#define MAX_DATA_MSG_SIZE     128
-#define MAX_MULTICAST_ADDRESS 1
+#define TIMEOUT_VAL       2
+#define MAX_ALIAS_SIZE    16
+#define MAX_DATA_MSG_SIZE 128
 
 #ifndef NBR_RETRY
 #define NBR_RETRY 10
@@ -44,9 +43,13 @@
 #define NBR_PORT 2
 #endif
 
-// Tab of byte. + 2 for overlap ID because aligned to byte
-#define MASK_SIZE ((MAX_SERVICE_NUMBER / 8) + 2)
+#ifndef LAST_TOPIC
+#define LAST_TOPIC 20
+#endif
 
+// Tab of byte. + 2 for overlap ID because aligned to byte
+#define ID_MASK_SIZE    ((MAX_SERVICE_NUMBER / 8) + 2)
+#define TOPIC_MASK_SIZE ((LAST_TOPIC / 8) + 2)
 /*******************************************************************************
  * Variables
  ******************************************************************************/
