@@ -1,6 +1,5 @@
 #include "main.h"
 #include <stdio.h>
-#include <unistd.h>
 #include <default_scenario.h>
 
 extern default_scenario_t default_sc;

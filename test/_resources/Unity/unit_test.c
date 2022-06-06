@@ -177,7 +177,7 @@ void ASSERT_ACTIVATION(uint8_t activation)
  * @param line number
  * @return None
  ******************************************************************************/
-void unittest_assert(char *file, uint32_t line)
+void UNIT_TEST_ASSERT(char *file, uint32_t line)
 {
     msg_t msg;
 
@@ -192,4 +192,12 @@ void unittest_assert(char *file, uint32_t line)
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
     ut_assert.msg = msg;
+}
+
+void setUp(void)
+{
+}
+
+void tearDown(void)
+{
 }
