@@ -18,5 +18,5 @@
  ******************************************************************************/
 void Luos_assert(char *file, uint32_t line)
 {
-    unittest_assert(file, line);
+    UNIT_TEST_ASSERT(file, line);
 }

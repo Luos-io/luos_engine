@@ -132,8 +132,4 @@ jobs:
           platformio run -t clean -c .\test\_resources\platformio.ini
 
           # Run Unit tests
-          platformio test -c .\test\_resources\platformio.ini --verbose `
-          -f msg_alloc `
-          -f luos `
-          -f routing_table `
-          -f timestamp
+          platformio test -c .\test\_resources\platformio.ini  -vvv
