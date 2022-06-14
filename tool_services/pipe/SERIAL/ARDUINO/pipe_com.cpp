@@ -90,6 +90,4 @@ void PipeCom_ReceiveP2L(void)
 void PipeCom_SendL2P(uint8_t *data, uint16_t size)
 {
     Serial.write(data, size);
-    streaming_channel_t *stream_channel = get_L2P_StreamChannel();
-    Stream_RmvAvailableSampleNB(stream_channel, size);
 }
