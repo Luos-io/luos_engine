@@ -5,11 +5,13 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "button.h"
+#include "samd21.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+#define BTN_PIN  0
+#define BTN_PORT 1
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -52,7 +54,7 @@ static void Button_MsgHandler(service_t *service, msg_t *msg)
         pub_msg.header.target_mode = ID;
         pub_msg.header.target      = msg->header.source;
         pub_msg.header.size        = sizeof(char);
-        pub_msg.data[0]            = true; // BTN VALUE
+        pub_msg.data[0]            = (((PORT->Group[BTN_PORT].IN.reg >> BTN_PIN)) & 0x01);
         time_luos_t timestamp      = Timestamp_now();
 
         Luos_SendTimestampMsg(service, &pub_msg, timestamp);
