@@ -528,6 +528,8 @@ void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
     //--------------------------->|__________|
     //	Shift byte		            byte Mask of bit address
 
+    LUOS_ASSERT(service_id > 0);
+    LUOS_ASSERT(service_id <= 4096 - MAX_SERVICE_NUMBER);
     uint16_t tempo  = 0;
     ctx.IDShiftMask = (service_id - 1) / 8; // aligned to byte
 
