@@ -1,11 +1,11 @@
 <a href="https://luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
 
-[![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/Luos/blob/master/LICENSE)
+[![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 
 
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
-[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/Inspector.svg)](https://registry.platformio.org/libraries/luos/Inspector)
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos_engine/library/Inspector.svg)](https://registry.platformio.org/libraries/luos_engine/Inspector)
 
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)

@@ -30,8 +30,8 @@ Pull requests are the best way to propose changes to the codebase. We actively w
 ## Any contributions to a driver and/or an application you make will be under the [MIT Software License](http://choosealicense.com/licenses/mit/)
 In short, when you submit code changes to drivers and apps, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
 
-## Any contributions to Luos core technology you make will be under the [Luos License](https://github.com/Luos-io/Luos/blob/master/LICENSE.md)
-In short, when you submit code changes to Luos core technology, your submissions are understood to be under the [Luos License](https://github.com/Luos-io/Luos/blob/master/LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
+## Any contributions to Luos core technology you make will be under the [Luos License](https://github.com/Luos-io/luos_engine/blob/master/LICENSE.md)
+In short, when you submit code changes to Luos core technology, your submissions are understood to be under the [Luos License](https://github.com/Luos-io/luos_engine/blob/master/LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
 
 ## Write bug reports with detail, background, and sample code
 Great Bug Reports tend to have:
