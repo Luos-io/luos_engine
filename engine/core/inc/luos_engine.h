@@ -83,9 +83,11 @@ void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t ta
 // *** Receive
 error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg);
 error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **returned_msg);
+error_return_t Luos_ReadTopicMsg(service_t *service, int16_t topic_id, msg_t **returned_msg);
 int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 uint16_t Luos_NbrAvailableMsg(void);
+uint8_t Luos_FindTopicMsg(service_t *service, uint16_t topic_id);
 uint32_t Luos_GetSystick(void);
 error_return_t Luos_TxComplete(void);
 void Luos_Flush(void);

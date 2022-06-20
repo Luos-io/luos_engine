@@ -702,6 +702,28 @@ error_return_t Luos_ReadFromService(service_t *service, short id, msg_t **return
     return FAILED;
 }
 /******************************************************************************
+ * @brief read msg of specific topic and pass it to user if exists
+ * @param service who receive the message we are looking for
+ * @param topic_id of message we are searching
+ * @param returned_msg message of the service
+ * @return FAILED if no message available
+ ******************************************************************************/
+error_return_t Luos_ReadTopicMsg(service_t *service, int16_t topic_id, msg_t **returned_msg)
+{
+    uint16_t luos_task_id = 0;
+    // see if we have a msg topic for this service
+    if (MsgAlloc_SearchLuosTaskTopic(service->ll_service, &luos_task_id, topic_id) == SUCCEED)
+    {
+        // if yes pull it and stock it in returned_msg
+        MsgAlloc_PullMsgFromLuosTask(luos_task_id, returned_msg);
+        // remove it from the message buffer
+        MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
+
+        return SUCCEED;
+    }
+    return FAILED;
+}
+/******************************************************************************
  * @brief Send large among of data and formating to send into multiple msg
  * @param Service who send
  * @param Message to send
@@ -1032,6 +1054,22 @@ void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t ta
 uint16_t Luos_NbrAvailableMsg(void)
 {
     return MsgAlloc_LuosTasksNbr();
+}
+/******************************************************************************
+ * @brief check if message of a specific topic is available
+ * @param service pointer
+ * @param topic_id
+ * @return true or false
+ ******************************************************************************/
+uint8_t Luos_FindTopicMsg(service_t *service, uint16_t topic_id)
+{
+    uint16_t luos_task_id = 0;
+    // search in msg alloc if we have a msg_task of a topic for this service
+    if (MsgAlloc_SearchLuosTaskTopic(service->ll_service, &luos_task_id, topic_id) == SUCCEED)
+    {
+        return true;
+    }
+    return false;
 }
 /******************************************************************************
  * @brief Get tick number

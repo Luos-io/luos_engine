@@ -48,6 +48,7 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
 error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_msg);
 error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **returned_msg);
 error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **allocated_service);
+error_return_t MsgAlloc_SearchLuosTaskTopic(ll_service_t *ll_service, uint16_t *luos_task_id, uint16_t topic_id);
 error_return_t MsgAlloc_GetLuosTaskSourceId(uint16_t luos_task_id, uint16_t *source_id);
 error_return_t MsgAlloc_GetLuosTaskCmd(uint16_t luos_task_id, uint8_t *cmd);
 error_return_t MsgAlloc_GetLuosTaskSize(uint16_t luos_task_id, uint16_t *size);

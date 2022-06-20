@@ -1171,6 +1171,28 @@ error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **all
     //
     return FAILED;
 }
+
+/******************************************************************************
+ * @brief Find a luos task of a specific topic
+ * @param luos_task_id : Pointer to Id of the allocator slot
+ * @param topic_id : the topic we search
+ * @return error_return_t : Fail is there is no more message available.
+ ******************************************************************************/
+error_return_t MsgAlloc_SearchLuosTaskTopic(ll_service_t *ll_service, uint16_t *luos_task_id, uint16_t topic_id)
+{
+    // search all luos_tasks
+    for (uint16_t i = 0; i < luos_tasks_stack_id; i++)
+    {
+        // check msg topic, and if it is for service
+        if ((luos_tasks[i].msg_pt->header.target_mode == TOPIC) && (luos_tasks[i].msg_pt->header.target == topic_id) && (luos_tasks[i].ll_service_pt == ll_service))
+        {
+            // keep the index of this message in luos_tasks
+            *luos_task_id = i;
+            return SUCCEED;
+        }
+    }
+    return FAILED;
+}
 /******************************************************************************
  * @brief get back a specific slot message command
  * @param luos_task_id : Id of the allocator slot
