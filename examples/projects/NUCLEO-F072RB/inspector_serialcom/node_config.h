@@ -81,10 +81,17 @@
  *    LUOS_TIMER              | Timer number
  *    LUOS_TIMER_IRQ          | Timer IRQ number
  *    LUOS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
-
- *    FLASH_SECTOR               | FLASH page size
- *    PAGE_SIZE               | FLASH page size
- *    ADDRESS_LAST_PAGE_FLASH | Page to write alias
 ******************************************************************************/
+
+/*******************************************************************************
+ * FLASH CONFIGURATION FOR APP WITH BOOTLOADER
+ ********************************************************************************
+ *    Define                | Default Value              | Description
+ *    :---------------------|------------------------------------------------------
+ *    BOOT_START_ADDRESS    | FLASH_BASE = 0x8000000     | Start address of Bootloader in flash
+ *    SHARED_MEMORY_ADDRESS | 0x0800C000                 | Start address of shared memory to save boot flag
+ *    APP_START_ADDRESS     | 0x0800C800                 | Start address of application with bootloader
+ *    APP_END_ADDRESS       | FLASH_BANK1_END=0x0801FFFF | End address of application with bootloader
+ ******************************************************************************/
 
 #endif /* _NODE_CONFIG_H_ */

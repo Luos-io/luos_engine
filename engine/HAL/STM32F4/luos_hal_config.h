@@ -7,6 +7,27 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+/*
+ * WITH_BOOTLOADER MODE FLASH
+ *
+ *             SHARED_MEMORY_ADDRESS
+ * BOOT_START  0x0800C000
+ * 0x08000000  |
+ * |           |   APP_START_ADDRESS                    APP_END_ADDRESS
+ * |           |   |0x08010000                          |FLASH_END
+ * |           |   |                                    |
+ * |           v   v                                    v
+ * +-----------+---+------------------------------------+
+ * |   48K     |16K|                                    |
+ * +---+---+---+---+---+----------------------------+---+
+ * | 0 | 1 | 2 | 3 | 4 |. . .                       |   |
+ * +---+---+---+---+---+----------------------------+---+
+ * ^           ^   ^                                ^
+ * |           |   |                                |
+ * |           |   APP_START_SECTOR               APP_END_SECTOR
+ * |          SHARED_MEMORY_SECTOR                LAST_FLASH_SECTOR
+ * FLASH_SECTOR_0
+ */
 #ifndef _LUOSHAL_CONFIG_H_
 #define _LUOSHAL_CONFIG_H_
 
@@ -18,32 +39,40 @@
 #endif
 
 /*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t)0x400
-#endif
-#ifndef FLASH_SECTOR
-#define FLASH_SECTOR FLASH_SECTOR_7
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH ((uint32_t)(FLASH_END - PAGE_SIZE))
-#endif
-
-/*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
+// The beginning of the bootloader code in flash
+#ifndef BOOT_START_ADDRESS
+#define BOOT_START_ADDRESS (uint32_t)FLASH_BASE 
+#endif
+// Shared memory to store bootmode
 #ifndef SHARED_MEMORY_ADDRESS
-#define SHARED_MEMORY_ADDRESS 0x0800C000
+#define SHARED_MEMORY_ADDRESS (uint32_t)0x0800C000
 #endif
 #ifndef SHARED_MEMORY_SECTOR
 #define SHARED_MEMORY_SECTOR FLASH_SECTOR_3
 #endif
-#ifndef APP_ADDRESS
-#define APP_ADDRESS (uint32_t)0x08010000
+// begining of application in flash - by default after bootloader & shared mem
+#ifndef APP_START_ADDRESS
+#define APP_START_ADDRESS (uint32_t)0x08010000
 #endif
-#ifndef APP_ADRESS_SECTOR
-#define APP_ADRESS_SECTOR FLASH_SECTOR_4
+// last address of app in case of a bootloader
+#ifndef APP_END_ADDRESS
+#define APP_END_ADDRESS (uint32_t)FLASH_END
+#endif
+// first sector of the app
+#ifndef APP_START_SECTOR
+#define APP_START_SECTOR FLASH_SECTOR_4
+#endif
+// last sector of the app
+#ifndef APP_END_SECTOR
+#define APP_END_SECTOR FLASH_SECTOR_TOTAL - 1
+#endif
+// Remapping address of vector table in flash
+#ifdef WITH_BOOTLOADER
+#define LUOS_VECT_TAB APP_START_ADDRESS
+#else
+#define LUOS_VECT_TAB BOOT_START_ADDRESS
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */

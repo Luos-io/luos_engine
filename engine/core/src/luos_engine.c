@@ -50,9 +50,6 @@ static service_t *Luos_GetService(ll_service_t *ll_service);
 static uint16_t Luos_GetServiceIndex(service_t *service);
 static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
 static void Luos_AutoUpdateManager(void);
-static error_return_t Luos_SaveAlias(service_t *service, uint8_t *alias);
-static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias);
-static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias);
 static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t size);
 static inline void Luos_EmptyNode(void);
 static inline void Luos_PackageInit(void);
@@ -69,6 +66,16 @@ void Luos_Init(void)
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     LuosHAL_Init();
     Robus_Init(&luos_stats.memory);
+
+#ifdef WITH_BOOTLOADER
+    if (APP_START_ADDRESS == (uint32_t)FLASH_BASE)
+    {
+        if (LuosHAL_GetMode() != JUMP_TO_APP_MODE)
+        {
+            LuosHAL_JumpToAddress(BOOT_START_ADDRESS);
+        }
+    }
+#endif
 }
 /******************************************************************************
  * @brief Luos Loop must be call in project loop
@@ -82,7 +89,7 @@ void Luos_Loop(void)
     ll_service_t *oldest_ll_service = NULL;
     msg_t *returned_msg             = NULL;
 
-#ifndef BOOTLOADER_CONFIG
+#ifdef WITH_BOOTLOADER
     if (launch_boot_flag)
     {
         launch_boot_flag = false;
@@ -379,34 +386,10 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             }
             break;
         case WRITE_ALIAS:
-            // Make a clean copy with full \0 at the end.
-            memset(service->alias, '\0', MAX_ALIAS_SIZE);
-            if (input->header.size > 16)
-            {
-                input->header.size = 16;
-            }
-            // check if there is no forbiden character
-            uint8_t wrong = false;
-            for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
-            {
-                if ((input->data[i] == '\n') && (input->data[i - 1] == '\r'))
-                {
-                    wrong = true;
-                    break;
-                }
-            }
-            if ((((input->data[0] >= 'A') & (input->data[0] <= 'Z')) | ((input->data[0] >= 'a') & (input->data[0] <= 'z'))) & (input->header.size != 0) & (wrong == false))
-            {
-                memcpy(service->alias, input->data, input->header.size);
-                Luos_SaveAlias(service, service->alias);
-            }
-            else
-            {
-                // This is a wrong alias or an erase instruction, get back to default one
-                Luos_SaveAlias(service, '\0');
-                memcpy(service->alias, service->default_alias, MAX_ALIAS_SIZE);
-            }
-            consume = SUCCEED;
+            // Save this alias into the service
+            Luos_UpdateAlias(service, (const char *)input->data, input->header.size);
+            // Send this message to user
+            consume = FAILED;
             break;
         case UPDATE_PUB:
             // this service need to be auto updated
@@ -558,27 +541,20 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 
     // Link the service to his callback
     service->service_cb = service_cb;
-    // Save default alias
+
+    // Initialise the service aliases to 0
+    memset((void *)service->default_alias, 0, MAX_ALIAS_SIZE);
+    memset((void *)service->alias, 0, MAX_ALIAS_SIZE);
+    // Save aliases
     for (i = 0; i < MAX_ALIAS_SIZE - 1; i++)
     {
         service->default_alias[i] = alias[i];
+        service->alias[i]         = alias[i];
         if (service->default_alias[i] == '\0')
             break;
     }
     service->default_alias[i] = '\0';
-    // Initialise the service alias to 0
-    memset((void *)service->alias, 0, sizeof(service->alias));
-    if (Luos_ReadAlias(service_number, (uint8_t *)service->alias) == FAILED)
-    {
-        // if no alias saved keep the default one
-        for (i = 0; i < MAX_ALIAS_SIZE - 1; i++)
-        {
-            service->alias[i] = alias[i];
-            if (service->alias[i] == '\0')
-                break;
-        }
-        service->alias[i] = '\0';
-    }
+    service->alias[i]         = '\0';
 
     // Initialise the service revision to 0
     memset((void *)service->revision.unmap, 0, sizeof(revision_t));
@@ -965,51 +941,49 @@ error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_c
  * @param alias to store
  * @return error
  ******************************************************************************/
-static error_return_t Luos_SaveAlias(service_t *service, uint8_t *alias)
+error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size)
 {
-    // Get service index
-    uint16_t i = (uint16_t)(Luos_GetServiceIndex(service));
 
-    if ((i >= 0) && (i != 0xFFFF))
+    if ((size == 0) || (alias[0] == '\0'))
     {
-        Luos_WriteAlias(i, alias);
+        // This is a void alias just replace it with the default alias, write it
+        memcpy(service->alias, service->default_alias, MAX_ALIAS_SIZE);
         return SUCCEED;
     }
-    return FAILED;
-}
-/******************************************************************************
- * @brief write alias name service from flash
- * @param position in the route table
- * @param alias to store
- * @return error
- ******************************************************************************/
-static void Luos_WriteAlias(uint16_t local_id, uint8_t *alias)
-{
-    uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
-    LuosHAL_FlashWriteLuosMemoryInfo(addr, 16, (uint8_t *)alias);
-}
-/******************************************************************************
- * @brief read alias from flash
- * @param position in the route table
- * @param alias to store
- * @return error
- ******************************************************************************/
-static error_return_t Luos_ReadAlias(uint16_t local_id, uint8_t *alias)
-{
-    uint32_t addr = ADDRESS_ALIASES_FLASH + (local_id * (MAX_ALIAS_SIZE + 1));
-    LuosHAL_FlashReadLuosMemoryInfo(addr, 16, (uint8_t *)alias);
-    // Check name integrity
-    for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
+    // Be sure to have a size including \0
+    if (alias[size - 1] != '\0')
     {
-        if ((((alias[i] < 'A') | (alias[i] > 'Z')) & ((alias[i] < 'a') | (alias[i] > 'z'))))
+        size++;
+    }
+    // Clip size
+    if (size > MAX_ALIAS_SIZE)
+    {
+        size = MAX_ALIAS_SIZE;
+    }
+    char clean_alias[MAX_ALIAS_SIZE] = {0};
+    // Replace any ' '' character by a '_' character, FAIL at any special character.
+    for (uint8_t i = 0; i < size - 1; i++)
+    {
+        switch (alias[i])
         {
-            return FAILED;
-        }
-        if (alias[i] == '\0')
-        {
-            break;
+            case 'A' ... 'Z':
+            case 'a' ... 'z':
+            case '0' ... '9':
+            case '_':
+                // This is good
+                clean_alias[i] = alias[i];
+                break;
+            case ' ':
+                clean_alias[i] = '_';
+                break;
+            default:
+                // This is a wrong character, don't do anything and return FAILED
+                return FAILED;
+                break;
         }
     }
+    // We are ready to save this new alias, write it
+    memcpy(service->alias, clean_alias, MAX_ALIAS_SIZE);
     return SUCCEED;
 }
 /******************************************************************************
@@ -1206,7 +1180,7 @@ void Luos_Run(void)
     {
         case NODE_INIT:
             Luos_Init();
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
             LuosBootloader_Init();
 #else
             Luos_PackageInit();
@@ -1216,7 +1190,7 @@ void Luos_Run(void)
             break;
         case NODE_RUN:
             Luos_Loop();
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
             LuosBootloader_Loop();
 #else
             Luos_PackageLoop();

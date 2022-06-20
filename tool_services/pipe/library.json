@@ -14,7 +14,7 @@
         "extraScript": "select_hal_script.py"
     },
     "dependencies": {
-        "luos/luos_engine": "^2.4.3"
+        "luos_engine": "0.0.0"
     },
     "repository": {
         "type": "git",

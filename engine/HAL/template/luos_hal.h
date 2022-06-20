@@ -24,7 +24,6 @@
 #define NB_OF_PAGE              64
 #define ADDR_FLASH_BANK1        ((uint32_t)0x08000000)
 #define ADDR_FLASH_BANK2        ((uint32_t)0x08040000)
-#define ADDRESS_ALIASES_FLASH   ADDRESS_LAST_PAGE_FLASH
 #define ADDRESS_BOOT_FLAG_FLASH (ADDRESS_LAST_PAGE_FLASH + PAGE_SIZE) - 4
 
 /*******************************************************************************

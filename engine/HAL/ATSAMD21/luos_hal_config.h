@@ -18,22 +18,6 @@
 #endif
 
 /*******************************************************************************
- * FLASH CONFIG
- ******************************************************************************/
-#ifndef PAGE_SIZE
-#define PAGE_SIZE 64
-#endif
-#ifndef ERASE_SIZE
-#define ERASE_SIZE 256
-#endif
-#ifndef FLASH_SIZE
-#define FLASH_SIZE 0x40000
-#endif
-#ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH FLASH_SIZE - (16 * PAGE_SIZE)
-#endif
-
-/*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
 #define FLASH_END FLASH_SIZE - 1

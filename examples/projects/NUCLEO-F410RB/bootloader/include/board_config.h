@@ -11,14 +11,14 @@
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
-#define FLASH_SECTOR FLASH_SECTOR_7
+#define FLASH_SECTOR FLASH_SECTOR_0
 
 /*******************************************************************************
  * TIMER CONFIG
  ******************************************************************************/
 #define LUOS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM5_CLK_ENABLE()
-#define LUOS_TIMER TIM5
-#define LUOS_TIMER_IRQ TIM5_IRQn
-#define LUOS_TIMER_IRQHANDLER() TIM5_IRQHandler()
+#define LUOS_TIMER                TIM5
+#define LUOS_TIMER_IRQ            TIM5_IRQn
+#define LUOS_TIMER_IRQHANDLER()   TIM5_IRQHandler()
 
 #endif /*__BOARD_CONFIG_H__ */
