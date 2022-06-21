@@ -86,5 +86,17 @@ error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **retu
 int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 uint16_t Luos_NbrAvailableMsg(void);
+uint32_t Luos_GetSystick(void);
+error_return_t Luos_TxComplete(void);
+void Luos_Flush(void);
+void Luos_ResetStatistic(void);
+bool Luos_IsNodeDetected(void);
+void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
+void Luos_SetVerboseMode(uint8_t mode);
+void Luos_SetFilterState(uint8_t state, service_t *service);
+error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic);
+error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic);
+void Luos_Run(void);
+void Luos_Detect(service_t *service);
 
 #endif /* LUOS_ENGINE_H */

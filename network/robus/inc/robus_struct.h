@@ -51,7 +51,7 @@ typedef enum
     IDACK,     /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
     TYPE,      /*!< Type mode, used to send something to all service of the same type. */
     BROADCAST, /*!< Broadcast mode, used to send something to everybody. */
-    MULTICAST, /*!< Multicast mode, used to send something to multiple services. */
+    TOPIC,     /*!< Multicast mode, used to send something to multiple services. */
     NODEID,    /*!< Node mode, used to send something to all services of a node. */
     NODEIDACK  /*!< Node mode with reception Acknoledgment (ACK). */
 } target_mode_t;
@@ -104,9 +104,9 @@ typedef struct __attribute__((__packed__))
     uint16_t type; /*!< Service type. */
 
     // Variables
-    uint16_t max_multicast_target;                         /*!< Position pointer of the last multicast target. */
-    uint16_t multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
-    uint16_t dead_service_spotted;                         /*!< The ID of a service that don't reply to a lot of ACK msg */
+    uint16_t last_topic_position;    /*!< Position pointer of the last topic added. */
+    uint16_t topic_list[LAST_TOPIC]; /*!< multicast target bank. */
+    uint16_t dead_service_spotted;   /*!< The ID of a service that don't reply to a lot of ACK msg */
 
     // variable stat on robus com for ll_service
     ll_stats_t ll_stat;
