@@ -43,6 +43,17 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: python .github/workflows/run-clang-format.py -r .
 
+      - name: Run PlatformIO Unit Tests
+        env:
+          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          # Clean all projects
+          platformio run -t clean -c .\test\_resources\platformio.ini
+
+          # Run Unit tests
+          platformio test -c .\test\_resources\platformio.ini  -vvv
+
       - name: Run PlatformIO
         run: |
           # L0
@@ -124,14 +135,3 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F072RB/bootloader
           # SAMD21XPLAINED
           # ******** missing bootloader CI ********
-
-      - name: Run PlatformIO Unit Tests
-        env:
-          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-          # Clean all projects
-          platformio run -t clean -c .\test\_resources\platformio.ini
-
-          # Run Unit tests
-          platformio test -c .\test\_resources\platformio.ini  -vvv
