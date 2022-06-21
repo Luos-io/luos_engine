@@ -64,9 +64,7 @@ void unittest_Robus_TopicSubscribe(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        // revision_t revision = {.major = 1, .minor = 0, .build = 0};
 
-        // Luos_CreateService(0, STATE_TYPE, "mycustom_service", revision);
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
@@ -88,6 +86,11 @@ void unittest_Robus_TopicSubscribe(void)
 
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
         TEST_ASSERT_FALSE(IS_ASSERT());
+
+        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
+        TEST_ASSERT_TRUE(IS_ASSERT());
+
+        RESET_ASSERT();
     }
     NEW_TEST_CASE("Add same topic multiple times");
     {
