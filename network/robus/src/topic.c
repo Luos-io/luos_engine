@@ -66,6 +66,10 @@ error_return_t Topic_Unsubscribe(ll_service_t *ll_service, uint16_t topic_id)
     {
         if (ll_service->topic_list[i] == topic_id)
         {
+            if (ll_service->last_topic_position >= LAST_TOPIC)
+            {
+                return FAILED;
+            }
             memcpy(&ll_service->topic_list[i], &ll_service->topic_list[i + 1], ll_service->last_topic_position - i);
             ll_service->last_topic_position--;
             return SUCCEED;
