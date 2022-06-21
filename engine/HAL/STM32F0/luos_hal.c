@@ -17,6 +17,8 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+#define RSVD_SECTION ".rsvd.data,\"aw\",%nobits//"
+#define _RSVD        __attribute__((used, section(RSVD_SECTION)))
 // timestamp variable
 static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
@@ -24,7 +26,7 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
-static void LuosHAL_FlashEraseLuosMemoryInfo(void);
+static void LuosHAL_VectorTableRemap(void);
 /////////////////////////Luos Library Needed function///////////////////////////
 
 /******************************************************************************
@@ -34,6 +36,9 @@ static void LuosHAL_FlashEraseLuosMemoryInfo(void);
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
+    // Remap Vector Table
+    LuosHAL_VectorTableRemap();
+
     // Systick Initialization
     LuosHAL_SystickInit();
 
@@ -66,6 +71,31 @@ void LuosHAL_SetIrqState(uint8_t Enable)
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
+}
+/******************************************************************************
+ * @brief Luos HAL remap Vector table in given address in flash
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void LuosHAL_VectorTableRemap(void)
+{
+    /* Copy the vector table from the Flash (mapped at the base of the application
+        load address 0x0800C800) to the base address of the SRAM at 0x20000000. */
+    // check if we are at the beginning of flash
+    if (LUOS_VECT_TAB > FLASH_BASE)
+    {
+        static volatile _RSVD uint32_t VectorTable[48];
+
+        for (uint32_t i = 0; i < 48; i++)
+        {
+            VectorTable[i] = *(__IO uint32_t *)(LUOS_VECT_TAB + (i << 2));
+        }
+
+        /* Enable the SYSCFG peripheral clock*/
+        __HAL_RCC_SYSCFG_CLK_ENABLE();
+        /* Remap SRAM at 0x00000000 */
+        __HAL_SYSCFG_REMAPMEMORY_SRAM();
+    }
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
@@ -118,64 +148,6 @@ void LuosHAL_StopTimestamp(void)
  ******************************************************************************/
 static void LuosHAL_FlashInit(void)
 {
-}
-/******************************************************************************
- * @brief Erase flash page where Luos keep permanente information
- * @param None
- * @return None
- ******************************************************************************/
-static void LuosHAL_FlashEraseLuosMemoryInfo(void)
-{
-    uint32_t page_error = 0;
-    FLASH_EraseInitTypeDef s_eraseinit;
-
-    s_eraseinit.TypeErase   = FLASH_TYPEERASE_PAGES;
-    s_eraseinit.PageAddress = ADDRESS_LAST_PAGE_FLASH;
-    s_eraseinit.NbPages     = 1;
-
-    // Erase Page
-    HAL_FLASH_Unlock();
-    HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
-    HAL_FLASH_Lock();
-}
-/******************************************************************************
- * @brief Write flash page where Luos keep permanente information
- * @param Address page / size to write / pointer to data to write
- * @return
- ******************************************************************************/
-void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    // Before writing we have to erase the entire page
-    // to do that we have to backup current falues by copying it into RAM
-    uint8_t page_backup[PAGE_SIZE];
-    memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, PAGE_SIZE);
-
-    // Now we can erase the page
-    LuosHAL_FlashEraseLuosMemoryInfo();
-
-    // Then add input data into backuped value on RAM
-    uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
-    memcpy(&page_backup[RAMaddr], data, size);
-
-    // and copy it into flash
-    HAL_FLASH_Unlock();
-
-    // ST hal flash program function write data by uint64_t raw data
-    for (uint32_t i = 0; i < PAGE_SIZE; i += sizeof(uint64_t))
-    {
-        while (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, i + ADDRESS_ALIASES_FLASH, *(uint64_t *)(&page_backup[i])) != HAL_OK)
-            ;
-    }
-    HAL_FLASH_Lock();
-}
-/******************************************************************************
- * @brief read information from page where Luos keep permanente information
- * @param Address info / size to read / pointer callback data to read
- * @return
- ******************************************************************************/
-void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    memcpy(data, (void *)(addr), size);
 }
 
 /******************************************************************************
@@ -252,18 +224,6 @@ void LuosHAL_Reboot(void)
     NVIC_SystemReset();
 }
 
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
- * @brief DeInit Bootloader peripherals
- * @param
- * @return
- ******************************************************************************/
-void LuosHAL_DeInit(void)
-{
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-}
-
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param
@@ -271,9 +231,9 @@ void LuosHAL_DeInit(void)
  ******************************************************************************/
 typedef void (*pFunction)(void); /*!< Function pointer definition */
 
-void LuosHAL_JumpToApp(uint32_t app_addr)
+void LuosHAL_JumpToAddress(uint32_t addr)
 {
-    uint32_t JumpAddress = *(__IO uint32_t *)(app_addr + 4);
+    uint32_t JumpAddress = *(__IO uint32_t *)(addr + 4);
     pFunction Jump       = (pFunction)JumpAddress;
 
     __disable_irq();
@@ -282,7 +242,7 @@ void LuosHAL_JumpToApp(uint32_t app_addr)
     SysTick->LOAD = 0;
     SysTick->VAL  = 0;
 
-    __set_MSP(*(__IO uint32_t *)app_addr);
+    __set_MSP(*(__IO uint32_t *)addr);
 
     __enable_irq();
 
@@ -300,6 +260,18 @@ uint8_t LuosHAL_GetMode(void)
     uint32_t data     = (*p_start & BOOT_MODE_MASK) >> BOOT_MODE_OFFSET;
 
     return (uint8_t)data;
+}
+
+#ifdef BOOTLOADER
+/******************************************************************************
+ * @brief DeInit Bootloader peripherals
+ * @param
+ * @return
+ ******************************************************************************/
+void LuosHAL_DeInit(void)
+{
+    HAL_RCC_DeInit();
+    HAL_DeInit();
 }
 
 /******************************************************************************
@@ -327,7 +299,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
     uint32_t page_to_erase       = address;
 
     // compute number of sectors to erase
-    nb_sectors_to_erase = (ADDRESS_LAST_PAGE_FLASH - address) / (uint32_t)PAGE_SIZE;
+    nb_sectors_to_erase = size / (uint32_t)FLASH_PAGE_SIZE + 1;
 
     uint32_t page_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;

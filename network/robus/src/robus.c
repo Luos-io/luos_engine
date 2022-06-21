@@ -12,6 +12,7 @@
 #include "reception.h"
 #include "port_manager.h"
 #include "context.h"
+#include "topic.h"
 #include "robus_hal.h"
 #include "luos_hal.h"
 #include "msg_alloc.h"
@@ -75,6 +76,13 @@ void Robus_Init(memory_stats_t *memory_stats)
     baudrate = DEFAULTBAUDRATE;
     // mask
     Robus_MaskInit();
+
+    // multicast mask init
+    for (uint16_t i = 0; i < TOPIC_MASK_SIZE; i++)
+    {
+        ctx.TopicMask[i] = 0;
+    }
+
     // Init reception
     Recep_Init();
 
@@ -94,14 +102,14 @@ void Robus_Init(memory_stats_t *memory_stats)
     Robus_SetNodeDetected(NO_DETECTION);
 }
 /******************************************************************************
- * @brief Reset Mask
+ * @brief Reset Masks
  * @param None
  * @return None
  ******************************************************************************/
 void Robus_MaskInit(void)
 {
-    ctx.ShiftMask = 0;
-    for (uint16_t i = 0; i < MASK_SIZE; i++)
+    ctx.IDShiftMask = 0;
+    for (uint16_t i = 0; i < ID_MASK_SIZE; i++)
     {
         ctx.IDMask[i] = 0;
     }
@@ -144,6 +152,8 @@ ll_service_t *Robus_ServiceCreate(uint16_t type)
     ctx.ll_service_table[ctx.ll_service_number].dead_service_spotted = 0;
     // Clear stats
     ctx.ll_service_table[ctx.ll_service_number].ll_stat.max_retry = 0;
+    // Clear topic number
+    ctx.ll_service_table[ctx.ll_service_number].last_topic_position = 0;
     // Return the freshly initialized ll_service pointer.
     return (ll_service_t *)&ctx.ll_service_table[ctx.ll_service_number++];
 }
@@ -507,24 +517,26 @@ void Robus_Flush(void)
 }
 
 /******************************************************************************
- * @brief Masker filter calculation based on Local ID
+ * @brief ID Mask calculation
  * @param ID and Number of service
  * @return None
  ******************************************************************************/
-void Robus_ShiftMaskCalculation(uint16_t ID, uint16_t ServiceNumber)
+void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
 {
     // 4096 bit address 512 byte possible
     // Create a mask of only possibility in the node
     //--------------------------->|__________|
     //	Shift byte		            byte Mask of bit address
 
-    uint16_t tempo = 0;
-    ctx.ShiftMask  = (ID - 1) / 8; // aligned to byte
+    LUOS_ASSERT(service_id > 0);
+    LUOS_ASSERT(service_id <= 4096 - MAX_SERVICE_NUMBER);
+    uint16_t tempo  = 0;
+    ctx.IDShiftMask = (service_id - 1) / 8; // aligned to byte
 
     // create a mask of bit corresponding to ID number in the node
-    for (uint16_t i = 0; i < ServiceNumber; i++)
+    for (uint16_t i = 0; i < service_number; i++)
     {
-        tempo = (((ID - 1) + i) - (8 * ctx.ShiftMask));
+        tempo = (((service_id - 1) + i) - (8 * ctx.IDShiftMask));
         ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
     }
 }
@@ -604,4 +616,46 @@ void Robus_SetVerboseMode(uint8_t mode)
 {
     // verbose is localhost or multihost
     ctx.verbose = mode + 1;
+}
+/******************************************************************************
+ * @brief Add new mutlicast topic to service bank and node mask
+ * @param ll_service
+ * @param topic
+ * @return Error
+ ******************************************************************************/
+error_return_t Robus_TopicSubscribe(ll_service_t *ll_service, uint16_t topic_id)
+{
+    // assert if we add a topic that is greater than the max topic value
+    LUOS_ASSERT(topic_id <= LAST_TOPIC);
+    // add 1 to the bit corresponding to the topic in multicast mask
+    ctx.TopicMask[(topic_id / 8)] |= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
+    // add multicast topic to service
+    return Topic_Subscribe(ll_service, topic_id);
+}
+/******************************************************************************
+ * @brief Remove mutlicast topic to service bank and node mask
+ * @param ll_service
+ * @param topic
+ * @return Error
+ ******************************************************************************/
+error_return_t Robus_TopicUnsubscribe(ll_service_t *ll_service, uint16_t topic_id)
+{
+    error_return_t err;
+
+    // delete topic from service list
+    err = Topic_Unsubscribe(ll_service, topic_id);
+
+    if (err == SUCCEED)
+    {
+        for (uint16_t i = 0; i < ctx.ll_service_number; i++)
+        {
+            if (Topic_IsTopicSubscribed((ll_service_t *)(&ctx.ll_service_table[i]), topic_id) == true)
+            {
+                return err;
+            }
+        }
+        // calculate mask after topic deletion
+        ctx.TopicMask[(topic_id / 8)] -= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
+    }
+    return err;
 }

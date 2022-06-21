@@ -1,0 +1,39 @@
+{
+    "build": {
+        "core": "stm32",
+        "cpu": "cortex-m4",
+        "extra_flags": [
+            "-DSTM32F407xx",
+            "-DSTM32F4xx",
+            "-DUSE_HAL_DRIVER",
+            "-DUSE_FULL_LL_DRIVER",
+            "-DLUOSHAL=STM32F4 "
+        ],
+        "f_cpu": "168000000L",
+        "mcu": "stm32f407vgt6",
+        "product_line": "STM32F407XX"
+    },
+    "connectivity": [
+        "can"
+    ],
+    "debug": {
+        "jlink_device": "STM32F407VG",
+        "openocd_target": "stm32f4x",
+        "svd_path": "STM32F407x.svd"
+    },
+    "frameworks": [
+        "stm32cube"
+    ],
+    "name": "STM32F407",
+    "upload": {
+        "maximum_ram_size": 98304,
+        "maximum_size": 524288,
+        "protocol": "stlink",
+        "protocols": [
+            "stlink",
+            "dfu"
+        ]
+    },
+    "url": "https://luos.io",
+    "vendor": "Luos"
+}

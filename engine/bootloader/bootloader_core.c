@@ -16,7 +16,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 #define MAX_FRAME_SIZE (MAX_DATA_MSG_SIZE - 1)
 #define BUFFER_SIZE    0x800 // 2kB buffer to store received data
 #endif
@@ -26,12 +26,12 @@
  ******************************************************************************/
 static bootloader_cmd_t bootloader_cmd;
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 // variables use to save binary data in flash
 static uint8_t bootloader_data[MAX_FRAME_SIZE];
 static uint16_t bootloader_data_size = 0;
 
-uint32_t flash_addr = APP_ADDRESS;
+uint32_t flash_addr = APP_START_ADDRESS;
 uint8_t data_buff[(uint16_t)BUFFER_SIZE];
 uint16_t data_index     = 0;
 uint16_t residual_space = (uint16_t)BUFFER_SIZE;
@@ -44,12 +44,9 @@ uint32_t tickstart      = 0;
 // Create a variable of the size of mode flash value allowing to init the shared flash section
 const uint8_t __attribute__((used)) __attribute__((section(".boot_flags"))) sharedSection = BOOT_MODE;
 
-#endif
-
 /*******************************************************************************
  * Function
  ******************************************************************************/
-#ifdef BOOTLOADER_CONFIG
 static uint8_t LuosBootloader_GetMode(void);
 static void LuosBootloader_DeInit(void);
 static void LuosBootloader_JumpToApp(void);
@@ -77,7 +74,7 @@ void LuosBootloader_SaveNodeID(void)
     LuosHAL_SaveNodeID(node_id);
 }
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 /******************************************************************************
  * @brief Create a service to signal a bootloader node
  * @param None
@@ -119,7 +116,7 @@ void LuosBootloader_DeInit(void)
  ******************************************************************************/
 void LuosBootloader_JumpToApp(void)
 {
-    LuosHAL_JumpToApp(APP_ADDRESS);
+    LuosHAL_JumpToAddress(APP_START_ADDRESS);
 }
 
 /******************************************************************************
@@ -142,7 +139,7 @@ void LuosBootloader_SetNodeID(void)
  ******************************************************************************/
 uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
 {
-    uint32_t free_space = FLASH_END - APP_ADDRESS;
+    uint32_t free_space = APP_END_ADDRESS - APP_START_ADDRESS;
     if (free_space > binary_size)
     {
         return SUCCEED;
@@ -160,7 +157,7 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
  ******************************************************************************/
 void LuosBootloader_EraseMemory(void)
 {
-    LuosHAL_EraseMemory(APP_ADDRESS, nb_bytes);
+    LuosHAL_EraseMemory(APP_START_ADDRESS, nb_bytes);
 }
 
 /******************************************************************************
@@ -253,7 +250,7 @@ uint8_t compute_crc(void)
 
     uint32_t data_counter  = 0;
     uint8_t data_index     = 0;
-    uint32_t *data_address = (uint32_t *)APP_ADDRESS;
+    uint32_t *data_address = (uint32_t *)APP_START_ADDRESS;
     uint32_t data_flash    = 0;
 
     while (data_counter < nb_bytes)
@@ -346,7 +343,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
 
     switch (bootloader_cmd)
     {
-#ifndef BOOTLOADER_CONFIG
+#ifndef BOOTLOADER
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
@@ -430,6 +427,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
             {
                 // boot the application programmed in dedicated flash partition
                 LuosBootloader_DeInit();
+                LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
                 LuosBootloader_JumpToApp();
             }
             else

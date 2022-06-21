@@ -22,7 +22,6 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
-static void LuosHAL_FlashEraseLuosMemoryInfo(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
 
@@ -122,44 +121,3 @@ void LuosHAL_StopTimestamp(void)
 static void LuosHAL_FlashInit(void)
 {
 }
-/******************************************************************************
- * @brief Erase flash page where Luos keep permanente information
- * @param None
- * @return None
- ******************************************************************************/
-static void LuosHAL_FlashEraseLuosMemoryInfo(void)
-{
-    uint32_t page_error = 0;
-    // routine to erase flash page
-}
-/******************************************************************************
- * @brief Write flash page where Luos keep permanente information
- * @param Address page / size to write / pointer to data to write
- * @return
- ******************************************************************************/
-void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    // Before writing we have to erase the entire page
-    // to do that we have to backup current falues by copying it into RAM
-    uint8_t page_backup[PAGE_SIZE];
-    memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, PAGE_SIZE);
-
-    // Now we can erase the page
-
-    // Then add input data into backuped value on RAM
-    uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
-    memcpy(&page_backup[RAMaddr], data, size);
-
-    // and copy it into flash
-
-    // write data
-
-    /******************************************************************************
-     * @brief read information from page where Luos keep permanente information
-     * @param Address info / size to read / pointer callback data to read
-     * @return
-     ******************************************************************************/
-    void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t * data)
-    {
-        memcpy(data, (void *)(addr), size);
-    }

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <unity.h>
+#include "../../../.pio/libdeps/native/Unity/src/unity.h"
 #include "luos_hal.h"
 #include "robus_hal.h"
 #include "luos_engine.h"
@@ -39,6 +39,8 @@ void NEW_TEST_CASE(char *title);
 void NEW_STEP(char *title);
 void RUN(const char *name, void (*f)(void));
 void NEW_STEP_IN_LOOP(char message[], uint32_t index);
-void unittest_assert(char *file, uint32_t line);
+void UNIT_TEST_ASSERT(char *file, uint32_t line);
+void setUp(void);
+void tearDown(void);
 
 #endif // UNIT_TEST_H

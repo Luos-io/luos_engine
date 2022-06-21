@@ -1,14 +1,13 @@
 /******************************************************************************
- * @file target
- * @brief multicast protocole description
+ * @file button
+ * @brief driver example a simple button
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _TARGET_H_
-#define _TARGET_H_
+#ifndef BUTTON_H
+#define BUTTON_H
 
-#include "context.h"
-
+#include "luos_engine.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -20,7 +19,7 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-uint8_t Trgt_MulticastTargetBank(ll_service_t *ll_service, uint16_t val);
-void Trgt_AddMulticastTarget(ll_service_t *ll_service, uint16_t target);
+void Button_Init(void);
+void Button_Loop(void);
 
-#endif /* _TARGET_H_ */
+#endif /* BUTTON_H */

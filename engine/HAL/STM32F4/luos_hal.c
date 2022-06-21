@@ -26,7 +26,7 @@ static ll_timestamp_t ll_timestamp;
  ******************************************************************************/
 static void LuosHAL_SystickInit(void);
 static void LuosHAL_FlashInit(void);
-static void LuosHAL_FlashEraseLuosMemoryInfo(void);
+static void LuosHAL_VectorTableRemap(void);
 
 /////////////////////////Luos Library Needed function///////////////////////////
 
@@ -37,6 +37,9 @@ static void LuosHAL_FlashEraseLuosMemoryInfo(void);
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
+    // Remap Vector Table
+    LuosHAL_VectorTableRemap();
+
     // Systick Initialization
     LuosHAL_SystickInit();
 
@@ -69,6 +72,16 @@ void LuosHAL_SetIrqState(uint8_t Enable)
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
+}
+
+/******************************************************************************
+ * @brief Luos HAL remap Vector table in given address in flash
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void LuosHAL_VectorTableRemap(void)
+{
+    SCB->VTOR = LUOS_VECT_TAB;
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
@@ -124,65 +137,6 @@ static void LuosHAL_FlashInit(void)
 {
 }
 /******************************************************************************
- * @brief Erase flash page where Luos keep permanente information
- * @param None
- * @return None
- ******************************************************************************/
-static void LuosHAL_FlashEraseLuosMemoryInfo(void)
-{
-    uint32_t page_error = 0;
-    FLASH_EraseInitTypeDef s_eraseinit;
-
-    s_eraseinit.TypeErase = FLASH_TYPEERASE_SECTORS;
-    s_eraseinit.NbSectors = 1;
-    s_eraseinit.Sector    = FLASH_SECTOR;
-
-    // Erase Page
-    HAL_FLASH_Unlock();
-    HAL_FLASHEx_Erase(&s_eraseinit, &page_error);
-    HAL_FLASH_Lock();
-}
-/******************************************************************************
- * @brief Write flash page where Luos keep permanente information
- * @param Address page / size to write / pointer to data to write
- * @return
- ******************************************************************************/
-void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    // Before writing we have to erase the entire page
-    // to do that we have to backup current falues by copying it into RAM
-    uint8_t page_backup[PAGE_SIZE];
-    memcpy(page_backup, (void *)ADDRESS_ALIASES_FLASH, PAGE_SIZE);
-
-    // Now we can erase the page
-    LuosHAL_FlashEraseLuosMemoryInfo();
-
-    // Then add input data into backuped value on RAM
-    uint32_t RAMaddr = (addr - ADDRESS_ALIASES_FLASH);
-    memcpy(&page_backup[RAMaddr], data, size);
-
-    // and copy it into flash
-    HAL_FLASH_Unlock();
-
-    // ST hal flash program function write data by uint64_t raw data
-    for (uint32_t i = 0; i < PAGE_SIZE; i += sizeof(uint64_t))
-    {
-        while (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, i + ADDRESS_ALIASES_FLASH, *(uint64_t *)(&page_backup[i])) != HAL_OK)
-            ;
-    }
-    HAL_FLASH_Lock();
-}
-/******************************************************************************
- * @brief read information from page where Luos keep permanente information
- * @param Address info / size to read / pointer callback data to read
- * @return
- ******************************************************************************/
-void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data)
-{
-    memcpy(data, (void *)(addr), size);
-}
-
-/******************************************************************************
  * @brief Set boot mode in shared flash memory
  * @param
  * @return
@@ -204,7 +158,7 @@ void LuosHAL_SetMode(uint8_t mode)
      * the application crashes, that's why we only erase the flash from the
      * bootloader
      ******************************* WARNING **************************************/
-    if ((mode == 0x01) && (mode == 0x02))
+    if (mode != 0x02)
     {
         // erase sector
         HAL_FLASH_Unlock();
@@ -256,18 +210,6 @@ void LuosHAL_Reboot(void)
     NVIC_SystemReset();
 }
 
-#ifdef BOOTLOADER_CONFIG
-/******************************************************************************
- * @brief DeInit Bootloader peripherals
- * @param
- * @return
- ******************************************************************************/
-void LuosHAL_DeInit(void)
-{
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-}
-
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param
@@ -275,9 +217,9 @@ void LuosHAL_DeInit(void)
  ******************************************************************************/
 typedef void (*pFunction)(void); /*!< Function pointer definition */
 
-void LuosHAL_JumpToApp(uint32_t app_addr)
+void LuosHAL_JumpToAddress(uint32_t addr)
 {
-    uint32_t JumpAddress = *(__IO uint32_t *)(app_addr + 4);
+    uint32_t JumpAddress = *(__IO uint32_t *)(addr + 4);
     pFunction Jump       = (pFunction)JumpAddress;
 
     __disable_irq();
@@ -286,9 +228,9 @@ void LuosHAL_JumpToApp(uint32_t app_addr)
     SysTick->LOAD = 0;
     SysTick->VAL  = 0;
 
-    SCB->VTOR = app_addr;
+    SCB->VTOR = addr;
 
-    __set_MSP(*(__IO uint32_t *)app_addr);
+    __set_MSP(*(__IO uint32_t *)addr);
 
     __enable_irq();
 
@@ -306,6 +248,18 @@ uint8_t LuosHAL_GetMode(void)
     uint32_t data     = (*p_start & BOOT_MODE_MASK) >> BOOT_MODE_OFFSET;
 
     return (uint8_t)data;
+}
+
+#ifdef BOOTLOADER
+/******************************************************************************
+ * @brief DeInit Bootloader peripherals
+ * @param
+ * @return
+ ******************************************************************************/
+void LuosHAL_DeInit(void)
+{
+    HAL_RCC_DeInit();
+    HAL_DeInit();
 }
 
 /******************************************************************************
@@ -329,8 +283,8 @@ uint16_t LuosHAL_GetNodeID(void)
  ******************************************************************************/
 void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 {
-    uint32_t nb_sectors_to_erase = FLASH_SECTOR_TOTAL - 1 - APP_ADRESS_SECTOR;
-    uint32_t sector_to_erase     = APP_ADRESS_SECTOR;
+    uint32_t nb_sectors_to_erase = APP_END_SECTOR - APP_START_SECTOR + 1;
+    uint32_t sector_to_erase     = APP_START_SECTOR;
 
     uint32_t sector_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;

@@ -30,7 +30,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -83,7 +82,6 @@ int main(void)
     SystemClock_Config();
 
     /* USER CODE BEGIN SysInit */
-
     /* USER CODE END SysInit */
 
     /* Initialize all configured peripherals */

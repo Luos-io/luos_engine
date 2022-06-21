@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include "robus_hal.h"
 #include "luos_hal.h"
-#include "target.h"
+#include "topic.h"
 #include "transmission.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
@@ -375,7 +375,7 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
         case NODEID:
             return (ll_service_t *)&ctx.ll_service_table[0];
             break;
-        case MULTICAST: // For now Multicast is disabled
+        case TOPIC:
         default:
             return NULL;
             break;
@@ -387,17 +387,37 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  * @param header of message
  * @return None
  ******************************************************************************/
-static inline error_return_t Recep_NodeCompare(uint16_t ID)
+static inline error_return_t Recep_ServiceIDCompare(uint16_t service_id)
 {
     //--------------------------->|__________|
     //	Shift byte		            byte Mask of bit address
 
     uint16_t compare = 0;
 
-    if ((ID > (8 * ctx.ShiftMask))) // IDMask aligned byte
+    if ((service_id > (8 * ctx.IDShiftMask))) // IDMask aligned byte
     {
-        compare = ((ID - 1) - ((8 * ctx.ShiftMask)));
+        compare = ((service_id - 1) - ((8 * ctx.IDShiftMask)));
         if ((ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
+        {
+            return SUCCEED;
+        }
+    }
+    return FAILED;
+}
+/******************************************************************************
+ * @brief Parse multicast mask to find if target exists
+ * @param target of message
+ * @return None
+ ******************************************************************************/
+static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
+{
+    uint8_t compare = 0;
+    // make sure there is a topic that can be received by the node
+    if (topic_id <= LAST_TOPIC)
+    {
+        compare = topic_id - ((topic_id / 8) * 8);
+        // search if topic exists in mask
+        if ((ctx.TopicMask[(topic_id / 8)] & (1 << compare)) != 0)
         {
             return SUCCEED;
         }
@@ -423,7 +443,7 @@ __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
             ctx.rx.status.rx_error = false;
         case ID:
             // Check all ll_service id
-            if (Recep_NodeCompare(header->target) == SUCCEED)
+            if (Recep_ServiceIDCompare(header->target) == SUCCEED)
             {
                 return ctx.verbose;
             }
@@ -486,7 +506,17 @@ __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
                 }
             }
             break;
-        case MULTICAST: // For now Multicast is disabled
+        case TOPIC:
+            if (Recep_TopicCompare(header->target) == SUCCEED)
+            {
+                return ctx.verbose;
+            }
+            else if (ctx.filter_state == false)
+            {
+                // if there is a service that deactivated the filtering occupy the message
+                return MULTIHOST;
+            }
+            break;
         default:
             return EXTERNALHOST;
             break;
@@ -560,10 +590,10 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
             }
             return;
             break;
-        case MULTICAST:
+        case TOPIC:
             for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (Trgt_MulticastTargetBank((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
+                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
                 {
                     // TODO manage multiple slave concerned
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
@@ -604,7 +634,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
 static inline uint8_t Recep_IsAckNeeded(void)
 {
     // check the mode of the message received
-    if ((current_msg->header.target_mode == IDACK) && (Recep_NodeCompare(current_msg->header.target) == SUCCEED))
+    if ((current_msg->header.target_mode == IDACK) && (Recep_ServiceIDCompare(current_msg->header.target) == SUCCEED))
     {
         // when it is a idack and this message is destined to the node send an ack
         return 1;
