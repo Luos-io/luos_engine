@@ -506,8 +506,11 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        // directly transmit the message in Localhost
-                        Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
+                        if (Robus_IsNodeDetected() == DETECTION_OK)
+                        {
+                            // directly transmit the message in Localhost
+                            Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
+                        }
                     }
                     service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
