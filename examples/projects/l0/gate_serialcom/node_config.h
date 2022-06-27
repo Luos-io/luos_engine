@@ -47,7 +47,6 @@
 #define MAX_SERVICE_NUMBER 2
 #define MSG_BUFFER_SIZE    1024
 #define MAX_MSG_NB         40
-
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
 *******************************************************************************
@@ -102,11 +101,13 @@
  *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
  *    PIPE_TO_LUOS_BUFFER_SIZE  |             1024           | Receive pipe buffer size
  *    LUOS_TO_PIPE_BUFFER_SIZE  |             2048           | Transmit pipe buffer size
+ *    INIT_TIME                 |              150           | Wait init time before first detection
  ******************************************************************************/
 
 #define MAX_RTB_ENTRY            40
 #define GATE_BUFF_SIZE           1024
 #define PIPE_TO_LUOS_BUFFER_SIZE 1024
 #define LUOS_TO_PIPE_BUFFER_SIZE 2048
+#define INIT_TIME                150
 
 #endif /* _NODE_CONFIG_H_ */
