@@ -3,8 +3,8 @@
 ![](https://github.com/Luos-io/luos_engine/actions/workflows/build.yml/badge.svg)
 [![](https://img.shields.io/github/license/Luos-io/luos_engine)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 
-[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
-[![](http://certified.luos.io)](https://luos.io)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io/docs/luos-technology)
+[![](http://certified.luos.io)](https://www.luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos_engine/library/luos_engine.svg)](https://registry.platformio.org/libraries/luos_engine/luos_engine)
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
