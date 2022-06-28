@@ -109,4 +109,14 @@
 #define PIPE_TO_LUOS_BUFFER_SIZE 1024
 #define LUOS_TO_PIPE_BUFFER_SIZE 2048
 
+/*******************************************************************************
+ * OTHER GATE PARAMETERS
+ *******************************************************************************
+ *    Define                    | Default Value              | Description
+ *    :-------------------------|------------------------------------------------------
+ *    INIT_TIME                 |              150           | Wait init time before first detection
+ * ******************************************************************************/
+
+#define INIT_TIME 150
+
 #endif /* _NODE_CONFIG_H_ */
