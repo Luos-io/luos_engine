@@ -533,13 +533,34 @@ static inline void Recep_DoubleAlloc(msg_t *msg)
     // if there is a service that deactivated the filter we also allocate a message for it
     if (ctx.filter_state == false)
     {
+        // find the position of this service in the node
+        uint16_t idx = Recep_CtxIndexFromID(ctx.filter_id);
         // check if it is message for the same service that demanded the filter desactivation
-        if (ctx.filter_id != msg->header.target)
+        switch (msg->header.target_mode)
         {
-            // find the position of this service in the node
-            // store the message if it is not so that we dont have double messages in memory
-            uint16_t idx = Recep_CtxIndexFromID(ctx.filter_id);
-            MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+            case (ID):
+                if (ctx.filter_id != msg->header.target)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            case (TYPE):
+                if (ctx.ll_service_table[idx].type != msg->header.target)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            case (TOPIC):
+                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[idx], msg->header.target) == false)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            default:
+                break;
         }
     }
 }
