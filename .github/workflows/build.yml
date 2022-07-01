@@ -144,5 +144,9 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F072RB/button
           platformio run -d examples/projects/NUCLEO-F072RB/dc_motor
           platformio run -d examples/projects/NUCLEO-F072RB/potentiometer
+          # NUCLEO-L073RZ
+          platformio run -d examples/projects/NUCLEO-L073RZ/gate_serialcom
+          platformio run -d examples/projects/NUCLEO-L073RZ/button
+          platformio run -d examples/projects/NUCLEO-L073RZ/bootloader
           # SAMD21XPLAINED
           # ******** missing bootloader CI ********
