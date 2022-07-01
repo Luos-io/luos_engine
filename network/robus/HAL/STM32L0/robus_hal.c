@@ -356,10 +356,10 @@ static void RobusHAL_TimeoutInit(void)
     // initialize clock
     LUOS_TIMER_CLOCK_ENABLE();
 
-    TimerInit.Autoreload        = DEFAULT_TIMEOUT;
-    TimerInit.ClockDivision     = LL_TIM_CLOCKDIVISION_DIV1;
-    TimerInit.CounterMode       = LL_TIM_COUNTERMODE_UP;
-    TimerInit.Prescaler         = Timer_Prescaler - 1;
+    TimerInit.Autoreload    = DEFAULT_TIMEOUT;
+    TimerInit.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+    TimerInit.CounterMode   = LL_TIM_COUNTERMODE_UP;
+    TimerInit.Prescaler     = Timer_Prescaler - 1;
     while (LL_TIM_Init(LUOS_TIMER, &TimerInit) != SUCCESS)
         ;
     LL_TIM_EnableIT_UPDATE(LUOS_TIMER);
