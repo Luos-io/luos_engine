@@ -1,0 +1,39 @@
+{
+    "build": {
+        "core": "stm32",
+        "cpu": "cortex-m4",
+        "extra_flags": [
+            "-DSTM32F401xE",
+            "-DSTM32F40_41xxx",
+            "-DSTM32F4xx",
+            "-DUSE_HAL_DRIVER",
+            "-DUSE_FULL_LL_DRIVER",
+            "-DLUOSHAL=STM32F4 "
+        ],
+        "f_cpu": "84000000L",
+        "mcu": "stm32f401ret6",
+        "product_line": "STM32F401xE"
+    },
+    "debug": {
+        "jlink_device": "STM32F401RE",
+        "openocd_target": "stm32f4x",
+        "svd_path": "STM32F401xE.svd"
+    },
+    "frameworks": [
+        "stm32cube"
+    ],
+    "name": "STM32F401RE",
+    "upload": {
+        "maximum_ram_size": 98304,
+        "maximum_size": 524288,
+        "protocol": "stlink",
+        "protocols": [
+            "stlink",
+            "dfu"
+        ]
+    },
+    "url": "https://luos.io",
+    "vendor": "Luos"
+}
+
+
