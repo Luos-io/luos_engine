@@ -31,7 +31,10 @@ void AlarmController_Init(void)
 {
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // Create App
-    app = Luos_CreateService(AlarmController_MsgHandler, ALARM_CONTROLLER_APP, "alarm_control", revision);
+    app                 = Luos_CreateService(AlarmController_MsgHandler, ALARM_CONTROLLER_APP, "alarm_control", revision);
+    uint32_t init_timer = Luos_GetSystick();
+    while (Luos_GetSystick() - init_timer < INIT_TIME)
+        ;
     Luos_Detect(app);
 }
 /******************************************************************************
