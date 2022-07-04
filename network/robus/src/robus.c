@@ -199,18 +199,12 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     // Add the CRC to the total size of the message
     uint16_t full_size = sizeof(header_t) + data_size + CRC_SIZE;
 
-    // If we send a timestamped message, don't compute the crc on the complete message
-    uint16_t crc_max_index = 0;
+    uint16_t crc_max_index = full_size;
 
-    if (Timestamp_IsTimestampMsg(msg))
+    if (Timestamp_IsTimestampMsg(msg) == true)
     {
-        crc_max_index = full_size - sizeof(int64_t);
+        full_size += sizeof(time_luos_t);
     }
-    else
-    {
-        crc_max_index = full_size;
-    }
-
     // Compute the CRC
     crc_val = ll_crc_compute(&msg->stream[0], crc_max_index - CRC_SIZE, 0xFFFF);
 

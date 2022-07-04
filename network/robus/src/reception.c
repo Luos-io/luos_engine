@@ -115,6 +115,11 @@ void Recep_GetHeader(volatile uint8_t *data)
             else
             {
                 data_size = current_msg->header.size;
+                // we need to check if we have a timestamped message and increase the data size if yes
+                if (Timestamp_IsTimestampMsg(current_msg) == true)
+                {
+                    data_size += sizeof(time_luos_t);
+                }
             }
 
             if ((ctx.rx.status.rx_framing_error == false))
