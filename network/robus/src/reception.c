@@ -512,13 +512,8 @@ __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
             }
             break;
         case TOPIC:
-            if (Recep_TopicCompare(header->target) == SUCCEED)
+            if ((Recep_TopicCompare(header->target) == SUCCEED) || (ctx.filter_state == false))
             {
-                return ctx.verbose;
-            }
-            else if (ctx.filter_state == false)
-            {
-                // if there is a service that deactivated the filtering occupy the message
                 return MULTIHOST;
             }
             break;
