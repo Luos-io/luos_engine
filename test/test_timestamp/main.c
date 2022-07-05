@@ -19,14 +19,15 @@ void unittest_Timestamp()
 {
     NEW_TEST_CASE("Timestamp measurement");
     {
+        NEW_STEP("Save events");
         Reset_Context();
         //  Init default scenario context
         Init_Context();
+        Luos_Loop();
         //  Init variable
         time_luos_t event_a_timestamp;
         time_luos_t event_b_timestamp;
 
-        NEW_STEP("Save events");
         // Save event A
         event_a_timestamp = Timestamp_now();
         // wait for 1.2 seconds
@@ -35,7 +36,6 @@ void unittest_Timestamp()
             ;
         // Save event B
         event_b_timestamp = Timestamp_now();
-
         // check the time elapsed between the two events
         time_luos_t time_elapsed = event_b_timestamp - event_a_timestamp;
 
@@ -43,52 +43,37 @@ void unittest_Timestamp()
         TEST_ASSERT_EQUAL(((TimeOD_TimeTo_s(time_elapsed) > TimeOD_TimeFrom_ms(1.15)) && (TimeOD_TimeTo_s(time_elapsed) < TimeOD_TimeFrom_ms(1.25))), true);
 
         NEW_STEP("Transmit timestamps");
-
         // Init scenario context
-        Luos_ServicesClear();
-        RoutingTB_Erase();
-        Luos_Init();
-        msg_t receive_msg;
-        default_sc.App_1.last_rx_msg = &receive_msg;
-        default_sc.App_1.tx_msg      = (msg_t *)(&msg_buffer[0]);
-        Luos_Init();
-
-        // Create services
-        revision_t revision    = {.major = 1, .minor = 0, .build = 0};
-        service_t *transmitter = Luos_CreateService(0, VOID_TYPE, "Dummy_App", revision);
-        service_t *receiver    = Luos_CreateService(MessageHandler, VOID_TYPE, "Dummy_App", revision);
-
-        // Launch detection
-        Luos_Detect(transmitter);
+        Reset_Context();
+        //  Init default scenario context
+        Init_Context();
         Luos_Loop();
 
         // Create message
         msg_t msg;
-        msg.header.target      = receiver->ll_service->id;
+        msg.header.target      = 2;
         msg.header.target_mode = IDACK;
         msg.header.size        = 1;
-        msg.header.cmd         = STATE_TYPE;
+        msg.header.cmd         = IO_STATE;
         msg.data[0]            = true;
 
         // Send the 1st message to receiver with both the 1st timestamp
-        Luos_SendTimestampMsg(receiver, &msg, event_a_timestamp);
+        TEST_ASSERT_EQUAL(SUCCEED, Luos_SendTimestampMsg(default_sc.App_1.app, &msg, event_a_timestamp));
         Luos_Loop();
+
         // Get the message received
         msg_t *rx_msg;
-        rx_msg = default_sc.App_1.last_rx_msg;
+        rx_msg = default_sc.App_2.last_rx_msg;
         uint64_t low_level_rx_timestamp;
-        Timestamp_ConvertToDate(rx_msg, low_level_rx_timestamp);
         // Get back the 1st timestamp
         time_luos_t rx_event_a_timestamp = Timestamp_GetTimestamp(rx_msg);
-
         // Send the 2nd message to receiver with both the 2nd timestamp
         msg.header.size = 1;
-        Luos_SendTimestampMsg(receiver, &msg, event_b_timestamp);
+        TEST_ASSERT_EQUAL(SUCCEED, Luos_SendTimestampMsg(default_sc.App_1.app, &msg, event_b_timestamp));
         Luos_Loop();
+
         // Get the message received
-        rx_msg = default_sc.App_1.last_rx_msg;
-        low_level_rx_timestamp;
-        Timestamp_ConvertToDate(rx_msg, low_level_rx_timestamp);
+        rx_msg = default_sc.App_2.last_rx_msg;
         // Get back the 2nd timestamp
         time_luos_t rx_event_b_timestamp = Timestamp_GetTimestamp(rx_msg);
 

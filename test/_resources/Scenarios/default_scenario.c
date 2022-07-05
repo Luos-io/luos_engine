@@ -245,6 +245,13 @@ static void App_1_MsgHandler(service_t *service, msg_t *msg)
     {
         default_sc.App_1.last_rx_msg->data[i] = msg->data[i];
     }
+    if (msg->header.config == TIMESTAMP_PROTOCOL)
+    {
+        for (uint16_t i = 0; i < sizeof(time_luos_t); i++)
+        {
+            default_sc.App_1.last_rx_msg->data[msg->header.size + i] = msg->data[msg->header.size + i];
+        }
+    }
 }
 
 /******************************************************************************
@@ -264,6 +271,13 @@ static void App_2_MsgHandler(service_t *service, msg_t *msg)
     for (uint16_t i = 0; i < msg->header.size; i++)
     {
         default_sc.App_2.last_rx_msg->data[i] = msg->data[i];
+    }
+    if (msg->header.config == TIMESTAMP_PROTOCOL)
+    {
+        for (uint16_t i = 0; i < sizeof(time_luos_t); i++)
+        {
+            default_sc.App_2.last_rx_msg->data[msg->header.size + i] = msg->data[msg->header.size + i];
+        }
     }
 }
 
@@ -285,5 +299,13 @@ static void App_3_MsgHandler(service_t *service, msg_t *msg)
     for (uint16_t i = 0; i < msg->header.size; i++)
     {
         default_sc.App_3.last_rx_msg->data[i] = msg->data[i];
+    }
+
+    if (msg->header.config == TIMESTAMP_PROTOCOL)
+    {
+        for (uint16_t i = 0; i < sizeof(time_luos_t); i++)
+        {
+            default_sc.App_3.last_rx_msg->data[msg->header.size + i] = msg->data[msg->header.size + i];
+        }
     }
 }
