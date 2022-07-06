@@ -53,6 +53,7 @@ jobs:
 
           # Run Unit tests
           platformio test -c .\test\_resources\platformio.ini  -vvv
+        continue-on-error: true
 
       - name: Run PlatformIO
         run: |
@@ -101,6 +102,8 @@ jobs:
           platformio run -d examples/projects/NUCLEO-L432KC/led
           platformio run -d examples/projects/NUCLEO-L432KC/servo
           platformio run -d examples/projects/NUCLEO-L432KC/bootloader
+          platformio run -d examples/projects/NUCLEO-L432KC/dc_motor
+          platformio run -d examples/projects/NUCLEO-L432KC/potentiometre
           # STM32F4-discovery
           platformio run -d examples/projects/STM32F4-discovery/button
           platformio run -d examples/projects/STM32F4-discovery/gate_serialcom
@@ -112,16 +115,22 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F401RE/inspector_serialcom
           platformio run -d examples/projects/NUCLEO-F401RE/led
           platformio run -d examples/projects/NUCLEO-F401RE/bootloader
+          platformio run -d examples/projects/NUCLEO-F401RE/dc_motor
+          platformio run -d examples/projects/NUCLEO-F401RE/potentiometer
           # NUCLEO-F410RB
           platformio run -d examples/projects/NUCLEO-F410RB/button
           platformio run -d examples/projects/NUCLEO-F410RB/gate_serialcom
           platformio run -d examples/projects/NUCLEO-F410RB/inspector_serialcom
           platformio run -d examples/projects/NUCLEO-F410RB/bootloader
+          platformio run -d examples/projects/NUCLEO-F410RB/dc_motor
+          platformio run -d examples/projects/NUCLEO-F410RB/potentiometer
           # NUCLEO-G431KB
           platformio run -d examples/projects/NUCLEO-G431KB/button
           platformio run -d examples/projects/NUCLEO-G431KB/gate_serialcom
           platformio run -d examples/projects/NUCLEO-G431KB/inspector_serialcom
           platformio run -d examples/projects/NUCLEO-G431KB/bootloader
+          platformio run -d examples/projects/NUCLEO-G431KB/dc_motor
+          platformio run -d examples/projects/NUCLEO-G431KB/potentiometer
           # NUCLEO-G474RE
           platformio run -d examples/projects/NUCLEO-G474RE/button
           platformio run -d examples/projects/NUCLEO-G474RE/gate_serialcom
@@ -131,5 +140,8 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F072RB/gate_serialcom
           platformio run -d examples/projects/NUCLEO-F072RB/inspector_serialcom
           platformio run -d examples/projects/NUCLEO-F072RB/bootloader
+          platformio run -d examples/projects/NUCLEO-F072RB/button
+          platformio run -d examples/projects/NUCLEO-F072RB/dc_motor
+          platformio run -d examples/projects/NUCLEO-F072RB/potentiometer
           # SAMD21XPLAINED
           # ******** missing bootloader CI ********

@@ -39,6 +39,9 @@ void Gate_Init(void)
     revision_t revision = {.major = 1, .minor = 0, .build = 1};
     gate                = Luos_CreateService(0, GATE_TYPE, "gate", revision);
 #ifndef NODETECTION
+    uint32_t init_timer = Luos_GetSystick();
+    while (Luos_GetSystick() - init_timer < INIT_TIME)
+        ;
     Luos_Detect(gate);
 #endif
 }

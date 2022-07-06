@@ -115,6 +115,11 @@ void Recep_GetHeader(volatile uint8_t *data)
             else
             {
                 data_size = current_msg->header.size;
+                // we need to check if we have a timestamped message and increase the data size if yes
+                if (Timestamp_IsTimestampMsg(current_msg) == true)
+                {
+                    data_size += sizeof(time_luos_t);
+                }
             }
 
             if ((ctx.rx.status.rx_framing_error == false))
@@ -507,13 +512,8 @@ __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
             }
             break;
         case TOPIC:
-            if (Recep_TopicCompare(header->target) == SUCCEED)
+            if ((Recep_TopicCompare(header->target) == SUCCEED) || (ctx.filter_state == false))
             {
-                return ctx.verbose;
-            }
-            else if (ctx.filter_state == false)
-            {
-                // if there is a service that deactivated the filtering occupy the message
                 return MULTIHOST;
             }
             break;
@@ -533,13 +533,34 @@ static inline void Recep_DoubleAlloc(msg_t *msg)
     // if there is a service that deactivated the filter we also allocate a message for it
     if (ctx.filter_state == false)
     {
+        // find the position of this service in the node
+        uint16_t idx = Recep_CtxIndexFromID(ctx.filter_id);
         // check if it is message for the same service that demanded the filter desactivation
-        if (ctx.filter_id != msg->header.target)
+        switch (msg->header.target_mode)
         {
-            // find the position of this service in the node
-            // store the message if it is not so that we dont have double messages in memory
-            uint16_t idx = Recep_CtxIndexFromID(ctx.filter_id);
-            MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+            case (ID):
+                if (ctx.filter_id != msg->header.target)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            case (TYPE):
+                if (ctx.ll_service_table[idx].type != msg->header.target)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            case (TOPIC):
+                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[idx], msg->header.target) == false)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            default:
+                break;
         }
     }
 }

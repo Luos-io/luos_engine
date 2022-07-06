@@ -103,8 +103,6 @@ void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
     msg->header.config = TIMESTAMP_PROTOCOL;
     // Timestamp is at the end of the message copy it
     memcpy(&msg->data[msg->header.size], &timestamp, sizeof(time_luos_t));
-    // Add timestamp size to message size
-    msg->header.size += sizeof(time_luos_t);
 }
 
 /******************************************************************************
@@ -120,14 +118,14 @@ void Timestamp_ConvertToLatency(msg_t *msg)
     if (last_msg != msg)
     {
         // This is a new message, backup the timestamp date
-        memcpy(&timestamp_date, &msg->data[msg->header.size - sizeof(time_luos_t)], sizeof(time_luos_t));
+        memcpy(&timestamp_date, &msg->data[msg->header.size], sizeof(time_luos_t));
         // Keep the message pointer to know if we already manage this one or not.
         last_msg = msg;
     }
     // Compute the latency from date
     time_luos_t latency = timestamp_date - Timestamp_now();
     // Write latency on the message
-    memcpy(&msg->data[msg->header.size - sizeof(time_luos_t)], &latency, sizeof(time_luos_t));
+    memcpy(&msg->data[msg->header.size], &latency, sizeof(time_luos_t));
 }
 
 /******************************************************************************
@@ -139,8 +137,6 @@ void Timestamp_ConvertToLatency(msg_t *msg)
 inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)
 {
     time_luos_t timestamp_latency = 0.0f;
-    // Update msg size
-    msg->header.size = msg->header.size - sizeof(time_luos_t);
     // Get latency
     memcpy(&timestamp_latency, &msg->data[msg->header.size], sizeof(time_luos_t));
     // Compute the date from latency

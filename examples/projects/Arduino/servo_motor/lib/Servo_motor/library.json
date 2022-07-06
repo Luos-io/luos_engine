@@ -6,6 +6,6 @@
     "licence": "MIT",
     "dependencies": {
         "arduino-libraries/servo": "^1.1.8",
-        "luos/luos_engine": "^2.5.0"
+        "luos/luos_engine": "^2.5.1"
     }
 }

@@ -27,7 +27,7 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.major = 2, .minor = 5, .build = 0};
+revision_t luos_version = {.major = 2, .minor = 5, .build = 1};
 package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
@@ -506,8 +506,11 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        // directly transmit the message in Localhost
-                        Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
+                        if (Robus_IsNodeDetected() == DETECTION_OK)
+                        {
+                            // directly transmit the message in Localhost
+                            Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
+                        }
                     }
                     service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
                 }
@@ -607,7 +610,6 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
 {
     // set timestamp in message
     Timestamp_EncodeMsg(msg, timestamp);
-
     if (service == 0)
     {
         // There is no service specified here, take the first one
@@ -623,7 +625,6 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
     {
         return FAILED;
     }
-
     return SUCCEED;
 }
 
