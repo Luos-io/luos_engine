@@ -9,7 +9,7 @@
     },
     "licence": "MIT",
     "dependencies": {
-        "luos/luos_engine": "^2.5.1"
+        "luos/luos_engine": "^2.5.2"
     },
     "build": {
         "flags": [

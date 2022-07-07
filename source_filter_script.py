@@ -1,11 +1,24 @@
+import uuid
 import sys
 import subprocess
 import platform as pf
 from os import system, listdir, path, scandir, getcwd
 import click
+import json
+import requests
 
 from os.path import join, realpath
-Import('env')
+Import("env")
+
+telemetry = True
+luos_telemetry = {"telemetry_type": "luos_engine_build",
+                  "mac": hex(uuid.getnode()),
+                  "system": sys.platform,
+                  "unix_time": env.get("UNIX_TIME"),
+                  "framework": env.get("PIOFRAMEWORK")[0],
+                  "platform": env.get("PIOPLATFORM"),
+                  "mcu": env.get("BOARD_MCU"),
+                  "f_cpu": env.get("BOARD_F_CPU")}
 
 # Check if this script have been already executed during this compilation
 visited_key = "__LUOS_CORE_SCRIPT_CALLED"
@@ -25,9 +38,11 @@ if not visited_key in global_env:
         from pyluos import version
         click.secho("\t* Pyluos revision " +
                     str(version.version) + " ready.", fg="green")
+        luos_telemetry["pyluos_rev"] = str(version.version)
     except ImportError:  # module doesn't exist, deal with it.
         click.secho(
             "\t* Pyluos install failed. Platformio will be unable to use bootloader flash feature.", fg="red")
+        luos_telemetry["pyluos_rev"] = "none"
 
 sources = ["+<*.c>",
            "+<../../../network/robus/src/*.c>",
@@ -46,17 +61,32 @@ for item in env.get("CPPDEFINES", []):
             if not visited_key in global_env:
                 click.secho(
                     "\t* %s HAL selected for Luos and Robus." % item[1], fg="green")
+                luos_telemetry["luos_hal"] = item[1]
         else:
             if not visited_key in global_env:
                 click.secho("\t* %s HAL not found" % item[1], fg="red")
+                luos_telemetry["luos_hal"] = "invalid" + str(item[1])
         env.Append(CPPPATH=[realpath("network/robus/HAL/" + item[1])])
         env.Append(CPPPATH=[realpath("engine/HAL/" + item[1])])
         env.Replace(SRC_FILTER=sources)
         env.Append(
             SRC_FILTER=["+<../../../network/robus/HAL/%s/*.c>" % item[1]])
         env.Append(SRC_FILTER=["+<../../HAL/%s/*.c>" % item[1]])
-        break
-        
+    if (item == 'NOTELEMETRY'):
+        telemetry = False
+
+
+if (telemetry == True):
+    click.secho("\t* Telemetry enabled.", fg="green")
+    try:
+        requests.post("https://monorepo-services.vercel.app/api/telemetry",
+                      data=luos_telemetry)
+    except:
+        click.secho("Telemetry request failed.", fg="red")
+else:
+    click.secho("\t* Telemetry disabled, please consider enabling it by removing the 'NOTELEMETRY' flag to help Luos_engine improve.", fg="red")
+click.secho("")
+
 # native unit testing
 find_MOCK_HAL = False
 for item in env.get("CPPDEFINES", []):
@@ -95,7 +125,7 @@ for item in env.get("CPPDEFINES", []):
 
             # Generate code coverage when testing workflow is ended
             # CODE COVERAGE WILL BE ADDED SOON
-            #env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
+            # env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
         else:
             click.echo("Unit tests are not supported on your os ", current_os)
         break
