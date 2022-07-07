@@ -40,3 +40,7 @@ This section details the features of Luos technology as an embedded development 
 * Definition of [Packages](https://docs.luos.io/docs/luos-technology/package/), and how to make a portable and reusable development.
 * Definition of [Services](https://docs.luos.io/docs/luos-technology/services/), how to create and declare features in your product.
 * Definition of [Messages](https://docs.luos.io/docs/luos-technology/message/), when, why, and how to handle them, explaining the more advanced features of Luos.
+
+## Disclaimer
+Using Platformio, this library compilation send some anonymous information to Luos allowing to improve Luos_engine experience.
+To disable the telemetry please add "-DNOTELEMETRY" as a compilation flag on your platformio.ini file.
