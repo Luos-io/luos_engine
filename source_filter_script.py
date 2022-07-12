@@ -15,10 +15,14 @@ luos_telemetry = {"telemetry_type": "luos_engine_build",
                   "mac": hex(uuid.getnode()),
                   "system": sys.platform,
                   "unix_time": env.get("UNIX_TIME"),
-                  "framework": env.get("PIOFRAMEWORK")[0],
                   "platform": env.get("PIOPLATFORM"),
                   "mcu": env.get("BOARD_MCU"),
                   "f_cpu": env.get("BOARD_F_CPU")}
+
+try:
+    luos_telemetry["framework"] = env.get("PIOFRAMEWORK")[0]
+except:
+    pass
 
 # Check if this script have been already executed during this compilation
 visited_key = "__LUOS_CORE_SCRIPT_CALLED"
