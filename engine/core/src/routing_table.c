@@ -272,7 +272,7 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
     uint16_t nb_service = RoutingTB_BigestID();
     for (uint16_t id = 1; id <= nb_service; id++)
     {
-        uint16_t found_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
+        int32_t found_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
         if ((found_id != id) & (found_id != -1))
         {
             // The found_id don't match with the actual ID of the service because the alias already exist
