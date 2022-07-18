@@ -63,7 +63,7 @@ sources = ["+<*.c>",
 # private library flags
 find_HAL = False
 for item in env.get("CPPDEFINES", []):
-    if isinstance(item, tuple) and item[0] == "LUOSHAL":
+    if (isinstance(item, tuple) and item[0] == "LUOSHAL") and (find_HAL == False):
         find_HAL = True
         if (path.exists("network/robus/HAL/" + item[1]) and path.exists("engine/HAL/" + item[1])):
             if not visited_key in global_env:

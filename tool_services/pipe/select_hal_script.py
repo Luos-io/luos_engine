@@ -1,4 +1,6 @@
+#!/usr/bin/python
 from os import path
+import sys
 import click
 from os.path import join, realpath
 Import('env')
@@ -18,15 +20,21 @@ for item in env.get("CPPDEFINES", []):
             for itemhal in env.get("CPPDEFINES", []):
                 if isinstance(itemhal, tuple) and itemhal[0] == "PIPEHAL":
                     find_HAL = True
+                    env.Append(CPPPATH=[realpath(item[1] + "/" + itemhal[1])])
+                    env.Replace(
+                        SRC_FILTER=["+<*.c>, +<%s/%s/*.c>, +<%s/%s/*.cpp>" % (item[1], itemhal[1], item[1], itemhal[1])])
                     if (path.exists(item[1] + "/" + itemhal[1])):
                         click.secho(
                             "\t* %s HAL selected." % itemhal[1], fg="green")
+                        if (path.exists(item[1] + "/" + itemhal[1] + "/hal_script.py")):
+                            # This is an extra script dedicated to this HAL, run it
+                            hal_script_path = realpath(
+                                item[1] + "/" + itemhal[1] + "/hal_script.py")
+                            env.SConscript(hal_script_path, exports="env")
+
                     else:
                         click.secho("\t* %s HAL not found." %
                                     item[1], fg="red")
-                    env.Append(CPPPATH=[realpath(item[1] + "/" + itemhal[1])])
-                    env.Replace(
-                        SRC_FILTER=["+<*.c>, +<%s/%s>" % (item[1], itemhal[1])])
                     break
             if find_HAL == False:
                 click.secho(
