@@ -340,6 +340,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
     {
         current_t current = ElectricOD_CurrentFrom_A(json_getReal(item));
         ElectricOD_CurrentToMsg(&current, msg);
+        msg->header.cmd = CURRENT_LIMIT;
         Luos_SendMsg(service, msg);
     }
     // target Rotation speed
