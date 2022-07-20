@@ -101,7 +101,7 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
         pub_msg.header.target_mode = IDACK;
         pub_msg.header.target      = msg->header.source;
         pub_msg.header.size        = sizeof(void *);
-        int value                  = (int)&PipeBuffer_SetL2PMsg;
+        uintptr_t value            = (uintptr_t)&PipeBuffer_SetL2PMsg;
         memcpy(pub_msg.data, &value, sizeof(void *));
         Luos_SendMsg(service, &pub_msg);
     }
