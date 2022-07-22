@@ -96,6 +96,8 @@ void RobusHAL_SetRxState(uint8_t Enable)
  ******************************************************************************/
 void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
+    // We consider this information sent
+    Recep_Timeout();
 }
 
 /******************************************************************************
