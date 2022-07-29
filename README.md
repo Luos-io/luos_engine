@@ -22,7 +22,7 @@ Luos provides a simple way to think your hardware products as a group of indepen
 Most of the embedded developments are made from scratch. By using Luos, you will be able to capitalize on the development you, your company, or the Luos community already did. The re-usability of features encapsulated in Luos services will fasten the time your products reach the market and reassure the robustness and the universality of your applications.
 
 * → Join the [Luos Discord Community](https://discord.gg/luos)
-* → Join the [Luos Reddit Community](https://www.reddit.com/r/Luos/)
+* → Join the [Luos Reddit Community](https://www.reddit.com/r/Luos)
 * → Follow us on [Twitter](https://twitter.com/Luos_io)
 * → Follow us on [Linkedin](https://www.linkedin.com/company/luos)
 * → Watch our new videos on [Youtube](https://www.youtube.com/channel/UCWeIoHVY9Z-04kdwXNtv2FA)
@@ -36,11 +36,11 @@ Luos proposes organized and effective development practices, guaranteeing develo
 This section details the features of Luos technology as an embedded development platform, following these subjects:
 
 * Let's test through the [Luos get started](https://www.luos.io/tutorials/get-started), to build, flash, run, and control your very first Luos code.
-* The [Basics of Luos](https://www.luos.io/docs/luos-technology/basics/), explaining the general concepts and the project organization.
-* Definition of [Nodes](https://www.luos.io/docs/luos-technology/node/), and the relation between Luos and the physical world.
-* Definition of [Packages](https://www.luos.io/docs/luos-technology/package/), and how to make a portable and reusable development.
-* Definition of [Services](https://www.luos.io/docs/luos-technology/services/), how to create and declare features in your product.
-* Definition of [Messages](https://www.luos.io/docs/luos-technology/message/), when, why, and how to handle them, explaining the more advanced features of Luos.
+* The [Basics of Luos](https://www.luos.io/docs/luos-technology/basics), explaining the general concepts and the project organization.
+* Definition of [Nodes](https://www.luos.io/docs/luos-technology/node), and the relation between Luos and the physical world.
+* Definition of [Packages](https://www.luos.io/docs/luos-technology/package), and how to make a portable and reusable development.
+* Definition of [Services](https://www.luos.io/docs/luos-technology/services), how to create and declare features in your product.
+* Definition of [Messages](https://www.luos.io/docs/luos-technology/message), when, why, and how to handle them, explaining the more advanced features of Luos.
 
 ## Disclaimer
 Using Platformio, this library compilation send some anonymous information to Luos allowing to improve Luos_engine experience.
