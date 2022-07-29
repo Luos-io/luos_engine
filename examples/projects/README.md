@@ -3,7 +3,7 @@
 ![](https://github.com/Luos-io/luos_engine/actions/workflows/build.yml/badge.svg)
 [![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 
-[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos_engine/library/Luos.svg)](https://registry.platformio.org/libraries/luos_engine/luos_engine)
 
@@ -18,7 +18,7 @@ This folder contains the sources of every examples sorted by boards.
 
 In most of the examples folder you will find a project called `Bootloader`, you can use this project to compile a Luos engine bootloader and load it into your board.
 All the other examples have a `*_with_bootloader` compilation mode allowing you to load your program using the bootloader.
-For further informations please follow our [bootloader tutorial](https://docs.luos.io/tutorials/bootloader/intro).
+For further informations please follow our [bootloader tutorial](https://www.luos.io/tutorials/bootloader/intro).
 
 
 
