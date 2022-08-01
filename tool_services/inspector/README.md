@@ -3,7 +3,7 @@
 [![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 
 
-[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos_engine/library/Inspector.svg)](https://registry.platformio.org/libraries/luos_engine/Inspector)
 
@@ -21,9 +21,9 @@ A Luos service application allowing a computer to inspect a product.
 ## To learn more
 This section details the features of Luos technology as an embedded development platform, following these subjects:
 
-* Let's test through the [Luos get started](https://docs.luos.io/tutorials/get-started), to build, flash, run, and control your very first Luos code.
-* The [Basics of Luos](https://docs.luos.io/docs/luos-technology/basics/), explaining the general concepts.
-* Definition of [Nodes](https://docs.luos.io/docs/luos-technology/node/), and the relation between Luos and the physical world.
-* Definition of [Packages](https://docs.luos.io/docs/luos-technology/package/), and how to make a portable and reusable development.
-* Definition of [Services](https://docs.luos.io/docs/luos-technology/services/), how to create and declare features in your product.
-* Definition of [Messages](https://docs.luos.io/docs/luos-technology/message/), when, why, and how to handle them, explaining the more advanced features of Luos.
+* Let's test through the [Luos get started](https://www.luos.io/tutorials/get-started), to build, flash, run, and control your very first Luos code.
+* The [Basics of Luos](https://www.luos.io/docs/luos-technology/basics), explaining the general concepts.
+* Definition of [Nodes](https://www.luos.io/docs/luos-technology/node), and the relation between Luos and the physical world.
+* Definition of [Packages](https://www.luos.io/docs/luos-technology/package), and how to make a portable and reusable development.
+* Definition of [Services](https://www.luos.io/docs/luos-technology/services), how to create and declare features in your product.
+* Definition of [Messages](https://www.luos.io/docs/luos-technology/message), when, why, and how to handle them, explaining the more advanced features of Luos.

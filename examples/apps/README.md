@@ -3,7 +3,7 @@
 ![](https://github.com/Luos-io/luos_engine/actions/workflows/build.yml/badge.svg)
 [![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 
-[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos_engine/library/Luos.svg)](https://registry.platformio.org/libraries/luos_engine/luos_engine)
 
@@ -14,7 +14,7 @@
 
 # Apps
 
-This folder contains the service's sources of each **app** project (see [Apps section](https://docs.luos.io/docs/next/luos-technology/services/service-api#apps-guidelines) in documentation). There are three folders:
+This folder contains the service's sources of each **app** project (see [Apps section](https://www.luos.io/docs/luos-technology/services/service-api#drivers-guidelines) in documentation). There are three folders:
 
  - **Alarm_controller** - Part of the bike alarm App. This App communicates with an accelerometer service, and monitors for movement. If movement is detected, it will look for a Service to issue an alarm.
  - **Gate** - A special App used in conjunction with the [Pyluos](https://github.com/Luos-io/Pyluos) library, this App allows Python to taeke control of the Luos network, and to communicate with the different Services located on the network.

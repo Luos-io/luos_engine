@@ -1,4 +1,4 @@
-<a href="https://luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
+<a href="https://www.luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
 
 # Contributing to Luos
 
@@ -27,8 +27,8 @@ Pull requests are the best way to propose changes to the codebase. We actively w
 5. Make sure your code lints.
 6. Issue that pull request!
 
-## Any contributions to a driver and/or an application you make will be under the [MIT Software License](http://choosealicense.com/licenses/mit/)
-In short, when you submit code changes to drivers and apps, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+## Any contributions to a driver and/or an application you make will be under the [MIT Software License](http://choosealicense.com/licenses/mit)
+In short, when you submit code changes to drivers and apps, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit) that covers the project. Feel free to contact the maintainers if that's a concern.
 
 ## Any contributions to Luos core technology you make will be under the [Luos License](https://github.com/Luos-io/luos_engine/blob/master/LICENSE.md)
 In short, when you submit code changes to Luos core technology, your submissions are understood to be under the [Luos License](https://github.com/Luos-io/luos_engine/blob/master/LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
@@ -46,8 +46,8 @@ Great Bug Reports tend to have:
 
 People love thorough bug reports. I'm not even kidding.
 
-## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
+## Don't hesitate to read [our documentation](https://www.luos.io/docs/luos-technology), or to post your questions/issues on the [Luos' community](https://www.luos.io/community). :books:
 
-[![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://community.luos.io)
-[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
+[![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://www.luos.io/community)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](https://img.shields.io/badge/LinkedIn-Follow%20us-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/company/luos)
