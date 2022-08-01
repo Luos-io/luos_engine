@@ -51,6 +51,7 @@ typedef struct __attribute__((__packed__))
             {
                 uint16_t node_id : 12;  // Node id
                 uint16_t certified : 4; // True if the node have a certificate
+                uint8_t node_info;      // node info can contain info such as the saving of routing table
             };
             uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t) - 2) / 2]; // Node link table
         };

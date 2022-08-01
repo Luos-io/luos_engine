@@ -140,10 +140,11 @@ typedef struct __attribute__((__packed__))
             {
                 uint16_t node_id : 12;  /*!< Node id */
                 uint16_t certified : 4; /*!< True if the node have a certificate */
+                uint8_t node_info;
             };
             uint16_t port_table[NBR_PORT]; /*!< Phisical port connections */
         };
-        uint8_t unmap[NBR_PORT + 2]; /*!< Uncmaped form. */
+        uint8_t unmap[NBR_PORT + 3]; /*!< Uncmaped form. */
     };
 } node_t;
 
