@@ -66,6 +66,11 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.node.node_id = DEFAULTID;
     // By default node are not certified.
     ctx.node.certified = false;
+    // set node_info value
+    ctx.node.node_info = 0;
+#ifdef NO_RTB
+    ctx.node.node_info |= 1 << 0;
+#endif
     // no transmission lock
     ctx.tx.lock = false;
     // Init collision state
