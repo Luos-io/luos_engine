@@ -10,7 +10,7 @@ set(srcs    "../../../../../engine/core/src/luos_engine.c"
             "../../../src/port_manager.c"
             "../../../src/reception.c"
             "../../../src/robus.c"
-            "../../../src/target.c"
+            "../../../src/topic.c"
             "../../../src/transmission.c"
             "../../../HAL/ESP32/robus_hal.c")
 

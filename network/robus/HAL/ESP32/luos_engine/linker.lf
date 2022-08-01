@@ -1,4 +1,4 @@
 [mapping:luos_engine]
 archive: libluos_engine.a
 entries:
-    * (noflash)
+    * (default)

@@ -23,7 +23,7 @@
 #define COM_TX_PIN GPIO_NUM_10
 #define COM_RX_PIN GPIO_NUM_9 // this pin should pin pull up to vcc if no internal pull up
 
-#define LUOS_TIMER TIMER_1
+#define LUOS_TIMER_GROUP TIMER_GROUP_1
 
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define TIMERDIV 2 // clock divider for timer clock chosen
@@ -34,8 +34,6 @@
 #define COM_TX_PIN GPIO_NUM_4
 #define COM_RX_PIN GPIO_NUM_5
 
-#define LUOS_TIMER TIMER_0
-
 #else
 #define TIMERDIV 2 // clock divider for timer clock chosen
 
@@ -44,8 +42,6 @@
 #define TX_EN_PIN  GPIO_NUM_14
 #define COM_TX_PIN GPIO_NUM_17
 #define COM_RX_PIN GPIO_NUM_18
-
-#define LUOS_TIMER TIMER_0
 
 #endif
 

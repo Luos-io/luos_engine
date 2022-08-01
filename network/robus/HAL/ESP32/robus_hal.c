@@ -54,6 +54,7 @@ uint8_t *tx_data               = 0;
 uint32_t Rsize                 = 0;
 
 volatile uint8_t RxEn = true;
+volatile uint8_t TxEn = true;
 /*******************************************************************************
  * esp
  ******************************************************************************/
@@ -80,7 +81,7 @@ static void RobusHAL_TimeoutInit(void);
 static void RobusHAL_GPIOInit(void);
 static void RobusHAL_RegisterPTP(void);
 void RobusHAL_PinoutIrqHandler(void *arg);
-void RobusHAL_TimeoutIrqHandler(void *arg);
+timer_isr_t RobusHAL_TimeoutIrqHandler(void *arg);
 void RobusHAL_ComIrqHandler(void *arg);
 /////////////////////////Luos Library Needed function///////////////////////////
 
@@ -107,18 +108,29 @@ void RobusHAL_Init(void)
  ******************************************************************************/
 _CRITICAL void RobusHAL_SetIrqState(uint8_t Enable)
 {
-    if (Enable == true)
+    static volatile uint8_t irq_mutex = true;
+
+    if ((Enable == true) && (irq_mutex != true))
     {
-        timer_hal_intr_enable(&timeout_hal_context);
         if (RxEn == true)
         {
             uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
         }
+        if (TxEn == true)
+        {
+            uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
+        }
+        timer_enable_intr(LUOS_TIMER_GROUP, LUOS_TIMER);
+        irq_mutex = true;
     }
-    else
+    else if ((Enable == false) && (irq_mutex != false))
     {
+#ifndef CONFIG_IDF_TARGET_ESP32
         uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-        timer_hal_intr_disable(&timeout_hal_context);
+#endif
+        uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
+        timer_disable_intr(LUOS_TIMER_GROUP, LUOS_TIMER);
+        irq_mutex = false;
     }
 }
 /******************************************************************************
@@ -167,6 +179,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
  ******************************************************************************/
 _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
 {
+    TxEn = Enable;
     if (Enable == true)
     {
         // Put Tx in push pull
@@ -352,7 +365,6 @@ _CRITICAL uint8_t RobusHAL_GetTxLockState(void)
         RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
         result = true;
     }
-
     return result;
 }
 /******************************************************************************
@@ -371,7 +383,7 @@ static void RobusHAL_TimeoutInit(void)
     Timeout.auto_reload = TIMER_AUTORELOAD_EN; /*!< Timer auto-reload */
     Timeout.divider     = Timer_Prescaler - 1; /*!< Counter clock divider. The divider's range is from from 2 to 65536. */
     timer_init(LUOS_TIMER_GROUP, LUOS_TIMER, &Timeout);
-    timer_isr_callback_add(LUOS_TIMER_GROUP, LUOS_TIMER, &RobusHAL_TimeoutIrqHandler, NULL, ESP_INTR_FLAG_LEVEL1);
+    timer_isr_callback_add(LUOS_TIMER_GROUP, LUOS_TIMER, &RobusHAL_TimeoutIrqHandler, NULL, ESP_INTR_FLAG_IRAM);
     timer_set_alarm_value(LUOS_TIMER_GROUP, LUOS_TIMER, DEFAULT_TIMEOUT);
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }
@@ -400,19 +412,19 @@ _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void RobusHAL_TimeoutIrqHandler(void *arg)
+_CRITICAL timer_isr_t RobusHAL_TimeoutIrqHandler(void *arg)
 {
     timer_hal_clear_intr_status(&timeout_hal_context);
     timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
-    if (ctx.tx.lock == true)
+    if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
     {
         // Enable RX detection pin if needed
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
         Recep_Timeout();
     }
+    return 0;
 }
-
 /******************************************************************************
  * @brief Initialisation GPIO
  * @param None
@@ -446,13 +458,13 @@ static void RobusHAL_GPIOInit(void)
 
     // configure PTP
     RobusHAL_RegisterPTP();
-    gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
     for (uint8_t i = 0; i < NBR_PORT; i++) /*Configure GPIO pins : PTP_Pin */
     {
         // Setup PTP lines
         gpio_reset_pin(PTP[i].Pin);
         PinConfig.intr_type    = GPIO_INTR_POSEDGE;
-        PinConfig.mode         = GPIO_MODE_INPUT;
+        PinConfig.mode         = GPIO_MODE_INPUT_OUTPUT_OD;
         PinConfig.pin_bit_mask = (1ULL << PTP[i].Pin);
         PinConfig.pull_down_en = GPIO_PULLDOWN_ENABLE;
         PinConfig.pull_up_en   = GPIO_PULLUP_DISABLE;
@@ -516,9 +528,11 @@ _CRITICAL void RobusHAL_PinoutIrqHandler(void *arg)
 _CRITICAL void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
     // Pull Down / IT mode / Rising Edge
-    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_POSEDGE);
+    gpio_intr_disable(PTP[PTPNbr].Pin);
     gpio_set_direction(PTP[PTPNbr].Pin, GPIO_MODE_INPUT);
     gpio_set_pull_mode(PTP[PTPNbr].Pin, GPIO_PULLDOWN_ONLY);
+    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_POSEDGE);
+    gpio_intr_enable(PTP[PTPNbr].Pin);
 }
 /******************************************************************************
  * @brief Set PTP for reverse detection on branch
@@ -528,9 +542,11 @@ _CRITICAL void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 _CRITICAL void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
     // Pull Down / IT mode / Falling Edge
-    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_NEGEDGE);
+    gpio_intr_disable(PTP[PTPNbr].Pin);
     gpio_set_direction(PTP[PTPNbr].Pin, GPIO_MODE_INPUT);
     gpio_set_pull_mode(PTP[PTPNbr].Pin, GPIO_PULLDOWN_ONLY);
+    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_NEGEDGE);
+    gpio_intr_enable(PTP[PTPNbr].Pin);
 }
 /******************************************************************************
  * @brief Set PTP line
@@ -540,7 +556,7 @@ _CRITICAL void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 _CRITICAL void RobusHAL_PushPTP(uint8_t PTPNbr)
 {
     // Pull Down / Output mode
-    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_DISABLE);
+    gpio_intr_disable(PTP[PTPNbr].Pin);
     gpio_set_direction(PTP[PTPNbr].Pin, GPIO_MODE_OUTPUT);
 
     // Clean edge/state detection and set the PTP pin as output
@@ -554,9 +570,10 @@ _CRITICAL void RobusHAL_PushPTP(uint8_t PTPNbr)
 _CRITICAL uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
 {
     // Pull Down / Input mode
-    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_DISABLE);
-    gpio_set_pull_mode(PTP[PTPNbr].Pin, GPIO_FLOATING);
+    gpio_intr_disable(PTP[PTPNbr].Pin);
     gpio_set_direction(PTP[PTPNbr].Pin, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(PTP[PTPNbr].Pin, GPIO_FLOATING);
+
     return gpio_get_level(PTP[PTPNbr].Pin);
 }
 /******************************************************************************
