@@ -110,28 +110,28 @@ volatile uint16_t tx_tasks_stack_id;     /*!< Next writen tx_tasks id. */
  ******************************************************************************/
 
 // msg buffering
-static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to);
+_CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to);
 
 // Allocator task stack
-static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to);
+_CRITICAL static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to);
 
 // Allocator task stack TX check space
 static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to);
 
 // msg interpretation task stack
-static inline void MsgAlloc_ClearMsgTask(void);
+_CRITICAL static inline void MsgAlloc_ClearMsgTask(void);
 
 // Luos task stack
-static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id);
+_CRITICAL static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id);
 
 // Available buffer space evaluation
 static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void);
 
 // Check if this message is the oldest
-static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
+_CRITICAL static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt);
 
 // Find the oldest message curretly stored
-static inline void MsgAlloc_FindNewOldestMsg(void);
+_CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void);
 
 /*******************************************************************************
  * Functions --> generic
@@ -210,7 +210,7 @@ void MsgAlloc_loop(void)
  * @param None
  * @return None
  ******************************************************************************/
-void MsgAlloc_ValidDataIntegrity(void)
+_CRITICAL void MsgAlloc_ValidDataIntegrity(void)
 {
     // Check if we have to make a header copy from the end to the begin of msg_buffer.
     if (copy_task_pointer != NULL)
@@ -305,7 +305,7 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
  * @param oldest_stack_msg_pt : the oldest message of a stack
  * @return None
  ******************************************************************************/
-static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
+_CRITICAL static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
 {
     if ((uint32_t)oldest_stack_msg_pt > 0)
     {
@@ -357,7 +357,7 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
  * @param removed_msg : the freshly oldest removed message of the stack
  * @return None
  ******************************************************************************/
-static inline void MsgAlloc_FindNewOldestMsg(void)
+_CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void)
 {
     // Reinit the value
     oldest_msg = (msg_t *)0xFFFFFFFF;
@@ -380,7 +380,7 @@ static inline void MsgAlloc_FindNewOldestMsg(void)
  * @param to : start of the memory space to clean
  * @return error_return_t
  ******************************************************************************/
-static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
+_CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
 {
     if ((uint32_t)to > ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
     {
@@ -402,7 +402,7 @@ static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
  * @param None
  * @return None
  ******************************************************************************/
-void MsgAlloc_InvalidMsg(void)
+_CRITICAL void MsgAlloc_InvalidMsg(void)
 {
     //******** Remove the header by reseting data_ptr *********
     // clean the memory zone
@@ -445,7 +445,7 @@ void MsgAlloc_InvalidMsg(void)
  * @param data_size : size of the data to receive
  * @return None
  ******************************************************************************/
-void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
+_CRITICAL void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
 {
     //******** Prepare the allocator to get data  *********
     // Save the concerned service pointer into the concerned service pointer stack
@@ -553,7 +553,7 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
  * @brief Finish the current message
  * @return None
  ******************************************************************************/
-void MsgAlloc_EndMsg(void)
+_CRITICAL void MsgAlloc_EndMsg(void)
 {
     //******** End the message **********
     // clean the memory zone
@@ -655,7 +655,7 @@ void MsgAlloc_EndMsg(void)
  * @param uint8_t data to write in the allocator
  * @return None
  ******************************************************************************/
-void MsgAlloc_SetData(uint8_t data)
+_CRITICAL void MsgAlloc_SetData(uint8_t data)
 {
     //
     //        msg_buffer init state
@@ -698,7 +698,7 @@ error_return_t MsgAlloc_IsEmpty(void)
  * @param None
  * @return None
  ******************************************************************************/
-void MsgAlloc_Reset(void)
+_CRITICAL void MsgAlloc_Reset(void)
 {
     // We will need to reset
     reset_needed      = true;
@@ -737,7 +737,7 @@ error_return_t MsgAlloc_IsReseted(void)
  * @param to : start of the memory space to clean
  * @return error_return_t
  ******************************************************************************/
-static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
+_CRITICAL static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
 {
     //******** Check if there is sufficient space on the buffer **********
     if (MsgAlloc_DoWeHaveSpace(to) == FAILED)
@@ -836,7 +836,7 @@ static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
  * @param None
  * @return None
  ******************************************************************************/
-static inline void MsgAlloc_ClearMsgTask(void)
+_CRITICAL static inline void MsgAlloc_ClearMsgTask(void)
 {
     LUOS_ASSERT((msg_tasks_stack_id <= MAX_MSG_NB) && (msg_tasks_stack_id > 0));
 
@@ -916,7 +916,7 @@ void MsgAlloc_UsedMsgEnd(void)
  * @param None
  * @return None
  ******************************************************************************/
-static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
+_CRITICAL static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
 {
     LUOS_ASSERT((luos_task_id < luos_tasks_stack_id) && (luos_tasks_stack_id <= MAX_MSG_NB));
     //
@@ -1697,7 +1697,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
  * @brief remove a transmit message task
  * @param None
  ******************************************************************************/
-void MsgAlloc_PullMsgFromTxTask(void)
+_CRITICAL void MsgAlloc_PullMsgFromTxTask(void)
 {
     if (tx_tasks_stack_id != 0)
     {
@@ -1800,7 +1800,7 @@ void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
  * @param localhost is this message a localhost one
  * @return error_return_t : Fail is there is no more message available.
  ******************************************************************************/
-error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
+_CRITICAL error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
@@ -1847,7 +1847,7 @@ error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, 
  * @brief check if there is uncomplete tx_tasks
  * @return error_return_t : Fail is there is untransmitted message.
  ******************************************************************************/
-error_return_t MsgAlloc_TxAllComplete(void)
+_CRITICAL error_return_t MsgAlloc_TxAllComplete(void)
 {
     if (tx_tasks_stack_id > 0)
     {

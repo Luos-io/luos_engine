@@ -540,7 +540,7 @@ void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
  * @param state
  * @return None
  ******************************************************************************/
-inline void Robus_SetNodeDetected(network_state_t state)
+_CRITICAL inline void Robus_SetNodeDetected(network_state_t state)
 {
     switch (state)
     {
@@ -606,7 +606,7 @@ void Robus_SetFilterState(uint8_t state, ll_service_t *service)
  * @param mode true or false
  * @return None
  ******************************************************************************/
-void Robus_SetVerboseMode(uint8_t mode)
+_CRITICAL void Robus_SetVerboseMode(uint8_t mode)
 {
     // verbose is localhost or multihost
     ctx.verbose = mode + 1;
