@@ -1,6 +1,16 @@
 name: Markdown link checker
 
-on: push
+on:
+  pull_request_target:
+    types:
+      - review_requested
+    paths:
+      - '**.md'
+      - './LICENSE'
+  push:
+    paths:
+      - '**.md'
+      - './LICENSE'
 
 jobs:
   markdown-link-check:

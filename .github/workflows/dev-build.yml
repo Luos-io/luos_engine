@@ -1,6 +1,11 @@
 name: Dev Build
 
 on:
+  pull_request_target:
+    types:
+      - review_requested
+    branches-ignore:
+      - main
   push:
     branches-ignore:
       - main
