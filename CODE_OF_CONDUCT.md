@@ -77,7 +77,7 @@ available at https://www.contributor-covenant.org/version/1/4/code-of-conduct.ht
 For answers to common questions about this code of conduct, see
 https://www.contributor-covenant.org/faq
 
-## Don't hesitate to read [our documentation](https://www.luos.io/docs), or to post your questions/issues on the [Luos' Forum](https://www.luos.io/community). :books:
+## Don't hesitate to read [our documentation](https://www.luos.io/docs/luos-technology), or to post your questions/issues on the [Luos' Forum](https://www.luos.io/community). :books:
 
 [![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://www.luos.io/community)
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
