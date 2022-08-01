@@ -65,14 +65,14 @@ volatile uint8_t nbrRetry = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static uint8_t Transmit_GetLockStatus(void);
+_CRITICAL static uint8_t Transmit_GetLockStatus(void);
 
 /******************************************************************************
  * @brief Transmit an ACK
  * @param None
  * @return None
  ******************************************************************************/
-void Transmit_SendAck(void)
+_CRITICAL void Transmit_SendAck(void)
 {
     // Info : We don't consider this transmission as a complete message transmission but as a complete message reception.
     RobusHAL_SetRxState(false);
@@ -111,7 +111,7 @@ uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
  * @brief transmission process
  * @return None
  ******************************************************************************/
-void Transmit_Process()
+_CRITICAL void Transmit_Process()
 {
     uint8_t *data = 0;
     uint16_t size;
@@ -199,7 +199,7 @@ void Transmit_Process()
  * @param None
  * @return lock status
  ******************************************************************************/
-static uint8_t Transmit_GetLockStatus(void)
+_CRITICAL static uint8_t Transmit_GetLockStatus(void)
 {
     if (ctx.tx.lock != true)
     {
@@ -212,7 +212,7 @@ static uint8_t Transmit_GetLockStatus(void)
  * @param None
  * @return None
  ******************************************************************************/
-void Transmit_End(void)
+_CRITICAL void Transmit_End(void)
 {
     if (ctx.tx.status == TX_OK)
     {

@@ -105,7 +105,7 @@ void RobusHAL_Init(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetIrqState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -165,7 +165,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_SetTxState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -199,7 +199,7 @@ void RobusHAL_SetTxState(uint8_t Enable)
  * @param
  * @return
  ******************************************************************************/
-void RobusHAL_SetRxState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 {
     RxEn = Enable;
 #ifdef CONFIG_IDF_TARGET_ESP32
@@ -227,7 +227,7 @@ void RobusHAL_SetRxState(uint8_t Enable)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComIrqHandler(void *arg)
+_CRITICAL void RobusHAL_ComIrqHandler(void *arg)
 {
     uint8_t data;
     int size = 1;
@@ -289,7 +289,7 @@ void RobusHAL_ComIrqHandler(void *arg)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
+_CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
     RobusHAL_SetTxState(true);
     if (size > 1)
@@ -332,7 +332,7 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
  * @param None
  * @return Lock status
  ******************************************************************************/
-void RobusHAL_SetRxDetecPin(uint8_t Enable)
+_CRITICAL void RobusHAL_SetRxDetecPin(uint8_t Enable)
 {
     if (TX_LOCK_DETECT_PIN != DISABLE)
     {
@@ -343,7 +343,7 @@ void RobusHAL_SetRxDetecPin(uint8_t Enable)
  * @param None
  * @return Lock status
  ******************************************************************************/
-uint8_t RobusHAL_GetTxLockState(void)
+_CRITICAL uint8_t RobusHAL_GetTxLockState(void)
 {
     uint8_t result = false;
 
@@ -380,7 +380,7 @@ static void RobusHAL_TimeoutInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ResetTimeout(uint16_t nbrbit)
+_CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
     // disable Counter
     timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
@@ -400,7 +400,7 @@ void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_TimeoutIrqHandler(void *arg)
+_CRITICAL void RobusHAL_TimeoutIrqHandler(void *arg)
 {
     timer_hal_clear_intr_status(&timeout_hal_context);
     timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
@@ -489,7 +489,7 @@ static void RobusHAL_RegisterPTP(void)
  * @param GPIO IT line
  * @return None
  ******************************************************************************/
-void RobusHAL_PinoutIrqHandler(void *arg)
+_CRITICAL void RobusHAL_PinoutIrqHandler(void *arg)
 {
     if ((TX_LOCK_DETECT_PIN != DISABLE) && ((uint32_t)(arg) == TX_LOCK_DETECT_PIN))
     {
@@ -513,7 +513,7 @@ void RobusHAL_PinoutIrqHandler(void *arg)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
     // Pull Down / IT mode / Rising Edge
     gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_POSEDGE);
@@ -525,7 +525,7 @@ void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
     // Pull Down / IT mode / Falling Edge
     gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_NEGEDGE);
@@ -537,7 +537,7 @@ void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_PushPTP(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_PushPTP(uint8_t PTPNbr)
 {
     // Pull Down / Output mode
     gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_DISABLE);
@@ -551,7 +551,7 @@ void RobusHAL_PushPTP(uint8_t PTPNbr)
  * @param PTP branch
  * @return Line state
  ******************************************************************************/
-uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
+_CRITICAL uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
 {
     // Pull Down / Input mode
     gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_DISABLE);
@@ -574,7 +574,7 @@ static void RobusHAL_CRCInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
+_CRITICAL void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
 {
 #if (USE_CRC_HW == 1)
 
