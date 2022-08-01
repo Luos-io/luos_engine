@@ -1,4 +1,4 @@
-<a href="https://luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
+<a href="https://www.luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
 
 # Contributing to Luos
 
@@ -46,8 +46,8 @@ Great Bug Reports tend to have:
 
 People love thorough bug reports. I'm not even kidding.
 
-## Don't hesitate to read [our documentation](https://www.luos.io), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
+## Don't hesitate to read [our documentation](https://www.luos.io/docs/luos-technology), or to post your questions/issues on the [Luos' community](https://www.luos.io/community). :books:
 
-[![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://community.luos.io)
+[![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://www.luos.io/community)
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](https://img.shields.io/badge/LinkedIn-Follow%20us-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/company/luos)
