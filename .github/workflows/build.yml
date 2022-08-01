@@ -179,6 +179,7 @@ jobs:
           platformio run -d examples/projects/STM32L4S5_discovery/gate_serialcom
           platformio run -d examples/projects/STM32L4S5_discovery/bootloader
           # ESP32
+          platformio run -d examples/projects/ESP32/button
           platformio run -d examples/projects/ESP32/button_arduino
           platformio run -d examples/projects/ESP32/led
           # SAMD21XPLAINED
