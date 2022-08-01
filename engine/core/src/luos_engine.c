@@ -575,6 +575,18 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
     LUOS_ASSERT(service_number <= MAX_SERVICE_NUMBER);
     return service;
 }
+
+/******************************************************************************
+ * @brief API to add/remove/change callback after the service creation
+ * @param callback msg handler for the service
+ * @param service object pointer
+ * @return None
+ ******************************************************************************/
+void Luos_SetCallback(SERVICE_CB service_cb, service_t *service)
+{
+    // Link the service to new callback
+    service->service_cb = service_cb;
+}
 /******************************************************************************
  * @brief Send msg through network
  * @param Service who send

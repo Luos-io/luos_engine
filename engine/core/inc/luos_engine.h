@@ -65,6 +65,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size);
 void Luos_Detect(service_t *service);
 void Luos_ServicesClear(void);
+void Luos_SetCallback(SERVICE_CB service_cb, service_t *service);
 
 // ***************** Messaging management *****************
 void Luos_Flush(void);
