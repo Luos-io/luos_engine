@@ -145,6 +145,4 @@
  *    INIT_TIME                 |              150           | Wait init time before first detection
  * ******************************************************************************/
 
-#define INIT_TIME 150
-
 #endif /* _NODE_CONFIG_H_ */
