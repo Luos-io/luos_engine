@@ -34,6 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install platformio
+          pip install wheel
           npm install -g clang-format@1.5.0
 
       - name: Check out Luos repository
@@ -144,5 +145,9 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F072RB/button
           platformio run -d examples/projects/NUCLEO-F072RB/dc_motor
           platformio run -d examples/projects/NUCLEO-F072RB/potentiometer
+          # ESP32
+          platformio run -d examples/projects/ESP32/button
+          platformio run -d examples/projects/ESP32/button_arduino
+          platformio run -d examples/projects/ESP32/led
           # SAMD21XPLAINED
           # ******** missing bootloader CI ********
