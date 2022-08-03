@@ -661,6 +661,10 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"temperature\":%s,", Convert_Float(fdata));
             break;
+        case PRESSURE:
+            memcpy(&fdata, msg->data, sizeof(float));
+            sprintf(data, "\"pressure\":%s,", Convert_Float(fdata));
+            break;
         case FORCE:
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"force\":%s,", Convert_Float(fdata));
@@ -1017,6 +1021,9 @@ const char *Convert_StringFromType(luos_type_t type)
         case PIPE_TYPE:
             return "Pipe";
             break;
+        /*case PRESSURE_TYPE:
+            return "Pressure";
+            break;*/
         default:
             return "Unknown";
             break;
