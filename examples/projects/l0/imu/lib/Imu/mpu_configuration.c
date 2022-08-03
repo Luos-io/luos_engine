@@ -347,11 +347,11 @@ static inline void run_self_test(void)
 
     mpu_set_gyro_bias_reg(gyro);
 
-#if defined(MPU6500) || defined(MPU9250)
+    #if defined(MPU6500) || defined(MPU9250)
     mpu_set_accel_bias_6500_reg(accel);
-#elif defined(MPU6050) || defined(MPU9150)
+    #elif defined(MPU6050) || defined(MPU9150)
     mpu_set_accel_bias_6050_reg(accel);
-#endif
+    #endif
 #else
     /* Push the calibrated data to the MPL library.
      *

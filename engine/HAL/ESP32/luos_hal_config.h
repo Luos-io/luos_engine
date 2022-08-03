@@ -14,23 +14,23 @@
 #include <soc/soc.h>
 
 #ifndef MCUFREQ
-#define MCUFREQ APB_CLK_FREQ // MCU frequence
+    #define MCUFREQ APB_CLK_FREQ // MCU frequence
 #endif
 
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE
-#define PAGE_SIZE
+    #define PAGE_SIZE
 #endif
 #ifndef ERASE_SIZE
-#define ERASE_SIZE
+    #define ERASE_SIZE
 #endif
 #ifndef FLASH_SIZE
-#define FLASH_SIZE
+    #define FLASH_SIZE
 #endif
 #ifndef ADDRESS_LAST_PAGE_FLASH
-#define ADDRESS_LAST_PAGE_FLASH FLASH_SIZE - (16 * PAGE_SIZE)
+    #define ADDRESS_LAST_PAGE_FLASH FLASH_SIZE - (16 * PAGE_SIZE)
 #endif
 
 /*******************************************************************************

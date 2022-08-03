@@ -11,13 +11,13 @@
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE
-#define PAGE_SIZE (uint32_t)0x400
+    #define PAGE_SIZE (uint32_t)0x400
 #endif
 #ifndef ALIAS_SECTOR
-#define ALIAS_SECTOR FLASH_SECTOR_7
+    #define ALIAS_SECTOR FLASH_SECTOR_7
 #endif
 #ifndef ALIAS_PAGE_ADDRESS
-#define ALIAS_PAGE_ADDRESS ((uint32_t)(FLASH_END - PAGE_SIZE + 1))
+    #define ALIAS_PAGE_ADDRESS ((uint32_t)(FLASH_END - PAGE_SIZE + 1))
 #endif
 
 /*******************************************************************************

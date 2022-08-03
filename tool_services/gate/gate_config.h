@@ -20,7 +20,7 @@
  ******************************************************************************/
 
 #ifndef GATE_BUFF_SIZE
-#define GATE_BUFF_SIZE 1024
+    #define GATE_BUFF_SIZE 1024
 #endif
 
 #define GATE_REFRESH_TIME_S 0.05f
