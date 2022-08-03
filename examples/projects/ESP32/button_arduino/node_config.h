@@ -82,21 +82,4 @@
  *    ADDRESS_LAST_PAGE_FLASH | Page to write alias
 ******************************************************************************/
 
-// ESPC3
-//  #define TIMERDIV 2 // clock divider for timer clock chosen
-//  /*******************************************************************************
-//   * PINOUT CONFIG
-//   ******************************************************************************/
-//  // PTP pin definition
-//  #define PTPA_PIN GPIO_NUM_6
-//  #define PTPB_PIN GPIO_NUM_7
-//  #define TX_EN_PIN GPIO_NUM_9
-//  #define COM_TX_PIN GPIO_NUM_4
-//  #define COM_RX_PIN GPIO_NUM_5
-
-// /*******************************************************************************
-//  * COM TIMEOUT CONFIG
-//  ******************************************************************************/
-// #define LUOS_TIMER TIMER_0
-
 #endif /* _NODE_CONFIG_H_ */

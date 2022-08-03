@@ -174,5 +174,5 @@ void LuosHAL_Reboot(void)
 {
 }
 
-#ifdef BOOTLOADER_CONFIG
+#ifdef BOOTLOADER
 #endif
