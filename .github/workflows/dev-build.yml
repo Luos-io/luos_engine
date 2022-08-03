@@ -1,7 +1,7 @@
 name: Dev Build
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - review_requested
     branches-ignore:
@@ -9,6 +9,10 @@ on:
   push:
     branches-ignore:
       - main
+
+concurrency: 
+  group: dev-build-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   dev-build:
