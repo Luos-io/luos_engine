@@ -14,8 +14,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define LUOS_UUID ((uint32_t *)0x1FFF7590)
-
 #define ADDR_FLASH_BANK1 ((uint32_t)0x08000000)
 #define ADDR_FLASH_BANK2 ((uint32_t)0x08040000)
 #define NB_OF_PAGE       FLASH_PAGE_NB

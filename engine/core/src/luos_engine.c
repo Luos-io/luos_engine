@@ -211,7 +211,6 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
 
         case REVISION:
         case LUOS_REVISION:
-        case NODE_UUID:
         case LUOS_STATISTICS:
             if (size == 0)
             {
@@ -339,23 +338,6 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                 memcpy(output.data, &luos_version.unmap, sizeof(revision_t));
                 output.header.size   = sizeof(revision_t);
                 output.header.target = input->header.source;
-                Luos_SendMsg(service, &output);
-                consume = SUCCEED;
-            }
-            break;
-        case NODE_UUID:
-            if (input->header.size == 0)
-            {
-                msg_t output;
-                output.header.cmd         = NODE_UUID;
-                output.header.target_mode = ID;
-                output.header.size        = sizeof(luos_uuid_t);
-                output.header.target      = input->header.source;
-                luos_uuid_t uuid;
-                uuid.uuid[0] = LUOS_UUID[0];
-                uuid.uuid[1] = LUOS_UUID[1];
-                uuid.uuid[2] = LUOS_UUID[2];
-                memcpy(output.data, &uuid.unmap, sizeof(luos_uuid_t));
                 Luos_SendMsg(service, &output);
                 consume = SUCCEED;
             }
