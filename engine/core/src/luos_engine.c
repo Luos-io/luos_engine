@@ -165,7 +165,14 @@ void Luos_Loop(void)
             }
             else
             {
+#ifdef BOOTLOADER
+                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
+                {
+                    LuosBootloader_MsgHandler(returned_msg);
+                }
+#else
                 remaining_msg_number++;
+#endif
             }
         }
     }
