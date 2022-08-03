@@ -37,23 +37,23 @@ static inline pressure_t PressureOD_PressureFrom_Pa(float Pa)
 // Bars
 static inline float PressureOD_PressureTo_Bars(pressure_t self)
 {
-    return self / 10000.0f;
+    return self / 100000.0f;
 }
 
 static inline pressure_t PressureOD_PressureFrom_Bars(float Bars)
 {
-    return Bars * (float)10000;
+    return Bars * (float)100000.0f;
 }
 
 // hPa
 static inline float PressureOD_PressureTo_hPa(pressure_t self)
 {
-    return self / (float)100;
+    return self / (float)100.0f;
 }
 
 static inline pressure_t PressureOD_PressureFrom_hPa(float hPa)
 {
-    return hPa * 100;
+    return hPa * 100.0f;
 }
 
 //******** Messages management ***********
