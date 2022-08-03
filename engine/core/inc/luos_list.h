@@ -97,8 +97,6 @@ typedef enum
     TEXT, // ASCII string
     PRESSURE, // pressure_t (Pa)
 
-
-
     // compatibility area
     LUOS_LAST_STD_CMD = 128
 } luos_cmd_t;
