@@ -89,7 +89,6 @@ void Convert_DataToLuos(service_t *service, char *data)
         PipeLink_Send(service, "{\"gate\":{}}\n", strlen("{\"gate\":{}}\n"));
         return;
     }
-
     // bootloader commands
     json_t const *bootloader_json = json_getProperty(root, "bootloader");
     if (bootloader_json != 0)
@@ -774,9 +773,11 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
                         break;
                 }
                 // Create the Json content
-                sprintf(data, "\"%s\":[%s", name, Convert_Float(value[0]));
-                sprintf(data, "%s,%s", data, Convert_Float(value[1]));
-                sprintf(data, "%s,%s],", data, Convert_Float(value[2]));
+                sprintf(data, "\"%s\":[%s,", name, Convert_Float(value[0]));
+                strcat(data, Convert_Float(value[1]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[2]));
+                strcat(data, "],");
             }
             break;
         case QUATERNION:
@@ -788,9 +789,12 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
                 memcpy(value, msg->data, msg->header.size);
                 // create the Json content
                 sprintf(data, "\"quaternion\":[%s,", Convert_Float(value[0]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[1]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[2]));
-                sprintf(data, "%s%s],", data, Convert_Float(value[3]));
+                strcat(data, Convert_Float(value[1]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[2]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[3]));
+                strcat(data, "],");
             }
             break;
         case ROT_MAT:
@@ -802,14 +806,22 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
                 memcpy(value, msg->data, msg->header.size);
                 // create the Json content
                 sprintf(data, "\"rotational_matrix\":[%s,", Convert_Float(value[0]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[1]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[2]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[3]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[4]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[5]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[6]));
-                sprintf(data, "%s%s,", data, Convert_Float(value[7]));
-                sprintf(data, "%s%s],", data, Convert_Float(value[8]));
+                strcat(data, Convert_Float(value[1]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[2]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[3]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[4]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[5]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[6]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[7]));
+                strcat(data, ",");
+                strcat(data, Convert_Float(value[8]));
+                strcat(data, "],");
             }
             break;
         case HEADING:
@@ -886,8 +898,7 @@ void Convert_ExcludedServiceData(service_t *service)
     char json[300];
     search_result_t result;
     RTFilter_ID(RTFilter_Reset(&result), service->ll_service->dead_service_spotted);
-    sprintf(json, "{\"dead_service\":\"%s\"", result.result_table[0]->alias);
-    sprintf(json, "%s}\n", json);
+    sprintf(json, "{\"dead_service\":\"%s\"}\n", result.result_table[0]->alias);
     // Send the message to pipe
     PipeLink_Send(service, json, strlen(json));
 }
