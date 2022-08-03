@@ -319,7 +319,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
         HAL_FLASH_Lock();
 
         // update page to erase
-        page_to_erase += (uint32_t)0x800;
+        page_to_erase += (uint32_t)FLASH_PAGE_SIZE;
     }
 }
 

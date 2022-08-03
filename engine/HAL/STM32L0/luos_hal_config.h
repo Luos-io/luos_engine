@@ -53,7 +53,7 @@
 #endif
 // begining of application in flash - by default after bootloader & shared mem
 #ifndef APP_START_ADDRESS
-#define APP_START_ADDRESS           (uint32_t)0x0800D000
+#define APP_START_ADDRESS           (uint32_t)0x0800C800
 #endif
 // last address of app in case of a bootloader
 #ifndef APP_END_ADDRESS
