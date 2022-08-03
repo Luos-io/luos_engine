@@ -21,11 +21,11 @@
  * Definitions
  ******************************************************************************/
 #ifdef DEBUG
-#include <stdio.h>
+    #include <stdio.h>
 #endif
 
 #ifdef SELFTEST
-#include "selftest.h"
+    #include "selftest.h"
 #endif
 
 #define COLLISION_DETECTION_NUMBER 4

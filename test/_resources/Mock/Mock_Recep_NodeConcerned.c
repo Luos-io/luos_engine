@@ -10,7 +10,7 @@
  * Function
  ******************************************************************************/
 /******************************************************************************
- * @brief Mock : Redefine function Recep_NodeConcerned 
+ * @brief Mock : Redefine function Recep_NodeConcerned
  * @param header of message
  * @return Always returns LOCALHOST
  ******************************************************************************/

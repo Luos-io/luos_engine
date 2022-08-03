@@ -12,7 +12,7 @@
  * Definitions
  ******************************************************************************/
 #ifndef MAX_RTB_ENTRY
-#define MAX_RTB_ENTRY 40
+    #define MAX_RTB_ENTRY 40
 #endif
 
 typedef enum

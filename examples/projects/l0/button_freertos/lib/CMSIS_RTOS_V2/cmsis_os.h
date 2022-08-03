@@ -136,11 +136,11 @@
 #define osFeature_MailQ      0      ///< Mail Queues:     1=available, 0=not available
 
 #if defined(__CC_ARM)
-#define os_InRegs __value_in_regs
+    #define os_InRegs __value_in_regs
 #elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-#define os_InRegs __attribute__((value_in_regs))
+    #define os_InRegs __attribute__((value_in_regs))
 #else
-#define os_InRegs
+    #define os_InRegs
 #endif
 
 #include "cmsis_os2.h"
@@ -168,7 +168,7 @@ extern "C"
         osPriorityReserved    = 0x7FFFFFFF ///< Prevents enum down-size compiler optimization.
     } osPriority;
 #else
-#define osPriority osPriority_t
+    #define osPriority osPriority_t
 #endif
 
     /// Entry point of a thread.
@@ -185,7 +185,7 @@ extern "C"
         osTimerPeriodic = 1  ///< Repeating timer.
     } os_timer_type;
 #else
-#define os_timer_type osTimerType_t
+    #define os_timer_type osTimerType_t
 #endif
 
 /// Timeout value.
@@ -213,15 +213,15 @@ extern "C"
     } osStatus;
 #else
 typedef int32_t osStatus;
-#define osEventSignal          (0x08)
-#define osEventMessage         (0x10)
-#define osEventMail            (0x20)
-#define osEventTimeout         (0x40)
-#define osErrorOS              osError
-#define osErrorTimeoutResource osErrorTimeout
-#define osErrorISRRecursive    (-126)
-#define osErrorValue           (-127)
-#define osErrorPriority        (-128)
+    #define osEventSignal          (0x08)
+    #define osEventMessage         (0x10)
+    #define osEventMail            (0x20)
+    #define osEventTimeout         (0x40)
+    #define osErrorOS              osError
+    #define osErrorTimeoutResource osErrorTimeout
+    #define osErrorISRRecursive    (-126)
+    #define osErrorValue           (-127)
+    #define osErrorPriority        (-128)
 #endif
 
 // >>> the following data type definitions may be adapted towards a specific RTOS
@@ -230,28 +230,28 @@ typedef int32_t osStatus;
 #if (osCMSIS < 0x20000U)
     typedef void *osThreadId;
 #else
-#define osThreadId osThreadId_t
+    #define osThreadId osThreadId_t
 #endif
 
 /// Timer ID identifies the timer.
 #if (osCMSIS < 0x20000U)
     typedef void *osTimerId;
 #else
-#define osTimerId osTimerId_t
+    #define osTimerId osTimerId_t
 #endif
 
 /// Mutex ID identifies the mutex.
 #if (osCMSIS < 0x20000U)
     typedef void *osMutexId;
 #else
-#define osMutexId osMutexId_t
+    #define osMutexId osMutexId_t
 #endif
 
 /// Semaphore ID identifies the semaphore.
 #if (osCMSIS < 0x20000U)
     typedef void *osSemaphoreId;
 #else
-#define osSemaphoreId osSemaphoreId_t
+    #define osSemaphoreId osSemaphoreId_t
 #endif
 
     /// Pool ID identifies the memory pool.
@@ -301,7 +301,7 @@ typedef struct os_timer_def
         uint32_t dummy; ///< dummy value
     } osMutexDef_t;
 #else
-#define osMutexDef_t osMutexAttr_t
+    #define osMutexDef_t osMutexAttr_t
 #endif
 
 /// Semaphore Definition structure contains setup information for a semaphore.
@@ -311,7 +311,7 @@ typedef struct os_timer_def
         uint32_t dummy; ///< dummy value
     } osSemaphoreDef_t;
 #else
-#define osSemaphoreDef_t osSemaphoreAttr_t
+    #define osSemaphoreDef_t osSemaphoreAttr_t
 #endif
 
 /// Definition structure for memory block allocation.
@@ -404,28 +404,28 @@ typedef struct os_mailQ_def
 
 #if (defined(osFeature_SysTick) && (osFeature_SysTick != 0)) // System Timer available
 
-/// Get the RTOS kernel system timer counter.
-/// \return RTOS kernel system timer as 32-bit value
-#if (osCMSIS < 0x20000U)
+    /// Get the RTOS kernel system timer counter.
+    /// \return RTOS kernel system timer as 32-bit value
+    #if (osCMSIS < 0x20000U)
     uint32_t osKernelSysTick(void);
-#else
-#define osKernelSysTick osKernelGetSysTimerCount
-#endif
+    #else
+        #define osKernelSysTick osKernelGetSysTimerCount
+    #endif
 
-/// The RTOS kernel system timer frequency in Hz.
-/// \note Reflects the system timer setting and is typically defined in a configuration file.
-#if (osCMSIS < 0x20000U)
-#define osKernelSysTickFrequency 100000000
-#endif
+    /// The RTOS kernel system timer frequency in Hz.
+    /// \note Reflects the system timer setting and is typically defined in a configuration file.
+    #if (osCMSIS < 0x20000U)
+        #define osKernelSysTickFrequency 100000000
+    #endif
 
-/// Convert a microseconds value to a RTOS kernel system timer value.
-/// \param         microsec     time value in microseconds.
-/// \return time value normalized to the \ref osKernelSysTickFrequency
-#if (osCMSIS < 0x20000U)
-#define osKernelSysTickMicroSec(microsec) (((uint64_t)microsec * (osKernelSysTickFrequency)) / 1000000)
-#else
-#define osKernelSysTickMicroSec(microsec) (((uint64_t)microsec * osKernelGetSysTimerFreq()) / 1000000)
-#endif
+    /// Convert a microseconds value to a RTOS kernel system timer value.
+    /// \param         microsec     time value in microseconds.
+    /// \return time value normalized to the \ref osKernelSysTickFrequency
+    #if (osCMSIS < 0x20000U)
+        #define osKernelSysTickMicroSec(microsec) (((uint64_t)microsec * (osKernelSysTickFrequency)) / 1000000)
+    #else
+        #define osKernelSysTickMicroSec(microsec) (((uint64_t)microsec * osKernelGetSysTimerFreq()) / 1000000)
+    #endif
 
 #endif // System Timer available
 
@@ -437,19 +437,19 @@ typedef struct os_mailQ_def
 /// \param         instances     number of possible thread instances (used to statically allocate memory).
 /// \param         stacksz       stack size (in bytes) requirements for the thread function.
 #if defined(osObjectsExternal) // object is external
-#define osThreadDef(name, priority, instances, stacksz) \
-    extern const osThreadDef_t os_thread_def_##name
+    #define osThreadDef(name, priority, instances, stacksz) \
+        extern const osThreadDef_t os_thread_def_##name
 #else // define the object
-#define osThreadDef(name, priority, instances, stacksz)                                                             \
-    static uint32_t os_thread_stack##name[(stacksz) ? (((stacksz + 3) / 4)) : 1];                                   \
-    static StaticTask_t os_thread_cb_##name;                                                                        \
-    const osThreadDef_t os_thread_def_##name = {(name),                                                             \
-                                                {NULL, osThreadDetached,                                            \
-                                                 (instances == 1) ? (&os_thread_cb_##name) : NULL,                  \
-                                                 (instances == 1) ? sizeof(StaticTask_t) : 0U,                      \
-                                                 ((stacksz) && (instances == 1)) ? (&os_thread_stack##name) : NULL, \
-                                                 4 * ((stacksz + 3) / 4),                                           \
-                                                 (priority), 0U, 0U}}
+    #define osThreadDef(name, priority, instances, stacksz)                                                             \
+        static uint32_t os_thread_stack##name[(stacksz) ? (((stacksz + 3) / 4)) : 1];                                   \
+        static StaticTask_t os_thread_cb_##name;                                                                        \
+        const osThreadDef_t os_thread_def_##name = {(name),                                                             \
+                                                    {NULL, osThreadDetached,                                            \
+                                                     (instances == 1) ? (&os_thread_cb_##name) : NULL,                  \
+                                                     (instances == 1) ? sizeof(StaticTask_t) : 0U,                      \
+                                                     ((stacksz) && (instances == 1)) ? (&os_thread_stack##name) : NULL, \
+                                                     4 * ((stacksz + 3) / 4),                                           \
+                                                     (priority), 0U, 0U}}
 #endif
 
 /// Access a Thread definition.
@@ -541,12 +541,12 @@ typedef struct os_mailQ_def
 /// \param         name          name of the timer object.
 /// \param         function      name of the timer call back function.
 #if defined(osObjectsExternal) // object is external
-#define osTimerDef(name, function) \
-    extern const osTimerDef_t os_timer_def_##name
+    #define osTimerDef(name, function) \
+        extern const osTimerDef_t os_timer_def_##name
 #else // define the object
-#define osTimerDef(name, function)           \
-    static StaticTimer_t os_timer_cb_##name; \
-    const osTimerDef_t os_timer_def_##name = {(function), {NULL, 0U, (&os_timer_cb_##name), sizeof(StaticTimer_t)}}
+    #define osTimerDef(name, function)           \
+        static StaticTimer_t os_timer_cb_##name; \
+        const osTimerDef_t os_timer_def_##name = {(function), {NULL, 0U, (&os_timer_cb_##name), sizeof(StaticTimer_t)}}
 #endif
 
 /// Access a Timer definition.
@@ -588,12 +588,12 @@ typedef struct os_mailQ_def
 /// Define a Mutex.
 /// \param         name          name of the mutex object.
 #if defined(osObjectsExternal) // object is external
-#define osMutexDef(name) \
-    extern const osMutexDef_t os_mutex_def_##name
+    #define osMutexDef(name) \
+        extern const osMutexDef_t os_mutex_def_##name
 #else // define the object
-#define osMutexDef(name)                         \
-    static StaticSemaphore_t os_mutex_cb_##name; \
-    const osMutexDef_t os_mutex_def_##name = {NULL, osMutexRecursive | osMutexPrioInherit, (&os_mutex_cb_##name), sizeof(StaticSemaphore_t)}
+    #define osMutexDef(name)                         \
+        static StaticSemaphore_t os_mutex_cb_##name; \
+        const osMutexDef_t os_mutex_def_##name = {NULL, osMutexRecursive | osMutexPrioInherit, (&os_mutex_cb_##name), sizeof(StaticSemaphore_t)}
 #endif
 
 /// Access a Mutex definition.
@@ -613,7 +613,7 @@ typedef struct os_mailQ_def
 #if (osCMSIS < 0x20000U)
     osStatus osMutexWait(osMutexId mutex_id, uint32_t millisec);
 #else
-#define osMutexWait osMutexAcquire
+    #define osMutexWait osMutexAcquire
 #endif
 
 /// Release a Mutex that was obtained by \ref osMutexWait.
@@ -634,21 +634,21 @@ typedef struct os_mailQ_def
 
 #if (defined(osFeature_Semaphore) && (osFeature_Semaphore != 0U)) // Semaphore available
 
-/// Define a Semaphore object.
-/// \param         name          name of the semaphore object.
-#if defined(osObjectsExternal) // object is external
-#define osSemaphoreDef(name) \
-    extern const osSemaphoreDef_t os_semaphore_def_##name
-#else // define the object
-#define osSemaphoreDef(name)                         \
-    static StaticSemaphore_t os_semaphore_cb_##name; \
-    const osSemaphoreDef_t os_semaphore_def_##name = {NULL, 0U, (&os_semaphore_cb_##name), sizeof(StaticSemaphore_t)}
-#endif
+    /// Define a Semaphore object.
+    /// \param         name          name of the semaphore object.
+    #if defined(osObjectsExternal) // object is external
+        #define osSemaphoreDef(name) \
+            extern const osSemaphoreDef_t os_semaphore_def_##name
+    #else // define the object
+        #define osSemaphoreDef(name)                         \
+            static StaticSemaphore_t os_semaphore_cb_##name; \
+            const osSemaphoreDef_t os_semaphore_def_##name = {NULL, 0U, (&os_semaphore_cb_##name), sizeof(StaticSemaphore_t)}
+    #endif
 
-/// Access a Semaphore definition.
-/// \param         name          name of the semaphore object.
-#define osSemaphore(name) \
-    &os_semaphore_def_##name
+    /// Access a Semaphore definition.
+    /// \param         name          name of the semaphore object.
+    #define osSemaphore(name) \
+        &os_semaphore_def_##name
 
     /// Create and Initialize a Semaphore object.
     /// \param[in]     semaphore_def semaphore definition referenced with \ref osSemaphore.
@@ -662,19 +662,19 @@ typedef struct os_mailQ_def
     /// \return number of available tokens, or -1 in case of incorrect parameters.
     int32_t osSemaphoreWait(osSemaphoreId semaphore_id, uint32_t millisec);
 
-/// Release a Semaphore token.
-/// \param[in]     semaphore_id  semaphore object referenced with \ref osSemaphoreCreate.
-/// \return status code that indicates the execution status of the function.
-#if (osCMSIS < 0x20000U)
+    /// Release a Semaphore token.
+    /// \param[in]     semaphore_id  semaphore object referenced with \ref osSemaphoreCreate.
+    /// \return status code that indicates the execution status of the function.
+    #if (osCMSIS < 0x20000U)
     osStatus osSemaphoreRelease(osSemaphoreId semaphore_id);
-#endif
+    #endif
 
-/// Delete a Semaphore object.
-/// \param[in]     semaphore_id  semaphore object referenced with \ref osSemaphoreCreate.
-/// \return status code that indicates the execution status of the function.
-#if (osCMSIS < 0x20000U)
+    /// Delete a Semaphore object.
+    /// \param[in]     semaphore_id  semaphore object referenced with \ref osSemaphoreCreate.
+    /// \return status code that indicates the execution status of the function.
+    #if (osCMSIS < 0x20000U)
     osStatus osSemaphoreDelete(osSemaphoreId semaphore_id);
-#endif
+    #endif
 
 #endif // Semaphore available
 
@@ -682,22 +682,22 @@ typedef struct os_mailQ_def
 
 #if (defined(osFeature_Pool) && (osFeature_Pool != 0)) // Memory Pool available
 
-/// \brief Define a Memory Pool.
-/// \param         name          name of the memory pool.
-/// \param         no            maximum number of blocks (objects) in the memory pool.
-/// \param         type          data type of a single block (object).
-#if defined(osObjectsExternal) // object is external
-#define osPoolDef(name, no, type) \
-    extern const osPoolDef_t os_pool_def_##name
-#else // define the object
-#define osPoolDef(name, no, type) \
-    const osPoolDef_t os_pool_def_##name = {(no), sizeof(type), NULL}
-#endif
+    /// \brief Define a Memory Pool.
+    /// \param         name          name of the memory pool.
+    /// \param         no            maximum number of blocks (objects) in the memory pool.
+    /// \param         type          data type of a single block (object).
+    #if defined(osObjectsExternal) // object is external
+        #define osPoolDef(name, no, type) \
+            extern const osPoolDef_t os_pool_def_##name
+    #else // define the object
+        #define osPoolDef(name, no, type) \
+            const osPoolDef_t os_pool_def_##name = {(no), sizeof(type), NULL}
+    #endif
 
-/// \brief Access a Memory Pool definition.
-/// \param         name          name of the memory pool
-#define osPool(name) \
-    &os_pool_def_##name
+    /// \brief Access a Memory Pool definition.
+    /// \param         name          name of the memory pool
+    #define osPool(name) \
+        &os_pool_def_##name
 
     /// Create and Initialize a Memory Pool object.
     /// \param[in]     pool_def      memory pool definition referenced with \ref osPool.
@@ -726,26 +726,26 @@ typedef struct os_mailQ_def
 
 #if (defined(osFeature_MessageQ) && (osFeature_MessageQ != 0)) // Message Queue available
 
-/// \brief Create a Message Queue Definition.
-/// \param         name          name of the queue.
-/// \param         queue_sz      maximum number of messages in the queue.
-/// \param         type          data type of a single message element (for debugger).
-#if defined(osObjectsExternal) // object is external
-#define osMessageQDef(name, queue_sz, type) \
-    extern const osMessageQDef_t os_messageQ_def_##name
-#else // define the object
-#define osMessageQDef(name, queue_sz, type)                                                               \
-    static StaticQueue_t os_mq_cb_##name;                                                                 \
-    static uint32_t os_mq_data_##name[(queue_sz) * sizeof(type)];                                         \
-    const osMessageQDef_t os_messageQ_def_##name = {(queue_sz),                                           \
-                                                    {NULL, 0U, (&os_mq_cb_##name), sizeof(StaticQueue_t), \
-                                                     (&os_mq_data_##name), sizeof(os_mq_data_##name)}}
-#endif
+    /// \brief Create a Message Queue Definition.
+    /// \param         name          name of the queue.
+    /// \param         queue_sz      maximum number of messages in the queue.
+    /// \param         type          data type of a single message element (for debugger).
+    #if defined(osObjectsExternal) // object is external
+        #define osMessageQDef(name, queue_sz, type) \
+            extern const osMessageQDef_t os_messageQ_def_##name
+    #else // define the object
+        #define osMessageQDef(name, queue_sz, type)                                                               \
+            static StaticQueue_t os_mq_cb_##name;                                                                 \
+            static uint32_t os_mq_data_##name[(queue_sz) * sizeof(type)];                                         \
+            const osMessageQDef_t os_messageQ_def_##name = {(queue_sz),                                           \
+                                                            {NULL, 0U, (&os_mq_cb_##name), sizeof(StaticQueue_t), \
+                                                             (&os_mq_data_##name), sizeof(os_mq_data_##name)}}
+    #endif
 
-/// \brief Access a Message Queue Definition.
-/// \param         name          name of the queue
-#define osMessageQ(name) \
-    &os_messageQ_def_##name
+    /// \brief Access a Message Queue Definition.
+    /// \param         name          name of the queue
+    #define osMessageQ(name) \
+        &os_messageQ_def_##name
 
     /// Create and Initialize a Message Queue object.
     /// \param[in]     queue_def     message queue definition referenced with \ref osMessageQ.
@@ -772,22 +772,22 @@ typedef struct os_mailQ_def
 
 #if (defined(osFeature_MailQ) && (osFeature_MailQ != 0)) // Mail Queue available
 
-/// \brief Create a Mail Queue Definition.
-/// \param         name          name of the queue.
-/// \param         queue_sz      maximum number of mails in the queue.
-/// \param         type          data type of a single mail element.
-#if defined(osObjectsExternal) // object is external
-#define osMailQDef(name, queue_sz, type) \
-    extern const osMailQDef_t os_mailQ_def_##name
-#else // define the object
-#define osMailQDef(name, queue_sz, type) \
-    const osMailQDef_t os_mailQ_def_##name = {(queue_sz), sizeof(type), NULL}
-#endif
+    /// \brief Create a Mail Queue Definition.
+    /// \param         name          name of the queue.
+    /// \param         queue_sz      maximum number of mails in the queue.
+    /// \param         type          data type of a single mail element.
+    #if defined(osObjectsExternal) // object is external
+        #define osMailQDef(name, queue_sz, type) \
+            extern const osMailQDef_t os_mailQ_def_##name
+    #else // define the object
+        #define osMailQDef(name, queue_sz, type) \
+            const osMailQDef_t os_mailQ_def_##name = {(queue_sz), sizeof(type), NULL}
+    #endif
 
-/// \brief Access a Mail Queue Definition.
-/// \param         name          name of the queue
-#define osMailQ(name) \
-    &os_mailQ_def_##name
+    /// \brief Access a Mail Queue Definition.
+    /// \param         name          name of the queue
+    #define osMailQ(name) \
+        &os_mailQ_def_##name
 
     /// Create and Initialize a Mail Queue object.
     /// \param[in]     queue_def     mail queue definition referenced with \ref osMailQ.
