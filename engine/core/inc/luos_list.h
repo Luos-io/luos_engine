@@ -28,6 +28,7 @@ typedef enum
     MOTOR_TYPE,
     SERVO_MOTOR_TYPE,
     INSPECTOR_TYPE,
+    PRESSURE_TYPE,
     LUOS_LAST_TYPE
 } luos_type_t;
 
@@ -92,7 +93,11 @@ typedef enum
     PARAMETERS, // depend on the service, can be : servo_parameters_t, imu_report_t, motor_mode_t
     ERROR_CMD,
 
+    // Retrocompatibility zone
     TEXT, // ASCII string
+    PRESSURE, // pressure_t (Pa)
+
+
 
     // compatibility area
     LUOS_LAST_STD_CMD = 128
