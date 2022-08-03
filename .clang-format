@@ -14,3 +14,4 @@ AlignOperands: true
 BreakBeforeBinaryOperators: All
 AlignConsecutiveMacros: true
 AlignConsecutiveAssignments: true
+IndentPPDirectives: BeforeHash
