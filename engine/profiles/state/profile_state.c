@@ -36,7 +36,6 @@ void ProfileState_Handler(service_t *service, msg_t *msg)
             break;
         default:
         {
-            return;
         }
         break;
     }
