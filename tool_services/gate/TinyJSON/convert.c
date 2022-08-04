@@ -558,13 +558,6 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         msg->header.cmd = UPDATE_PUB;
         Luos_SendMsg(service, msg);
     }
-    // UUID
-    if (json_getProperty(jobj, "uuid") != NULL)
-    {
-        msg->header.cmd  = NODE_UUID;
-        msg->header.size = 0;
-        Luos_SendMsg(service, msg);
-    }
     // RENAMING
     item = json_getProperty(jobj, "rename");
     if ((item != NULL) && (json_getType(item) == JSON_TEXT))
@@ -781,14 +774,6 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
         case POWER:
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"power\":%s,", Convert_Float(fdata));
-            break;
-        case NODE_UUID:
-            if (msg->header.size == sizeof(luos_uuid_t))
-            {
-                luos_uuid_t value;
-                memcpy(value.unmap, msg->data, msg->header.size);
-                sprintf(data, "\"uuid\":[%" PRIu32 ",%" PRIu32 ",%" PRIu32 "],", value.uuid[0], value.uuid[1], value.uuid[2]);
-            }
             break;
         case REVISION:
             // clean data to be used as string
