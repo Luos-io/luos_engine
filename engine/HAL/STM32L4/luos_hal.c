@@ -287,7 +287,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 
     uint32_t page_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;
-    s_eraseinit.Banks     = FLASH_BANK_BOTH;
+    s_eraseinit.Banks     = FLASH_BANK_1;
     s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
     s_eraseinit.NbPages   = 1;
 
