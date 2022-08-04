@@ -94,7 +94,7 @@ typedef enum
     ERROR_CMD,
 
     // Retrocompatibility zone
-    TEXT, // ASCII string
+    TEXT,     // ASCII string
     PRESSURE, // pressure_t (Pa)
 
     // compatibility area
