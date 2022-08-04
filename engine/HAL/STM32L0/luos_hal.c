@@ -17,8 +17,6 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-#define RSVD_SECTION ".rsvd.data,\"aw\",%nobits//"
-#define _RSVD        __attribute__((used, section(RSVD_SECTION)))
 // timestamp variable
 static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
