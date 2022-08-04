@@ -148,5 +148,9 @@ jobs:
           platformio run -d examples/projects/NUCLEO-L073RZ/gate_serialcom
           platformio run -d examples/projects/NUCLEO-L073RZ/button
           platformio run -d examples/projects/NUCLEO-L073RZ/bootloader
+          # STM32L4S5_discovery
+          platformio run -d examples/projects/STM32L4S5_discovery/button
+          platformio run -d examples/projects/STM32L4S5_discovery/gate_serialcom
+          platformio run -d examples/projects/STM32L4S5_discovery/bootloader
           # SAMD21XPLAINED
           # ******** missing bootloader CI ********
