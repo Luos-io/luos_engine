@@ -1,7 +1,7 @@
 name: Markdown link checker
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - review_requested
     paths:
@@ -11,6 +11,10 @@ on:
     paths:
       - '**.md'
       - './LICENSE'
+
+concurrency: 
+  group: markdown-link-check-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   markdown-link-check:
