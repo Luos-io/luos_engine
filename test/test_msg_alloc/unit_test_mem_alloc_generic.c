@@ -609,7 +609,7 @@ void unittest_MsgAlloc_EndMsg()
 
         // Init variables
         //---------------
-        if ((uint32_t)&msg_buffer[10] % 2 == 0)
+        if ((uintptr_t)&msg_buffer[10] % 2 == 0)
         {
             data_ptr = &msg_buffer[10]; // Data is already aligned
         }
@@ -648,7 +648,7 @@ void unittest_MsgAlloc_EndMsg()
 
         // Init variables
         //---------------
-        if ((uint32_t)&msg_buffer[10] % 2 == 0)
+        if ((uintptr_t)&msg_buffer[10] % 2 == 0)
         {
             data_ptr = &msg_buffer[9]; // Data pointer's address is not aligned
         }

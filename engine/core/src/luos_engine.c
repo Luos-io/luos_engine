@@ -307,7 +307,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             break;
         case RTB:
             // Check routing table overflow
-            LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
+            LUOS_ASSERT(((uintptr_t)route_tab + input->header.size) <= ((uintptr_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
             if (Luos_ReceiveData(service, input, (void *)route_tab) > 0)
             {
                 // route table section reception complete

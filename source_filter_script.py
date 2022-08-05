@@ -15,10 +15,14 @@ luos_telemetry = {"telemetry_type": "luos_engine_build",
                   "mac": hex(uuid.getnode()),
                   "system": sys.platform,
                   "unix_time": env.get("UNIX_TIME"),
-                  "framework": env.get("PIOFRAMEWORK")[0],
                   "platform": env.get("PIOPLATFORM"),
                   "mcu": env.get("BOARD_MCU"),
                   "f_cpu": env.get("BOARD_F_CPU")}
+
+try:
+    luos_telemetry["framework"] = env.get("PIOFRAMEWORK")[0]
+except:
+    pass
 
 # Check if this script have been already executed during this compilation
 visited_key = "__LUOS_CORE_SCRIPT_CALLED"
@@ -91,8 +95,11 @@ click.secho("")
 find_MOCK_HAL = False
 for item in env.get("CPPDEFINES", []):
     if not "native" in env.get("PIOPLATFORM"):
+        click.secho(
+            "\t* Native unit testing not available on this platform.", fg="red")
         break
     if (item == 'UNIT_TEST'):
+        click.secho("Native unit testing:", underline=True)
         current_os = pf.system()
         if find_MOCK_HAL == False:
             click.secho(

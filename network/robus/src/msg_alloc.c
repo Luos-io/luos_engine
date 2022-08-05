@@ -44,6 +44,7 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <limits.h>
 #include "config.h"
 #include "msg_alloc.h"
 #include "luos_hal.h"
@@ -161,7 +162,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     memset((void *)tx_tasks, 0, sizeof(tx_tasks));
     copy_task_pointer = NULL;
     used_msg          = NULL;
-    oldest_msg        = (msg_t *)0xFFFFFFFF;
+    oldest_msg        = (msg_t *)INT_MAX;
     mem_clear_needed  = false;
     if (memory_stats != NULL)
     {
@@ -186,13 +187,13 @@ void MsgAlloc_loop(void)
     // Compute memory stats for msg task memory usage
     uint8_t stat = 0;
     // Compute memory stats for rx msg task memory usage
-    stat = (uint8_t)(((uint32_t)msg_tasks_stack_id * 100) / (MAX_MSG_NB));
+    stat = (uint8_t)(((uintptr_t)msg_tasks_stack_id * 100) / (MAX_MSG_NB));
     if (stat > mem_stat->rx_msg_stack_ratio)
     {
         mem_stat->rx_msg_stack_ratio = stat;
     }
     // Compute memory stats for tx msg task memory usage
-    stat = (uint8_t)(((uint32_t)tx_tasks_stack_id * 100) / (MAX_MSG_NB));
+    stat = (uint8_t)(((uintptr_t)tx_tasks_stack_id * 100) / (MAX_MSG_NB));
     if (stat > mem_stat->tx_msg_stack_ratio)
     {
         mem_stat->tx_msg_stack_ratio = stat;
@@ -255,11 +256,11 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
     uint32_t stack_free_space = 0;
 
     LuosHAL_SetIrqState(false);
-    if ((uint32_t)oldest_msg != 0xFFFFFFFF)
+    if ((uintptr_t)oldest_msg != INT_MAX)
     {
-        LUOS_ASSERT(((uint32_t)oldest_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)oldest_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
+        LUOS_ASSERT(((uintptr_t)oldest_msg >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)oldest_msg < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
         // There is some tasks
-        if ((uint32_t)oldest_msg > (uint32_t)data_end_estimation)
+        if ((uintptr_t)oldest_msg > (uintptr_t)data_end_estimation)
         {
             // The oldest task is between `data_end_estimation` and the end of the buffer
             //        msg_buffer
@@ -271,7 +272,7 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
             //               |                     |
             //               data_end_estimation    oldest_task
             //
-            stack_free_space = (uint32_t)oldest_msg - (uint32_t)data_end_estimation;
+            stack_free_space = (uintptr_t)oldest_msg - (uintptr_t)data_end_estimation;
             LuosHAL_SetIrqState(true);
         }
         else
@@ -288,14 +289,14 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
             //                      |              |                  |
             //                      oldest_task     current_message   data_end_estimation
             //
-            stack_free_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)data_end_estimation);
+            stack_free_space = ((uintptr_t)oldest_msg - (uintptr_t)&msg_buffer[0]) + ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)data_end_estimation);
             LuosHAL_SetIrqState(true);
         }
     }
     else
     {
         // There is no task yet just compute the actual reception
-        stack_free_space = MSG_BUFFER_SIZE - ((uint32_t)data_end_estimation - (uint32_t)current_msg);
+        stack_free_space = MSG_BUFFER_SIZE - ((uintptr_t)data_end_estimation - (uintptr_t)current_msg);
         LuosHAL_SetIrqState(true);
     }
     return stack_free_space;
@@ -307,16 +308,16 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
  ******************************************************************************/
 static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
 {
-    if ((uint32_t)oldest_stack_msg_pt > 0)
+    if ((uintptr_t)oldest_stack_msg_pt > 0)
     {
-        LUOS_ASSERT(((uint32_t)oldest_stack_msg_pt >= (uint32_t)&msg_buffer[0]) && ((uint32_t)oldest_stack_msg_pt < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
+        LUOS_ASSERT(((uintptr_t)oldest_stack_msg_pt >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)oldest_stack_msg_pt < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
         // recompute oldest_stack_msg_pt into delta byte from current message
         uint32_t stack_delta_space;
-        if ((uint32_t)oldest_stack_msg_pt > (uint32_t)current_msg)
+        if ((uintptr_t)oldest_stack_msg_pt > (uintptr_t)current_msg)
         {
             // The oldest task is between `data_end_estimation` and the end of the buffer
             LuosHAL_SetIrqState(false);
-            stack_delta_space = (uint32_t)oldest_stack_msg_pt - (uint32_t)current_msg;
+            stack_delta_space = (uintptr_t)oldest_stack_msg_pt - (uintptr_t)current_msg;
             LuosHAL_SetIrqState(true);
         }
         else
@@ -324,16 +325,16 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
             // The oldest task is between the begin of the buffer and `data_end_estimation`
             // we have to decay it to be able to define delta
             LuosHAL_SetIrqState(false);
-            stack_delta_space = ((uint32_t)oldest_stack_msg_pt - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
+            stack_delta_space = ((uintptr_t)oldest_stack_msg_pt - (uintptr_t)&msg_buffer[0]) + ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)current_msg);
             LuosHAL_SetIrqState(true);
         }
         // recompute oldest_msg into delta byte from current message
-        uint32_t oldest_msg_delta_space;
-        if ((uint32_t)oldest_msg > (uint32_t)current_msg)
+        uintptr_t oldest_msg_delta_space;
+        if ((uintptr_t)oldest_msg > (uintptr_t)current_msg)
         {
             // The oldest msg is between `data_end_estimation` and the end of the buffer
             LuosHAL_SetIrqState(false);
-            oldest_msg_delta_space = (uint32_t)oldest_msg - (uint32_t)current_msg;
+            oldest_msg_delta_space = (uintptr_t)oldest_msg - (uintptr_t)current_msg;
             LuosHAL_SetIrqState(true);
         }
         else
@@ -341,7 +342,7 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
             // The oldest msg is between the begin of the buffer and `data_end_estimation`
             // we have to decay it to be able to define delta
             LuosHAL_SetIrqState(false);
-            oldest_msg_delta_space = ((uint32_t)oldest_msg - (uint32_t)&msg_buffer[0]) + ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)current_msg);
+            oldest_msg_delta_space = ((uintptr_t)oldest_msg - (uintptr_t)&msg_buffer[0]) + ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)current_msg);
             LuosHAL_SetIrqState(true);
         }
         // Compare deltas
@@ -360,7 +361,7 @@ static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
 static inline void MsgAlloc_FindNewOldestMsg(void)
 {
     // Reinit the value
-    oldest_msg = (msg_t *)0xFFFFFFFF;
+    oldest_msg = (msg_t *)INT_MAX;
     // start parsing tasks to find the oldest message
     // check it on msg_tasks
     MsgAlloc_OldestMsgCandidate((msg_t *)msg_tasks[0]);
@@ -382,7 +383,7 @@ static inline void MsgAlloc_FindNewOldestMsg(void)
  ******************************************************************************/
 static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
 {
-    if ((uint32_t)to > ((uint32_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
+    if ((uintptr_t)to > ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
     {
         // We reach msg_buffer end return an error
         //
@@ -433,7 +434,7 @@ void MsgAlloc_InvalidMsg(void)
     //
     data_ptr            = (uint8_t *)current_msg;
     data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + CRC_SIZE]);
-    LUOS_ASSERT((uint32_t)data_end_estimation < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]);
+    LUOS_ASSERT((uintptr_t)data_end_estimation < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]);
     if (current_msg == (volatile msg_t *)&msg_buffer[0])
     {
         copy_task_pointer = NULL;
@@ -497,7 +498,7 @@ void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
         data_end_estimation = (uint8_t *)&current_msg->data[data_size + CRC_SIZE];
 
         // check if there is a msg treatment pending
-        if (((uint32_t)used_msg >= (uint32_t)current_msg) && ((uint32_t)used_msg <= (uint32_t)(&current_msg->data[data_size + CRC_SIZE])))
+        if (((uintptr_t)used_msg >= (uintptr_t)current_msg) && ((uintptr_t)used_msg <= (uintptr_t)(&current_msg->data[data_size + CRC_SIZE])))
         {
             //
             //        msg_buffer init state
@@ -589,7 +590,7 @@ void MsgAlloc_EndMsg(void)
         }
     }
     LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
-    LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
+    LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uintptr_t)msg_tasks[0] >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)msg_tasks[0] < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE])));
     msg_tasks[msg_tasks_stack_id] = current_msg;
     if (msg_tasks_stack_id == 0)
     {
@@ -618,7 +619,7 @@ void MsgAlloc_EndMsg(void)
     // data_ptr is actually 2 bytes after the message data because of the CRC. Remove the CRC.
     data_ptr -= CRC_SIZE;
     // Check data ptr alignement
-    if ((uint32_t)data_ptr % 2 == 1)
+    if ((uintptr_t)data_ptr % 2 == 1)
     {
         data_ptr++;
     }
@@ -748,7 +749,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     //******** Prepare a memory space to be writable **********
 
     // check if there is a msg traitement pending
-    if (((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to))
+    if (((uintptr_t)used_msg >= (uintptr_t)from) && ((uintptr_t)used_msg <= (uintptr_t)to))
     {
         used_msg = NULL;
         // This message is in the space we want to use, clear the task
@@ -760,11 +761,11 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
     }
     // check if there is a msg in the space we need
     // Start by checking if the oldest message is out of scope
-    if (((uint32_t)oldest_msg >= (uint32_t)from) && ((uint32_t)oldest_msg <= (uint32_t)to))
+    if (((uintptr_t)oldest_msg >= (uintptr_t)from) && ((uintptr_t)oldest_msg <= (uintptr_t)to))
     {
         // We have to drop some messages for sure
         mem_stat->buffer_occupation_ratio = 100;
-        while (((uint32_t)luos_tasks[0].msg_pt >= (uint32_t)from) && ((uint32_t)luos_tasks[0].msg_pt <= (uint32_t)to) && (luos_tasks_stack_id > 0))
+        while (((uintptr_t)luos_tasks[0].msg_pt >= (uintptr_t)from) && ((uintptr_t)luos_tasks[0].msg_pt <= (uintptr_t)to) && (luos_tasks_stack_id > 0))
         {
             // This message is in the space we want to use, clear all the Luos task
             MsgAlloc_ClearLuosTask(0);
@@ -775,7 +776,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
             }
         }
         // check if there is no msg between from and to on msg_tasks
-        while (((uint32_t)msg_tasks[0] >= (uint32_t)from) && ((uint32_t)msg_tasks[0] <= (uint32_t)to) && (msg_tasks_stack_id > 0))
+        while (((uintptr_t)msg_tasks[0] >= (uintptr_t)from) && ((uintptr_t)msg_tasks[0] <= (uintptr_t)to) && (msg_tasks_stack_id > 0))
         {
             // This message is in the space we want to use, clear all the message task
             MsgAlloc_ClearMsgTask();
@@ -786,7 +787,7 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
             }
         }
         // check if there is no msg between from and to on tx_tasks
-        while (((uint32_t)tx_tasks[0].data_pt >= (uint32_t)from) && ((uint32_t)tx_tasks[0].data_pt <= (uint32_t)to) && (tx_tasks_stack_id > 0))
+        while (((uintptr_t)tx_tasks[0].data_pt >= (uintptr_t)from) && ((uintptr_t)tx_tasks[0].data_pt <= (uintptr_t)to) && (tx_tasks_stack_id > 0))
         {
             // This message is in the space we want to use, clear all the Tx task
             MsgAlloc_PullMsgFromTxTask();
@@ -808,8 +809,8 @@ static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
  ******************************************************************************/
 static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
 {
-    if ((((uint32_t)used_msg >= (uint32_t)from) && ((uint32_t)used_msg <= (uint32_t)to))
-        || (((uint32_t)oldest_msg >= (uint32_t)from) && ((uint32_t)oldest_msg <= (uint32_t)to)))
+    if ((((uintptr_t)used_msg >= (uintptr_t)from) && ((uintptr_t)used_msg <= (uintptr_t)to))
+        || (((uintptr_t)oldest_msg >= (uintptr_t)from) && ((uintptr_t)oldest_msg <= (uintptr_t)to)))
     {
         // FAILED CASES :
         //
@@ -891,7 +892,7 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
         //             +---------+<--msg_tasks_stack_id   +---------+
         //
         *returned_msg = (msg_t *)msg_tasks[0];
-        LUOS_ASSERT(((uint32_t)*returned_msg >= (uint32_t)&msg_buffer[0]) && ((uint32_t)*returned_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]));
+        LUOS_ASSERT(((uintptr_t)*returned_msg >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)*returned_msg < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
         MsgAlloc_ClearMsgTask();
         return SUCCEED;
     }
@@ -986,7 +987,7 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
     luos_tasks_stack_id++;
     LuosHAL_SetIrqState(true);
     // luos task memory usage
-    uint8_t stat = (uint8_t)(((uint32_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
+    uint8_t stat = (uint8_t)(((uintptr_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
     if (stat > mem_stat->luos_stack_ratio)
     {
         mem_stat->luos_stack_ratio = stat;
@@ -1375,7 +1376,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  ******************************************************************************/
 error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, uint16_t crc, uint16_t size, luos_localhost_t localhost, uint8_t ack)
 {
-    LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uint32_t)data > 0) && ((uint32_t)current_msg < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uint32_t)current_msg >= (uint32_t)&msg_buffer[0]));
+    LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uintptr_t)data > 0) && ((uintptr_t)current_msg < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uintptr_t)current_msg >= (uintptr_t)&msg_buffer[0]));
     void *rx_msg_bkp          = 0;
     void *tx_msg              = 0;
     uint16_t progression_size = 0;
@@ -1393,8 +1394,8 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     // Stop it
     LuosHAL_SetIrqState(false);
     // compute RX progression
-    progression_size = (uint32_t)data_ptr - (uint32_t)current_msg;
-    estimated_size   = (uint32_t)data_end_estimation - (uint32_t)current_msg;
+    progression_size = (uintptr_t)data_ptr - (uintptr_t)current_msg;
+    estimated_size   = (uintptr_t)data_end_estimation - (uintptr_t)current_msg;
     rx_msg_bkp       = (void *)current_msg;
     //
     //   * msg_buffer at beginning of MsgAlloc_SetTxTask : we are receiving a Rx message (complete or incomplete)
@@ -1444,7 +1445,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         decay_size = size;
     }
     // Check if the message to send size (+ possible padding) fits into msg buffer
-    if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)current_msg + decay_size)) == FAILED)
+    if (MsgAlloc_DoWeHaveSpace((void *)((uintptr_t)current_msg + decay_size)) == FAILED)
     {
         //
         // message to send don't fit
@@ -1458,7 +1459,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         //                                               current_msg
         //
         // There is no space available for now
-        if (MsgAlloc_CheckMsgSpace((void *)current_msg, (void *)(uint32_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
+        if (MsgAlloc_CheckMsgSpace((void *)current_msg, (void *)(uintptr_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
         {
             // Check at the beginning of buffer if there is a task
             //
@@ -1474,7 +1475,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             return FAILED;
         }
 
-        if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + decay_size + estimated_size)) == FAILED)
+        if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uintptr_t)msg_buffer + decay_size + estimated_size)) == FAILED)
         {
             // Check at the beginning of buffer if there is a task
             //
@@ -1492,9 +1493,9 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         }
         // move everything at the begining of the buffer
         tx_msg              = (void *)msg_buffer;
-        current_msg         = (msg_t *)((uint32_t)msg_buffer + decay_size);
-        data_ptr            = (uint8_t *)((uint32_t)current_msg + progression_size);
-        data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
+        current_msg         = (msg_t *)((uintptr_t)msg_buffer + decay_size);
+        data_ptr            = (uint8_t *)((uintptr_t)current_msg + progression_size);
+        data_end_estimation = (uint8_t *)((uintptr_t)current_msg + estimated_size);
         // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
     }
     else
@@ -1509,7 +1510,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         //
         tx_msg = (void *)current_msg;
         // Check if the receiving message size fit into msg buffer
-        if (MsgAlloc_DoWeHaveSpace((void *)((uint32_t)tx_msg + decay_size + estimated_size)) == FAILED)
+        if (MsgAlloc_DoWeHaveSpace((void *)((uintptr_t)tx_msg + decay_size + estimated_size)) == FAILED)
         {
             // receiving message don't fit, move it to the start of the buffer
             //
@@ -1520,7 +1521,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
             //                                tx_msg
             //
             // Check space for the TX message
-            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uint32_t)tx_msg + decay_size)) == FAILED)
+            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)((uintptr_t)tx_msg + decay_size)) == FAILED)
             {
                 // There is no space available for now
                 //
@@ -1535,7 +1536,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 return FAILED;
             }
             // Check if there is a task between tx and end of buffer
-            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)(uint32_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
+            if (MsgAlloc_CheckMsgSpace((void *)tx_msg, (void *)(uintptr_t)(&msg_buffer[MSG_BUFFER_SIZE - 1])) == FAILED)
             {
                 // There is no space available for now
                 //
@@ -1550,7 +1551,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 return FAILED;
             }
             // Check space for the RX message
-            if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uint32_t)msg_buffer + estimated_size)) == FAILED)
+            if (MsgAlloc_CheckMsgSpace((void *)msg_buffer, (void *)((uintptr_t)msg_buffer + estimated_size)) == FAILED)
             {
                 // There is no space available for now
                 //
@@ -1565,14 +1566,14 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 return FAILED;
             }
             current_msg         = (msg_t *)msg_buffer;
-            data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
+            data_end_estimation = (uint8_t *)((uintptr_t)current_msg + estimated_size);
             // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
         else
         {
             // receiving message fit, move receiving message of tx_message size
             // Check space for the TX and RX message
-            if (MsgAlloc_CheckMsgSpace((void *)((uint32_t)tx_msg), (void *)((uint32_t)tx_msg + decay_size + estimated_size)) == FAILED)
+            if (MsgAlloc_CheckMsgSpace((void *)((uintptr_t)tx_msg), (void *)((uintptr_t)tx_msg + decay_size + estimated_size)) == FAILED)
             {
                 // There is no space available for now
                 //
@@ -1586,12 +1587,12 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
                 LuosHAL_SetIrqState(true);
                 return FAILED;
             }
-            current_msg         = (msg_t *)((uint32_t)current_msg + decay_size);
-            data_end_estimation = (uint8_t *)((uint32_t)current_msg + estimated_size);
+            current_msg         = (msg_t *)((uintptr_t)current_msg + decay_size);
+            data_end_estimation = (uint8_t *)((uintptr_t)current_msg + estimated_size);
             // We don't need to clear the space, we already check it using MsgAlloc_CheckMsgSpace
         }
-        data_ptr = (uint8_t *)((uint32_t)current_msg + progression_size);
-        LUOS_ASSERT((uint32_t)(data_ptr) < (uint32_t)(&msg_buffer[MSG_BUFFER_SIZE]));
+        data_ptr = (uint8_t *)((uintptr_t)current_msg + progression_size);
+        LUOS_ASSERT((uintptr_t)(data_ptr) < (uintptr_t)(&msg_buffer[MSG_BUFFER_SIZE]));
     }
 
     // From here we have enough space to copy Tx message followed by Rx message
@@ -1607,7 +1608,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         // re-enable IRQ
         LuosHAL_SetIrqState(true);
         // Now we can copy additional datas
-        memcpy((void *)((uint32_t)current_msg_cpy + sizeof(header_t)), (void *)((uint32_t)rx_msg_bkp + sizeof(header_t)), (progression_size - sizeof(header_t)));
+        memcpy((void *)((uintptr_t)current_msg_cpy + sizeof(header_t)), (void *)((uintptr_t)rx_msg_bkp + sizeof(header_t)), (progression_size - sizeof(header_t)));
     }
     else
     {
@@ -1683,7 +1684,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
     if (localhost != EXTERNALHOST)
     {
         // This is a localhost (LOCALHOST or MULTIHOST) message copy it as a message task
-        LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uint32_t)msg_tasks[0] >= (uint32_t)&msg_buffer[0]) && ((uint32_t)msg_tasks[0] < (uint32_t)&msg_buffer[MSG_BUFFER_SIZE])));
+        LUOS_ASSERT(!(msg_tasks_stack_id > 0) || (((uintptr_t)msg_tasks[0] >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)msg_tasks[0] < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE])));
         LuosHAL_SetIrqState(false);
         LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
         msg_tasks[msg_tasks_stack_id] = tx_msg;

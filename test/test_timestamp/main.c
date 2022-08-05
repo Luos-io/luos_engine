@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <default_scenario.h>
 
-extern default_scenario_t default_sc;
 extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
+extern default_scenario_t default_sc;
 
 static void MessageHandler(service_t *service, msg_t *msg)
 {

@@ -122,7 +122,7 @@ void Recep_GetHeader(volatile uint8_t *data)
                 }
             }
 
-            if ((ctx.rx.status.rx_framing_error == false))
+            if (ctx.rx.status.rx_framing_error == false)
             {
                 if (data_size)
                 {
@@ -359,7 +359,7 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
             // Check all ll_service id
             for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if ((header->target == ctx.ll_service_table[i].id))
+                if (header->target == ctx.ll_service_table[i].id)
                 {
                     return (ll_service_t *)&ctx.ll_service_table[i];
                 }

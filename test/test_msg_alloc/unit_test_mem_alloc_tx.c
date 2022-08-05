@@ -494,9 +494,9 @@ void unittest_SetTxTask_Tx_too_long_3()
         oldest_msg          = (msg_t *)&msg_buffer[80];                              // There is a task at beginning of msg_buffer
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)msg_buffer + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)msg_buffer + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)msg_buffer;
@@ -607,7 +607,7 @@ void unittest_SetTxTask_Rx_too_long_1()
         current_msg                = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size + rx_bytes_received + 1)]; // There are only 61 bytes left in msg buffer
         data_ptr                   = (uint8_t *)current_msg + rx_bytes_received;                                // Rx message already received = 10 bytes
         data_end_estimation        = (uint8_t *)current_msg + rx_size;                                          // Rx message = 30 bytes
-        oldest_msg                 = (msg_t *)((uint32_t)current_msg + tx_size);                                // There is a task
+        oldest_msg                 = (msg_t *)((uintptr_t)current_msg + tx_size);                               // There is a task
         tx_tasks_stack_id          = 1;
 
         // Call function and Verify
@@ -657,7 +657,7 @@ void unittest_SetTxTask_Rx_too_long_1()
         current_msg                = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size + rx_bytes_received + 1)]; // There are only 101 bytes left in msg buffer
         data_ptr                   = (uint8_t *)current_msg + rx_bytes_received;                                // Rx message already received = 51 bytes
         data_end_estimation        = (uint8_t *)current_msg + rx_size;                                          // Rx message = 100 bytes
-        oldest_msg                 = (msg_t *)((uint32_t)current_msg + rx_bytes_received);                      // There is a task
+        oldest_msg                 = (msg_t *)((uintptr_t)current_msg + rx_bytes_received);                     // There is a task
         tx_tasks_stack_id          = 1;
 
         // Call function and Verify
@@ -707,7 +707,7 @@ void unittest_SetTxTask_Rx_too_long_1()
         current_msg                = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size + rx_bytes_received + 1)]; // There are only 100 bytes left in msg buffer
         data_ptr                   = (uint8_t *)current_msg + rx_bytes_received;                                // Rx message already received = 50 bytes
         data_end_estimation        = (uint8_t *)current_msg + rx_size;                                          // Rx message = 100 bytes
-        oldest_msg                 = (msg_t *)((uint32_t)current_msg + tx_size);                                // There is a task
+        oldest_msg                 = (msg_t *)((uintptr_t)current_msg + tx_size);                               // There is a task
         tx_tasks_stack_id          = 1;
 
         // Call function and Verify
@@ -760,7 +760,7 @@ void unittest_SetTxTask_Rx_too_long_2()
         current_msg                = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size + rx_bytes_received + 1)]; // There are only 61 bytes left in msg buffer
         data_ptr                   = (uint8_t *)current_msg + rx_bytes_received;                                // Rx message already received = 10 bytes
         data_end_estimation        = (uint8_t *)current_msg + rx_size;                                          // Rx message = 30 bytes
-        oldest_msg                 = (msg_t *)((uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - sizeof(header_t));      // There is a task
+        oldest_msg                 = (msg_t *)((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - sizeof(header_t));     // There is a task
         tx_tasks_stack_id          = 1;
         // Call function and Verify
         //---------------------------
@@ -872,9 +872,9 @@ void unittest_SetTxTask_Rx_too_long_4()
         oldest_msg          = (msg_t *)&msg_buffer[80];                              // No task
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)msg_buffer); // Rx message will be copied at beginning of message buffer
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)msg_buffer); // Rx message will be copied at beginning of message buffer
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)msg_buffer;
@@ -1051,9 +1051,9 @@ void unittest_SetTxTask_copy_OK()
         oldest_msg          = (msg_t *)&msg_buffer[2 * tx_size + 1];      // No Task
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
@@ -1175,9 +1175,9 @@ void unittest_SetTxTask_copy_OK()
         padding             = rx_bytes_received - tx_size;                // Add padding (1 byte)
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size + padding); // Rx message will be copied after Tx message with padding
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size + padding); // Rx message will be copied after Tx message with padding
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
@@ -1298,9 +1298,9 @@ void unittest_SetTxTask_copy_OK()
         oldest_msg          = (msg_t *)&msg_buffer[2 * rx_size + 1];      // No Task
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
@@ -1416,9 +1416,9 @@ void unittest_SetTxTask_copy_OK()
         oldest_msg          = (msg_t *)&msg_buffer[2 * tx_size + 1];      // No Task
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
@@ -1539,9 +1539,9 @@ void unittest_SetTxTask_ACK()
         oldest_msg          = (msg_t *)&msg_buffer[2 * tx_size + 1];      // No Task
         tx_tasks_stack_id   = 1;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
@@ -1668,9 +1668,9 @@ void unittest_SetTxTask_internal_localhost()
         tx_tasks_stack_id   = 1;
         msg_tasks_stack_id  = 0;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
@@ -1801,9 +1801,9 @@ void unittest_SetTxTask_multihost()
         tx_tasks_stack_id   = 1;
         msg_tasks_stack_id  = 0;
 
-        expected_current_msg         = (msg_t *)((uint32_t)current_msg + tx_size); // Rx message will be copied after Tx message
-        expected_data_ptr            = (uint8_t *)((uint32_t)expected_current_msg + rx_bytes_received);
-        expected_data_end_estimation = (uint8_t *)((uint32_t)expected_current_msg + rx_size);
+        expected_current_msg         = (msg_t *)((uintptr_t)current_msg + tx_size); // Rx message will be copied after Tx message
+        expected_data_ptr            = (uint8_t *)((uintptr_t)expected_current_msg + rx_bytes_received);
+        expected_data_end_estimation = (uint8_t *)((uintptr_t)expected_current_msg + rx_size);
 
         expected_tx_task.size          = tx_size;
         expected_tx_task.data_pt       = (uint8_t *)current_msg;
