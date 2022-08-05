@@ -32,10 +32,9 @@
 #define _LUOSHAL_CONFIG_H_
 
 #include "stm32g4xx_hal.h"
-// clang-format off
 
 #ifndef MCUFREQ
-#define MCUFREQ 170000000 // MCU frequence
+    #define MCUFREQ 170000000 // MCU frequence
 #endif
 
 /*******************************************************************************
@@ -45,29 +44,29 @@
 
 // The beginning of the bootloader code in flash
 #ifndef BOOT_START_ADDRESS
-#define BOOT_START_ADDRESS (uint32_t)FLASH_BASE 
+    #define BOOT_START_ADDRESS (uint32_t) FLASH_BASE
 #endif
 
 #ifndef END_ERASE_BOOTLOADER
-#define END_ERASE_BOOTLOADER (uint32_t)0x20000
+    #define END_ERASE_BOOTLOADER (uint32_t)0x20000
 #endif
 // Shared memory to store bootmode
 #ifndef SHARED_MEMORY_ADDRESS
-#define SHARED_MEMORY_ADDRESS (uint32_t)0x800C000
+    #define SHARED_MEMORY_ADDRESS (uint32_t)0x800C000
 #endif
 // begining of application in flash - by default after bootloader & shared mem
 #ifndef APP_START_ADDRESS
-#define APP_START_ADDRESS (uint32_t)0x0800C800
+    #define APP_START_ADDRESS (uint32_t)0x0800C800
 #endif
 // last address of app in case of a bootloader
 #ifndef APP_END_ADDRESS
-#define APP_END_ADDRESS (uint32_t)FLASH_END
+    #define APP_END_ADDRESS (uint32_t) FLASH_END
 #endif
 // Remapping address of vector table in flash
 #ifdef WITH_BOOTLOADER
-#define LUOS_VECT_TAB APP_START_ADDRESS
+    #define LUOS_VECT_TAB APP_START_ADDRESS
 #else
-#define LUOS_VECT_TAB BOOT_START_ADDRESS
+    #define LUOS_VECT_TAB BOOT_START_ADDRESS
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */

@@ -10,18 +10,17 @@
 #ifndef _LUOSHAL_CONFIG_H_
 #define _LUOSHAL_CONFIG_H_
 
-// clang-format off
 // include file relative to your MCU family
 
 #ifndef MCUFREQ
-#define MCUFREQ // MCU frequence
+    #define MCUFREQ // MCU frequence
 #endif
 
 /*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
 #define SHARED_MEMORY_ADDRESS ((uint32_t)0x0800C000)
-#define APP_START_ADDRESS           (uint32_t)0x0800C800                                    // Begining of the app on flash
-#define APP_END_ADDRESS           (uint32_t)FLASH_END
+#define APP_START_ADDRESS     (uint32_t)0x0800C800 // Begining of the app on flash
+#define APP_END_ADDRESS       (uint32_t) FLASH_END
 
 #endif /* _LUOSHAL_CONFIG_H_ */

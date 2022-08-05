@@ -11,10 +11,9 @@
 #define _LUOSHAL_CONFIG_H_
 
 #include "samd21.h"
-// clang-format off
 
 #ifndef MCUFREQ
-#define MCUFREQ 48000000 // MCU frequence
+    #define MCUFREQ 48000000 // MCU frequence
 #endif
 
 /*******************************************************************************
