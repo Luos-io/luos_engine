@@ -19,8 +19,8 @@
 /*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
-#define SHARED_MEMORY_ADDRESS ((uint32_t)0x0800C000)
-#define APP_START_ADDRESS     (uint32_t)0x0800C800 // Begining of the app on flash
-#define APP_END_ADDRESS       (uint32_t) FLASH_END
+#define SHARED_MEMORY_ADDRESS // Begining of the shared on flash after bootloader
+#define APP_START_ADDRESS     // Begining of the app on flash
+#define APP_END_ADDRESS       // end of the app on flash
 
 #endif /* _LUOSHAL_CONFIG_H_ */
