@@ -10,7 +10,7 @@ on:
     branches-ignore:
       - main
 
-concurrency: 
+concurrency:
   group: dev-build-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
@@ -29,23 +29,24 @@ jobs:
             pio_lib_path: ~/work/Luos
 
     steps:
+      - name: Check out Luos repository
+        uses: actions/checkout@v3
+
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: '3.10.5'
 
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: '14'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel platformio
+          python -m pip install --upgrade pip setuptools wheel
+          pip install platformio
           npm install -g clang-format@1.5.0
-
-      - name: Check out Luos repository
-        uses: actions/checkout@v2
 
       - name: Check for code format
         if: ${{ runner.os != 'Windows' }}
