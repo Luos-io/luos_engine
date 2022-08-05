@@ -18,6 +18,8 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+
+default_scenario_t default_sc;
 extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
 
 volatile uint8_t *transmit_msg;
