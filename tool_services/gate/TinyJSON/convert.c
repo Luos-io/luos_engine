@@ -813,7 +813,7 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
                 // create the Json content
                 sprintf(data, "\"luos_statistics\":{\"rx_msg_stack\":%d,\"luos_stack\":%d,\"tx_msg_stack\":%d,\"buffer_occupation\":%d,\"msg_drop\":%d,\"loop_ms\":%d,\"max_retry\":%d},",
                         stat->node_stat.memory.rx_msg_stack_ratio,
-                        stat->node_stat.memory.luos_stack_ratio,
+                        stat->node_stat.memory.engine_msg_stack_ratio,
                         stat->node_stat.memory.tx_msg_stack_ratio,
                         stat->node_stat.memory.buffer_occupation_ratio,
                         stat->node_stat.memory.msg_drop_number,

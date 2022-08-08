@@ -638,7 +638,7 @@ void unittest_ClearMsgSpace(void)
         void *memory_start;
         void *memory_end;
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -725,7 +725,7 @@ void unittest_ClearMsgSpace(void)
         void *memory_start;
         void *memory_end;
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -810,7 +810,7 @@ void unittest_ClearMsgSpace(void)
         void *memory_start;
         void *memory_end;
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -893,7 +893,7 @@ void unittest_ClearMsgSpace(void)
         void *memory_start;
         void *memory_end;
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};

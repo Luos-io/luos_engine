@@ -62,7 +62,7 @@ void unittest_MsgAlloc_loop()
         //---------------
         uint16_t expected_stat;
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -113,7 +113,7 @@ void unittest_MsgAlloc_loop()
         //---------------
         uint32_t expected_buffer_occupation_ratio;
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -210,7 +210,7 @@ void unittest_MsgAlloc_ValidHeader()
         uint8_t *ptr       = (uint8_t *)&msg_buffer[0];
 
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -467,7 +467,7 @@ void unittest_MsgAlloc_InvalidMsg()
         // Init variables
         //---------------
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -748,7 +748,7 @@ void unittest_MsgAlloc_EndMsg()
         // Init variables
         //---------------
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -970,7 +970,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
 
         // Init variables
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -990,7 +990,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
 
         // Verify
         NEW_STEP("Check Luos stack occupation is 100\%");
-        TEST_ASSERT_EQUAL(100, memory_stats.luos_stack_ratio);
+        TEST_ASSERT_EQUAL(100, memory_stats.engine_msg_stack_ratio);
         NEW_STEP("Check there is 1 dropped message");
         TEST_ASSERT_EQUAL(1, memory_stats.msg_drop_number);
         NEW_STEP("Check Oldest Message is removed");
@@ -1021,7 +1021,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
 
         // Init variables
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
-                                       .luos_stack_ratio        = 0,
+                                       .engine_msg_stack_ratio  = 0,
                                        .tx_msg_stack_ratio      = 0,
                                        .buffer_occupation_ratio = 0,
                                        .msg_drop_number         = 0};
@@ -1050,7 +1050,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
             NEW_STEP_IN_LOOP("Check \"oldest message\" points to first luos task", i);
             TEST_ASSERT_EQUAL(luos_tasks[0].msg_pt, oldest_msg);
             NEW_STEP_IN_LOOP("Check luos stack ratio computation", i);
-            TEST_ASSERT_EQUAL(expected_mem_stat, memory_stats.luos_stack_ratio);
+            TEST_ASSERT_EQUAL(expected_mem_stat, memory_stats.engine_msg_stack_ratio);
         }
     }
 }
