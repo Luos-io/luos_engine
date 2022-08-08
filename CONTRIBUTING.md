@@ -33,7 +33,7 @@ When done right, contribution brings a lot to a project, but also to the contrib
 
 For example, it brings together external visions and skills to build, improve or fix parts of this project. Most of the contributors were first mere users of a project before to become contributors. They often got through contribution in order to add a feature they wanted, or fix an issue that was bothering them. The result is also, on their side, the feeling of being part of a great project.
 
-Contribution allows contributors to learn faster and gain skills. In fact, some contributors in open source projects became quite famous and were able to build their carreer around their contributions. That is whay contribution also brings a feeling of gratification for participating in something big.
+Contribution allows contributors to learn faster and gain skills. In fact, some contributors in open source projects became quite famous and were able to build their carreer around their contributions. This is why contribution also brings a feeling of gratification for participating in something big.
 
 Eventually, it allows to meet new people with common interest while talking to other contributors in the process of adding, improving or fixing.
 
@@ -106,7 +106,7 @@ Working on the code:
 - Fork the main repository you want to work on.
 - Clone the forked repo to your machine.
 - Create and checkout a new local branch.
-- Start workink on the code.
+- Start working on the code.
 - Commit your changes to the working local branch.
 - Push your local branch to your forked remote repo.
 
