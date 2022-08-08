@@ -123,6 +123,7 @@ jobs:
               done
             fi
           done
+          # ******** missing bootloader CI ********
 
   build-success:
     name: Build success
