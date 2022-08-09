@@ -136,7 +136,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_SetTxState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -174,7 +174,7 @@ void RobusHAL_SetTxState(uint8_t Enable)
  * @param
  * @return
  ******************************************************************************/
-void RobusHAL_SetRxState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -194,7 +194,7 @@ void RobusHAL_SetRxState(uint8_t Enable)
  * @param None
  * @return None
  ******************************************************************************/
-void LUOS_COM_IRQHANDLER()
+_CRITICAL void LUOS_COM_IRQHANDLER()
 {
     // Reset timeout to it's default value
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
@@ -253,7 +253,7 @@ void LUOS_COM_IRQHANDLER()
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
+_CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
     while ((LUOS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_DRE) != SERCOM_USART_INTFLAG_DRE)
         ;
@@ -305,7 +305,7 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
  * @param None
  * @return Lock status
  ******************************************************************************/
-void RobusHAL_SetRxDetecPin(uint8_t Enable)
+_CRITICAL void RobusHAL_SetRxDetecPin(uint8_t Enable)
 {
     if (TX_LOCK_DETECT_IRQ != DISABLE)
     {
@@ -325,7 +325,7 @@ void RobusHAL_SetRxDetecPin(uint8_t Enable)
  * @param None
  * @return Lock status
  ******************************************************************************/
-uint8_t RobusHAL_GetTxLockState(void)
+_CRITICAL uint8_t RobusHAL_GetTxLockState(void)
 {
     uint8_t result = false;
     if (LUOS_COM->USART.INTFLAG.bit.RXS == 1)
@@ -383,7 +383,7 @@ static void RobusHAL_TimeoutInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ResetTimeout(uint16_t nbrbit)
+_CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
     NVIC_ClearPendingIRQ(LUOS_TIMER_IRQ); // clear IT pending
     LUOS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;
@@ -399,7 +399,7 @@ void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-void LUOS_TIMER_IRQHANDLER()
+_CRITICAL void LUOS_TIMER_IRQHANDLER()
 {
     if (LUOS_TIMER->COUNT16.INTFLAG.bit.OVF == 1)
     {
@@ -531,7 +531,7 @@ static void RobusHAL_RegisterPTP(void)
  * @param GPIO IT line
  * @return None
  ******************************************************************************/
-void PINOUT_IRQHANDLER()
+_CRITICAL void PINOUT_IRQHANDLER()
 {
     uint32_t FlagIT = 0;
     ////Process for Tx Lock Detec
@@ -558,7 +558,7 @@ void PINOUT_IRQHANDLER()
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
     uint32_t Position = 0;
     uint32_t Config   = 0;
@@ -588,7 +588,7 @@ void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
     uint32_t Position = 0;
     uint32_t Config   = 0;
@@ -657,7 +657,7 @@ static void RobusHAL_CRCInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
+_CRITICAL void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
 {
     uint16_t dbyte = *data;
     *(uint16_t *)crc ^= dbyte << 8;

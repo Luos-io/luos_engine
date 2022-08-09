@@ -27,13 +27,13 @@ PortState_t Port_ExpectedState = POKE;
  * Function
  ******************************************************************************/
 
-static void PortMng_Reset(void);
+_CRITICAL static void PortMng_Reset(void);
 /******************************************************************************
  * @brief init the portManager state machine
  * @param None
  * @return None
  ******************************************************************************/
-void PortMng_Init(void)
+_CRITICAL void PortMng_Init(void)
 {
     PortMng_Reset();
     // Reinit port table
@@ -47,7 +47,7 @@ void PortMng_Init(void)
  * @param port id
  * @return None
  ******************************************************************************/
-void PortMng_PtpHandler(uint8_t PortNbr)
+_CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
 {
     if (Port_ExpectedState == RELEASE)
     {
@@ -137,7 +137,7 @@ error_return_t PortMng_PokeNextPort(void)
  * @param None
  * @return None
  ******************************************************************************/
-void PortMng_Reset(void)
+_CRITICAL void PortMng_Reset(void)
 {
     ctx.port.keepLine  = false;
     ctx.port.activ     = NBR_PORT;
