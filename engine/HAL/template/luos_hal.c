@@ -6,11 +6,13 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "luos_hal.h"
-
 #include <stdbool.h>
 #include <string.h>
 
-// MCU dependencies this HAL is for family XXX you can find
+/*************************************************************************
+ * This file is a template and documentation for the Luos engine HAL layer.
+ * Feel free to duplicate it and customize it to your needs.
+ *************************************************************************/
 
 /*******************************************************************************
  * Variables
@@ -32,6 +34,12 @@ static void LuosHAL_FlashInit(void);
  ******************************************************************************/
 void LuosHAL_Init(void)
 {
+    /*************************************************************************
+     * This function is called once at the beginning of the program.
+     * It is used to initialize the hardware and the variables.
+     * You can add your own initialisation code here.
+     *************************************************************************/
+
     // Systick Initialization
     LuosHAL_SystickInit();
 
@@ -49,25 +57,21 @@ void LuosHAL_Init(void)
 void LuosHAL_SetIrqState(uint8_t Enable)
 {
     /*************************************************************************
-     *
-     * This function shutdonw all the IRQ in the MCU to make atomic execution
-     * of the part of the code when it's call
-     *
+     * This function turn on and off all the IRQ in the MCU allowing atomic
+     * execution of some critical part of the code avoidign data race.
      ************************************************************************/
     if (Enable == true)
     {
         /*************************************************************************
-         *
-         * atomic exit exemple with CMSIS __enable_irq();
-         *
+         * This function turn on all the IRQ in the MCU disabling atomic
+         * For exemple with CMSIS __enable_irq();
          ************************************************************************/
     }
     else
     {
         /*************************************************************************
-         *
-         * atomic entry exemple with CMSIS __disable_irq();
-         *
+         * This function turn off all the IRQ in the MCU enabling atomic
+         * For exemple with CMSIS __disable_irq();
          ************************************************************************/
     }
 }
@@ -79,11 +83,9 @@ void LuosHAL_SetIrqState(uint8_t Enable)
 static void LuosHAL_SystickInit(void)
 {
     /*************************************************************************
-     *
-     * This function initialize Luos systick.
-     * the Luos systick allow user to track time at 1ms since
-     * the systick has been started
-     *
+     * This function is used to initialize the systick timer.
+     * The Luos systick than most system systick.
+     * It allow user to count sent ms since the systick has been started
      ************************************************************************/
 }
 /******************************************************************************
@@ -94,9 +96,7 @@ static void LuosHAL_SystickInit(void)
 uint32_t LuosHAL_GetSystick(void)
 {
     /*************************************************************************
-     *
-     * This function return the value of Luos systick since has been started
-     *
+     * This function return the value of Luos systick since MCU has been started
      ************************************************************************/
     return; // return  tick
 }
@@ -107,15 +107,16 @@ uint32_t LuosHAL_GetSystick(void)
  ******************************************************************************/
 uint64_t LuosHAL_GetTimestamp(void)
 {
-
     /*************************************************************************
+     * Timestamp is a kind of Systick with a ns resolution.
+     * For more informations about timestamp see the Luos documentation => https://www.luos.io/docs/luos-technology/services/timestamp
+     * Alternatively there is a more deep dive in it on this blogpost => https://www.luos.io/blog/distributed-latency-based-time-synchronization
+     * You can create the timestamp value with your own timer or by
+     * reading the timer counter value of the systick timer register of your MCU.
      *
-     * This function give a ns time measurement for timestamp value
-     * you can create the timestamp value with your own timer or by
-     * reading the value of the systick register
-     *
-     * this timestamps value will be as precise as the MCU frequency is high
-     *
+     * This timestamps value will be as precise as the MCU frequency is.
+     * The timestamp value is an int64_t value.
+     * Make sure to return the value at a ns scale even if your MCU is slower.
      ************************************************************************/
 
     return // Your timestamp value;
@@ -129,12 +130,8 @@ uint64_t LuosHAL_GetTimestamp(void)
 void LuosHAL_StartTimestamp(void)
 {
     /*************************************************************************
-     *
-     * This function Set the ll_timestamp.start_offset value to the actual
-     * timestamp value
-     *
+     * This function set the ll_timestamp.start_offset witch is the initial value of the timestamp.
      * the timestamp value is an int64
-     *
      ************************************************************************/
     // set ll_timestamp.lower_timestamp
     // set ll_timestamp.higher_timestamp
@@ -149,9 +146,7 @@ void LuosHAL_StartTimestamp(void)
 void LuosHAL_StopTimestamp(void)
 {
     /*************************************************************************
-     *
-     * This function Reset your timestamp struct to
-     *
+     * This function Reset your timestamp counter to 0.
      ************************************************************************/
     // Reset your timestamp struct
     ll_timestamp.lower_timestamp  = 0;
