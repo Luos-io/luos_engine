@@ -130,7 +130,7 @@ jobs:
           platformio run -d examples/projects/NUCLEO-L432KC/servo
           platformio run -d examples/projects/NUCLEO-L432KC/bootloader
           platformio run -d examples/projects/NUCLEO-L432KC/dc_motor
-          platformio run -d examples/projects/NUCLEO-L432KC/potentiometre
+          platformio run -d examples/projects/NUCLEO-L432KC/potentiometer
           # STM32F4-discovery
           platformio run -d examples/projects/STM32F4-discovery/button
           platformio run -d examples/projects/STM32F4-discovery/gate_serialcom
