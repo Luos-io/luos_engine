@@ -10,11 +10,17 @@
 #ifndef _RobusHAL_CONFIG_H_
 #define _RobusHAL_CONFIG_H_
 
-// include files relative to your MCU family
+// include main sdk files relative to your MCU family
+
+#define DISABLE 0x00
 
 // If your MCU do not Have DMA for tx transmit define USE_TX_IT
 
-#define DISABLE 0x00
+// If your MCU have CRC polynome 16 #define USE_CRC_HW 1 else #define USE_CRC_HW 0
+#ifndef USE_CRC_HW
+    #define USE_CRC_HW 0
+#endif
+
 #ifndef TIMERDIV
     #define TIMERDIV // clock divider for timer clock chosen
 #endif
@@ -22,10 +28,7 @@
  * PINOUT CONFIG
  ******************************************************************************/
 #ifndef PORT_CLOCK_ENABLE
-    #define PORT_CLOCK_ENABLE() \
-        do                      \
-        {                       \
-        } while (0U)
+    #define PORT_CLOCK_ENABLE
 #endif
 
 // PTP pin definition
@@ -102,11 +105,7 @@
  * COM CONFIG
  ******************************************************************************/
 #ifndef LUOS_COM_CLOCK_ENABLE
-    #define LUOS_COM_CLOCK_ENABLE() \
-        do                          \
-        {
-}
-while (0U)
+    #define LUOS_COM_CLOCK_ENABLE
 #endif
 #ifndef LUOS_COM
     #define LUOS_COM
@@ -121,11 +120,7 @@ while (0U)
  * DMA CONFIG
  ******************************************************************************/
 #ifndef LUOS_DMA_CLOCK_ENABLE
-    #define LUOS_DMA_CLOCK_ENABLE() \
-        do                          \
-        {
-}
-while (0U)
+    #define LUOS_DMA_CLOCK_ENABLE
 #endif
 #ifndef LUOS_DMA
     #define LUOS_DMA
@@ -137,11 +132,7 @@ while (0U)
  * COM TIMEOUT CONFIG
  ******************************************************************************/
 #ifndef LUOS_TIMER_LOCK_ENABLE
-    #define LUOS_TIMER_LOCK_ENABLE() \
-        do                           \
-        {
-}
-while (0U)
+    #define LUOS_TIMER_LOCK_ENABLE
 #endif
 #ifndef LUOS_TIMER
     #define LUOS_TIMER
