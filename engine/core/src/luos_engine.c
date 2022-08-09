@@ -247,7 +247,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
     time_luos_t time;
     uint16_t base_id = 0;
 
-    if (((input->header.target_mode == IDACK) || (input->header.target_mode == ID)) && (input->header.target != service->ll_service->id))
+    if (((input->header.target_mode == SERVICEIDACK) || (input->header.target_mode == SERVICEID)) && (input->header.target != service->ll_service->id))
     {
         return FAILED;
     }
@@ -297,7 +297,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                 case 0:
                     // send back a local routing table
                     output_msg.header.cmd         = RTB;
-                    output_msg.header.target_mode = IDACK;
+                    output_msg.header.target_mode = SERVICEIDACK;
                     output_msg.header.target      = input->header.source;
                     Luos_TransmitLocalRoutingTable(service, &output_msg);
                     break;
@@ -321,7 +321,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             {
                 msg_t output;
                 output.header.cmd         = REVISION;
-                output.header.target_mode = ID;
+                output.header.target_mode = SERVICEID;
                 memcpy(output.data, service->revision.unmap, sizeof(revision_t));
                 output.header.size   = sizeof(revision_t);
                 output.header.target = input->header.source;
@@ -334,7 +334,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             {
                 msg_t output;
                 output.header.cmd         = LUOS_REVISION;
-                output.header.target_mode = ID;
+                output.header.target_mode = SERVICEID;
                 memcpy(output.data, &luos_version.unmap, sizeof(revision_t));
                 output.header.size   = sizeof(revision_t);
                 output.header.target = input->header.source;
@@ -357,7 +357,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             {
                 msg_t output;
                 output.header.cmd         = LUOS_STATISTICS;
-                output.header.target_mode = ID;
+                output.header.target_mode = SERVICEID;
                 output.header.size        = sizeof(general_stats_t);
                 output.header.target      = input->header.source;
                 memcpy(&general_stats.node_stat, &luos_stats.unmap, sizeof(luos_stats_t));
@@ -479,7 +479,7 @@ static void Luos_AutoUpdateManager(void)
                     updt_msg.header.config      = BASE_PROTOCOL;
                     updt_msg.header.target      = service_table[i].ll_service->id;
                     updt_msg.header.source      = service_table[i].auto_refresh.target;
-                    updt_msg.header.target_mode = IDACK;
+                    updt_msg.header.target_mode = SERVICEIDACK;
                     updt_msg.header.cmd         = GET_CMD;
                     updt_msg.header.size        = 0;
                     if ((service_table[i].service_cb != 0))
@@ -1214,7 +1214,7 @@ void Luos_Detect(service_t *service)
         Luos_SetID(service, 1);
         //  send ask detection message
         detection_service             = service;
-        detect_msg.header.target_mode = IDACK;
+        detect_msg.header.target_mode = SERVICEIDACK;
         detect_msg.header.cmd         = ASK_DETECTION;
         detect_msg.header.size        = 0;
         detect_msg.header.target      = 1;

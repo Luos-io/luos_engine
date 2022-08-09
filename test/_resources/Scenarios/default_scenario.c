@@ -139,7 +139,7 @@ void Init_Messages(void)
     default_sc.App_1.tx_msg->header.config      = PROTOCOL_REVISION;
     default_sc.App_1.tx_msg->header.source      = 1;
     default_sc.App_1.tx_msg->header.target      = 2;
-    default_sc.App_1.tx_msg->header.target_mode = IDACK;
+    default_sc.App_1.tx_msg->header.target_mode = SERVICEIDACK;
     default_sc.App_1.tx_msg->header.cmd         = DEFAULT_CMD;
     default_sc.App_1.tx_msg->header.size        = MAX_DATA_MSG_SIZE;
 
@@ -148,7 +148,7 @@ void Init_Messages(void)
     default_sc.App_2.tx_msg->header.config      = PROTOCOL_REVISION;
     default_sc.App_2.tx_msg->header.source      = 2;
     default_sc.App_2.tx_msg->header.target      = 1;
-    default_sc.App_2.tx_msg->header.target_mode = IDACK;
+    default_sc.App_2.tx_msg->header.target_mode = SERVICEIDACK;
     default_sc.App_2.tx_msg->header.cmd         = DEFAULT_CMD;
     default_sc.App_2.tx_msg->header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
 
@@ -157,7 +157,7 @@ void Init_Messages(void)
     default_sc.App_3.tx_msg->header.config      = PROTOCOL_REVISION;
     default_sc.App_3.tx_msg->header.source      = 3;
     default_sc.App_3.tx_msg->header.target      = 2;
-    default_sc.App_3.tx_msg->header.target_mode = IDACK;
+    default_sc.App_3.tx_msg->header.target_mode = SERVICEIDACK;
     default_sc.App_3.tx_msg->header.cmd         = DEFAULT_CMD;
     default_sc.App_3.tx_msg->header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
 
