@@ -126,7 +126,7 @@ void RunMotor_EventHandler(service_t *service, msg_t *msg)
             // It's important to setting it each time.
             msg_t update_msg;
             update_msg.header.target      = result.result_table[0]->id;
-            update_msg.header.target_mode = IDACK;
+            update_msg.header.target_mode = SERVICEIDACK;
             time_luos_t time              = TimeOD_TimeFrom_ms(REFRESH_POSITION_MOTOR);
             TimeOD_TimeToMsg(&time, &update_msg);
             update_msg.header.cmd = UPDATE_PUB;
@@ -157,7 +157,7 @@ void motor_init(uint8_t motor_target)
         float resolution       = 12.0;
         msg.header.target      = motor_target;
         msg.header.cmd         = RESOLUTION;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         msg.header.size        = sizeof(float);
         memcpy(&msg.data, &resolution, sizeof(float));
         while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -168,7 +168,7 @@ void motor_init(uint8_t motor_target)
         float reduction        = 74.83;
         msg.header.target      = motor_target;
         msg.header.cmd         = REDUCTION;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         msg.header.size        = sizeof(float);
         memcpy(&msg.data, &reduction, sizeof(float));
         while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -179,7 +179,7 @@ void motor_init(uint8_t motor_target)
         asserv_pid_t pid_coef  = {.p = 28.0, .i = 0.1, .d = 100.0};
         msg.header.target      = motor_target;
         msg.header.cmd         = PID;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         msg.header.size        = sizeof(asserv_pid_t);
         memcpy(&msg.data, &pid_coef, sizeof(asserv_pid_t));
         while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -196,7 +196,7 @@ void motor_init(uint8_t motor_target)
 
     msg.header.target      = motor_target;
     msg.header.cmd         = PARAMETERS;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(servo_motor_mode_t);
     memcpy(&msg.data, &servo_mode, sizeof(servo_motor_mode_t));
     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -207,7 +207,7 @@ void motor_init(uint8_t motor_target)
     float sampling_freq    = SAMPLING_PERIOD;
     msg.header.target      = motor_target;
     msg.header.cmd         = TIME;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(float);
     memcpy(&msg.data, &sampling_freq, sizeof(float));
     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -230,7 +230,7 @@ void motor_SendTrajectory(uint8_t motor_target)
         // send data
         msg.header.target      = motor_target;
         msg.header.cmd         = ANGULAR_POSITION;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         msg.header.size        = NB_POINT_IN_TRAJECTORY * sizeof(angular_position_t);
         Luos_SendData(app, &msg, trajectory, NB_POINT_IN_TRAJECTORY * sizeof(angular_position_t));
     }
@@ -243,7 +243,7 @@ void motor_stream(uint8_t motor_target, control_type_t control_type)
     control_t control      = {.flux = control_type};
     msg.header.target      = motor_target;
     msg.header.cmd         = CONTROL;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = NB_POINT_IN_TRAJECTORY * sizeof(angular_position_t);
     ControlOD_ControlToMsg(&control, &msg);
     while (Luos_SendMsg(app, &msg) == FAILED)

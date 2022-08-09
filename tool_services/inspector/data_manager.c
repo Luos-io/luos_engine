@@ -39,7 +39,7 @@ void DataManager_SendRoutingTB(service_t *service)
     msg_t msg;
     msg.header.config      = BASE_PROTOCOL;
     msg.header.target      = DEFAULTID;
-    msg.header.target_mode = ID;
+    msg.header.target_mode = SERVICEID;
     msg.header.source      = result.result_table[0]->id;
     msg.header.cmd         = RTB;
     msg.header.size        = RoutingTB_GetLastEntry() * sizeof(routing_table_t);
@@ -107,7 +107,7 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
         case LUOS_STATISTICS:
             // extract service that we want the stats
             msg.header.target      = (data_msg->data[8] << 8) + data_msg->data[7];
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.cmd         = LUOS_STATISTICS;
             msg.header.size        = 0;
             Luos_SendMsg(service, &msg);
@@ -115,7 +115,7 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
         case LUOS_REVISION:
             // extract service that we want the luos revision
             msg.header.target      = (data_msg->data[8] << 8) + data_msg->data[7];
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.cmd         = LUOS_REVISION;
             msg.header.size        = 0;
             Luos_SendMsg(service, &msg);
@@ -123,7 +123,7 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
         case REVISION:
             // extract service that we want the firmware revision
             msg.header.target      = (data_msg->data[8] << 8) + data_msg->data[7];
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.cmd         = REVISION;
             msg.header.size        = 0;
             Luos_SendMsg(service, &msg);
@@ -139,7 +139,7 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
             }
             else
             {
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
             }
             Luos_SendMsg(service, &msg);
             break;

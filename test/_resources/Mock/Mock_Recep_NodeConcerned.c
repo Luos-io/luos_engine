@@ -21,7 +21,7 @@ luos_localhost_t Recep_NodeConcerned(header_t *header)
     uint16_t i = 0;
     switch (header->target_mode)
     {
-        case IDACK:
+        case SERVICEIDACK:
         case NODEIDACK:
             ctx.rx.status.rx_error = false;
             break;

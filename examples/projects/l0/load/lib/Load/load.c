@@ -62,7 +62,7 @@ static void Load_MsgHandler(service_t *service, msg_t *msg)
         {
             msg_t pub_msg;
             // fill the message infos
-            pub_msg.header.target_mode = ID;
+            pub_msg.header.target_mode = SERVICEID;
             pub_msg.header.target      = msg->header.source;
             ForceOD_ForceToMsg((force_t *)&load, &pub_msg);
             Luos_SendMsg(service, &pub_msg);

@@ -52,7 +52,7 @@ void unittest_Timestamp()
         // Create message
         msg_t msg;
         msg.header.target      = 2;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         msg.header.size        = 1;
         msg.header.cmd         = IO_STATE;
         msg.data[0]            = true;

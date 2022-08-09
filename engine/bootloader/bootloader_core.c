@@ -284,7 +284,7 @@ void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
-    ready_msg.header.target_mode = IDACK;
+    ready_msg.header.target_mode = SERVICEIDACK;
     ready_msg.header.target      = source_id;
     ready_msg.header.size        = 2 * sizeof(uint8_t);
     ready_msg.data[0]            = response;
@@ -302,7 +302,7 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
-    ready_msg.header.target_mode = IDACK;
+    ready_msg.header.target_mode = SERVICEIDACK;
     ready_msg.header.target      = source_id;
     ready_msg.header.size        = sizeof(uint8_t);
     ready_msg.data[0]            = response;

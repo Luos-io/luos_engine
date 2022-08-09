@@ -130,7 +130,7 @@ void Convert_DataToLuos(service_t *service, char *data)
                     DataManager_collect(service);
                     // create a message from parameters
                     msg.header.cmd         = REVISION;
-                    msg.header.target_mode = IDACK;
+                    msg.header.target_mode = SERVICEIDACK;
                     msg.header.target      = target_id;
                     // save current time
                     uint32_t begin_systick = Luos_GetSystick();
@@ -227,7 +227,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
     time_luos_t time;
     float data = 0.0;
     json_t const *item;
-    msg->header.target_mode = IDACK;
+    msg->header.target_mode = SERVICEIDACK;
     msg->header.target      = id;
     //********** global convertion***********
     // ratio
