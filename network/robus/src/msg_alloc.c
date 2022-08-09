@@ -972,7 +972,7 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
         if (mem_stat->msg_drop_number < 0xFF)
         {
             mem_stat->msg_drop_number++;
-            mem_stat->luos_stack_ratio = 100;
+            mem_stat->engine_msg_stack_ratio = 100;
         }
     }
     // fill the informations of the message in this slot
@@ -988,9 +988,9 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
     LuosHAL_SetIrqState(true);
     // luos task memory usage
     uint8_t stat = (uint8_t)(((uintptr_t)luos_tasks_stack_id * 100) / (MAX_MSG_NB));
-    if (stat > mem_stat->luos_stack_ratio)
+    if (stat > mem_stat->engine_msg_stack_ratio)
     {
-        mem_stat->luos_stack_ratio = stat;
+        mem_stat->engine_msg_stack_ratio = stat;
     }
 }
 
