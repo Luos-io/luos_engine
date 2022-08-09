@@ -60,7 +60,7 @@ static void Potentiometer_MsgHandler(service_t *service, msg_t *msg)
     {
         msg_t pub_msg;
         // Fill the message infos
-        pub_msg.header.target_mode = ID;
+        pub_msg.header.target_mode = SERVICEID;
         // The message destination is the service that asked information
         pub_msg.header.target = msg->header.source;
         // Convert the position to message data using Luos Object Dictionary

@@ -65,7 +65,7 @@ void MotorCopy_Loop(void)
                 msg_t msg;
                 uint8_t ledstrip_id = result.result_table[0]->id;
                 // Switch the LEDSTRIP_POSITION_APP to copy mode
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 msg.header.target      = ledstrip_id;
                 msg.header.cmd         = PARAMETERS;
                 msg.header.size        = 1;
@@ -81,7 +81,7 @@ void MotorCopy_Loop(void)
                     // This value is resetted on all service at each detection
                     // It's important to setting it each time.
                     msg.header.target      = result.result_table[0]->id;
-                    msg.header.target_mode = IDACK;
+                    msg.header.target_mode = SERVICEIDACK;
                     time_luos_t time       = TimeOD_TimeFrom_ms(REFRESH_POSITION_MOTOR);
                     TimeOD_TimeToMsg(&time, &msg);
                     msg.header.cmd = UPDATE_PUB;
@@ -99,7 +99,7 @@ void MotorCopy_Loop(void)
 
                     msg.header.target      = result.result_table[0]->id;
                     msg.header.cmd         = PARAMETERS;
-                    msg.header.target_mode = IDACK;
+                    msg.header.target_mode = SERVICEIDACK;
                     msg.header.size        = sizeof(servo_motor_mode_t);
                     memcpy(&msg.data, &servo_mode, sizeof(servo_motor_mode_t));
                     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -110,7 +110,7 @@ void MotorCopy_Loop(void)
                 // Compute the position of the dxl
                 msg.header.target      = ledstrip_id;
                 msg.header.cmd         = SET_CMD;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 msg.header.size        = 1;
                 msg.data[0]            = position;
                 while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -161,7 +161,7 @@ void Motor_init(uint16_t id)
     msg_t msg;
     msg.header.target      = id;
     msg.header.cmd         = PARAMETERS;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(servo_motor_mode_t);
     memcpy(&msg.data, &servo_mode, sizeof(servo_motor_mode_t));
     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -172,7 +172,7 @@ void Motor_init(uint16_t id)
     float resolution       = 12.0;
     msg.header.target      = id;
     msg.header.cmd         = RESOLUTION;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(float);
     memcpy(&msg.data, &resolution, sizeof(float));
     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -183,7 +183,7 @@ void Motor_init(uint16_t id)
     float reduction        = 74.83;
     msg.header.target      = id;
     msg.header.cmd         = REDUCTION;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(float);
     memcpy(&msg.data, &reduction, sizeof(float));
     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -194,7 +194,7 @@ void Motor_init(uint16_t id)
     asserv_pid_t pid_coef  = {.p = 28.0, .i = 0.1, .d = 100.0};
     msg.header.target      = id;
     msg.header.cmd         = PID;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(asserv_pid_t);
     memcpy(&msg.data, &pid_coef, sizeof(asserv_pid_t));
     while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -209,7 +209,7 @@ void motor_set(uint8_t motor_target, angular_position_t position)
     msg_t msg;
     msg.header.target      = motor_target;
     msg.header.cmd         = ANGULAR_POSITION;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = sizeof(angular_position_t);
     memcpy(&msg.data, &position, sizeof(angular_position_t));
     while (Luos_SendMsg(app, &msg) == FAILED)

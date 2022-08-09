@@ -30,7 +30,7 @@ void PipeLink_Send(service_t *service, void *data, uint32_t size)
     msg_t msg;
     msg.header.target      = pipe_id;
     msg.header.cmd         = SET_CMD;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     if (PipeDirectPutSample == 0)
     {
         // We are not using localhost send the entire data trough the Luos network
@@ -81,7 +81,7 @@ uint16_t PipeLink_Find(service_t *service)
         // We find one, ask it to auto-update at 1000Hz
         msg_t msg;
         msg.header.target      = pipe_id;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         time_luos_t time       = TimeOD_TimeFrom_s(0.001f);
         TimeOD_TimeToMsg(&time, &msg);
         msg.header.cmd = UPDATE_PUB;
@@ -94,7 +94,7 @@ uint16_t PipeLink_Find(service_t *service)
             // Ask for a Streaming channel
             msg_t msg;
             msg.header.target      = pipe_id;
-            msg.header.target_mode = IDACK;
+            msg.header.target_mode = SERVICEIDACK;
             msg.header.cmd         = PARAMETERS;
             msg.header.size        = 0;
             LUOS_ASSERT(service->ll_service->id != 0);
@@ -115,7 +115,7 @@ void PipeLink_Reset(service_t *service)
     msg_t msg;
     msg.header.target      = pipe_id;
     msg.header.cmd         = REINIT;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.size        = 0;
     Luos_SendMsg(service, &msg);
 }

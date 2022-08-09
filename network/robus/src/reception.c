@@ -354,8 +354,8 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
-        case IDACK:
-        case ID:
+        case SERVICEIDACK:
+        case SERVICEID:
             // Check all ll_service id
             for (i = 0; i < ctx.ll_service_number; i++)
             {
@@ -444,9 +444,9 @@ _CRITICAL __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *h
 
     switch (header->target_mode)
     {
-        case IDACK:
+        case SERVICEIDACK:
             ctx.rx.status.rx_error = false;
-        case ID:
+        case SERVICEID:
             // Check all ll_service id
             if (Recep_ServiceIDCompare(header->target) == SUCCEED)
             {
@@ -538,7 +538,7 @@ static inline void Recep_DoubleAlloc(msg_t *msg)
         // check if it is message for the same service that demanded the filter desactivation
         switch (msg->header.target_mode)
         {
-            case (ID):
+            case (SERVICEID):
                 if (ctx.filter_id != msg->header.target)
                 {
                     // store the message if it is not so that we dont have double messages in memory
@@ -576,8 +576,8 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
     // Find if we are concerned by this message.
     switch (msg->header.target_mode)
     {
-        case IDACK:
-        case ID:
+        case SERVICEIDACK:
+        case SERVICEID:
             // Check all ll_service id
             for (i = 0; i < ctx.ll_service_number; i++)
             {
@@ -655,9 +655,9 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
 _CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
 {
     // check the mode of the message received
-    if ((current_msg->header.target_mode == IDACK) && (Recep_ServiceIDCompare(current_msg->header.target) == SUCCEED))
+    if ((current_msg->header.target_mode == SERVICEIDACK) && (Recep_ServiceIDCompare(current_msg->header.target) == SUCCEED))
     {
-        // when it is a idack and this message is destined to the node send an ack
+        // when it is a serviceidack and this message is destined to the node send an ack
         return 1;
     }
     else if ((current_msg->header.target_mode == NODEIDACK) && (ctx.node.node_id == current_msg->header.target))

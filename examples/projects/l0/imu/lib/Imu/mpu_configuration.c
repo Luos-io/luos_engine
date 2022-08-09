@@ -43,7 +43,7 @@ void read_from_mpl(service_t *service)
         if (hal.report.quat)
         {
             msg.header.cmd         = QUATERNION;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 4 * sizeof(float);
             float quat[4]          = {(float)data[0] / (1 << 30),
@@ -60,7 +60,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_accel(data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = ACCEL_3D;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 3 * sizeof(float);
             float accell[3]        = {(float)data[0] / (1 << 16),
@@ -75,7 +75,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_gyro(data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = GYRO_3D;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 3 * sizeof(float);
             float gyro[3]          = {(float)data[0] / (1 << 16),
@@ -91,7 +91,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_compass(data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = COMPASS_3D;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 3 * sizeof(float);
             float compass[3]       = {(float)data[0] / (1 << 16),
@@ -107,7 +107,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_euler(data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = EULER_3D;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 3 * sizeof(float);
             float euler[3]         = {(float)data[0] / (1 << 16),
@@ -122,7 +122,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_rot_mat(data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = ROT_MAT;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 9 * sizeof(float);
             short tmp[9]           = {(float)data[0] / (1 << 14),
@@ -143,7 +143,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_heading(data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = HEADING;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = sizeof(float);
             float heading          = (float)data[0] / (1 << 16);
@@ -156,7 +156,7 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_linear_acceleration(float_data, &accuracy, (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = LINEAR_ACCEL;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 3 * sizeof(float);
             memcpy(msg.data, float_data, msg.header.size);
@@ -169,7 +169,7 @@ void read_from_mpl(service_t *service)
                                         (inv_time_t *)&timestamp))
         {
             msg.header.cmd         = GRAVITY_VECTOR;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 3 * sizeof(float);
             memcpy(msg.data, float_data, msg.header.size);
@@ -188,7 +188,7 @@ void read_from_mpl(service_t *service)
             dmp_get_pedometer_walk_time(&walk_time);
             unsigned long pedo[2]  = {step_count, walk_time};
             msg.header.cmd         = PEDOMETER;
-            msg.header.target_mode = ID;
+            msg.header.target_mode = SERVICEID;
             msg.header.target      = hal.source_id;
             msg.header.size        = 2 * sizeof(long);
             memcpy(msg.data, pedo, msg.header.size);

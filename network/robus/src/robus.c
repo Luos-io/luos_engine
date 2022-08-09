@@ -211,7 +211,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     // Check the localhost situation
     luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
+    if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
         ack = ctx.rx.status.unmap;

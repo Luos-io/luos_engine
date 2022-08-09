@@ -56,7 +56,7 @@ void Button_Loop(void)
         msg_t led_msg;
         led_msg.header.target      = result.result_table[0]->id;
         led_msg.header.cmd         = IO_STATE;
-        led_msg.header.target_mode = IDACK;
+        led_msg.header.target_mode = SERVICEIDACK;
         led_msg.header.size        = sizeof(char);
         led_msg.data[0]            = !(uint8_t)button.state;
         Luos_SendMsg(app, &led_msg);

@@ -20,10 +20,10 @@ void DataManager_collect(service_t *service)
     search_result_t result;
 #ifdef GATE_POLLING
     update_msg.header.cmd         = GET_CMD;
-    update_msg.header.target_mode = ID;
+    update_msg.header.target_mode = SERVICEID;
     update_msg.header.size        = 0;
 #else
-    update_msg.header.target_mode = IDACK;
+    update_msg.header.target_mode = SERVICEIDACK;
 #endif
     RTFilter_Reset(&result);
     // ask services to publish datas
