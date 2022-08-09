@@ -14,8 +14,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define LUOS_UUID ((uint32_t *)0x1FFF7590)
-
 #define BOOT_MODE_MASK   0x000000FF
 #define BOOT_MODE_OFFSET 0
 #define NODE_ID_MASK     0x00FFFF00
