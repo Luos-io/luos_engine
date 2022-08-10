@@ -93,11 +93,7 @@ click.secho("")
 
 # native unit testing
 find_MOCK_HAL = False
-for item in env.get("CPPDEFINES", []):
-    if not "native" in env.get("PIOPLATFORM"):
-        click.secho(
-            "\t* Native unit testing not available on this platform.", fg="red")
-        break
+for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
     if (item == 'UNIT_TEST'):
         click.secho("Native unit testing:", underline=True)
         current_os = pf.system()
@@ -135,6 +131,8 @@ for item in env.get("CPPDEFINES", []):
             # env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
         else:
             click.echo("Unit tests are not supported on your os ", current_os)
+        break
+    else:
         break
 
 if not visited_key in global_env:
