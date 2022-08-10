@@ -53,7 +53,7 @@ void LuosHAL_Init(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -82,7 +82,7 @@ static void LuosHAL_SystickInit(void)
  * @param None
  * @return tick Counter
  ******************************************************************************/
-uint32_t LuosHAL_GetSystick(void)
+_CRITICAL uint32_t LuosHAL_GetSystick(void)
 {
     return tick;
 }
@@ -91,7 +91,7 @@ uint32_t LuosHAL_GetSystick(void)
  * @param None
  * @return tick Counter
  ******************************************************************************/
-void SysTick_Handler(void)
+_CRITICAL void SysTick_Handler(void)
 {
     tick++;
 }
@@ -101,7 +101,7 @@ void SysTick_Handler(void)
  * @param None
  * @return uint64_t
  ******************************************************************************/
-uint64_t LuosHAL_GetTimestamp(void)
+_CRITICAL uint64_t LuosHAL_GetTimestamp(void)
 {
     ll_timestamp.lower_timestamp  = (SysTick->LOAD - SysTick->VAL) * (1000000000 / MCUFREQ);
     ll_timestamp.higher_timestamp = (uint64_t)(LuosHAL_GetSystick() - ll_timestamp.start_offset);
@@ -114,7 +114,7 @@ uint64_t LuosHAL_GetTimestamp(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_StartTimestamp(void)
+_CRITICAL void LuosHAL_StartTimestamp(void)
 {
     ll_timestamp.start_offset = LuosHAL_GetSystick();
 }
@@ -124,7 +124,7 @@ void LuosHAL_StartTimestamp(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_StopTimestamp(void)
+_CRITICAL void LuosHAL_StopTimestamp(void)
 {
     ll_timestamp.lower_timestamp  = 0;
     ll_timestamp.higher_timestamp = 0;
@@ -145,7 +145,7 @@ static void LuosHAL_FlashInit(void)
  * @param
  * @return
  ******************************************************************************/
-void LuosHAL_SetMode(uint8_t mode)
+_CRITICAL void LuosHAL_SetMode(uint8_t mode)
 {
     uint32_t data_to_write = ~BOOT_MODE_MASK | (mode << BOOT_MODE_OFFSET);
     uint32_t address       = SHARED_MEMORY_ADDRESS;
@@ -168,7 +168,7 @@ void LuosHAL_SetMode(uint8_t mode)
  * @param Address, node_id
  * @return
  ******************************************************************************/
-void LuosHAL_SaveNodeID(uint16_t node_id)
+_CRITICAL void LuosHAL_SaveNodeID(uint16_t node_id)
 {
     uint32_t address       = SHARED_MEMORY_ADDRESS;
     uint32_t *paddress     = (uint32_t *)address;

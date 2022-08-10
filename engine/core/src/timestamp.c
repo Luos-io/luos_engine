@@ -66,7 +66,7 @@ time_luos_t Timestamp_now(void)
  * @param msg Message to check
  * @return bool
  ******************************************************************************/
-inline bool Timestamp_IsTimestampMsg(msg_t *msg)
+_CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
 {
     return (msg->header.config == TIMESTAMP_PROTOCOL);
 }
@@ -110,7 +110,7 @@ void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
  * @param msg Message that will be sent
  * @return None
  ******************************************************************************/
-void Timestamp_ConvertToLatency(msg_t *msg)
+_CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
 {
     static time_luos_t timestamp_date = 0.0f;
     static msg_t *last_msg            = NULL;
@@ -134,7 +134,7 @@ void Timestamp_ConvertToLatency(msg_t *msg)
  * @param reception_date Date of reception in ns
  * @return None
  ******************************************************************************/
-inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)
+_CRITICAL inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)
 {
     time_luos_t timestamp_latency = 0.0f;
     // Get latency

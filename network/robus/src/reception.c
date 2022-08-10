@@ -44,7 +44,7 @@ uint16_t large_data_num        = 0;
  ******************************************************************************/
 static inline uint8_t Recep_IsAckNeeded(void);
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id);
-void Recep_ComputeMsgNumber(void);
+_CRITICAL void Recep_ComputeMsgNumber(void);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -61,7 +61,7 @@ void Recep_Init(void)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_GetHeader(volatile uint8_t *data)
+_CRITICAL void Recep_GetHeader(volatile uint8_t *data)
 {
     // Catch a byte.
     MsgAlloc_SetData(*data);
@@ -122,7 +122,7 @@ void Recep_GetHeader(volatile uint8_t *data)
                 }
             }
 
-            if ((ctx.rx.status.rx_framing_error == false))
+            if (ctx.rx.status.rx_framing_error == false)
             {
                 if (data_size)
                 {
@@ -147,7 +147,7 @@ void Recep_GetHeader(volatile uint8_t *data)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_GetData(volatile uint8_t *data)
+_CRITICAL void Recep_GetData(volatile uint8_t *data)
 {
     static uint16_t last_crc = 0;
 
@@ -234,7 +234,7 @@ void Recep_GetData(volatile uint8_t *data)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_GetCollision(volatile uint8_t *data)
+_CRITICAL void Recep_GetCollision(volatile uint8_t *data)
 {
     // Check data integrity
     if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
@@ -292,7 +292,7 @@ void Recep_GetCollision(volatile uint8_t *data)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_Drop(volatile uint8_t *data)
+_CRITICAL void Recep_Drop(volatile uint8_t *data)
 {
     return;
 }
@@ -301,7 +301,7 @@ void Recep_Drop(volatile uint8_t *data)
  * @param None
  * @return None
  ******************************************************************************/
-void Recep_Timeout(void)
+_CRITICAL void Recep_Timeout(void)
 {
     if ((ctx.rx.callback != Recep_GetHeader) && (ctx.rx.callback != Recep_Drop))
     {
@@ -316,7 +316,7 @@ void Recep_Timeout(void)
  * @param None
  * @return None
  ******************************************************************************/
-void Recep_Reset(void)
+_CRITICAL void Recep_Reset(void)
 {
     data_count                     = 0;
     crc_val                        = 0xFFFF;
@@ -330,7 +330,7 @@ void Recep_Reset(void)
  * @param data come from RX
  * @return None
  ******************************************************************************/
-void Recep_CatchAck(volatile uint8_t *data)
+_CRITICAL void Recep_CatchAck(volatile uint8_t *data)
 {
     volatile status_t status;
     status.unmap = *data;
@@ -359,7 +359,7 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
             // Check all ll_service id
             for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if ((header->target == ctx.ll_service_table[i].id))
+                if (header->target == ctx.ll_service_table[i].id)
                 {
                     return (ll_service_t *)&ctx.ll_service_table[i];
                 }
@@ -392,7 +392,7 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  * @param header of message
  * @return None
  ******************************************************************************/
-static inline error_return_t Recep_ServiceIDCompare(uint16_t service_id)
+_CRITICAL static inline error_return_t Recep_ServiceIDCompare(uint16_t service_id)
 {
     //--------------------------->|__________|
     //	Shift byte		            byte Mask of bit address
@@ -414,7 +414,7 @@ static inline error_return_t Recep_ServiceIDCompare(uint16_t service_id)
  * @param target of message
  * @return None
  ******************************************************************************/
-static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
+_CRITICAL static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
 {
     uint8_t compare = 0;
     // make sure there is a topic that can be received by the node
@@ -435,7 +435,7 @@ static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
  * @return None
  * warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
-__attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
+_CRITICAL __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
 
@@ -652,7 +652,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
  * @param None
  * @return true or false
  ******************************************************************************/
-static inline uint8_t Recep_IsAckNeeded(void)
+_CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
 {
     // check the mode of the message received
     if ((current_msg->header.target_mode == IDACK) && (Recep_ServiceIDCompare(current_msg->header.target) == SUCCEED))
@@ -684,7 +684,7 @@ static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
  * @param None
  * @return None
  ******************************************************************************/
-void Recep_ComputeMsgNumber(void)
+_CRITICAL void Recep_ComputeMsgNumber(void)
 {
     LUOS_ASSERT(current_msg->header.size > MAX_DATA_MSG_SIZE);
     // check if it is the first msg of large data received

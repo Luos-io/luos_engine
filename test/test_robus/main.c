@@ -5,6 +5,8 @@
 #include "unit_test.h"
 #include <default_scenario.h>
 
+extern default_scenario_t default_sc;
+
 void unittest_Robus_IDMaskCalculation()
 {
     NEW_TEST_CASE("ID shift mask test");

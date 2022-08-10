@@ -27,7 +27,7 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.major = 2, .minor = 5, .build = 2};
+revision_t luos_version = {.major = 2, .minor = 5, .build = 3};
 package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
@@ -165,7 +165,14 @@ void Luos_Loop(void)
             }
             else
             {
+#ifdef BOOTLOADER
+                if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
+                {
+                    LuosBootloader_MsgHandler(returned_msg);
+                }
+#else
                 remaining_msg_number++;
+#endif
             }
         }
     }
@@ -307,7 +314,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             break;
         case RTB:
             // Check routing table overflow
-            LUOS_ASSERT(((uint32_t)route_tab + input->header.size) <= ((uint32_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
+            LUOS_ASSERT(((uintptr_t)route_tab + input->header.size) <= ((uintptr_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
             if (Luos_ReceiveData(service, input, (void *)route_tab) > 0)
             {
                 // route table section reception complete

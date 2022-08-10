@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <default_scenario.h>
 
+extern default_scenario_t default_sc;
+
 void unittest_Topic_IsTopicSubscribed(void)
 {
     NEW_TEST_CASE("Search Topics");

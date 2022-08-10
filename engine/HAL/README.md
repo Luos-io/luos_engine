@@ -1,9 +1,9 @@
-<a href="https://luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
+<a href="https://www.luos.io"><img src="https://uploads-ssl.webflow.com/601a78a2b5d030260a40b7ad/603e0cc45afbb50963aa85f2_Gif%20noir%20rect.gif" alt="Luos logo" title="Luos" align="right" height="100" /></a>
 
 ![](https://github.com/Luos-io/luos_engine/actions/workflows/build.yml/badge.svg)
 [![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 
-[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](http://certified.luos.io)](https://luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos_engine/library/Luos.svg)](https://registry.platformio.org/libraries/luos_engine/luos_engine)
 
@@ -71,4 +71,4 @@ Do not hesitate to share your project and ask us about features on [our Discord]
 - ARDUINO_SAMD_MKRVIDOR4000
 
 
-## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' subreddit](https://www.reddit.com/r/luos_engine/). :books:
+## Don't hesitate to read [our documentation](https://www.luos.io/docs/luos-technology), or to post your questions/issues on the [Luos' community](https://www.luos.io/community). :books:

@@ -1,59 +1,87 @@
-name: Build
+name: Code checker
 
 on:
+  pull_request:
+    types:
+      - review_requested
   push:
-    branches:
-      - main
+
+concurrency: 
+  group: dev-build-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        include:
-          - os: windows-latest
-            pio_lib_path: D:\a\Luos
-          - os: macos-latest
-            pio_lib_path: ~/work/Luos
-          - os: ubuntu-latest
-            pio_lib_path: ~/work/Luos
-
+  unit-tests:
+    name: Unit tests
+    runs-on: windows-latest
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: "3.x"
+      - name: Check out Luos repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node
-        uses: actions/setup-node@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: "14"
+          python-version: "3.10.5"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install wheel
           pip install platformio
-          npm install -g clang-format@1.5.0
-
-      - name: Check out Luos repository
-        uses: actions/checkout@v2
-
-      - name: Check for code format
-        if: ${{ runner.os != 'Windows' }}
-        run: python .github/workflows/run-clang-format.py -r .
 
       - name: Run PlatformIO Unit Tests
-        env:
-          PLATFORMIO_LIB_EXTRA_DIRS: ${{ matrix.pio_lib_path }}
-        if: ${{ runner.os == 'Windows' }}
         run: |
           # Clean all projects
-          platformio run -t clean -c .\test\_resources\platformio.ini
+          platformio run -t clean -c ./test/_resources/platformio.ini
 
           # Run Unit tests
-          platformio test -c .\test\_resources\platformio.ini  -vvv
-        continue-on-error: true
+          platformio test -c ./test/_resources/platformio.ini  -vvv
+
+  code-format:
+    name: Code format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Luos repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.5"
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install -g clang-format@1.5.0
+
+      - name: Check for code format
+        run: python .github/workflows/run-clang-format.py -r .
+
+  examples-build:
+    name: Examples build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Check out Luos repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.5"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          pip install platformio
+
       - name: Run PlatformIO
         run: |
           # L0
@@ -64,7 +92,6 @@ jobs:
           platformio run -d examples/projects/l0/distance
           platformio run -d examples/projects/l0/dxl
           platformio run -d examples/projects/l0/gate_serialcom
-          platformio run -d examples/projects/l0/inspector_serialcom
           platformio run -d examples/projects/l0/gpio
           platformio run -d examples/projects/l0/imu
           platformio run -d examples/projects/l0/led
@@ -124,7 +151,6 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F410RB/bootloader
           platformio run -d examples/projects/NUCLEO-F410RB/dc_motor
           platformio run -d examples/projects/NUCLEO-F410RB/potentiometer
-          # ******** missing bootloader ********
           # NUCLEO-G431KB
           platformio run -d examples/projects/NUCLEO-G431KB/button
           platformio run -d examples/projects/NUCLEO-G431KB/gate_serialcom
@@ -144,5 +170,17 @@ jobs:
           platformio run -d examples/projects/NUCLEO-F072RB/button
           platformio run -d examples/projects/NUCLEO-F072RB/dc_motor
           platformio run -d examples/projects/NUCLEO-F072RB/potentiometer
+          # NUCLEO-L073RZ
+          platformio run -d examples/projects/NUCLEO-L073RZ/gate_serialcom
+          platformio run -d examples/projects/NUCLEO-L073RZ/button
+          platformio run -d examples/projects/NUCLEO-L073RZ/bootloader
+          # STM32L4S5_discovery
+          platformio run -d examples/projects/STM32L4S5_discovery/button
+          platformio run -d examples/projects/STM32L4S5_discovery/gate_serialcom
+          platformio run -d examples/projects/STM32L4S5_discovery/bootloader
+          # ESP32
+          platformio run -d examples/projects/ESP32/button
+          platformio run -d examples/projects/ESP32/button_arduino
+          platformio run -d examples/projects/ESP32/led
           # SAMD21XPLAINED
           # ******** missing bootloader CI ********

@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "config.h"
 #include "robus_hal_config.h"
 
 /*******************************************************************************

@@ -71,7 +71,7 @@
 #define LUOS_TIMER_GROUP TIMER_GROUP_0
 #endif
 #ifndef LUOS_TIMER
-#define LUOS_TIMER TIMER_1
+#define LUOS_TIMER TIMER_0
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */

@@ -128,7 +128,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_SetTxState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -165,7 +165,7 @@ void RobusHAL_SetTxState(uint8_t Enable)
  * @param
  * @return
  ******************************************************************************/
-void RobusHAL_SetRxState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 {
     if (Enable == true)
     {
@@ -182,7 +182,7 @@ void RobusHAL_SetRxState(uint8_t Enable)
  * @param None
  * @return None
  ******************************************************************************/
-void LUOS_COM_IRQHANDLER()
+_CRITICAL void LUOS_COM_IRQHANDLER()
 {
     // Reset timeout to it's default value
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
@@ -238,7 +238,7 @@ void LUOS_COM_IRQHANDLER()
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
+_CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
     while (LL_USART_IsActiveFlag_TXE(LUOS_COM) == RESET)
         ;
@@ -297,7 +297,7 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
  * @param None
  * @return Lock status
  ******************************************************************************/
-void RobusHAL_SetRxDetecPin(uint8_t Enable)
+_CRITICAL void RobusHAL_SetRxDetecPin(uint8_t Enable)
 {
     if (TX_LOCK_DETECT_IRQ != DISABLE)
     {
@@ -317,7 +317,7 @@ void RobusHAL_SetRxDetecPin(uint8_t Enable)
  * @param None
  * @return Lock status
  ******************************************************************************/
-uint8_t RobusHAL_GetTxLockState(void)
+_CRITICAL uint8_t RobusHAL_GetTxLockState(void)
 {
     uint8_t result = false;
 
@@ -373,7 +373,7 @@ static void RobusHAL_TimeoutInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ResetTimeout(uint16_t nbrbit)
+_CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
     LL_TIM_DisableCounter(LUOS_TIMER);
     NVIC_ClearPendingIRQ(LUOS_TIMER_IRQ); // Clear IT pending NVIC
@@ -390,7 +390,7 @@ void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-void LUOS_TIMER_IRQHANDLER()
+_CRITICAL void LUOS_TIMER_IRQHANDLER()
 {
     if (LL_TIM_IsActiveFlag_UPDATE(LUOS_TIMER) != RESET)
     {
@@ -489,7 +489,7 @@ static void RobusHAL_GPIOInit(void)
  * @param void
  * @return None
  ******************************************************************************/
-static void RobusHAL_RegisterPTP(void)
+_CRITICAL static void RobusHAL_RegisterPTP(void)
 {
 #if (NBR_PORT >= 1)
     PTP[0].Pin  = PTPA_PIN;
@@ -520,7 +520,7 @@ static void RobusHAL_RegisterPTP(void)
  * @param GPIO IT line
  * @return None
  ******************************************************************************/
-void PINOUT_IRQHANDLER(uint16_t GPIO_Pin)
+_CRITICAL void PINOUT_IRQHANDLER(uint16_t GPIO_Pin)
 {
     ////Process for Tx Lock Detec
     if ((GPIO_Pin == TX_LOCK_DETECT_PIN) && (TX_LOCK_DETECT_IRQ != DISABLE))
@@ -546,7 +546,7 @@ void PINOUT_IRQHANDLER(uint16_t GPIO_Pin)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
     __HAL_GPIO_EXTI_CLEAR_IT(PTP[PTPNbr].Pin);
     // Pull Down / IT mode / Rising Edge
@@ -560,7 +560,7 @@ void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
  * @param PTP branch
  * @return None
  ******************************************************************************/
-void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
+_CRITICAL void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
     __HAL_GPIO_EXTI_CLEAR_IT(PTP[PTPNbr].Pin);
     // Pull Down / IT mode / Falling Edge
@@ -622,7 +622,7 @@ static void RobusHAL_CRCInit(void)
  * @param None
  * @return None
  ******************************************************************************/
-void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
+_CRITICAL void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
 {
 #if (USE_CRC_HW == 1)
     hcrc.Instance->INIT = *(uint16_t *)crc;

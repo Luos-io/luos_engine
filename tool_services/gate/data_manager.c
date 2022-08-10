@@ -89,7 +89,7 @@ void DataManager_RunPipeOnly(service_t *service)
         static char data_cmd[GATE_BUFF_SIZE];
         if (data_msg->header.cmd == PARAMETERS)
         {
-            int pointer;
+            uintptr_t pointer;
             memcpy(&pointer, data_msg->data, sizeof(void *));
             PipeLink_SetDirectPipeSend((void *)pointer);
             continue;

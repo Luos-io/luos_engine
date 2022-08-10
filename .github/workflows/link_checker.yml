@@ -1,6 +1,20 @@
 name: Markdown link checker
 
-on: push
+on:
+  pull_request:
+    types:
+      - review_requested
+    paths:
+      - '**.md'
+      - './LICENSE'
+  push:
+    paths:
+      - '**.md'
+      - './LICENSE'
+
+concurrency: 
+  group: markdown-link-check-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   markdown-link-check:

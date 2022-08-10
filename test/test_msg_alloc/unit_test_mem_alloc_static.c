@@ -49,8 +49,8 @@ void unittest_CheckMsgSpace(void)
     MsgAlloc_Init(NULL);
     {
         // Declaration of dummy message start and end pointer
-        uint32_t *mem_start;
-        uint32_t *mem_end;
+        uintptr_t *mem_start;
+        uintptr_t *mem_end;
 
         // Initialize pointer
         used_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
@@ -67,7 +67,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)used_msg - 2;
+        mem_start = (uintptr_t *)used_msg - 2;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -86,7 +86,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)used_msg + 1;
+        mem_start = (uintptr_t *)used_msg + 1;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -98,8 +98,8 @@ void unittest_CheckMsgSpace(void)
     MsgAlloc_Init(NULL);
     {
         // Declaration of dummy message start and end pointer
-        uint32_t *mem_start;
-        uint32_t *mem_end;
+        uintptr_t *mem_start;
+        uintptr_t *mem_end;
 
         // Initialize pointer
         oldest_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
@@ -116,7 +116,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)oldest_msg - 2;
+        mem_start = (uintptr_t *)oldest_msg - 2;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -135,7 +135,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)oldest_msg + 1;
+        mem_start = (uintptr_t *)oldest_msg + 1;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -147,8 +147,8 @@ void unittest_CheckMsgSpace(void)
     MsgAlloc_Init(NULL);
     {
         // Declaration of dummy message start and end pointer
-        uint32_t *mem_start;
-        uint32_t *mem_end;
+        uintptr_t *mem_start;
+        uintptr_t *mem_end;
 
         // Initialize pointer
         used_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
@@ -165,7 +165,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)used_msg - 1;
+        mem_start = (uintptr_t *)used_msg - 1;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -184,7 +184,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)used_msg;
+        mem_start = (uintptr_t *)used_msg;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -196,8 +196,8 @@ void unittest_CheckMsgSpace(void)
     MsgAlloc_Init(NULL);
     {
         // Declaration of dummy message start and end pointer
-        uint32_t *mem_start;
-        uint32_t *mem_end;
+        uintptr_t *mem_start;
+        uintptr_t *mem_end;
 
         // Initialize pointer
         oldest_msg = (msg_t *)&msg_buffer[sizeof(msg_t)];
@@ -214,7 +214,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)oldest_msg - 1;
+        mem_start = (uintptr_t *)oldest_msg - 1;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -233,7 +233,7 @@ void unittest_CheckMsgSpace(void)
         //
         // Init variables
         //---------------
-        mem_start = (uint32_t *)oldest_msg;
+        mem_start = (uintptr_t *)oldest_msg;
         mem_end   = mem_start + 1;
         // Call function and Verify
         //---------------------------
@@ -289,7 +289,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         uint32_t remaining_datas;
         uint32_t expected_size = 0;
         uint32_t free_space    = 0;
-        oldest_msg             = (msg_t *)0xFFFFFFFF; // No oldest message
+        oldest_msg             = (msg_t *)INT_MAX; // No oldest message
 
         NEW_STEP("Check remaining space computing for all message size cases");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 2; i++)
@@ -304,7 +304,7 @@ void unittest_BufferAvailableSpaceComputation(void)
                 if (data_end_estimation < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
                 {
                     RESET_ASSERT();
-                    remaining_datas = (uint32_t)data_end_estimation - (uint32_t)current_msg;
+                    remaining_datas = (uintptr_t)data_end_estimation - (uintptr_t)current_msg;
                     expected_size   = MSG_BUFFER_SIZE - remaining_datas;
                     // Call function
                     //---------------
@@ -349,10 +349,10 @@ void unittest_BufferAvailableSpaceComputation(void)
             // for (uint8_t j = 0; j < 2; j++)
             for (uint16_t j = i; j < MSG_BUFFER_SIZE - 1; j++)
             {
-                if ((uint32_t)oldest_msg > (uint32_t)data_end_estimation)
+                if ((uintptr_t)oldest_msg > (uintptr_t)data_end_estimation)
                 {
                     RESET_ASSERT();
-                    expected_size = (uint32_t)oldest_msg - (uint32_t)data_end_estimation;
+                    expected_size = (uintptr_t)oldest_msg - (uintptr_t)data_end_estimation;
                     free_space    = MsgAlloc_BufferAvailableSpaceComputation();
                     TEST_ASSERT_FALSE(IS_ASSERT());
                     TEST_ASSERT_EQUAL(expected_size, free_space);
@@ -390,11 +390,11 @@ void unittest_BufferAvailableSpaceComputation(void)
             oldest_msg = (msg_t *)&msg_buffer[1];
             for (uint16_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
             {
-                if ((uint32_t)oldest_msg < (uint32_t)data_end_estimation)
+                if ((uintptr_t)oldest_msg < (uintptr_t)data_end_estimation)
                 {
                     RESET_ASSERT();
-                    expected_size = (uint32_t)&msg_buffer[MSG_BUFFER_SIZE] - (uint32_t)data_end_estimation;
-                    expected_size += (uint32_t)oldest_msg - (uint32_t)&msg_buffer[0];
+                    expected_size = (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)data_end_estimation;
+                    expected_size += (uintptr_t)oldest_msg - (uintptr_t)&msg_buffer[0];
                     free_space = MsgAlloc_BufferAvailableSpaceComputation();
 
                     TEST_ASSERT_FALSE(IS_ASSERT());
