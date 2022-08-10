@@ -110,18 +110,6 @@ typedef struct __attribute__((__packed__)) service_t
 
 typedef void (*SERVICE_CB)(service_t *service, msg_t *msg);
 
-/*
- * Luos unic ID => ARM serial number
- */
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        uint32_t uuid[3];
-        uint8_t unmap[3 * sizeof(uint32_t)]; /*!< Uncmaped form. */
-    };
-} luos_uuid_t;
-
 typedef enum
 {
     // Luos specific registers
@@ -129,7 +117,6 @@ typedef enum
     RTB,                           // Receive a routing_table.
     WRITE_ALIAS,                   // Get and save a new given alias.
     UPDATE_PUB,                    // Ask to update a sensor value each time duration to the sender
-    NODE_UUID,                     // luos_uuid_t
     ASK_DETECTION,                 // Ask Luos to launch a detection
 
     // Revision management
