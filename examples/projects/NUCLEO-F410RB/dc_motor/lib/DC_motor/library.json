@@ -8,7 +8,7 @@
         "url": "https://luos.io"
     },
     "dependencies": {
-	"luos_engine": "^2.5.3"
+        "luos/luos_engine": "^2.5.3"
     },
     "licence": "MIT"
 }
