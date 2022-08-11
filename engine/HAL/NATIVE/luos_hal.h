@@ -14,6 +14,10 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifndef _CRITICAL
+#define _CRITICAL
+#endif
+
 #define LUOS_UUID ((uint32_t *)0x00000001)
 
 #define ADDRESS_ALIASES_FLASH   ADDRESS_LAST_PAGE_FLASH
