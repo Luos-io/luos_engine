@@ -100,21 +100,19 @@ if not visited_key in global_env:
             "\t* Telemetry disabled, please consider enabling it by removing the 'NOTELEMETRY' flag to help Luos_engine improve.", fg="red")
     click.secho("")
 
-# native unit testing
+# Native only
 find_MOCK_HAL = False
 for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
     if (item == 'UNIT_TEST'):
         click.secho("Native unit testing:", underline=True)
         current_os = pf.system()
         if find_MOCK_HAL == False:
-            click.secho(
-                "\t* Mock HAL for %s is selected for Luos and Robus." % current_os, fg="green")
+            click.secho("\t* Native Mock HAL for %s is selected for Luos and Robus." % current_os, fg="green")
         find_MOCK_HAL = True
         find_HAL = True
         env.Replace(SRC_FILTER=sources)
         env.Append(SRC_FILTER=["-<test/>"])
         env.Append(SRC_FILTER=["+<../../../test/_resources/*>"])
-
         for resources in scandir(getcwd() + "/test/_resources"):
             if resources.is_dir():
                 env.Append(CPPPATH=[(resources.path)])

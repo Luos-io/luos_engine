@@ -4,7 +4,11 @@
  * @author Luos
  * @version 1.0.0
  ******************************************************************************/
+#ifdef UNIT_TEST
 #include "unit_test.h"
+#else
+#include "luos_hal.h"
+#endif
 #include "service_structs.h"
 
 /*******************************************************************************
