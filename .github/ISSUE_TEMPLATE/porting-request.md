@@ -3,7 +3,7 @@ name: Porting request
 about: Suggest a new MCU to be compatible with Luos
 title: "[MCU PORTING] "
 labels: porting
-assignees: nicolas-rabault
+assignees: simonbdy
 
 ---
 
