@@ -1,14 +1,20 @@
-By submiting this PR, you agree with the associated license ([Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or [MIT](http://choosealicense.com/licenses/mit/)) and with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/blob/main/CLA.md) (CLA).
+By submiting this PR, you agree with the associated license ([Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or [MIT](http://choosealicense.com/licenses/mit/)) and with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/blob/main/) (CLA).
 
 ## Before to begin
 
 Thank you for contributing to the Luos project!
 
-Before to begin, please ensure that this PR is not a duplicate.
+Before to begin, please follow these steps:
+
+- [ ] Ensure that this PR is not a duplicate.
+- [ ] Assign @Simonbdy to this PR
+- [ ] Add the PR to the `Luos contribution project`
 
 Feel free to read the [Luos contribution's guidelines](https://github.com/Luos-io/luos_engine/blob/main/CONTRIBUTING.md) and the [documentation page](https://www.luos.io/docs/contribute-to-luos) to have more insight about how to contribute to Luos.
 
 ## PR Description section
+
+### Description and dependencies
 *Please include here a summary of the changes and the related issue. List any dependencies that are required for this change.* 
 
 ### Changes
@@ -20,11 +26,10 @@ Please choose the relevant options:
 - [ ] This change requires a documentation update
 
 ### Related issue(s)
-
 *Provide a list of the related issues that will be fixed by this PR.*
 
 ---
-_**WARNING**: Do not edit the checklist below._  
+_**WARNING**: Do not edit the checklist below._ 
 ---
 
 ## Developer section
