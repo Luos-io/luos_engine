@@ -1,25 +1,40 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a bug in Luos
 title: "[BUG] "
 labels: bug
-assignees: nicolas-rabault
+assignees: simonbdy
 
 ---
 
-** Which version the bug has been detected **
-Luos engine X.Y.Z
+## Before to begin
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+Thank you for contributing to the Luos project!
 
-**Network configuration**
-- Add the routing table or list the nodes and their services
-- Power input configuration
+Before to begin, please ensure that this bug is an actual bug, and that it has not been reported yet (you can use the GitHub searchbar with keywords to look for other issues).
 
-**How to reproduce the bug**
-Describe thoroughly the steps to reproduce the bug.
+If you only have a usage question, ask it to the [Luos Community](https://discord.gg/luos).
 
-**Additional context**
-Add any other context about the problem here.
-Don't hesitate to add screenshots or to link an entry from the forum.
+At last, feel free to read the [Luos contribution's guidelines](https://github.com/Luos-io/luos_engine/blob/main/CONTRIBUTING.md) and the [documentation page](https://www.luos.io/docs/contribute-to-luos) to have more insight about how to contribute to Luos!
+
+## Details
+Please replace the italic test by your inputs and details in each of the following sections:
+
+**Which version the bug has been detected on:**
+*Luos engine X.Y.Z*
+
+**Description of the bug:**
+*A clear and concise description of what is the expected behavior and what is the current behavior.*
+
+**Context and environment:**
+- *Add the routing table or the list of the nodes and their services*
+- *Detail the power input configuration*
+- *Add any other details about the context and environment*
+
+**How to reproduce the bug:**
+*Describe thoroughly the steps to reproduce the bug.*
+
+**Possible solution:**
+*Give the details of a possible solution to resolve the bug.*
+
+Thank you! Your issue will be reviewed by our admins.
