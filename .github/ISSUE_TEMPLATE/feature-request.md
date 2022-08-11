@@ -20,13 +20,13 @@ At last, feel free to read the [Luos contribution's guidelines](https://github.c
 ## Details
 Please replace the italic test by your inputs and details in each of the following sections:
 
-**What feature would you like to be included in Luos?**
+### What feature would you like to be included in Luos?
 *Describe the feature you want to be added to Luos.*
 
-**Describe the expected behavior of the feature**
+### Describe the expected behavior of the feature
 *Describe how the feature would work, in which environment and context.*
 
-**What is the motivation / use case for changing the behavior?**
+### What is the motivation / use case for changing the behavior?
 *Explain why you request this feature, and in which use case it applies.*
 
 Thank you! Your issue will be reviewed by our admins.

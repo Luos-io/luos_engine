@@ -20,21 +20,21 @@ At last, feel free to read the [Luos contribution's guidelines](https://github.c
 ## Details
 Please replace the italic test by your inputs and details in each of the following sections:
 
-**Which version the bug has been detected on:**
+### Which version the bug has been detected on
 *Luos engine X.Y.Z*
 
-**Description of the bug:**
+### Description of the bug
 *A clear and concise description of what is the expected behavior and what is the current behavior.*
 
-**Context and environment:**
+### Context and environment
 - *Add the routing table or the list of the nodes and their services*
 - *Detail the power input configuration*
 - *Add any other details about the context and environment*
 
-**How to reproduce the bug:**
+### How to reproduce the bug
 *Describe thoroughly the steps to reproduce the bug.*
 
-**Possible solution:**
+### Possible solution
 *Give the details of a possible solution to resolve the bug.*
 
 Thank you! Your issue will be reviewed by our admins.
