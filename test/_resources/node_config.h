@@ -31,6 +31,8 @@
 /*******************************************************************************
  * PROJECT DEFINITION
  *******************************************************************************/
+// Tell the linker to replace _WEAKED functions by mocked functions
+#define _WEAKED __attribute__((weak))
 
 /*******************************************************************************
  * LUOS LIBRARY DEFINITION
