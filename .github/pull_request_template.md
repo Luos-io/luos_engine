@@ -1,4 +1,4 @@
-By submiting this PR, you agree with the associated license ([Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or [MIT](http://choosealicense.com/licenses/mit/)) and with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/blob/main/) (CLA).
+By submiting this PR, you agree with the associated license ([Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or [MIT](http://choosealicense.com/licenses/mit/)) and with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/) (CLA).
 
 ## Before to begin
 
@@ -29,7 +29,9 @@ Please choose the relevant options:
 *Provide a list of the related issues that will be fixed by this PR.*
 
 ---
-_**WARNING**: Do not edit the checklist below._ 
+
+**WARNING**: Do not edit the checklist below.
+
 ---
 
 ## Developer section
