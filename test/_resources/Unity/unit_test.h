@@ -15,7 +15,7 @@
  * Definitions
  ******************************************************************************/
 #ifndef UNIT_TEST_RUN
-#define UNIT_TEST_RUN(f) RUN(#f, f)
+    #define UNIT_TEST_RUN(f) RUN(#f, f)
 #endif
 
 /* This structure is used for unit test assert

@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "licence": "MIT",
     "dependencies": {
-	"luos_engine": "^2.6.0",
+        "luos_engine": "^2.6.0",
         "arduino-libraries/LiquidCrystal": "*"
     }
 }

@@ -17,8 +17,8 @@
  * Definitions
  ******************************************************************************/
 #ifdef BOOTLOADER
-#define MAX_FRAME_SIZE (MAX_DATA_MSG_SIZE - 1)
-#define BUFFER_SIZE    0x800 // 2kB buffer to store received data
+    #define MAX_FRAME_SIZE (MAX_DATA_MSG_SIZE - 1)
+    #define BUFFER_SIZE    0x800 // 2kB buffer to store received data
 #endif
 
 /*******************************************************************************

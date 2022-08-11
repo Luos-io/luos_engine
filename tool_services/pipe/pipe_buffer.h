@@ -12,10 +12,10 @@
  * Definitions
  ******************************************************************************/
 #ifndef PIPE_TO_LUOS_BUFFER_SIZE
-#define PIPE_TO_LUOS_BUFFER_SIZE 1024
+    #define PIPE_TO_LUOS_BUFFER_SIZE 1024
 #endif
 #ifndef LUOS_TO_PIPE_BUFFER_SIZE
-#define LUOS_TO_PIPE_BUFFER_SIZE 2048
+    #define LUOS_TO_PIPE_BUFFER_SIZE 2048
 #endif
 
 #define SERIAL_HEADER 0x7E
