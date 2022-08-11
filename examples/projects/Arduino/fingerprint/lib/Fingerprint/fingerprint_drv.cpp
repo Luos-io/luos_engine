@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file fingerprint_drv
  * @brief This is a driver example for a fingerprint sensor. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/Arduino-Luos-Biometric-Security-System
  * @author MarieBidouille
@@ -113,7 +113,7 @@ uint8_t FingerprintDrv_Enroll(void)
 /******************************************************************************
  * @brief delete the database
  * @param None
- * @return True if 
+ * @return True if
  ******************************************************************************/
 uint8_t FingerprintDrv_DeleteAll(void)
 {

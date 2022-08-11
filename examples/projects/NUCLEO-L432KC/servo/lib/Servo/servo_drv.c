@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file servo_drv
  * @brief This is a simple driver for a servo motor. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/L432KC-Luos-Biometric-Security-System
  * @author MarieBidouille
@@ -98,7 +98,7 @@ uint8_t ServoDrv_Parameter(servo_parameters_t param)
  ******************************************************************************/
 static void ServoDrv_HWInit(void)
 {
-    //pinout initialization
+    // pinout initialization
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     PWM_PIN_CLK();
@@ -111,14 +111,14 @@ static void ServoDrv_HWInit(void)
     GPIO_InitStruct.Alternate = SERVO_AF;
     HAL_GPIO_Init(SERVO_PORT, &GPIO_InitStruct);
 
-    //pwm init
+    // pwm init
 
     LL_TIM_InitTypeDef TimerInit;
     LL_TIM_OC_InitTypeDef TimerConfigOC;
     LL_TIM_StructInit(&TimerInit);
     LL_TIM_OC_StructInit(&TimerConfigOC);
 
-    //initialize clock
+    // initialize clock
     PWM_TIMER_CLK();
 
     TimerInit.Autoreload        = 32000 - 1;

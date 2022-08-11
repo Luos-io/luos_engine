@@ -11,7 +11,7 @@
  ******************************************************************************/
 
 /******************************************************************************
- * @brief Mock : Redefine function Luos_assert 
+ * @brief Mock : Redefine function Luos_assert
  * @param file name as a string
  * @param line number
  * @return None

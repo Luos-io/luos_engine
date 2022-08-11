@@ -34,39 +34,39 @@
 
 /*---------------------------------------------------------------------------*/
 #ifndef __ARM_ARCH_6M__
-#define __ARM_ARCH_6M__ 0
+    #define __ARM_ARCH_6M__ 0
 #endif
 #ifndef __ARM_ARCH_7M__
-#define __ARM_ARCH_7M__ 0
+    #define __ARM_ARCH_7M__ 0
 #endif
 #ifndef __ARM_ARCH_7EM__
-#define __ARM_ARCH_7EM__ 0
+    #define __ARM_ARCH_7EM__ 0
 #endif
 #ifndef __ARM_ARCH_8M_MAIN__
-#define __ARM_ARCH_8M_MAIN__ 0
+    #define __ARM_ARCH_8M_MAIN__ 0
 #endif
 #ifndef __ARM_ARCH_7A__
-#define __ARM_ARCH_7A__ 0
+    #define __ARM_ARCH_7A__ 0
 #endif
 
 #if ((__ARM_ARCH_7M__ == 1U) || (__ARM_ARCH_7EM__ == 1U) || (__ARM_ARCH_8M_MAIN__ == 1U))
-#define IS_IRQ_MASKED() ((__get_PRIMASK() != 0U) || ((KernelState == osKernelRunning) && (__get_BASEPRI() != 0U)))
+    #define IS_IRQ_MASKED() ((__get_PRIMASK() != 0U) || ((KernelState == osKernelRunning) && (__get_BASEPRI() != 0U)))
 #elif (__ARM_ARCH_6M__ == 1U)
-#define IS_IRQ_MASKED() ((__get_PRIMASK() != 0U) && (KernelState == osKernelRunning))
+    #define IS_IRQ_MASKED() ((__get_PRIMASK() != 0U) && (KernelState == osKernelRunning))
 #elif (__ARM_ARCH_7A__ == 1)
-#define IS_IRQ_MASKED() (0U)
+    #define IS_IRQ_MASKED() (0U)
 #else
-#define IS_IRQ_MASKED() (__get_PRIMASK() != 0U)
+    #define IS_IRQ_MASKED() (__get_PRIMASK() != 0U)
 #endif
 
 #if (__ARM_ARCH_7A__ == 1U)
-/* CPSR mode bitmasks */
-#define CPSR_MODE_USER   0x10U
-#define CPSR_MODE_SYSTEM 0x1FU
+    /* CPSR mode bitmasks */
+    #define CPSR_MODE_USER   0x10U
+    #define CPSR_MODE_SYSTEM 0x1FU
 
-#define IS_IRQ_MODE() ((__get_mode() != CPSR_MODE_USER) && (__get_mode() != CPSR_MODE_SYSTEM))
+    #define IS_IRQ_MODE() ((__get_mode() != CPSR_MODE_USER) && (__get_mode() != CPSR_MODE_SYSTEM))
 #else
-#define IS_IRQ_MODE() (__get_IPSR() != 0U)
+    #define IS_IRQ_MODE() (__get_IPSR() != 0U)
 #endif
 
 #define IS_IRQ() (IS_IRQ_MODE() || IS_IRQ_MASKED())
@@ -95,15 +95,15 @@ static osKernelState_t KernelState;
 
 /* Heap region definition used by heap_5 variant */
 #if defined(USE_FreeRTOS_HEAP_5)
-#if (configAPPLICATION_ALLOCATED_HEAP == 1)
+    #if (configAPPLICATION_ALLOCATED_HEAP == 1)
 /*
   The application writer has already defined the array used for the RTOS
   heap - probably so it can be placed in a special segment or address.
 */
 extern uint8_t ucHeap[configTOTAL_HEAP_SIZE];
-#else
+    #else
 static uint8_t ucHeap[configTOTAL_HEAP_SIZE];
-#endif /* configAPPLICATION_ALLOCATED_HEAP */
+    #endif /* configAPPLICATION_ALLOCATED_HEAP */
 
 static HeapRegion_t xHeapRegions[] = {
     {ucHeap, configTOTAL_HEAP_SIZE},
@@ -1679,9 +1679,9 @@ osStatus_t osMutexDelete(osMutexId_t mutex_id)
     }
     else
     {
-#if (configQUEUE_REGISTRY_SIZE > 0)
+    #if (configQUEUE_REGISTRY_SIZE > 0)
         vQueueUnregisterQueue(hMutex);
-#endif
+    #endif
         stat = osOK;
         vSemaphoreDelete(hMutex);
     }
@@ -1904,9 +1904,9 @@ osStatus_t osSemaphoreDelete(osSemaphoreId_t semaphore_id)
     }
     else
     {
-#if (configQUEUE_REGISTRY_SIZE > 0)
+    #if (configQUEUE_REGISTRY_SIZE > 0)
         vQueueUnregisterQueue(hSemaphore);
-#endif
+    #endif
 
         stat = osOK;
         vSemaphoreDelete(hSemaphore);
@@ -2216,9 +2216,9 @@ osStatus_t osMessageQueueDelete(osMessageQueueId_t mq_id)
     }
     else
     {
-#if (configQUEUE_REGISTRY_SIZE > 0)
+    #if (configQUEUE_REGISTRY_SIZE > 0)
         vQueueUnregisterQueue(hQueue);
-#endif
+    #endif
 
         stat = osOK;
         vQueueDelete(hQueue);

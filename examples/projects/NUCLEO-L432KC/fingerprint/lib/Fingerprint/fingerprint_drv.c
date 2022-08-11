@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file fingerprint_drv
  * @brief This is a driver example for a fingerprint sensor. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/L432KC-Luos-Biometric-Security-System
  * @author mariebidouille
@@ -44,10 +44,10 @@ void FingerprintDrv_GPIOInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    //Activate Clock for PIN choosen in luosHAL
+    // Activate Clock for PIN choosen in luosHAL
     FINGERPRINT_CLOCK_ENABLE();
 
-    //Configure GPIO pin : TxPin
+    // Configure GPIO pin : TxPin
     GPIO_InitStruct.Pin       = FINGERPRINT_COM_TX_PIN;
     GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull      = GPIO_PULLUP;
@@ -55,7 +55,7 @@ void FingerprintDrv_GPIOInit(void)
     GPIO_InitStruct.Alternate = FINGERPRINT_COM_TX_AF;
     HAL_GPIO_Init(FINGERPRINT_COM_TX_PORT, &GPIO_InitStruct);
 
-    //Configure GPIO pin : RxPin
+    // Configure GPIO pin : RxPin
     GPIO_InitStruct.Pin       = FINGERPRINT_COM_RX_PIN;
     GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull      = GPIO_PULLUP;
@@ -67,7 +67,7 @@ void FingerprintDrv_GPIOInit(void)
 /******************************************************************************
  * @brief Enroll a new fingerprint in the sensor
  * @param None
- * @return true if successful false if not 
+ * @return true if successful false if not
  ******************************************************************************/
 uint8_t FingerprintDrv_Enroll(void)
 {
@@ -112,7 +112,7 @@ uint8_t FingerprintDrv_Enroll(void)
 /******************************************************************************
  * @brief Delete all the fingerprints in the sensor
  * @param None
- * @return true if successful false if not 
+ * @return true if successful false if not
  ******************************************************************************/
 uint8_t FingerprintDrv_DeleteAll(void)
 {
@@ -126,9 +126,9 @@ uint8_t FingerprintDrv_DeleteAll(void)
 }
 
 /******************************************************************************
- * @brief Check if a fingerprint is in the database 
+ * @brief Check if a fingerprint is in the database
  * @param None
- * @return true if successful false if not 
+ * @return true if successful false if not
  ******************************************************************************/
 uint8_t FingerprintDrv_CheckAuth(void)
 {

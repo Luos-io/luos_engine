@@ -36,7 +36,7 @@ void DataManager_collect(service_t *service)
             // This service is a sensor so create a msg and send it
             update_msg.header.target = result.result_table[i]->id;
             Luos_SendMsg(service, &update_msg);
-#ifdef GATE_TIMEOUT
+    #ifdef GATE_TIMEOUT
             // Get the current number of message available
             int back_nbr_msg = Luos_NbrAvailableMsg();
             // Get the current time
@@ -46,7 +46,7 @@ void DataManager_collect(service_t *service)
             {
                 Luos_Loop();
             }
-#endif
+    #endif
 #else
             // This container is a sensor so create a msg to enable auto update
             update_msg.header.target = result.result_table[i]->id;

@@ -26,17 +26,17 @@
 #define CMSIS_OS2_H_
 
 #ifndef __NO_RETURN
-#if defined(__CC_ARM)
-#define __NO_RETURN __declspec(noreturn)
-#elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-#define __NO_RETURN __attribute__((__noreturn__))
-#elif defined(__GNUC__)
-#define __NO_RETURN __attribute__((__noreturn__))
-#elif defined(__ICCARM__)
-#define __NO_RETURN __noreturn
-#else
-#define __NO_RETURN
-#endif
+    #if defined(__CC_ARM)
+        #define __NO_RETURN __declspec(noreturn)
+    #elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+        #define __NO_RETURN __attribute__((__noreturn__))
+    #elif defined(__GNUC__)
+        #define __NO_RETURN __attribute__((__noreturn__))
+    #elif defined(__ICCARM__)
+        #define __NO_RETURN __noreturn
+    #else
+        #define __NO_RETURN
+    #endif
 #endif
 
 #include <stdint.h>
@@ -211,7 +211,7 @@ extern "C"
     typedef void *osMessageQueueId_t;
 
 #ifndef TZ_MODULEID_T
-#define TZ_MODULEID_T
+    #define TZ_MODULEID_T
     /// \details Data type that identifies secure software modules called by a process.
     typedef uint32_t TZ_ModuleId_t;
 #endif
