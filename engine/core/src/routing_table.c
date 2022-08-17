@@ -244,9 +244,9 @@ __attribute__((weak)) bool RoutingTB_WaitRoutingTable(service_t *service, msg_t 
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
 {
     // Asks for introduction for every found node (even the one detecting).
-    uint16_t try_nb       = 0;
-    uint16_t last_node_id = RoutingTB_BigestNodeID();
-    uint16_t last_cont_id = 0;
+    uint16_t try_nb          = 0;
+    uint16_t last_node_id    = RoutingTB_BigestNodeID();
+    uint16_t last_service_id = 0;
     msg_t intro_msg;
     while ((last_node_id < nb_node) && (try_nb < nb_node))
     {
@@ -257,8 +257,8 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
         intro_msg.header.target = last_node_id + 1;
         // set the first service id it can use
         intro_msg.header.size = 2;
-        last_cont_id          = RoutingTB_BigestID() + 1;
-        memcpy(intro_msg.data, &last_cont_id, sizeof(uint16_t));
+        last_service_id       = RoutingTB_BigestID() + 1;
+        memcpy(intro_msg.data, &last_service_id, sizeof(uint16_t));
         // Ask to introduce and wait for a reply
         if (!RoutingTB_WaitRoutingTable(service, &intro_msg))
         {
