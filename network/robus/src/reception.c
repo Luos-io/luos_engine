@@ -60,6 +60,7 @@ void Recep_Init(void)
  * @brief Callback to get a complete header
  * @param data come from RX
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
 {
@@ -146,6 +147,7 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
  * @brief Callback to get a complete data
  * @param data come from RX
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_GetData(volatile uint8_t *data)
 {
@@ -233,6 +235,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
  * @brief Callback to get a collision beetween RX and Tx
  * @param data come from RX
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_GetCollision(volatile uint8_t *data)
 {
@@ -288,18 +291,20 @@ _CRITICAL void Recep_GetCollision(volatile uint8_t *data)
     RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
 }
 /******************************************************************************
- * @brief Callback to get a complete header
+ * @brief Callback to drop received data wrong header, data, or collision
  * @param data come from RX
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_Drop(volatile uint8_t *data)
 {
     return;
 }
 /******************************************************************************
- * @brief end of a reception
+ * @brief end of a reception and prepare next receive or transmit
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_Timeout(void)
 {
@@ -315,6 +320,7 @@ _CRITICAL void Recep_Timeout(void)
  * @brief reset the reception state machine
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_Reset(void)
 {
@@ -329,6 +335,7 @@ _CRITICAL void Recep_Reset(void)
  * @brief Catch ack when needed for the sent msg
  * @param data come from RX
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_CatchAck(volatile uint8_t *data)
 {
@@ -391,17 +398,23 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline error_return_t Recep_ServiceIDCompare(uint16_t service_id)
 {
     //--------------------------->|__________|
-    //	Shift byte		            byte Mask of bit address
+    //	      Shift byte		  byte Mask of bit address
+    // In an node, service ID are consecutive
+    // MaskID is byte field wich have the size of MAX_SERVICE_NUMBER
+    // Shift depend od ID of first service in Node (shift = NodeID/8)
 
     uint16_t compare = 0;
 
     if ((service_id > (8 * ctx.IDShiftMask))) // IDMask aligned byte
     {
+        // Calcul ID mask for ID receive
         compare = ((service_id - 1) - ((8 * ctx.IDShiftMask)));
+        // check if compare and internal mask match
         if ((ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
         {
             return SUCCEED;
@@ -413,6 +426,7 @@ _CRITICAL static inline error_return_t Recep_ServiceIDCompare(uint16_t service_i
  * @brief Parse multicast mask to find if target exists
  * @param target of message
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
 {
@@ -434,6 +448,7 @@ _CRITICAL static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
  * @param header of message
  * @return None
  * warning : this function can be redefined only for mock testing purpose
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
@@ -651,6 +666,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
  * @brief Check if we need to send an ack
  * @param None
  * @return true or false
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
 {
@@ -683,6 +699,7 @@ static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
  * @brief computes the number of the messages that compose a large data message
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Recep_ComputeMsgNumber(void)
 {

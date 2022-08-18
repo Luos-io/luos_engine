@@ -71,6 +71,7 @@ _CRITICAL static uint8_t Transmit_GetLockStatus(void);
  * @brief Transmit an ACK
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Transmit_SendAck(void)
 {
@@ -109,6 +110,7 @@ uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
 
 /******************************************************************************
  * @brief transmission process
+ * @param None
  * @return None
  ******************************************************************************/
 _CRITICAL void Transmit_Process()
@@ -198,6 +200,7 @@ _CRITICAL void Transmit_Process()
  * @brief Send ID to others service on network
  * @param None
  * @return lock status
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static uint8_t Transmit_GetLockStatus(void)
 {
@@ -211,6 +214,7 @@ _CRITICAL static uint8_t Transmit_GetLockStatus(void)
  * @brief finish transmit and try to launch a new one
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Transmit_End(void)
 {
