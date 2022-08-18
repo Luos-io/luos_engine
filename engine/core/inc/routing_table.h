@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file routingTable
- * @brief routing table descrption function
+ * @brief routing table description function
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
