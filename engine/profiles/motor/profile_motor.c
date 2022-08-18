@@ -1,10 +1,16 @@
+/******************************************************************************
+ * @file profile_motor
+ * @brief Motor profile
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "profile_motor.h"
 #include "math.h"
 
 /******************************************************************************
- * @brief function converting Luos messages into data and reverse.
- * @param service the target service
- * @param msg the received message
+ * @brief Function converting Luos messages into data and reverse.
+ * @param service : The target service
+ * @param msg : The received message
  * @return None
  ******************************************************************************/
 void ProfileMotor_Handler(service_t *service, msg_t *msg)
@@ -85,8 +91,8 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
 
 /******************************************************************************
  * @brief Link profile to the general profile handler
- * @param profile_mode HEAD / CONNECT
- * @param profile data structure
+ * @param profile_mode : HEAD / CONNECT
+ * @param profile : profile data structure
  * @return None
  ******************************************************************************/
 void ProfileMotor_link(uint8_t profile_mode, profile_motor_t *profile_motor)
@@ -100,10 +106,10 @@ void ProfileMotor_link(uint8_t profile_mode, profile_motor_t *profile_motor)
 
 /******************************************************************************
  * @brief Create a service with a linked profile
- * @param profile data structure
- * @param callback used by the service
- * @param alias
- * @param revision
+ * @param profile : Profile data structure
+ * @param callback : Callback used by the service
+ * @param alias : Alias for the service (15 caracters max string)
+ * @param revision : FW for the service (tab[MajorVersion,MinorVersion,Patch])
  * @return service pointer
  ******************************************************************************/
 service_t *ProfileMotor_CreateService(profile_motor_t *profile_motor, SERVICE_CB callback, const char *alias, revision_t revision)
