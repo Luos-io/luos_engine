@@ -140,7 +140,7 @@ _CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void);
 
 /******************************************************************************
  * @brief Init the allocator.
- * @param None
+ * @param Pointer to Node statistics
  * @return None
  ******************************************************************************/
 void MsgAlloc_Init(memory_stats_t *memory_stats)
@@ -168,7 +168,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     {
         mem_stat = memory_stats;
     }
-    Robus_MaskInit();
+    Robus_MaskInit(); // Mask filter for service ID
     // Filter State
     ctx.filter_id    = 0;
     ctx.filter_state = true;
@@ -210,6 +210,7 @@ void MsgAlloc_loop(void)
  * @brief execute some memory sanity tasks out of IRQ
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_ValidDataIntegrity(void)
 {
@@ -305,6 +306,7 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
  * @brief save the given msg as oldest if it is
  * @param oldest_stack_msg_pt : the oldest message of a stack
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg_pt)
 {
@@ -357,6 +359,7 @@ _CRITICAL static inline void MsgAlloc_OldestMsgCandidate(msg_t *oldest_stack_msg
  * @brief update the new oldest message if we need to
  * @param removed_msg : the freshly oldest removed message of the stack
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void)
 {
@@ -380,6 +383,7 @@ _CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void)
  * @param from : start of the memory space to clean
  * @param to : start of the memory space to clean
  * @return error_return_t
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
 {
@@ -402,6 +406,7 @@ _CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpace(void *to)
  * @brief Invalid the current message header by removing it (data will be ignored).
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_InvalidMsg(void)
 {
@@ -445,6 +450,7 @@ _CRITICAL void MsgAlloc_InvalidMsg(void)
  * @param valid : is the header valid or not
  * @param data_size : size of the data to receive
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
 {
@@ -552,7 +558,9 @@ _CRITICAL void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
 }
 /******************************************************************************
  * @brief Finish the current message
+ * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_EndMsg(void)
 {
@@ -655,6 +663,7 @@ _CRITICAL void MsgAlloc_EndMsg(void)
  * @brief write a byte into the current message.
  * @param uint8_t data to write in the allocator
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_SetData(uint8_t data)
 {
@@ -698,6 +707,7 @@ error_return_t MsgAlloc_IsEmpty(void)
  * @brief Reset msg_alloc tx_tasks to avoid sending messages
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_Reset(void)
 {
@@ -737,6 +747,7 @@ error_return_t MsgAlloc_IsReseted(void)
  * @param from : start of the memory space to clean
  * @param to : start of the memory space to clean
  * @return error_return_t
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline error_return_t MsgAlloc_ClearMsgSpace(void *from, void *to)
 {
@@ -836,6 +847,7 @@ static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
  * @brief Clear a slot. This action is due to an error
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static inline void MsgAlloc_ClearMsgTask(void)
 {
@@ -906,6 +918,7 @@ error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg)
 
 /******************************************************************************
  * @brief Notify the end of the usage of the message.
+ * @param returned_msg : The message pointer.
  * @return None
  ******************************************************************************/
 void MsgAlloc_UsedMsgEnd(void)
@@ -1373,6 +1386,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  * @brief copy a message to transmit into msg_buffer and create a Tx task
  * @param data to transmit
  * @param size of the data to transmit
+ * @return None
  ******************************************************************************/
 error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, uint16_t crc, uint16_t size, luos_localhost_t localhost, uint8_t ack)
 {
@@ -1697,6 +1711,8 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
 /******************************************************************************
  * @brief remove a transmit message task
  * @param None
+ * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void MsgAlloc_PullMsgFromTxTask(void)
 {
@@ -1742,6 +1758,7 @@ _CRITICAL void MsgAlloc_PullMsgFromTxTask(void)
 /******************************************************************************
  * @brief remove all transmit task of a specific service
  * @param None
+ * @return None
  ******************************************************************************/
 void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
 {
@@ -1800,6 +1817,7 @@ void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
  * @param size of the data to send
  * @param localhost is this message a localhost one
  * @return error_return_t : Fail is there is no more message available.
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
 {
@@ -1846,6 +1864,7 @@ _CRITICAL error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_
 }
 /******************************************************************************
  * @brief check if there is uncomplete tx_tasks
+ * @param None
  * @return error_return_t : Fail is there is untransmitted message.
  ******************************************************************************/
 _CRITICAL error_return_t MsgAlloc_TxAllComplete(void)
