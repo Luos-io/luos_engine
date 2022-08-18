@@ -21,10 +21,10 @@
 
 /******************************************************************************
  * @brief Initialisation of a streaming channel.
- * @param ring_buffer Pointer to a data table
- * @param ring_buffer_size size of the buffer in number of values.
- * @param data_size values size.
- * @return streaming channel
+ * @param ring_buffer : Pointer to a data table
+ * @param ring_buffer_size : Size of the buffer in number of values.
+ * @param data_size : Values size.
+ * @return Streaming channel
  ******************************************************************************/
 streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint16_t ring_buffer_size, uint8_t data_size)
 {
@@ -41,8 +41,8 @@ streaming_channel_t Stream_CreateStreamingChannel(const void *ring_buffer, uint1
     return stream;
 }
 /******************************************************************************
- * @brief re initialize a streaming channel.
- * @param stream streaming channel pointer
+ * @brief Re initialize a streaming channel.
+ * @param stream : Streaming channel pointer
  * @return None
  ******************************************************************************/
 void Stream_ResetStreamingChannel(streaming_channel_t *stream)
@@ -51,11 +51,11 @@ void Stream_ResetStreamingChannel(streaming_channel_t *stream)
     stream->sample_ptr = stream->ring_buffer;
 }
 /******************************************************************************
- * @brief set data into ring buffer.
- * @param stream streaming channel pointer
- * @param data a pointer to the data table
- * @param size The number of data to copy
- * @return number of available samples
+ * @brief Set data into ring buffer.
+ * @param stream : Streaming channel pointer
+ * @param data : A pointer to the data table
+ * @param size : The number of data to copy
+ * @return Number of samples to put in buffer
  ******************************************************************************/
 uint16_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_t size)
 {
@@ -82,10 +82,10 @@ uint16_t Stream_PutSample(streaming_channel_t *stream, const void *data, uint16_
     return Stream_GetAvailableSampleNB(stream);
 }
 /******************************************************************************
- * @brief copy a sample from ring buffer to a data.
- * @param stream streaming channel pointer
- * @param data a pointer of data
- * @param size data
+ * @brief Copy a sample from ring buffer to a data.
+ * @param stream : Streaming channel pointer
+ * @param data : A pointer of data
+ * @param size : data size
  * @return None
  ******************************************************************************/
 uint16_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size)
@@ -121,9 +121,9 @@ uint16_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size
     return nb_available_samples;
 }
 /******************************************************************************
- * @brief return the number of available samples
- * @param stream streaming channel pointer
- * @return number of available samples
+ * @brief Return the number of available samples
+ * @param stream : Streaming channel pointer
+ * @return Number of availabled samples
  ******************************************************************************/
 uint16_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
 {
@@ -137,10 +137,9 @@ uint16_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
     return (uint16_t)nb_available_sample;
 }
 /******************************************************************************
- * @brief set a number of sample available in buffer
- * @param stream streaming channel pointer
- * @param size The number of data to copy
- * @return number of available samples
+ * @brief Get sample number availabled in buffer
+ * @param stream : Streaming channel pointer
+ * @return Number of available samples
  ******************************************************************************/
 uint16_t Stream_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
 {
@@ -154,10 +153,10 @@ uint16_t Stream_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
     return (uint16_t)nb_available_sample;
 }
 /******************************************************************************
- * @brief set a number of sample available in buffer
- * @param stream streaming channel pointer
- * @param size The number of data to copy
- * @return number of available samples
+ * @brief Set a number of sample available in buffer
+ * @param stream : Streaming channel pointer
+ * @param size : The number of data to copy
+ * @return Number of samples to add to channel
  ******************************************************************************/
 uint16_t Stream_AddAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
 {
@@ -175,10 +174,10 @@ uint16_t Stream_AddAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
     return Stream_GetAvailableSampleNB(stream);
 }
 /******************************************************************************
- * @brief set a number of sample available in buffer
- * @param stream streaming channel pointer
- * @param size The number of data to copy
- * @return number of available samples
+ * @brief Remove a specific number of samples in buffer
+ * @param stream : Streaming channel pointer
+ * @param size : The number of data to remove
+ * @return Number of availabled samples
  ******************************************************************************/
 uint16_t Stream_RmvAvailableSampleNB(streaming_channel_t *stream, uint16_t size)
 {

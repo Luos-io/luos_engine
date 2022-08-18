@@ -51,7 +51,7 @@ void LuosHAL_Init(void)
 }
 /******************************************************************************
  * @brief Luos HAL general disable IRQ
- * @param None
+ * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
 void LuosHAL_SetIrqState(uint8_t Enable)
@@ -78,7 +78,7 @@ void LuosHAL_SetIrqState(uint8_t Enable)
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms initialize
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
@@ -91,7 +91,7 @@ static void LuosHAL_SystickInit(void)
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 uint32_t LuosHAL_GetSystick(void)
 {
