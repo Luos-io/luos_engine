@@ -257,7 +257,8 @@ uint8_t DataManager_ServiceIsSensor(luos_type_t type)
         || (type == LOAD_TYPE)
         || (type == VOLTAGE_TYPE)
         || (type == LIGHT_TYPE)
-        || (type == SERVO_MOTOR_TYPE))
+        || (type == SERVO_MOTOR_TYPE)
+        || (type == PRESSURE_TYPE))
     {
         return 1;
     }
