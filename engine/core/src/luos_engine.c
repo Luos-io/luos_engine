@@ -32,7 +32,6 @@ package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
 uint16_t service_number = 0;
-volatile routing_table_t *routing_table_pt;
 service_t *detection_service;
 
 luos_stats_t luos_stats;
@@ -1244,7 +1243,7 @@ error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
     return Robus_TopicSubscribe(service->ll_service, topic);
 }
 /******************************************************************************
- * @brief Subscribe to a new topic
+ * @brief Unsubscribe from a topic
  * @param service
  * @param topic
  * @return None
