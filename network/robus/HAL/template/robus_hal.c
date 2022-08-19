@@ -13,7 +13,10 @@
 #include "reception.h"
 #include "context.h"
 
-// MCU dependencies this HAL is for family XXX you can find
+/*************************************************************************
+ * This file is a template and documentation for a Robus network HAL layer.
+ * Feel free to duplicate it and customize it to your needs.
+ *************************************************************************/
 
 /*******************************************************************************
  * Definitions
@@ -22,13 +25,12 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV; //(freq MCU/freq timer)/divider timer clock source
+//(freq MCU/freq timer)/divider timer clock source
+uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV;
 
 typedef struct
 {
     uint16_t Pin;
-    GPIO_TypeDef *Port;
-    uint8_t IRQ;
 } Port_t;
 
 Port_t PTP[NBR_PORT];
@@ -68,53 +70,104 @@ void RobusHAL_Init(void)
  ******************************************************************************/
 void RobusHAL_ComInit(uint32_t Baudrate)
 {
-    LUOS_COM_CLOCK_ENABLE();
 
-    // Initialise USART1
+    /*************************************************************************
+     * This function is called once at the beginning of the program.
+     * It is used to initialize the hardware and the variables.
+     * You can add your own initialisation code here.
+     *************************************************************************/
 
-    // Enable Reception interrupt
+    /*************************************************************************
+     * This function initialize Robus communication.
+     * Robus is based on an half duplex USART hardware.
+     * You need to initialize the USART hardware and the interrupt.
+     * COM_TX and COM_RX pin initialization for usart is done in RobusHAL_GPIOInit().
+     *
+     * USART configuration parameters :
+     * datawith : 8 bits
+     * stopbit : 1 bits
+     * parity  : none
+     * Bauderate : DEFAULTBAUDRATE
+     *
+     * Don't forget to :
+     * enable clock for USART
+     * Enable USART
+     * Enable USART IRQ
+     * Enable Rx buffer empty IRQ
+     ************************************************************************/
 
-    // Enable NVIC IRQ
-
-    // enable DMA
-#ifndef USE_TX_IT
-    // if DMA possible initialize DMA for a data transmission
-#endif
-    // Timeout Initialization
+    // Timeout Initialization is done in this function
     Timer_Prescaler = (MCUFREQ / Baudrate) / TIMERDIV;
     RobusHAL_TimeoutInit();
+
+#ifndef USE_TX_IT
+    /*************************************************************************
+     * Robus allow you to use TX interrupt to manage the transmission.
+     * You may want to use it to enable DMA transfert to TX saving a lot of CPU time.
+     * To do that initialize this DMA transert:
+     *  - Direction : memory to peripherial
+     *  - Mode : not circular mode
+     *  - Increment : memory
+     *
+     * Don't forget to :
+     *  - Enable clock for DMA
+     *  - Add DMA peripherial adress
+     ************************************************************************/
+#endif
 }
 /******************************************************************************
- * @brief Tx enable/disable relative to com
+ * @brief Tx enable/disable
  * @param None
  * @return None
  ******************************************************************************/
 void RobusHAL_SetTxState(uint8_t Enable)
 {
+    /*************************************************************************
+     * This function allow Luos_engine to enable or disable usart Tx line
+     * This is necessary because Rx and Tx line are common due to the half duplex
+     ************************************************************************/
     if (Enable == true)
     {
-        // put Tx COM pin in push pull
+        /********************************************************************
+         * Put COM_TX pin in push pull mode
+         *******************************************************************/
         if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
         {
-            // Tx enable
+            /********************************************************************
+             * Put TX_EN pin to high enabling the Tx line on the Driver
+             *******************************************************************/
         }
     }
     else
     {
-        // put Tx COM pin in Open drain
+        /********************************************************************
+         * Put COM_TX pin in open drain mode
+         *******************************************************************/
         if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
         {
-            // Tx Disable
+            /********************************************************************
+             * Put TX_EN pin to Low disabling the Tx line on the Driver
+             *******************************************************************/
         }
+        /********************************************************************
+         * Disable Transmission complete interrupt
+         *
+         * If you don't use DMA :
+         *  - Put data_size_to_transmit to 0
+         *  - Disable Transmission buffer empty interrupt
+         *
+         * If you use DMA :
+         *  - Disable DMA
+         *
+         *******************************************************************/
 #ifdef USE_TX_IT
         // Stop current transmit operation
         data_size_to_transmit = 0;
-        // Disable IT tx empty
+        // Disable Transmission empty buffer interrupt
 #else
-
-        // stop DMA transmission DMA disable
+        // Disable DMA
 #endif
-        // disable tx complet IT
+        // Disable Transmission complete interrupt
     }
 }
 /******************************************************************************
@@ -124,16 +177,22 @@ void RobusHAL_SetTxState(uint8_t Enable)
  ******************************************************************************/
 void RobusHAL_SetRxState(uint8_t Enable)
 {
+    /*************************************************************************
+     * This function allow Luos_engine to enable or disable Rx
+     * Avoiding to receiving what luos_engine send
+     ************************************************************************/
     if (Enable == true)
     {
-        // clear data register
-        //  Enable Rx com
-        //  Enable Rx IT
+        /*************************************************************************
+         * Enable reception buffer not empty interrupt
+         * Don't forget to clear the data register
+         ************************************************************************/
     }
     else
     {
-        // disable Rx com
-        // disable Rx IT
+        /*************************************************************************
+         * Disable reception buffer not empty interrupt
+         ************************************************************************/
     }
 }
 /******************************************************************************
@@ -143,98 +202,172 @@ void RobusHAL_SetRxState(uint8_t Enable)
  ******************************************************************************/
 void LUOS_COM_IRQHANDLER()
 {
-    // Reset timeout to it's default value
-    RobusHAL_ResetTimeout();
 
-    // reception management
-    // if IT receive and IT receive enable
-    // get data from register
-    ctx.rx.callback(&data); // send reception byte to state machine
-    if (data_size_to_transmit == 0)
+    /*************************************************************************
+     * This is the callback function called when an transmission and/or
+     * reception IRQ on UART is raised.
+     * 
+     * This function name is a Macro containing the IRQ handler name.
+     * This macro can have a default value in robus_hal_config.h file then users will be able to modify it on their project node_config.h file.
+     *
+     * This function process communication and perform some action
+     * in a specifique order :
+     *
+     *      1. Reset the timeout with the default value each time this function is call
+     *
+     *      2. Check if IRQ flag Rx is active (this means that this IRAQ have been raised because we receive a byte)
+     *          Read the received byte and pass it to ctx.rx.callback(byte).
+     *          This function is the Robus reception state machine allowing to check and decode Luos frames.
+     *
+     *      3. Check framing error
+     *
+     *      4. Check if IRQ flag Tx complete active (this means that this IRQ have been raised because we have finished to transmit oen or a collection of bytes)
+     *          Disable Tx and enable rx
+     *          without DMA :
+     *              Check if IRQ flag Tx empty is active
+     *                  Transmit next data
+     *
+     * Don't forget to clean IRQ flags
+     ************************************************************************/
+
+    /*1. Reset timeout to it's default value*/
+    RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
+
+    /*2. Reception management*/
+    if ("Reception buffer not empty interrupt is true and enable")
     {
-        // clear error IT
-        return;
+        // Get data from register
+        ctx.rx.callback(&data); // Send received byte to the Robus state machine
+        if (data_size_to_transmit == 0)
+        {
+            // Clear error IT
+            return;
+        }
     }
-    // else if Framming error IT
-    ctx.rx.status.rx_framing_error = true;
+    /* 3. Framming error IT*/
+    else if ("Reception framming error is true and enable")
+    {
+        ctx.rx.status.rx_framing_error = true;
+    }
 
-    // Transmission management
-    // if IT transmit complete and IT transmit complete enable
-    RobusHAL_SetRxState(true);
-    RobusHAL_SetTxState(false);
-    // diasble It tx complete
-
+    /*4. Transmission management*/
+    if ("Transmission complete interrupt is true and enable")
+    {
+        RobusHAL_SetRxState(true);
+        RobusHAL_SetTxState(false);
+        // Clear IRQ disable Transmission complete flag
+    }
 #ifdef USE_TX_IT
-    // else if IT transmit empty and IT transmit empty enable
-    //  Transmit buffer empty (this is a software DMA)
-    data_size_to_transmit--;
-    // put data to register
-    if (data_size_to_transmit == 0)
+    else if ("Transmission empty buffer interrupt is true and enable")
     {
-        // Transmission complete, stop loading data and watch for the end of transmission
-        // Disable Transmission empty buffer interrupt
-        // Enable Transmission complete interrupt
+        data_size_to_transmit--;
+        // Transmit data function with the tx_data pointer
+
+        if (data_size_to_transmit == 0) // Transmission complete, stop loading data and wait for the end of transmission
+        {
+            // Clear IRQ and disable Transmission empty buffer interrupt
+            // Enable Transmission complete interrupt
+        }
     }
-}
-#endif
-// clear error flag
+#endif * /
+
+    // Clear flags
 }
 /******************************************************************************
  * @brief Process data transmit
- * @param None
+ * @param data pointer to data to send
+ * @param size size to send
  * @return None
  ******************************************************************************/
 void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
-    // wait tx empty
+
+    /*************************************************************************
+     * Luos engine use this function to send data from msg buffer.
+     * There is two way to send data depending on your configuration DMA or IT.
+     * 
+     * When only 1 byte is send HAL never use DMA. Robus do that to acknoledge the reception of the a message.
+     *
+     * This function send data over network :
+     *
+     *  1. Enable Tx Line
+     *
+     *  2. if size > 1
+     *      - with DMA, setup communication pointer and size to send
+     *      - without DMA, put data directly in in the transmission buffer and enable IRQ
+     *
+     *  3. if size <= 1 that mean that this mesasge is an acknole to send
+     *      - Wait 5us before sending the ack. This allow slower MCU to be ready to receive our acknoledge.
+     *      - Put the data in transmission buffer and enable IRQ
+     *
+     *  4. Reset timout to default value
+     ************************************************************************/
+
+    // 1. Enable Tx Line
+    // Be sure transmission buffer is empty
     RobusHAL_SetTxState(true);
-    // Reduce size by one because we send one directly
-    data_size_to_transmit = size - 1;
+
+    // 2. A luos frame to send
+    data_size_to_transmit = size - 1; // Reduce size by one because we send one directly
     if (size > 1)
     {
-        // Start the data buffer transmission
-        // **** NO DMA
-        // Copy the data pointer globally alowing to keep it and run the transmission.
-        tx_data = data;
+        tx_data = data; // Copy the data pointer globally alowing to keep it and run the transmission
 #ifdef USE_TX_IT
-        // put data in register
-        // enable IT tx empty
-        // disable IT tx complete
+        // Put data in transmission buffer and enable IRQ
+        // Disable Transmission complete interrupt
 #else
         data_size_to_transmit = 0; // Reset this value avoiding to check IT TC during collision
-        // set up DMA transfert
-        // enable IT tx complete
+        // Set up DMA transfert
+        // Enable Transmission complete interrupt
 #endif
     }
+    // 3. A ack to send
     else
     {
+        // Wait 5us before sending the ack
+        while ("counter < TIMEOUT_ACK")
+            ;
+        RobusHAL_SetTxState(true); // Enable TX
         // Transmit the only byte we have
-        // put data in register
         // Enable Transmission complete interrupt because we only have one.
     }
+
+    // 4. reset timout to default value
+    RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }
 /******************************************************************************
- * @brief set state of Txlock detection pin
+ * @brief set rx accuring detection pin
  * @param None
  * @return Lock status
  ******************************************************************************/
 void RobusHAL_SetRxDetecPin(uint8_t Enable)
 {
+    /*************************************************************************
+     * This function is used if your MCU does not give the possibility
+     * to know if there is a reception pending. Leave it empty if is possible.
+     *
+     * This pin TX_LOCK_DETECT must be phisicaly connected to RX pin.
+     * We will use it to detect the falling edge of a start bit to know itf someone is using the network.
+     ************************************************************************/
     if (TX_LOCK_DETECT_IRQ != DISABLE)
     {
-        // clear tx detect IT
+        // Clear tx detect IT
         if (Enable == true)
         {
-            // clear flag
+            /*************************************************************************
+             * Enable flag transmission lock detect interrupt pin
+             ************************************************************************/
         }
         else
         {
-            // set flag
+            /*************************************************************************
+             * Disable flag transmission lock interrupt pin
+             ************************************************************************/
         }
     }
 }
 /******************************************************************************
- * @brief get Lock Com transmit status this is the HW that can generate lock TX
+ * @brief Get the TX Lock status
  * @param None
  * @return Lock status
  ******************************************************************************/
@@ -242,14 +375,23 @@ uint8_t RobusHAL_GetTxLockState(void)
 {
     uint8_t result = false;
 
-#ifdef USART_ISR_BUSY
-    // check busy flag
+    /*************************************************************************
+     * This function check if a reception is pending. this function is
+     * mendatory to know if luos engine can send data.
+     *
+     * There is two way to know if a reception is pending :
+     *      - the MCU gives you the status of reception
+     *      - You use the RobusHAL_SetRxDetecPin function
+     ************************************************************************/
+
+#ifdef("reception pending")
+    // Check the RX busy flag
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
     result = true;
 #else
     if ((TX_LOCK_DETECT_PIN != DISABLE) && (TX_LOCK_DETECT_PORT != DISABLE))
     {
-        // if pin low
+        // If pin low
         result = true;
         if (TX_LOCK_DETECT_IRQ == DISABLE)
         {
@@ -269,12 +411,23 @@ uint8_t RobusHAL_GetTxLockState(void)
  ******************************************************************************/
 static void RobusHAL_TimeoutInit(void)
 {
-    // initialize clock
-    LUOS_TIMER_CLOCK_ENABLE();
-
-    // timer init
-
-    // NVIC IT
+    /*************************************************************************
+     * This function initialize the Robus communication timeout.
+     * Every Robus message need to have a timeout at the end allowing another message to be sent.
+     * In Robus timeout are kind of messages preamble.
+     * Each interrut will reset this timout.
+     * This timeout will raise after (TIMEOUT_VAL * "byte time")
+     *
+     * Timeout :
+     *      - Auto reload : DEFAULT_TIMEOUT
+     *      - Repetition : one
+     *
+     * Don't forget to :
+     *      - Reset timer counter
+     *      - Enable clock for timer
+     *      - Enable timer
+     *      - Enable timer IRQ
+     ************************************************************************/
 }
 /******************************************************************************
  * @brief Luos Timeout communication
@@ -283,12 +436,20 @@ static void RobusHAL_TimeoutInit(void)
  ******************************************************************************/
 void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
-    // clear NVIC IT pending
-    // clear IT flag
-    // reset counter Timer
-    // relaod value counter
-    // if nbrbit != 0
-    // enable timer
+    /*************************************************************************
+     * This function reset the robus timeout.
+     * To stop the timeout put 0 to nbrbit.
+     * A callback function will be called when the timing matchs.
+     ************************************************************************/
+
+    // Disable counter
+    // Clear pending interrup and flag
+    // Reset counter
+    if (nbrbit != 0)
+    {
+        // Reload value
+        // Enable counter
+    }
 }
 /******************************************************************************
  * @brief Luos Timeout communication
@@ -297,11 +458,23 @@ void RobusHAL_ResetTimeout(uint16_t nbrbit)
  ******************************************************************************/
 void LUOS_TIMER_IRQHANDLER()
 {
-    // if It timeout
-    // clear IT
-    if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
+    /*************************************************************************
+     * This is the callback function when a timout IRQ is raised.
+     *
+     * This function name is a Macro containing the IRQ handler name.
+     * This macro can have a default value in robus_hal_config.h file then users will be able to modify it on their project node_config.h file.
+     ************************************************************************/
+    if ("Timer flag interrupt true and enable")
     {
-        Recep_Timeout();
+        // Clear flag
+        // Disable counter
+        if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
+        {
+            // Enable RX detection pin if needed
+            RobusHAL_SetTxState(false);
+            RobusHAL_SetRxState(true);
+            Recep_Timeout();
+        }
     }
 }
 /******************************************************************************
@@ -311,53 +484,60 @@ void LUOS_TIMER_IRQHANDLER()
  ******************************************************************************/
 static void RobusHAL_GPIOInit(void)
 {
-    // Activate Clock for PIN choosen in RobusHAL
-    PORT_CLOCK_ENABLE();
+    /*************************************************************************
+     * This function initialize robus communication pins.
+     *      USART Pin        :  COM_TX and COM_RX
+     *      RS485 driver Pin :  TX_EN and RX_EN
+     *      PTP Pin          :  PTPX
+     *
+     ************************************************************************/
 
+    // Activate Clock for PIN choosen
     if ((RX_EN_PIN != DISABLE) || (RX_EN_PORT != DISABLE))
     {
         // Configure GPIO pins : RxEN_Pin
-        // output
-        // no pull
+        // Output
+        // No pull
     }
 
     if ((TX_EN_PIN != DISABLE) || (TX_EN_PORT != DISABLE))
     {
         // Configure GPIO pins : TxEN_Pin
-        // output
-        // no pull
+        // Output
+        // No pull
     }
 
-    // Configure GPIO pin : TxPin
+    // Configure GPIO pin : COM_TX
     // ALTERNATE function USART Tx
-    // open drain
-    // pull up
+    // Open drain
+    // Pull up
 
-    // Configure GPIO pin : RxPin
+    // Configure GPIO pin : COM_RX
     // ALTERNATE function USART Rx
-    // open drain
-    // pull up
+    // Open drain
+    // Pull up
 
-    // configure PTP
+    // Configure PTP pins
     RobusHAL_RegisterPTP();
-    for (uint8_t i = 0; i < NBR_PORT; i++) /*Configure GPIO pins : PTP_Pin */
+    for (uint8_t i = 0; i < NBR_PORT; i++)
     {
+        // Configure GPIO pins : PTP_Pin
         // IT falling
-        //  pull down
-        //  Setup PTP lines
+        // Pull down
+        // Setup PTP lines
         RobusHAL_SetPTPDefaultState(i);
-        // activate NVIC IT for PTP
+        // Activate IRQ for PTP line
     }
 
-    /*Configure GPIO pins : TX_LOCK_DETECT_Pin */
+    // Configure GPIO pins : TX_LOCK_DETECT_Pin
     if ((TX_LOCK_DETECT_PIN != DISABLE) || (TX_LOCK_DETECT_PORT != DISABLE))
     {
-        // pull up
-        // input
+        // Pull up
+        // Input
         if (TX_LOCK_DETECT_IRQ != DISABLE)
         {
-            // it falling
-            // NVIC enable
+            // IRQ falling edge
+            // Enable IRQ
         }
     }
 }
@@ -368,28 +548,27 @@ static void RobusHAL_GPIOInit(void)
  ******************************************************************************/
 static void RobusHAL_RegisterPTP(void)
 {
+    /*************************************************************************
+     * This function associate PTP pin to the Port_t PTP[NBR_PORT] table.
+     * 
+     * To works, robus need at least 2 PTP lines per board to daisy chain the nodes on the network during detection.
+     *
+     * NBR_PORT is a define that you can adapt to you project in node_config.h files
+     ************************************************************************/
 #if (NBR_PORT >= 1)
-    PTP[0].Pin  = PTPA_PIN;
-    PTP[0].Port = PTPA_PORT;
-    PTP[0].IRQ  = PTPA_IRQ;
+    PTP[0].Pin = PTPA_PIN;
 #endif
 
 #if (NBR_PORT >= 2)
-    PTP[1].Pin  = PTPB_PIN;
-    PTP[1].Port = PTPB_PORT;
-    PTP[1].IRQ  = PTPB_IRQ;
+    PTP[1].Pin = PTPB_PIN;
 #endif
 
 #if (NBR_PORT >= 3)
-    PTP[2].Pin  = PTPC_PIN;
-    PTP[2].Port = PTPC_PORT;
-    PTP[2].IRQ  = PTPC_IRQ;
+    PTP[2].Pin = PTPC_PIN;
 #endif
 
 #if (NBR_PORT >= 4)
-    PTP[3].Pin  = PTPD_PIN;
-    PTP[3].Port = PTPD_PORT;
-    PTP[3].IRQ  = PTPD_IRQ;
+    PTP[3].Pin = PTPD_PIN;
 #endif
 }
 /******************************************************************************
@@ -399,11 +578,24 @@ static void RobusHAL_RegisterPTP(void)
  ******************************************************************************/
 void PINOUT_IRQHANDLER(uint16_t GPIO_Pin)
 {
-    ////Process for Tx Lock Detec
+    /*************************************************************************
+     * This is the callback function called when a external interrupt IRQ is raised.
+     * The pin number of the interrupt edge detected must be pass to this function
+     *
+     * This function name is a Macro containing the IRQ handler name.
+     * This macro can have a default value in robus_hal_config.h file then users will be able to modify it on their project node_config.h file.
+     *
+     * This callback is mainly uses for PTP edge detection in the different state :
+     *      - PTPDefaultState
+     *      - PTPReverseState
+     *
+     * This can also be used to detect a start bit with TX_LOCK_DETECT_PIN.
+     ************************************************************************/
+    // Process for Tx Lock Detec
     if (GPIO_Pin == TX_LOCK_DETECT_PIN)
     {
         ctx.tx.lock = true;
-        // clear flag
+        // Clear flag
     }
     else
     {
@@ -418,14 +610,20 @@ void PINOUT_IRQHANDLER(uint16_t GPIO_Pin)
     }
 }
 /******************************************************************************
- * @brief Set PTP for Detection on branch
+ * @brief Set PTP for branch Detection
  * @param PTP branch
  * @return None
  ******************************************************************************/
 void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
 {
-    // clear IT
-    //  Pull Down / IT mode / Rising Edge
+    /*************************************************************************
+     * Set the default state on the PTP line : (allowing to catch a ping on a branch)
+     *      - Input
+     *      - Pull Down
+     *      - IT mode Rising Edge
+     *
+     * Don't forget to clear a pending Pin IRQ
+     ************************************************************************/
 }
 /******************************************************************************
  * @brief Set PTP for reverse detection on branch
@@ -434,8 +632,14 @@ void RobusHAL_SetPTPDefaultState(uint8_t PTPNbr)
  ******************************************************************************/
 void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
 {
-    // clear IT
-    //  Pull Down / IT mode / Falling Edge
+    /*************************************************************************
+     * Set the reverse state on the PTP line : (allowing to get the ping response)
+     *      - Input
+     *      - Pull Down
+     *      - IT mode flling Edge
+     *
+     * Don't forget to clear a pending Pin IRQ
+     ************************************************************************/
 }
 /******************************************************************************
  * @brief Set PTP line
@@ -444,8 +648,12 @@ void RobusHAL_SetPTPReverseState(uint8_t PTPNbr)
  ******************************************************************************/
 void RobusHAL_PushPTP(uint8_t PTPNbr)
 {
-    // Pull Down / Output mode
-    // Clean edge/state detection and set the PTP pin as output
+    /*************************************************************************
+     * Set the push state on the PTP line : (allowing to ping the branch)
+     *      - Output
+     *      - Level High
+     *
+     ************************************************************************/
 }
 /******************************************************************************
  * @brief Get PTP line
@@ -454,7 +662,10 @@ void RobusHAL_PushPTP(uint8_t PTPNbr)
  ******************************************************************************/
 uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
 {
-    // Pull Down / Input mode
+    /*************************************************************************
+     * Read the line level on PTP pin:
+     ************************************************************************/
+    return // Value of the PTP Line
 }
 /******************************************************************************
  * @brief Initialize CRC Process
@@ -463,7 +674,16 @@ uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
  ******************************************************************************/
 static void RobusHAL_CRCInit(void)
 {
-    // CRC initialisation
+    /*************************************************************************
+     * This function initialize the hardware CRC unit.
+     * This function is used only if USE_CRC_HW is defined in robus_hal_config.h or node_config.h file.
+     *
+     * CRC :
+     *      - Init Value : use uint8_t *crc
+     *      - Generator polynomial lenght : 7
+     *      - Polynomial lenght : 16 bits
+     *      - Inversion : none
+     ************************************************************************/
 }
 /******************************************************************************
  * @brief Compute CRC
@@ -472,7 +692,15 @@ static void RobusHAL_CRCInit(void)
  ******************************************************************************/
 void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
 {
-#ifdef CRC_HW
+    /*************************************************************************
+     * This function compute message CRC byte by byte.
+     *
+     * You can use hardware CRC calculatiion if your MCU provides it.
+     * If it's not, you will ahve to use the software CRC code already writen in this function.
+     *
+     ************************************************************************/
+#if (USE_CRC_HW == 1)
+    // CRC init value = uint8_t *crc
     // CRC HW calculation
 #else
     for (uint8_t i = 0; i < 1; ++i)

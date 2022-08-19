@@ -19,39 +19,39 @@
 #define MAX_DATA_MSG_SIZE 128
 
 #ifndef DEFAULTBAUDRATE
-#define DEFAULTBAUDRATE 1000000
+    #define DEFAULTBAUDRATE 1000000
 #endif
 
 #ifndef NBR_RETRY
-#define NBR_RETRY 10
+    #define NBR_RETRY 10
 #endif
 
 #ifndef MAX_SERVICE_NUMBER
-#define MAX_SERVICE_NUMBER 5
+    #define MAX_SERVICE_NUMBER 5
 #endif
 
 #ifdef MAX_CONTAINER_NUMBER
-#error 'MAX_CONTAINER_NUMBER' is deprecated since luos_engine@2.0.0, replace it by 'MAX_SERVICE_NUMBER', see: www.github.com/Luos-io/luos_engine/releases/tag/2.0.0 for more information.
+    #error 'MAX_CONTAINER_NUMBER' is deprecated since luos_engine@2.0.0, replace it by 'MAX_SERVICE_NUMBER', see: www.github.com/Luos-io/luos_engine/releases/tag/2.0.0 for more information.
 #endif
 
 #ifndef MAX_PROFILE_NUMBER
-#define MAX_PROFILE_NUMBER MAX_SERVICE_NUMBER
+    #define MAX_PROFILE_NUMBER MAX_SERVICE_NUMBER
 #endif
 
 #ifndef MSG_BUFFER_SIZE
-#define MSG_BUFFER_SIZE 3 * sizeof(msg_t)
+    #define MSG_BUFFER_SIZE 3 * sizeof(msg_t)
 #endif
 
 #ifndef MAX_MSG_NB
-#define MAX_MSG_NB 2 * MAX_SERVICE_NUMBER
+    #define MAX_MSG_NB 2 * MAX_SERVICE_NUMBER
 #endif
 
 #ifndef NBR_PORT
-#define NBR_PORT 2
+    #define NBR_PORT 2
 #endif
 
 #ifndef LAST_TOPIC
-#define LAST_TOPIC 20
+    #define LAST_TOPIC 20
 #endif
 
 // Tab of byte. + 2 for overlap ID because aligned to byte

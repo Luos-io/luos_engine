@@ -14,11 +14,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#ifndef _CRITICAL
 #define _CRITICAL
-#endif
-
-#define LUOS_UUID ((uint32_t *)0x1FFF7590)
 
 #define BOOT_MODE_MASK   0x000000FF
 #define BOOT_MODE_OFFSET 0

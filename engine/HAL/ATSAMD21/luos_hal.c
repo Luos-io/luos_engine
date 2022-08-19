@@ -50,7 +50,7 @@ void LuosHAL_Init(void)
 }
 /******************************************************************************
  * @brief Luos HAL general disable IRQ
- * @param None
+ * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
 _CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
@@ -67,7 +67,7 @@ _CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms initialize
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
@@ -80,16 +80,16 @@ static void LuosHAL_SystickInit(void)
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 _CRITICAL uint32_t LuosHAL_GetSystick(void)
 {
     return tick;
 }
 /******************************************************************************
- * @brief Luos HAL general systick tick at 1ms
+ * @brief Luos HAL increment systick
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 _CRITICAL void SysTick_Handler(void)
 {
@@ -142,7 +142,7 @@ static void LuosHAL_FlashInit(void)
 }
 /******************************************************************************
  * @brief Set boot mode in shared flash memory
- * @param
+ * @param None
  * @return
  ******************************************************************************/
 _CRITICAL void LuosHAL_SetMode(uint8_t mode)
@@ -165,7 +165,7 @@ _CRITICAL void LuosHAL_SetMode(uint8_t mode)
 
 /******************************************************************************
  * @brief Save node ID in shared flash memory
- * @param Address, node_id
+ * @param node_id
  * @return
  ******************************************************************************/
 _CRITICAL void LuosHAL_SaveNodeID(uint16_t node_id)
@@ -189,8 +189,8 @@ _CRITICAL void LuosHAL_SaveNodeID(uint16_t node_id)
 }
 
 /******************************************************************************
- * @brief software reboot the microprocessor
- * @param
+ * @brief Software reboot the microprocessor
+ * @param None
  * @return
  ******************************************************************************/
 void LuosHAL_Reboot(void)
@@ -209,7 +209,7 @@ void LuosHAL_Reboot(void)
 #ifdef BOOTLOADER_CONFIG
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
- * @param
+ * @param None
  * @return
  ******************************************************************************/
 void LuosHAL_DeInit(void)
@@ -218,7 +218,7 @@ void LuosHAL_DeInit(void)
 
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
- * @param
+ * @param None
  * @return
  ******************************************************************************/
 typedef void (*pFunction)(void); /*!< Function pointer definition */
@@ -245,7 +245,7 @@ void LuosHAL_JumpToApp(uint32_t app_addr)
 
 /******************************************************************************
  * @brief Return bootloader mode saved in flash
- * @param
+ * @param None
  * @return
  ******************************************************************************/
 uint8_t LuosHAL_GetMode(void)
@@ -271,7 +271,7 @@ uint16_t LuosHAL_GetNodeID(void)
 }
 
 /******************************************************************************
- * @brief erase sectors in flash memory
+ * @brief Erase sectors in flash memory
  * @param Address, size
  * @return
  ******************************************************************************/
@@ -295,8 +295,10 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 }
 
 /******************************************************************************
- * @brief Save node ID in shared flash memory
- * @param Address, node_id
+ * @brief Programm flash memory
+ * @param address : Start address 
+ * @param size :: Data size
+ * @param data : Pointer to data
  * @return
  ******************************************************************************/
 void LuosHAL_ProgramFlash(uint32_t address, uint16_t size, uint8_t *data)

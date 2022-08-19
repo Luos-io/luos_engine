@@ -17,8 +17,8 @@
  * Definitions
  ******************************************************************************/
 #ifdef BOOTLOADER
-#define MAX_FRAME_SIZE (MAX_DATA_MSG_SIZE - 1)
-#define BUFFER_SIZE    0x800 // 2kB buffer to store received data
+    #define MAX_FRAME_SIZE (MAX_DATA_MSG_SIZE - 1)
+    #define BUFFER_SIZE    0x800 // 2kB buffer to store received data
 #endif
 
 /*******************************************************************************
@@ -90,7 +90,7 @@ void LuosBootloader_Init(void)
 }
 
 /******************************************************************************
- * @brief read the boot mode in flash memory
+ * @brief Read the boot mode in flash memory
  * @param None
  * @return boot_mode
  ******************************************************************************/
@@ -110,7 +110,7 @@ void LuosBootloader_DeInit(void)
 }
 
 /******************************************************************************
- * @brief launch application from the bootloader
+ * @brief Launch application from the bootloader
  * @param None
  * @return None
  ******************************************************************************/
@@ -133,8 +133,8 @@ void LuosBootloader_SetNodeID(void)
 }
 
 /******************************************************************************
- * @brief Set node id with data saved in flash
- * @param None
+ * @brief Check if there is enough space to flash binary
+ * @param binary_size : The size of the binary to flash
  * @return None
  ******************************************************************************/
 uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
@@ -151,7 +151,7 @@ uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
 }
 
 /******************************************************************************
- * @brief process binary data received from the gate
+ * @brief Erase memory wher application is stored
  * @param None
  * @return None
  ******************************************************************************/
@@ -161,7 +161,7 @@ void LuosBootloader_EraseMemory(void)
 }
 
 /******************************************************************************
- * @brief process binary data received from the gate
+ * @brief Process binary data received from the gate
  * @param None
  * @return None
  ******************************************************************************/
@@ -210,9 +210,11 @@ void LuosBootloader_SaveLastData(void)
 }
 
 /******************************************************************************
- * @brief compute crc 8 for each data
- * @param data pointer, data len
- * @return crc
+ * @brief Compute crc 8 for each data
+ * @param data : Pointer to the datas
+ * @param crc : Pointer to crc to be computed
+ * @param polynome : The seed to init crc computing
+ * @return crc : Computed CRC value
  ******************************************************************************/
 void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
 {
@@ -238,9 +240,9 @@ void crc8(const uint8_t *data, uint8_t *crc, uint16_t polynome)
 }
 
 /******************************************************************************
- * @brief compute crc for the whole binary
- * @param data pointer, data len
- * @return crc
+ * @brief Compute crc for the whole binary
+ * @param None
+ * @return crc : Computed CRC value
  ******************************************************************************/
 uint8_t compute_crc(void)
 {
@@ -276,15 +278,16 @@ uint8_t compute_crc(void)
 }
 
 /******************************************************************************
- * @brief Send response to the gate
- * @param None
+ * @brief Send CRC message response
+ * @param response : The type of crc message
+ * @param data : The crc value
  * @return None
  ******************************************************************************/
 void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
-    ready_msg.header.target_mode = IDACK;
+    ready_msg.header.target_mode = SERVICEIDACK;
     ready_msg.header.target      = source_id;
     ready_msg.header.size        = 2 * sizeof(uint8_t);
     ready_msg.data[0]            = response;
@@ -295,14 +298,14 @@ void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
 
 /******************************************************************************
  * @brief Send response to the gate
- * @param None
+ * @param response : The type of crc message
  * @return None
  ******************************************************************************/
 void LuosBootloader_SendResponse(bootloader_cmd_t response)
 {
     msg_t ready_msg;
     ready_msg.header.cmd         = BOOTLOADER_RESP;
-    ready_msg.header.target_mode = IDACK;
+    ready_msg.header.target_mode = SERVICEIDACK;
     ready_msg.header.target      = source_id;
     ready_msg.header.size        = sizeof(uint8_t);
     ready_msg.data[0]            = response;
@@ -334,7 +337,7 @@ void LuosBootloader_Loop(void)
 
 /******************************************************************************
  * @brief Message handler called from luos library
- * @param data received from luos network
+ * @param input : Pointer to message received from luos network
  * @return None
  ******************************************************************************/
 void LuosBootloader_MsgHandler(msg_t *input)

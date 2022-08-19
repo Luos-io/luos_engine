@@ -130,7 +130,7 @@ void Convert_DataToLuos(service_t *service, char *data)
                     DataManager_collect(service);
                     // create a message from parameters
                     msg.header.cmd         = REVISION;
-                    msg.header.target_mode = IDACK;
+                    msg.header.target_mode = SERVICEIDACK;
                     msg.header.target      = target_id;
                     // save current time
                     uint32_t begin_systick = Luos_GetSystick();
@@ -227,7 +227,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
     time_luos_t time;
     float data = 0.0;
     json_t const *item;
-    msg->header.target_mode = IDACK;
+    msg->header.target_mode = SERVICEIDACK;
     msg->header.target      = id;
     //********** global convertion***********
     // ratio
@@ -558,13 +558,6 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         msg->header.cmd = UPDATE_PUB;
         Luos_SendMsg(service, msg);
     }
-    // UUID
-    if (json_getProperty(jobj, "uuid") != NULL)
-    {
-        msg->header.cmd  = NODE_UUID;
-        msg->header.size = 0;
-        Luos_SendMsg(service, msg);
-    }
     // RENAMING
     item = json_getProperty(jobj, "rename");
     if ((item != NULL) && (json_getType(item) == JSON_TEXT))
@@ -782,14 +775,6 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"power\":%s,", Convert_Float(fdata));
             break;
-        case NODE_UUID:
-            if (msg->header.size == sizeof(luos_uuid_t))
-            {
-                luos_uuid_t value;
-                memcpy(value.unmap, msg->data, msg->header.size);
-                sprintf(data, "\"uuid\":[%" PRIu32 ",%" PRIu32 ",%" PRIu32 "],", value.uuid[0], value.uuid[1], value.uuid[2]);
-            }
-            break;
         case REVISION:
             // clean data to be used as string
             if (msg->header.size < MAX_DATA_MSG_SIZE)
@@ -813,7 +798,7 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
                 // create the Json content
                 sprintf(data, "\"luos_statistics\":{\"rx_msg_stack\":%d,\"luos_stack\":%d,\"tx_msg_stack\":%d,\"buffer_occupation\":%d,\"msg_drop\":%d,\"loop_ms\":%d,\"max_retry\":%d},",
                         stat->node_stat.memory.rx_msg_stack_ratio,
-                        stat->node_stat.memory.luos_stack_ratio,
+                        stat->node_stat.memory.engine_msg_stack_ratio,
                         stat->node_stat.memory.tx_msg_stack_ratio,
                         stat->node_stat.memory.buffer_occupation_ratio,
                         stat->node_stat.memory.msg_drop_number,

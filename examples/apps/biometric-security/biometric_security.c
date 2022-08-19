@@ -80,7 +80,7 @@ void BiometricSecurity_Loop(void)
             {
                 msg_t pub_msg;
                 pub_msg.header.target      = result.result_table[i]->id;
-                pub_msg.header.target_mode = IDACK;
+                pub_msg.header.target_mode = SERVICEIDACK;
                 time_luos_t time           = TimeOD_TimeFrom_ms(UPDATE_PERIOD_MS);
                 TimeOD_TimeToMsg(&time, &pub_msg);
                 pub_msg.header.cmd = UPDATE_PUB;
@@ -92,7 +92,7 @@ void BiometricSecurity_Loop(void)
         {
             msg_t pub_msg;
             pub_msg.header.target      = result.result_table[0]->id;
-            pub_msg.header.target_mode = ID;
+            pub_msg.header.target_mode = SERVICEID;
             pub_msg.header.cmd         = REINIT;
             Luos_SendMsg(app, &pub_msg);
 
@@ -253,7 +253,7 @@ uint8_t BiometricSecurity_SetServoPosition(void)
     if (result.result_nbr > 0)
     {
         msg_t servo_msg;
-        servo_msg.header.target_mode = ID;
+        servo_msg.header.target_mode = SERVICEID;
         servo_msg.header.target      = result.result_table[0]->id;
 
         AngularOD_PositionToMsg(&angle, &servo_msg);
@@ -287,7 +287,7 @@ uint8_t BiometricSecurity_CheckFingerprint(void)
         BiometricSecurity_LcdPrint("Checking auth..", sizeof("Checking auth..") - 1);
         msg_t fing_msg;
         fing_msg.header.cmd         = CHECK;
-        fing_msg.header.target_mode = ID;
+        fing_msg.header.target_mode = SERVICEID;
         fing_msg.header.target      = result.result_table[0]->id;
         fingerprint_busy            = 1;
         while (Luos_SendMsg(app, &fing_msg) != SUCCEED)

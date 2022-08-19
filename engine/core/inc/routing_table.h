@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file routingTable
- * @brief routing table descrption function
+ * @brief routing table description function
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
@@ -12,7 +12,7 @@
  * Definitions
  ******************************************************************************/
 #ifndef MAX_RTB_ENTRY
-#define MAX_RTB_ENTRY 40
+    #define MAX_RTB_ENTRY 40
 #endif
 
 typedef enum

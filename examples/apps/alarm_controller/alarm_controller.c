@@ -65,7 +65,7 @@ void AlarmController_Loop(void)
             {
                 msg_t msg;
                 msg.header.target      = result.result_table[0]->id;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 time_luos_t time       = TimeOD_TimeFrom_s(0.5f);
                 TimeOD_TimeToMsg(&time, &msg);
                 while (Luos_SendMsg(app, &msg) != SUCCEED)
@@ -86,7 +86,7 @@ void AlarmController_Loop(void)
                 msg.header.cmd         = PARAMETERS;
                 msg.header.size        = sizeof(imu_report_t);
                 msg.header.target      = result.result_table[0]->id;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 memcpy(msg.data, &report, sizeof(imu_report_t));
                 while (Luos_SendMsg(app, &msg) != SUCCEED)
                 {
@@ -126,7 +126,7 @@ void AlarmController_Loop(void)
             {
                 msg_t msg;
                 msg.header.target      = result.result_table[0]->id;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 msg.header.cmd         = IO_STATE;
                 msg.header.size        = 1;
                 msg.data[0]            = 0;
@@ -156,7 +156,7 @@ void AlarmController_Loop(void)
                     }
                     msg_t msg;
                     msg.header.target      = result.result_table[0]->id;
-                    msg.header.target_mode = IDACK;
+                    msg.header.target_mode = SERVICEIDACK;
                     IlluminanceOD_ColorToMsg(&color, &msg);
                     while (Luos_SendMsg(app, &msg) != SUCCEED)
                     {
@@ -175,7 +175,7 @@ void AlarmController_Loop(void)
                     }
                     msg_t msg;
                     msg.header.target      = result.result_table[0]->id;
-                    msg.header.target_mode = IDACK;
+                    msg.header.target_mode = SERVICEIDACK;
                     msg.header.size        = sizeof(uint8_t);
                     msg.header.cmd         = IO_STATE;
                     msg.data[0]            = horn;

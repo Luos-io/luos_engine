@@ -94,7 +94,7 @@ void LedStripPosition_Loop(void)
                 // It's important to setting it each time.
                 msg_t msg;
                 msg.header.target      = result.result_table[0]->id;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 time_luos_t time       = TimeOD_TimeFrom_ms(MAX_DISTANCE_UPDATE_MS);
                 TimeOD_TimeToMsg(&time, &msg);
                 msg.header.cmd = UPDATE_PUB;
@@ -170,7 +170,7 @@ static void LedStripPosition_MsgHandler(service_t *service, msg_t *msg)
     {
         // motor application asks which position of the led_strip is lightened - respond
         msg_t pub_msg;
-        pub_msg.header.target_mode = ID;
+        pub_msg.header.target_mode = SERVICEID;
         pub_msg.header.target      = msg->header.source;
         pub_msg.header.cmd         = SET_CMD;
         pub_msg.header.size        = 1;
@@ -347,7 +347,7 @@ void distance_based_display(int led_strip_id)
     }
     // send the created image to the led_strip
     msg_t msg;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.target      = led_strip_id;
     msg.header.cmd         = COLOR;
     Luos_SendData(app, &msg, &image[0], sizeof(color_t) * LED_NUMBER);
@@ -402,7 +402,7 @@ bool detection_display(int led_strip_id)
     }
     // send the created image to the led_strip
     msg_t msg;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.target      = led_strip_id;
     msg.header.cmd         = COLOR;
     Luos_SendData(app, &msg, &image[0], sizeof(color_t) * LED_NUMBER);
@@ -506,7 +506,7 @@ void motor_copy_display(int led_strip_id)
     }
     // send the created image to the led_strip
     msg_t msg;
-    msg.header.target_mode = IDACK;
+    msg.header.target_mode = SERVICEIDACK;
     msg.header.target      = led_strip_id;
     msg.header.cmd         = COLOR;
     Luos_SendData(app, &msg, &image[0], sizeof(color_t) * LED_NUMBER);

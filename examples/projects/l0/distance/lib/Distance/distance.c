@@ -64,7 +64,7 @@ static void Distance_MsgHandler(service_t *service, msg_t *msg)
         {
             msg_t pub_msg;
             // dist measurement ok
-            pub_msg.header.target_mode = ID;
+            pub_msg.header.target_mode = SERVICEID;
             pub_msg.header.target      = msg->header.source;
             LinearOD_PositionToMsg(&dist, &pub_msg);
             new_data_ready = false;

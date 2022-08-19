@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file lcd_drv
  * @brief This is a driver example for an LCD display. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/Arduino-Luos-Biometric-Security-System
  * @author MarieBidouille
@@ -29,17 +29,17 @@ extern "C"
  * Variables
  ******************************************************************************/
 #ifdef RW_PIN
-#ifdef D4_PIN &&D5_PIN &&D6_PIN &&D7_PIN
+    #ifdef D4_PIN &&D5_PIN &&D6_PIN &&D7_PIN
 LiquidCrystal mydisplay(RS_PIN, RW_PIN, EN_PIN, D0_PIN, D1_PIN, D2_PIN, D3_PIN, D4_PIN, D5_PIN, D6_PIN, D7_PIN);
-#else
+    #else
 LiquidCrystal mydisplay(RS_PIN, EN_PIN, D0_PIN, D1_PIN, D2_PIN, D3_PIN);
-#endif
+    #endif
 #else
-#ifdef D7_PIN
+    #ifdef D7_PIN
 LiquidCrystal mydisplay(RS_PIN, EN_PIN, D0_PIN, D1_PIN, D2_PIN, D3_PIN, D4_PIN, D5_PIN, D6_PIN, D7_PIN);
-#else
+    #else
 LiquidCrystal mydisplay(RS_PIN, EN_PIN, D0_PIN, D1_PIN, D2_PIN, D3_PIN);
-#endif
+    #endif
 #endif
 
 /*******************************************************************************

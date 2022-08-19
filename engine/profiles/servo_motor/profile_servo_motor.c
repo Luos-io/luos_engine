@@ -1,10 +1,15 @@
+/******************************************************************************
+ * @file profile_motor
+ * @brief servo_motor profile
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "profile_servo_motor.h"
 #include "luos_hal.h"
 
 /******************************************************************************
- * @brief Initilization function
- * @param service the target service
- * @param msg the received message
+ * @brief Initialization function
+ * @param handler : Pointer the servo motor handler to initialize
  * @return None
  ******************************************************************************/
 void ProfileServo_Init(void *handler)
@@ -18,9 +23,9 @@ void ProfileServo_Init(void *handler)
 }
 
 /******************************************************************************
- * @brief function converting Luos messages into data and reverse.
- * @param service the target service
- * @param msg the received message
+ * @brief Function converting Luos messages into data and reverse.
+ * @param service : Service the target service
+ * @param msg : The received message
  * @return None
  ******************************************************************************/
 void ProfileServo_Handler(service_t *service, msg_t *msg)
@@ -265,8 +270,8 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
 
 /******************************************************************************
  * @brief Link profile to the general profile handler
- * @param profile_mode HEAD / CONNECT
- * @param profile data structure
+ * @param profile_mode : HEAD / CONNECT
+ * @param profile : profile data structure
  * @return None
  ******************************************************************************/
 void ProfileServo_link(uint8_t profile_mode, profile_servo_motor_t *profile_servo_motor)
@@ -280,10 +285,10 @@ void ProfileServo_link(uint8_t profile_mode, profile_servo_motor_t *profile_serv
 
 /******************************************************************************
  * @brief Create a service with a linked profile
- * @param profile data structure
- * @param callback used by the service
- * @param alias
- * @param revision
+ * @param profile : Profile data structure
+ * @param callback : Callback used by the service
+ * @param alias : Alias for the service (15 caracters max string)
+ * @param revision : FW for the service (tab[MajorVersion,MinorVersion,Patch])
  * @return service pointer
  ******************************************************************************/
 service_t *ProfileServo_CreateService(profile_servo_motor_t *profile_servo_motor, SERVICE_CB callback, const char *alias, revision_t revision)

@@ -26,7 +26,6 @@ PortState_t Port_ExpectedState = POKE;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-
 _CRITICAL static void PortMng_Reset(void);
 /******************************************************************************
  * @brief init the portManager state machine
@@ -46,6 +45,7 @@ _CRITICAL void PortMng_Init(void)
  * @brief PTP interrupt handler
  * @param port id
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
 {
@@ -71,9 +71,9 @@ _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
     }
 }
 /******************************************************************************
- * @brief Poke
+ * @brief Poke a PTP to detect next node on the line
  * @param port id
- * @return None
+ * @return true if node reply else false
  ******************************************************************************/
 uint8_t PortMng_PokePort(uint8_t PortNbr)
 {
@@ -104,7 +104,7 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     return 0;
 }
 /******************************************************************************
- * @brief detect the next service by poke ptp line
+ * @brief being poked so poke next node to
  * @param None
  * @return true if a port have been poke else false
  ******************************************************************************/
@@ -136,6 +136,7 @@ error_return_t PortMng_PokeNextPort(void)
  * @brief reinit the detection state machine
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void PortMng_Reset(void)
 {

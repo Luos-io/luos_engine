@@ -60,7 +60,7 @@ static void LightSensor_MsgHandler(service_t *service, msg_t *msg)
     {
         msg_t pub_msg;
         // Fill the message infos
-        pub_msg.header.target_mode = ID;
+        pub_msg.header.target_mode = SERVICEID;
         pub_msg.header.target      = msg->header.source;
         // Transform the illuminance value to message format using Luos Object Dictionary
         IlluminanceOD_IlluminanceToMsg((illuminance_t *)&lux, &pub_msg);

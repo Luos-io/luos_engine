@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file robus_utils
- * @brief some tools used to debug
+ * @brief Some tools used to debug
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
@@ -17,9 +17,9 @@
  ******************************************************************************/
 
 /******************************************************************************
- * @brief This function can be redefine by users to manage specifi procedure on assert
- * @param file name as a string
- * @param line number
+ * @brief This function can be redefined by users to manage specific procedure on assert
+ * @param file : File name as a string
+ * @param line : line number
  * @return None
  ******************************************************************************/
 __attribute__((weak)) void node_assert(char *file, uint32_t line)
@@ -29,8 +29,8 @@ __attribute__((weak)) void node_assert(char *file, uint32_t line)
 
 /******************************************************************************
  * @brief Luos assertion management
- * @param file name as a string
- * @param line number
+ * @param file : File name as a string
+ * @param line : Line number
  * @return None
  *  warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/

@@ -17,10 +17,15 @@
  *    GATE_POLLING            | No autorefresh always ask data (more intensive to Luos bandwidth.)
  *    NODETECTION             | Gate not perform a network detection a power up
  *    GATE_REFRESH_TIME_S     | Default refresh Gate recalculate optimal rate at first command
+ *    INIT_TIME               | Delay before first detection, to verify that all boards are connected
  ******************************************************************************/
 
 #ifndef GATE_BUFF_SIZE
-#define GATE_BUFF_SIZE 1024
+    #define GATE_BUFF_SIZE 1024
+#endif
+
+#ifndef INIT_TIME
+    #define INIT_TIME 150
 #endif
 
 #define GATE_REFRESH_TIME_S 0.05f

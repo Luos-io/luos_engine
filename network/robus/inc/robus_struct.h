@@ -32,7 +32,7 @@ typedef enum
 typedef struct __attribute__((__packed__))
 {
     uint8_t rx_msg_stack_ratio;
-    uint8_t luos_stack_ratio;
+    uint8_t engine_msg_stack_ratio;
     uint8_t tx_msg_stack_ratio;
     uint8_t buffer_occupation_ratio;
     uint8_t msg_drop_number;
@@ -47,13 +47,16 @@ typedef struct __attribute__((__packed__))
  */
 typedef enum
 {
-    ID,        /*!< Unique or virtual ID, used to send something to only one service. */
-    IDACK,     /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
-    TYPE,      /*!< Type mode, used to send something to all service of the same type. */
-    BROADCAST, /*!< Broadcast mode, used to send something to everybody. */
-    TOPIC,     /*!< Multicast mode, used to send something to multiple services. */
-    NODEID,    /*!< Node mode, used to send something to all services of a node. */
-    NODEIDACK  /*!< Node mode with reception Acknoledgment (ACK). */
+    SERVICEID,    /*!< Unique or virtual ID, used to send something to only one service. */
+    SERVICEIDACK, /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
+    TYPE,         /*!< Type mode, used to send something to all service of the same type. */
+    BROADCAST,    /*!< Broadcast mode, used to send something to everybody. */
+    TOPIC,        /*!< Multicast mode, used to send something to multiple services. */
+    NODEID,       /*!< Node mode, used to send something to all services of a node. */
+    NODEIDACK,    /*!< Node mode with reception Acknoledgment (ACK). */
+
+    ID    = SERVICEID,   /*!< This define is deprecated, please use SERVICEID instead. */
+    IDACK = SERVICEIDACK /*!< This define is deprecated, please use SERVICEIDACK instead. */
 } target_mode_t;
 
 /* This structure is used specify data and destination of datas.

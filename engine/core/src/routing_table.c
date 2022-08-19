@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file routingTable
- * @brief routing table descrption function
+ * @brief routing table description function
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
@@ -41,8 +41,8 @@ static void RoutingTB_SendEndDetection(service_t *service);
 
 /******************************************************************************
  * @brief  Return an id from alias
- * @param pointer to alias
- * @return ID or Error
+ * @param alias : Pointer to alias
+ * @return ID, or 0 if error
  ******************************************************************************/
 uint16_t RoutingTB_IDFromAlias(char *alias)
 {
@@ -63,8 +63,8 @@ uint16_t RoutingTB_IDFromAlias(char *alias)
 }
 /******************************************************************************
  * @brief  Return a Nodeid from service id
- * @param id of service
- * @return NODEID or Error
+ * @param id : Id of service
+ * @return NODEID, or 0 if error
  ******************************************************************************/
 uint16_t RoutingTB_NodeIDFromID(uint16_t id)
 {
@@ -79,8 +79,8 @@ uint16_t RoutingTB_NodeIDFromID(uint16_t id)
 }
 /******************************************************************************
  * @brief  Return service Alias from ID
- * @param id service look at
- * @return pointer to string or Error
+ * @param id : Id service look at
+ * @return Pointer to string, , or 0 if error
  ******************************************************************************/
 char *RoutingTB_AliasFromId(uint16_t id)
 {
@@ -97,9 +97,9 @@ char *RoutingTB_AliasFromId(uint16_t id)
     return (char *)0;
 }
 /******************************************************************************
- * @brief  return bigest service ID in list
+ * @brief  Return bigest service ID in list
  * @param None
- * @return ID
+ * @return Bigest service ID
  ******************************************************************************/
 uint16_t RoutingTB_BigestID(void)
 {
@@ -117,9 +117,9 @@ uint16_t RoutingTB_BigestID(void)
     return max_id;
 }
 /******************************************************************************
- * @brief  return bigest node ID in list
+ * @brief  Return bigest node ID in list
  * @param None
- * @return ID
+ * @return Bigest node ID
  ******************************************************************************/
 static uint16_t RoutingTB_BigestNodeID(void)
 {
@@ -138,9 +138,9 @@ static uint16_t RoutingTB_BigestNodeID(void)
 }
 
 /******************************************************************************
- * @brief  get Index of service on the routing table
- * @param routing table id
- * @return index
+ * @brief  Get Index of service on the routing table
+ * @param id : Routing table id
+ * @return Index
  ******************************************************************************/
 uint16_t RoutingTB_GetServiceIndex(uint16_t id)
 {
@@ -157,7 +157,7 @@ uint16_t RoutingTB_GetServiceIndex(uint16_t id)
 // ********************* routing_table management tools ************************
 
 /******************************************************************************
- * @brief compute entry number
+ * @brief Compute RTB entry number
  * @param None
  * @return None
  ******************************************************************************/
@@ -179,9 +179,9 @@ void RoutingTB_ComputeRoutingTableEntryNB(void)
     last_routing_table_entry = MAX_RTB_ENTRY - 1;
 }
 /******************************************************************************
- * @brief manage service name increment to never have same alias
- * @param alias to change
- * @param nb to add
+ * @brief Manage service name increment to never have same alias
+ * @param alias : Alias to change
+ * @param num : Number to add
  * @return None
  ******************************************************************************/
 static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
@@ -213,9 +213,9 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
     sprintf(alias, "%s%d", alias_copy, num);
 }
 /******************************************************************************
- * @brief time out to receive en route table from
- * @param service receive
- * @param intro msg in route table
+ * @brief Time out to receive en route table from
+ * @param service : Service receive
+ * @param intro_msg : into route table message
  * @return None
  ******************************************************************************/
 __attribute__((weak)) bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
@@ -237,16 +237,16 @@ __attribute__((weak)) bool RoutingTB_WaitRoutingTable(service_t *service, msg_t 
 }
 /******************************************************************************
  * @brief Generate Complete route table with local route table receive
- * @param service in node
- * @param node number on network
+ * @param service : Service in node
+ * @param nb_node : Node number on network
  * @return None
  ******************************************************************************/
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
 {
     // Asks for introduction for every found node (even the one detecting).
-    uint16_t try_nb       = 0;
-    uint16_t last_node_id = RoutingTB_BigestNodeID();
-    uint16_t last_cont_id = 0;
+    uint16_t try_nb          = 0;
+    uint16_t last_node_id    = RoutingTB_BigestNodeID();
+    uint16_t last_service_id = 0;
     msg_t intro_msg;
     while ((last_node_id < nb_node) && (try_nb < nb_node))
     {
@@ -257,8 +257,8 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
         intro_msg.header.target = last_node_id + 1;
         // set the first service id it can use
         intro_msg.header.size = 2;
-        last_cont_id          = RoutingTB_BigestID() + 1;
-        memcpy(intro_msg.data, &last_cont_id, sizeof(uint16_t));
+        last_service_id       = RoutingTB_BigestID() + 1;
+        memcpy(intro_msg.data, &last_service_id, sizeof(uint16_t));
         // Ask to introduce and wait for a reply
         if (!RoutingTB_WaitRoutingTable(service, &intro_msg))
         {
@@ -295,8 +295,8 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
 }
 /******************************************************************************
  * @brief Send the complete route table to each node on the network
- * @param service who send
- * @param node number on network
+ * @param service : Service who send
+ * @param nb_node : number of nodes on network
  * @return None
  ******************************************************************************/
 static void RoutingTB_Share(service_t *service, uint16_t nb_node)
@@ -320,7 +320,7 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 
 /******************************************************************************
  * @brief Send a message to indicate the end of the detection
- * @param service who send
+ * @param service : Service who send
  * @return None
  ******************************************************************************/
 void RoutingTB_SendEndDetection(service_t *service)
@@ -344,7 +344,7 @@ void RoutingTB_SendEndDetection(service_t *service)
  * @brief Detect all services and create a route table with it.
  * If multiple services have the same name it will be changed with a number in it
  * Automatically at the end this function create a list of sensors id
- * @param service who send
+ * @param service : Service who send
  * @return None
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
@@ -367,9 +367,9 @@ void RoutingTB_DetectServices(service_t *service)
     Luos_ResetStatistic();
 }
 /******************************************************************************
- * @brief entry in routable node with associate service
- * @param route table
- * @param node structure
+ * @brief Entry in routable node with associate service
+ * @param entry : Route table
+ * @param node : Node structure
  * @return None
  ******************************************************************************/
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
@@ -381,9 +381,9 @@ void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
     memcpy(entry->unmap_data, node->unmap, sizeof(node_t));
 }
 /******************************************************************************
- * @brief entry in routable service associate to a node
- * @param route table
- * @param service in node
+ * @brief Entry in routable service associate to a node
+ * @param entry : Route table
+ * @param service : Service in node
  * @return None
  ******************************************************************************/
 void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service)
@@ -397,8 +397,8 @@ void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *s
     }
 }
 /******************************************************************************
- * @brief remove an entire node
- * @param route table
+ * @brief Remove an entire node
+ * @param nodeid : Node id to remove from RTB
  * @return None
  ******************************************************************************/
 void RoutingTB_RemoveNode(uint16_t nodeid)
@@ -424,8 +424,8 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
     }
 }
 /******************************************************************************
- * @brief remove an entry from routing_table
- * @param id of service
+ * @brief Remove an entry from routing_table
+ * @param id : Id of service
  * @return None
  ******************************************************************************/
 void RoutingTB_RemoveOnRoutingTable(uint16_t id)
@@ -444,7 +444,7 @@ void RoutingTB_RemoveOnRoutingTable(uint16_t id)
     }
 }
 /******************************************************************************
- * @brief eras erouting_table
+ * @brief Erase routing_table
  * @param None
  * @return None
  ******************************************************************************/
@@ -455,7 +455,7 @@ void RoutingTB_Erase(void)
     last_routing_table_entry = 0;
 }
 /******************************************************************************
- * @brief get routing_table
+ * @brief Get routing_table
  * @param None
  * @return route table
  ******************************************************************************/
@@ -464,18 +464,18 @@ routing_table_t *RoutingTB_Get(void)
     return routing_table;
 }
 /******************************************************************************
- * @brief return the last ID registered into the routing_table
+ * @brief Return the last ID registered into the routing_table
  * @param None
- * @return last service ID
+ * @return Last service ID
  ******************************************************************************/
 uint16_t RoutingTB_GetLastService(void)
 {
     return (uint16_t)last_service;
 }
 /******************************************************************************
- * @brief return the last ID registered into the routing_table
- * @param index of service
- * @return Last entry
+ * @brief Return the last ID registered into the routing_table
+ * @param None
+ * @return Last Id
  ******************************************************************************/
 uint16_t RoutingTB_GetLastEntry(void)
 {
@@ -483,6 +483,12 @@ uint16_t RoutingTB_GetLastEntry(void)
 }
 
 /******************************** Result Table ********************************/
+/******************************************************************************
+ * @brief Check if result is in routing table
+ * @param result : Pointer to search result structure
+ * @return SUCCEED : If the result address is available, else FAILED 
+ ******************************************************************************/
+
 error_return_t RTFilter_InitCheck(search_result_t *result)
 {
     // check if we fund the address of the result in routing table
@@ -494,7 +500,7 @@ error_return_t RTFilter_InitCheck(search_result_t *result)
 }
 /******************************************************************************
  * @brief Initialize the Result table pointers
- * @param index of service
+ * @param result : Pointer to result table
  * @return Last entry
  ******************************************************************************/
 search_result_t *RTFilter_Reset(search_result_t *result)
@@ -512,9 +518,9 @@ search_result_t *RTFilter_Reset(search_result_t *result)
     return result;
 }
 /******************************************************************************
- * @brief find the service with a specific id
- * @param previous result research structure
- * @param id that we want to find
+ * @brief Find the service with a specific Id
+ * @param result : Pointer to previous result research structure
+ * @param id : Id that we want to find
  * @return new result research structure with the entry of the demanded id
  ******************************************************************************/
 search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
@@ -545,10 +551,10 @@ search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
     return (result);
 }
 /******************************************************************************
- * @brief search all the services with the same type
- * @param previous result research structure
- * @param type that we want to find
- * @return new result research structure
+ * @brief Search all the services with the same type
+ * @param result : Pointer to previous result research structure
+ * @param type : Type that we want to find
+ * @return New result research structure
  ******************************************************************************/
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
 {
@@ -578,10 +584,10 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
     return (result);
 }
 /******************************************************************************
- * @brief search all the services of the same node
- * @param previous result research structure
- * @param node_id of the node that we want to find
- * @return new result research structure
+ * @brief Search all the services of the same node
+ * @param result : Pointer to previous result research structure
+ * @param node_id : Node Id of the node that we want to find
+ * @return New result research structure
  ******************************************************************************/
 search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
 {
@@ -642,9 +648,9 @@ search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
 }
 
 /******************************************************************************
- * @brief find the service info with a service pointer
- * @param previous result research structure
- * @param service pointer to the service
+ * @brief Find the service info with a service pointer
+ * @param result : Pointer to previous result research structure
+ * @param service : Service pointer to the service
  * @return new result research structure with the entry of the demanded service
  ******************************************************************************/
 search_result_t *RTFilter_Service(search_result_t *result, service_t *service)

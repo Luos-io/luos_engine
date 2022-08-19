@@ -11,9 +11,9 @@
  * Definitions
  ******************************************************************************/
 #ifdef CONFIG_IDF_TARGET_ESP32
-#define LED_GPIO (GPIO_NUM_18)
+    #define LED_GPIO (GPIO_NUM_18)
 #else
-#define LED_GPIO (GPIO_NUM_10)
+    #define LED_GPIO (GPIO_NUM_10)
 #endif
 /*******************************************************************************
  * Variables
