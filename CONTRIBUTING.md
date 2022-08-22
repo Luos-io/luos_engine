@@ -121,7 +121,7 @@ There are many resources to guide you into making clean contribution on the Inte
 </blockquote>
 
 <blockquote>ℹ️ Info<br />
-Luos is open source. Keep in mind that any contribution you make will be under the <a href="http://choosealicense.com/licenses/mit/" target="_blank">MIT Software License</a> for examples, and the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0 Licence</a> for Luos engine. In short, when you submit code changes to the project, your submissions are placed under the same license that the one covering the project. 
+Luos is open source. Keep in mind that any contribution you make will be under the <a href="http://choosealicense.com/licenses/mit/" target="_blank">MIT Software License</a> for examples, and the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0 Licence</a> for Luos engine. In short, when you submit code to the project, you agree with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/) (CLA) and your submission is placed under the same license that the one covering the project. 
 </blockquote>
 
 People love thorough bug reports or feature requests. They tend to have:
