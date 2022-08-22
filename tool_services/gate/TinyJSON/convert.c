@@ -404,6 +404,17 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         msg->header.size = sizeof(control_t);
         Luos_SendMsg(service, msg);
     }
+    // Pressure
+    item = json_getProperty(jobj, "pressure");
+    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    {
+        // this should be a function because it is frequently used
+        data = (float)json_getReal(item);
+        memcpy(msg->data, &data, sizeof(data));
+        msg->header.cmd  = PRESSURE;
+        msg->header.size = sizeof(data);
+        Luos_SendMsg(service, msg);
+    }
     // Color
     item = json_getProperty(jobj, "color");
     if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
@@ -660,6 +671,10 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
         case TEMPERATURE:
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"temperature\":%s,", Convert_Float(fdata));
+            break;
+        case PRESSURE:
+            memcpy(&fdata, msg->data, sizeof(float));
+            sprintf(data, "\"pressure\":%s,", Convert_Float(fdata));
             break;
         case FORCE:
             memcpy(&fdata, msg->data, sizeof(float));
@@ -1016,6 +1031,9 @@ const char *Convert_StringFromType(luos_type_t type)
             break;
         case PIPE_TYPE:
             return "Pipe";
+            break;
+        case PRESSURE_TYPE:
+            return "Pressure";
             break;
         default:
             return "Unknown";
