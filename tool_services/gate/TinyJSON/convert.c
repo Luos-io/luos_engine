@@ -488,12 +488,18 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
     }
     // reinit
     item = json_getProperty(jobj, "reinit");
-    if (item != NULL)
+    if (json_getType(item) == JSON_REAL)
     {
         float reinit_value = (float)json_getReal(item);
         memcpy(msg->data, &reinit_value, sizeof(float));
         msg->header.cmd  = REINIT;
         msg->header.size = sizeof(float);
+        Luos_SendMsg(service, msg);
+    }
+    else if (item != NULL) 
+    {
+        msg->header.cmd  = REINIT;
+        msg->header.size = 0;
         Luos_SendMsg(service, msg);
     }
     // control (play, pause, stop, rec)
