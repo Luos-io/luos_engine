@@ -623,7 +623,7 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
  * @brief Read last message from buffer for a specifig service
  * @param service : Who receives the message we are looking for
  * @param returned_msg : Oldest message of the service
- * @return SUCCEED : If the message is passed to the user, else FAILED 
+ * @return SUCCEED : If the message is passed to the user, else FAILED
  ******************************************************************************/
 error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg)
 {
@@ -979,23 +979,6 @@ error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t 
     return SUCCEED;
 }
 /******************************************************************************
- * @brief Send network bauderate
- * @param service : service sending request
- * @param baudrate : Baudrate value to set
- * @return None
- ******************************************************************************/
-void Luos_SendBaudrate(service_t *service, uint32_t baudrate)
-{
-    msg_t msg;
-    memcpy(msg.data, &baudrate, sizeof(uint32_t));
-    msg.header.config      = BASE_PROTOCOL;
-    msg.header.target_mode = BROADCAST;
-    msg.header.target      = BROADCAST_VAL;
-    msg.header.cmd         = SET_BAUDRATE;
-    msg.header.size        = sizeof(uint32_t);
-    Robus_SendMsg(service->ll_service, &msg);
-}
-/******************************************************************************
  * @brief Set Id of a service trough the network
  * @param service : Service sending request
  * @param target_mode
@@ -1041,15 +1024,6 @@ uint32_t Luos_GetSystick(void)
 error_return_t Luos_TxComplete(void)
 {
     return MsgAlloc_TxAllComplete();
-}
-/******************************************************************************
- * @brief Flush the entire Luos msg buffer
- * @param None
- * @return None
- ******************************************************************************/
-void Luos_Flush(void)
-{
-    Robus_Flush();
 }
 /******************************************************************************
  * @brief Luos clear statistic

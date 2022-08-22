@@ -503,20 +503,6 @@ node_t *Robus_GetNode(void)
     return (node_t *)&ctx.node;
 }
 /******************************************************************************
- * @brief Flush the entire msg buffer
- * @param None
- * @return None
- ******************************************************************************/
-void Robus_Flush(void)
-{
-    while (ctx.tx.lock != false)
-        ;
-    LuosHAL_SetIrqState(false);
-    MsgAlloc_Init(NULL);
-    LuosHAL_SetIrqState(true);
-}
-
-/******************************************************************************
  * @brief ID Mask calculation
  * @param ID and Number of service
  * @return None
