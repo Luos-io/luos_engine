@@ -90,6 +90,6 @@
  *    INIT_TIME                 |              150           | Wait init time before first detection
  * ******************************************************************************/
 
-#define DEFAULTBAUDRATE    500000
+#define DEFAULTBAUDRATE 500000
 
 #endif /* _NODE_CONFIG_H_ */
