@@ -11,6 +11,9 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifndef PIPE_SERIAL_BAUDRATE
+    #define PIPE_SERIAL_BAUDRATE 1000000
+#endif
 #ifndef PIPE_TO_LUOS_BUFFER_SIZE
     #define PIPE_TO_LUOS_BUFFER_SIZE 1024
 #endif

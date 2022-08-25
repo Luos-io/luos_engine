@@ -38,7 +38,7 @@ extern "C"
  ******************************************************************************/
 void PipeCom_Init(void)
 {
-    Serial.begin(1000000);
+    Serial.begin(PIPE_SERIAL_BAUDRATE);
 } /******************************************************************************
    * @brief loop must be call in project loop
    * @param None
