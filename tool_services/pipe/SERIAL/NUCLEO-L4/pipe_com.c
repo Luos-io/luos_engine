@@ -61,7 +61,7 @@ void PipeCom_Init(void)
     LL_USART_InitTypeDef USART_InitStruct;
     // Initialise USART3
     LL_USART_Disable(PIPE_COM);
-    USART_InitStruct.BaudRate            = 1000000;
+    USART_InitStruct.BaudRate            = PIPE_SERIAL_BAUDRATE;
     USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_8B;
     USART_InitStruct.StopBits            = LL_USART_STOPBITS_1;
     USART_InitStruct.Parity              = LL_USART_PARITY_NONE;
