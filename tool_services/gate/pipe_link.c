@@ -12,8 +12,8 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint16_t pipe_id = 0;
-void (*PipeDirectPutSample)(uint8_t *data, uint16_t size);
+uint16_t pipe_id                         = 0;
+streaming_channel_t *PipeDirectPutSample = NULL;
 
 /*******************************************************************************
  * Function
@@ -40,7 +40,7 @@ void PipeLink_Send(service_t *service, void *data, uint32_t size)
     {
         // We have a localhost pipe
         // Copy the data directly into the local streaming channel without passing by Luos.
-        PipeDirectPutSample(data, size);
+        Stream_PutSample(PipeDirectPutSample, data, size);
         // Send a void set_cmd to strat data transmission on pipe.
         msg.header.size = 0;
         Luos_SendMsg(service, &msg);

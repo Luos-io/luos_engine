@@ -12,9 +12,8 @@ extern "C"
 {
 #endif
 
-#include <stdbool.h>
 #include "pipe_com.h"
-#include "luos_utils.h"
+#include "../serial_protocol.h"
 
 #ifdef __cplusplus
 }
@@ -39,55 +38,44 @@ extern "C"
 void PipeCom_Init(void)
 {
     Serial.begin(PIPE_SERIAL_BAUDRATE);
-} /******************************************************************************
-   * @brief loop must be call in project loop
-   * @param None
-   * @return None
-   ******************************************************************************/
+    SerialProtocol_Init();
+}
+/******************************************************************************
+ * @brief loop must be call in project loop
+ * @param None
+ * @return None
+ ******************************************************************************/
 void PipeCom_Loop(void)
 {
-    uint16_t size = 0;
-    uint8_t data  = 0;
+    uint8_t data = 0;
     while (Serial.available() > 0)
     {
         data = Serial.read();
-        Stream_PutSample(get_P2L_StreamChannel(), &data, 1);
+        Stream_PutSample(Pipe_GetRxStreamChannel(), &data, 1);
     }
-    // Check if we need to transmit
-    if (PipeCom_SendL2PPending() == false)
+}
+/******************************************************************************
+ * @brief Check if a message is available
+ * @param None
+ * @return None
+ ******************************************************************************/
+uint8_t PipeCom_Receive(uint16_t *size)
+{
+    return SerialProtocol_IsMsgComplete(size);
+}
+/******************************************************************************
+ * @brief PipeCom_Send
+ * @param None
+ * @return None
+ ******************************************************************************/
+void PipeCom_Send(void)
+{
+    SerialProtocol_CreateTxMsg();
+    uint16_t size = SerialProtocol_GetSizeToSend();
+    while (size > 0)
     {
-        streaming_channel_t *stream_channel = get_L2P_StreamChannel();
-        size                                = Stream_GetAvailableSampleNB(stream_channel);
-        if (size != 0)
-        {
-            PipeCom_SendL2P((uint8_t *)stream_channel->sample_ptr, size);
-            Stream_RmvAvailableSampleNB(stream_channel, size);
-        }
+        Serial.write(SerialProtocol_GetDataToSend(), size);
+        Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
+        size = SerialProtocol_GetSizeToSend();
     }
-}
-/******************************************************************************
- * @brief check if pipe is sending
- * @param None
- * @return true/false
- ******************************************************************************/
-volatile uint8_t PipeCom_SendL2PPending(void)
-{
-    return false;
-}
-/******************************************************************************
- * @brief init must be call in project init
- * @param None
- * @return None
- ******************************************************************************/
-void PipeCom_ReceiveP2L(void)
-{
-}
-/******************************************************************************
- * @brief PipeCom_SendL2P
- * @param None
- * @return None
- ******************************************************************************/
-void PipeCom_SendL2P(uint8_t *data, uint16_t size)
-{
-    Serial.write(data, size);
 }

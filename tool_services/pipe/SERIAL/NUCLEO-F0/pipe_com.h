@@ -7,8 +7,7 @@
 #ifndef PIPE_COM_H
 #define PIPE_COM_H
 
-#include "pipe_buffer.h"
-#include "streaming.h"
+#include "_pipe.h"
 
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_ll_usart.h"
@@ -35,21 +34,21 @@
 #define PIPE_COM_IRQ            USART2_IRQn
 #define PIPE_COM_IRQHANDLER()   USART2_IRQHandler()
 
-#define P2L_DMA_CLOCK_ENABLE()    __HAL_RCC_DMA1_CLK_ENABLE()
-#define P2L_DMA                   DMA1
-#define P2L_DMA_CHANNEL           LL_DMA_CHANNEL_5
-#define P2L_DMA_REQUEST           LL_SYSCFG_USART2_RMP_DMA1CH54
-#define P2L_DMA_TC(P2L_DMA)       LL_DMA_IsActiveFlag_TC5(P2L_DMA)
-#define P2L_DMA_CLEAR_TC(P2L_DMA) LL_DMA_ClearFlag_TC5(P2L_DMA)
+#define PIPE_RX_DMA_CLOCK_ENABLE()        __HAL_RCC_DMA1_CLK_ENABLE()
+#define PIPE_RX_DMA                       DMA1
+#define PIPE_RX_DMA_CHANNEL               LL_DMA_CHANNEL_5
+#define PIPE_RX_DMA_REQUEST               LL_SYSCFG_USART2_RMP_DMA1CH54
+#define PIPE_RX_DMA_TC(PIPE_RX_DMA)       LL_DMA_IsActiveFlag_TC5(PIPE_RX_DMA)
+#define PIPE_RX_DMA_CLEAR_TC(PIPE_RX_DMA) LL_DMA_ClearFlag_TC5(PIPE_RX_DMA)
 
-#define L2P_DMA_CLOCK_ENABLE()    __HAL_RCC_DMA1_CLK_ENABLE()
-#define L2P_DMA                   DMA1
-#define L2P_DMA_CHANNEL           LL_DMA_CHANNEL_4
-#define L2P_DMA_REQUEST           LL_SYSCFG_USART2_RMP_DMA1CH54
-#define L2P_DMA_TC(L2P_DMA)       LL_DMA_IsActiveFlag_TC4(L2P_DMA)
-#define L2P_DMA_CLEAR_TC(L2P_DMA) LL_DMA_ClearFlag_TC4(L2P_DMA)
-#define L2P_DMA_IRQ               DMA1_Channel4_5_6_7_IRQn
-#define L2P_DMA_IRQHANDLER()      DMA1_Channel4_5_6_7_IRQHandler()
+#define PIPE_TX_DMA_CLOCK_ENABLE()        __HAL_RCC_DMA1_CLK_ENABLE()
+#define PIPE_TX_DMA                       DMA1
+#define PIPE_TX_DMA_CHANNEL               LL_DMA_CHANNEL_4
+#define PIPE_TX_DMA_REQUEST               LL_SYSCFG_USART2_RMP_DMA1CH54
+#define PIPE_TX_DMA_TC(PIPE_TX_DMA)       LL_DMA_IsActiveFlag_TC4(PIPE_TX_DMA)
+#define PIPE_TX_DMA_CLEAR_TC(PIPE_TX_DMA) LL_DMA_ClearFlag_TC4(PIPE_TX_DMA)
+#define PIPE_TX_DMA_IRQ                   DMA1_Channel4_5_6_7_IRQn
+#define PIPE_TX_DMA_IRQHANDLER()          DMA1_Channel4_5_6_7_IRQHandler()
 
 /*******************************************************************************
  * Variables
@@ -60,9 +59,7 @@
  ******************************************************************************/
 void PipeCom_Init(void);
 void PipeCom_Loop(void);
-void PipeCom_SendL2P(uint8_t *data, uint16_t size);
-volatile uint8_t PipeCom_SendL2PPending(void);
-streaming_channel_t *get_L2P_StreamChannel(void);
-streaming_channel_t *get_P2L_StreamChannel(void);
+uint8_t PipeCom_Receive(uint16_t *size);
+void PipeCom_Send(void);
 
 #endif /* PIPE_H */
