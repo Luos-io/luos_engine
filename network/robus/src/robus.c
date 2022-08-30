@@ -159,6 +159,10 @@ ll_service_t *Robus_ServiceCreate(uint16_t type)
     ctx.ll_service_table[ctx.ll_service_number].ll_stat.max_retry = 0;
     // Clear topic number
     ctx.ll_service_table[ctx.ll_service_number].last_topic_position = 0;
+    for (uint16_t i = 0; i < LAST_TOPIC; i++)
+    {
+        ctx.ll_service_table[ctx.ll_service_number].topic_list[i] = 0;
+    }
     // Return the freshly initialized ll_service pointer.
     return (ll_service_t *)&ctx.ll_service_table[ctx.ll_service_number++];
 }
@@ -618,6 +622,10 @@ error_return_t Robus_TopicSubscribe(ll_service_t *ll_service, uint16_t topic_id)
     // add 1 to the bit corresponding to the topic in multicast mask
     ctx.TopicMask[(topic_id / 8)] |= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
     // add multicast topic to service
+    if (ll_service == 0)
+    {
+        return Topic_Subscribe((ll_service_t *)(&ctx.ll_service_table[0]), topic_id);
+    }
     return Topic_Subscribe(ll_service, topic_id);
 }
 /******************************************************************************
@@ -631,7 +639,14 @@ error_return_t Robus_TopicUnsubscribe(ll_service_t *ll_service, uint16_t topic_i
     error_return_t err;
 
     // delete topic from service list
-    err = Topic_Unsubscribe(ll_service, topic_id);
+    if (ll_service == 0)
+    {
+        err = Topic_Unsubscribe((ll_service_t *)(&ctx.ll_service_table[0]), topic_id);
+    }
+    else
+    {
+        err = Topic_Unsubscribe(ll_service, topic_id);
+    }
 
     if (err == SUCCEED)
     {
