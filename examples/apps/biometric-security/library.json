@@ -9,6 +9,6 @@
     },
     "licence": "MIT",
     "dependencies": {
-        "luos_engine": "^2.6.0"
+        "luos/luos_engine": "^2.6.0"
     }
 }
