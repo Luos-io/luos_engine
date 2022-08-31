@@ -1,9 +1,15 @@
+/******************************************************************************
+ * @file profile_state
+ * @brief state profile
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "profile_state.h"
 
 /******************************************************************************
- * @brief function converting Luos messages into data and reverse.
- * @param service the target service
- * @param msg the received message
+ * @brief Function converting Luos messages into data and reverse.
+ * @param service : Service the target service
+ * @param msg : The received message
  * @return None
  ******************************************************************************/
 void ProfileState_Handler(service_t *service, msg_t *msg)
@@ -48,8 +54,8 @@ void ProfileState_Handler(service_t *service, msg_t *msg)
 
 /******************************************************************************
  * @brief Link profile to the general profile handler
- * @param profile_mode HEAD / CONNECT
- * @param profile data structure
+ * @param profile_mode : HEAD / CONNECT
+ * @param profile : Profile data structure
  * @return None
  ******************************************************************************/
 void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state)
@@ -63,11 +69,11 @@ void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state)
 
 /******************************************************************************
  * @brief Create a service with a linked profile
- * @param profile data structure
- * @param callback used by the service
- * @param alias
- * @param revision
- * @return service pointer
+ * @param profile : Profile data structure
+ * @param callback : Callback used by the service
+ * @param alias : Alias for the service (15 caracters max string)
+ * @param revision : FW for the service (tab[MajorVersion,MinorVersion,Patch])
+ * @return Service pointer
  ******************************************************************************/
 service_t *ProfileState_CreateService(profile_state_t *profile_state, SERVICE_CB callback, const char *alias, revision_t revision)
 {

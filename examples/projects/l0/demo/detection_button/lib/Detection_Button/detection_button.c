@@ -99,7 +99,7 @@ void Setup_button(void)
     {
         msg_t msg;
         msg.header.target      = result.result_table[0]->id;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         // Setup auto update each UPDATE_PERIOD_MS on button
         // This value is resetted on all service at each detection
         // It's important to setting it each time.

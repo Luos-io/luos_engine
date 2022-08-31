@@ -89,104 +89,6 @@ void Convert_DataToLuos(service_t *service, char *data)
         PipeLink_Send(service, "{\"gate\":{}}\n", strlen("{\"gate\":{}}\n"));
         return;
     }
-    if (json_getProperty(root, "baudrate") != NULL)
-    {
-        // create a message to setup the new baudrate
-        json_t const *object = json_getProperty(root, "baudrate");
-        if (json_getType(object) == JSON_INTEGER)
-        {
-            uint32_t baudrate = (float)json_getInteger(object);
-            Luos_SendBaudrate(service, baudrate);
-        }
-        return;
-    }
-    if (json_getProperty(root, "benchmark") != NULL)
-    {
-        // manage benchmark
-        json_t const *parameters = json_getProperty(root, "benchmark");
-        if (json_getType(parameters) == JSON_OBJ)
-        {
-            // Get all parameters
-            uint32_t repetition = (uint32_t)json_getInteger(json_getProperty(parameters, "repetitions"));
-            uint32_t target_id  = (uint32_t)json_getInteger(json_getProperty(parameters, "target"));
-            json_t const *item  = json_getProperty(parameters, "data");
-            uint32_t size       = (uint32_t)json_getInteger(json_getChild(item));
-            if (size > 0)
-            {
-                // find the first \r of the current buf
-                int index = 0;
-                for (index = 0; index < GATE_BUFF_SIZE; index++)
-                {
-                    if (data[index] == '\n')
-                    {
-                        index++;
-                        break;
-                    }
-                }
-                if (index < GATE_BUFF_SIZE - 1)
-                {
-                    // stop sensor polling during benchmark
-                    update_time = 0.0;
-                    DataManager_collect(service);
-                    // create a message from parameters
-                    msg.header.cmd         = REVISION;
-                    msg.header.target_mode = IDACK;
-                    msg.header.target      = target_id;
-                    // save current time
-                    uint32_t begin_systick = Luos_GetSystick();
-                    uint32_t failed_msg_nb = 0;
-                    // Before trying to send anything make sure to finish any transmission
-                    while (Luos_TxComplete() == FAILED)
-                        ;
-                    // Wait 10ms allowing receiving messages to finish
-                    uint32_t tickstart = Luos_GetSystick();
-                    while ((Luos_GetSystick() - tickstart) < 10)
-                        ;
-                    // Flush every messages pending
-                    Luos_Flush();
-                    // To get the number of message failed we will use statistics
-                    // We have to reinit the number of dropped message before start
-                    uint8_t drop_back                                = service->node_statistics->memory.msg_drop_number;
-                    service->node_statistics->memory.msg_drop_number = 0;
-                    uint8_t retry_back                               = *service->ll_service->ll_stat.max_retry;
-                    *service->ll_service->ll_stat.max_retry          = 0;
-                    // send this message multiple time
-                    int i = 0;
-                    for (i = 0; i < repetition; i++)
-                    {
-                        Luos_SendData(service, &msg, &data[index], (unsigned int)size);
-                    }
-                    // Wait transmission end
-                    while (Luos_TxComplete() == FAILED)
-                        ;
-                    // Get the number of failures on transmission
-                    failed_msg_nb = service->node_statistics->memory.msg_drop_number;
-                    // Get the number of retry
-                    // If retry == max retry number consider all messages as lost
-                    if (*service->ll_service->ll_stat.max_retry >= NBR_RETRY)
-                    {
-                        // We failed to transmit this message count all as failed
-                        failed_msg_nb = repetition;
-                    }
-                    service->node_statistics->memory.msg_drop_number = drop_back;
-                    *service->ll_service->ll_stat.max_retry          = retry_back;
-                    uint32_t end_systick                             = Luos_GetSystick();
-                    float data_rate                                  = (float)size * (float)(repetition - failed_msg_nb) / (((float)end_systick - (float)begin_systick) / 1000.0) * 8;
-                    float fail_rate                                  = (float)failed_msg_nb * 100.0 / (float)repetition;
-                    char tx_json[512];
-
-                    sprintf(tx_json, "{\"benchmark\":{\"data_rate\":%s", Convert_Float(data_rate));
-                    sprintf(tx_json, "%s\",\"fail_rate\":%s}}\n", tx_json, Convert_Float(fail_rate));
-                    PipeLink_Send(service, tx_json, strlen(tx_json));
-
-                    // restart sensor polling
-                    update_time = GATE_REFRESH_TIME_S;
-                    DataManager_collect(service);
-                }
-            }
-        }
-        return;
-    }
 
     // bootloader commands
     json_t const *bootloader_json = json_getProperty(root, "bootloader");
@@ -227,7 +129,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
     time_luos_t time;
     float data = 0.0;
     json_t const *item;
-    msg->header.target_mode = IDACK;
+    msg->header.target_mode = SERVICEIDACK;
     msg->header.target      = id;
     //********** global convertion***********
     // ratio
@@ -502,6 +404,17 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         msg->header.size = sizeof(control_t);
         Luos_SendMsg(service, msg);
     }
+    // Pressure
+    item = json_getProperty(jobj, "pressure");
+    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    {
+        // this should be a function because it is frequently used
+        data = (float)json_getReal(item);
+        memcpy(msg->data, &data, sizeof(data));
+        msg->header.cmd  = PRESSURE;
+        msg->header.size = sizeof(data);
+        Luos_SendMsg(service, msg);
+    }
     // Color
     item = json_getProperty(jobj, "color");
     if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
@@ -556,13 +469,6 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         time = TimeOD_TimeFrom_s((float)json_getReal(item));
         TimeOD_TimeToMsg(&time, msg);
         msg->header.cmd = UPDATE_PUB;
-        Luos_SendMsg(service, msg);
-    }
-    // UUID
-    if (json_getProperty(jobj, "uuid") != NULL)
-    {
-        msg->header.cmd  = NODE_UUID;
-        msg->header.size = 0;
         Luos_SendMsg(service, msg);
     }
     // RENAMING
@@ -766,6 +672,10 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"temperature\":%s,", Convert_Float(fdata));
             break;
+        case PRESSURE:
+            memcpy(&fdata, msg->data, sizeof(float));
+            sprintf(data, "\"pressure\":%s,", Convert_Float(fdata));
+            break;
         case FORCE:
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"force\":%s,", Convert_Float(fdata));
@@ -781,14 +691,6 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
         case POWER:
             memcpy(&fdata, msg->data, sizeof(float));
             sprintf(data, "\"power\":%s,", Convert_Float(fdata));
-            break;
-        case NODE_UUID:
-            if (msg->header.size == sizeof(luos_uuid_t))
-            {
-                luos_uuid_t value;
-                memcpy(value.unmap, msg->data, msg->header.size);
-                sprintf(data, "\"uuid\":[%" PRIu32 ",%" PRIu32 ",%" PRIu32 "],", value.uuid[0], value.uuid[1], value.uuid[2]);
-            }
             break;
         case REVISION:
             // clean data to be used as string
@@ -813,7 +715,7 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
                 // create the Json content
                 sprintf(data, "\"luos_statistics\":{\"rx_msg_stack\":%d,\"luos_stack\":%d,\"tx_msg_stack\":%d,\"buffer_occupation\":%d,\"msg_drop\":%d,\"loop_ms\":%d,\"max_retry\":%d},",
                         stat->node_stat.memory.rx_msg_stack_ratio,
-                        stat->node_stat.memory.luos_stack_ratio,
+                        stat->node_stat.memory.engine_msg_stack_ratio,
                         stat->node_stat.memory.tx_msg_stack_ratio,
                         stat->node_stat.memory.buffer_occupation_ratio,
                         stat->node_stat.memory.msg_drop_number,
@@ -1129,6 +1031,9 @@ const char *Convert_StringFromType(luos_type_t type)
             break;
         case PIPE_TYPE:
             return "Pipe";
+            break;
+        case PRESSURE_TYPE:
+            return "Pressure";
             break;
         default:
             return "Unknown";

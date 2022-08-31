@@ -60,7 +60,7 @@ void LuosHAL_Init(void)
 }
 /******************************************************************************
  * @brief Luos HAL general disable IRQ
- * @param None
+ * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
 _CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
@@ -70,7 +70,7 @@ _CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms initialize
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 static void LuosHAL_SystickInit(void)
 {
@@ -79,7 +79,7 @@ static void LuosHAL_SystickInit(void)
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
  * @param None
- * @return tick Counter
+ * @return Tick Counter
  ******************************************************************************/
 _CRITICAL uint32_t LuosHAL_GetSystick(void)
 {
@@ -149,7 +149,7 @@ void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data
 
 /******************************************************************************
  * @brief Set boot mode in shared flash memory
- * @param
+ * @param None
  * @return
  ******************************************************************************/
 _CRITICAL void LuosHAL_SetMode(uint8_t mode)
@@ -158,7 +158,7 @@ _CRITICAL void LuosHAL_SetMode(uint8_t mode)
 
 /******************************************************************************
  * @brief Save node ID in shared flash memory
- * @param Address, node_id
+ * @param node_id
  * @return
  ******************************************************************************/
 _CRITICAL void LuosHAL_SaveNodeID(uint16_t node_id)
@@ -166,8 +166,8 @@ _CRITICAL void LuosHAL_SaveNodeID(uint16_t node_id)
 }
 
 /******************************************************************************
- * @brief software reboot the microprocessor
- * @param
+ * @brief Software reboot the microprocessor
+ * @param None
  * @return
  ******************************************************************************/
 void LuosHAL_Reboot(void)

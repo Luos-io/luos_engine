@@ -20,10 +20,10 @@ void DataManager_collect(service_t *service)
     search_result_t result;
 #ifdef GATE_POLLING
     update_msg.header.cmd         = GET_CMD;
-    update_msg.header.target_mode = ID;
+    update_msg.header.target_mode = SERVICEID;
     update_msg.header.size        = 0;
 #else
-    update_msg.header.target_mode = IDACK;
+    update_msg.header.target_mode = SERVICEIDACK;
 #endif
     RTFilter_Reset(&result);
     // ask services to publish datas
@@ -36,7 +36,7 @@ void DataManager_collect(service_t *service)
             // This service is a sensor so create a msg and send it
             update_msg.header.target = result.result_table[i]->id;
             Luos_SendMsg(service, &update_msg);
-#ifdef GATE_TIMEOUT
+    #ifdef GATE_TIMEOUT
             // Get the current number of message available
             int back_nbr_msg = Luos_NbrAvailableMsg();
             // Get the current time
@@ -46,7 +46,7 @@ void DataManager_collect(service_t *service)
             {
                 Luos_Loop();
             }
-#endif
+    #endif
 #else
             // This container is a sensor so create a msg to enable auto update
             update_msg.header.target = result.result_table[i]->id;
@@ -257,7 +257,8 @@ uint8_t DataManager_ServiceIsSensor(luos_type_t type)
         || (type == LOAD_TYPE)
         || (type == VOLTAGE_TYPE)
         || (type == LIGHT_TYPE)
-        || (type == SERVO_MOTOR_TYPE))
+        || (type == SERVO_MOTOR_TYPE)
+        || (type == PRESSURE_TYPE))
     {
         return 1;
     }

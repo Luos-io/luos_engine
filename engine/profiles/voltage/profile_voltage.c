@@ -1,9 +1,15 @@
+/******************************************************************************
+ * @file profile_voltage
+ * @brief voltage profile
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
 #include "profile_voltage.h"
 
 /******************************************************************************
- * @brief function converting Luos messages into data and reverse.
- * @param service the target service
- * @param msg the received message
+ * @brief Function converting Luos messages into data and reverse.
+ * @param service : The target service
+ * @param msg : The received message
  * @return None
  ******************************************************************************/
 void ProfileVoltage_Handler(service_t *service, msg_t *msg)
@@ -71,8 +77,8 @@ void ProfileVoltage_Handler(service_t *service, msg_t *msg)
 
 /******************************************************************************
  * @brief Link profile to the general profile handler
- * @param profile_mode HEAD / CONNECT
- * @param profile data structure
+ * @param profile_mode : HEAD / CONNECT
+ * @param profile : Profile data structure
  * @return None
  ******************************************************************************/
 void ProfileVoltage_link(uint8_t profile_mode, profile_voltage_t *profile_voltage)
@@ -86,11 +92,11 @@ void ProfileVoltage_link(uint8_t profile_mode, profile_voltage_t *profile_voltag
 
 /******************************************************************************
  * @brief Create a service with a linked profile
- * @param profile data structure
- * @param callback used by the service
- * @param alias
- * @param revision
- * @return service pointer
+ * @param profile : Profile data structure
+ * @param callback : Callback used by the service
+ * @param alias : Alias for the service (15 caracters max string)
+ * @param revision : FW for the service (tab[MajorVersion,MinorVersion,Patch])
+ * @return Service pointer
  ******************************************************************************/
 service_t *ProfileVoltage_CreateService(profile_voltage_t *profile_voltage, SERVICE_CB callback, const char *alias, revision_t revision)
 {

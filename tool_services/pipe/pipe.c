@@ -63,7 +63,7 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
             // fill the message infos
             msg_t pub_msg;
             pub_msg.header.cmd         = SET_CMD;
-            pub_msg.header.target_mode = ID;
+            pub_msg.header.target_mode = SERVICEID;
             pub_msg.header.target      = msg->header.source;
             Luos_SendStreamingSize(service, &pub_msg, &P2L_StreamChannel, size);
         }
@@ -98,7 +98,7 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
         // return output streaming channel adress
         msg_t pub_msg;
         pub_msg.header.cmd         = PARAMETERS;
-        pub_msg.header.target_mode = IDACK;
+        pub_msg.header.target_mode = SERVICEIDACK;
         pub_msg.header.target      = msg->header.source;
         pub_msg.header.size        = sizeof(void *);
         uintptr_t value            = (uintptr_t)&PipeBuffer_SetL2PMsg;

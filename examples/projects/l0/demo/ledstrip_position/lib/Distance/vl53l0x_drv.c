@@ -32,7 +32,7 @@ void vl53l0x_DRVInit(void)
 {
     vl53l0x_HW_Init();
 
-    //reset sensor
+    // reset sensor
     HAL_GPIO_WritePin(SHUTDOWN_PORT, SHUTDOWN_PIN, GPIO_PIN_RESET);
     HAL_Delay(10);
     HAL_GPIO_WritePin(SHUTDOWN_PORT, SHUTDOWN_PIN, GPIO_PIN_SET);
@@ -51,7 +51,7 @@ void vl53l0x_DRVInit(void)
     uint8_t phase_cal;
     VL53L0X_PerformRefCalibration(&dev, &vhv_settings, &phase_cal);
 
-    //VL53L0X_PerformOffsetCalibration(&dev,distmm, offset_um);
+    // VL53L0X_PerformOffsetCalibration(&dev,distmm, offset_um);
 
     VL53L0X_SetDeviceMode(&dev, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
     VL53L0X_StartMeasurement(&dev);
@@ -100,7 +100,7 @@ uint8_t vl53l0x_DrvRead(linear_position_t *distance)
  ******************************************************************************/
 void vl53l0x_HW_Init(void)
 {
-    //peripherial init
+    // peripherial init
     PIN_CLK();
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};

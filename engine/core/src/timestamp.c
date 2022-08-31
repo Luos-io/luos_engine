@@ -55,6 +55,7 @@
 
 /******************************************************************************
  * @brief Get the present timestamp
+ * @param msg None
  * @return time_luos_t
  ******************************************************************************/
 time_luos_t Timestamp_now(void)
@@ -63,8 +64,8 @@ time_luos_t Timestamp_now(void)
 }
 /******************************************************************************
  * @brief Check if the message is a timestamp message
- * @param msg Message to check
- * @return bool
+ * @param msg : Message to check
+ * @return boolean it "True" if message is timestamped
  ******************************************************************************/
 _CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
 {
@@ -72,7 +73,7 @@ _CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
 }
 /******************************************************************************
  * @brief Get the timestamp associated to a message
- * @param msg Message to get the timestamp from
+ * @param msg : Message to get the timestamp from
  * @return time_luos_t
  ******************************************************************************/
 time_luos_t Timestamp_GetTimestamp(msg_t *msg)
@@ -93,8 +94,8 @@ time_luos_t Timestamp_GetTimestamp(msg_t *msg)
 //************************* Private functions *********************************/
 
 /******************************************************************************
- * @brief modifies luos message according to timestamp payload
- * @param message to modify
+ * @brief Modifies luos message according to timestamp payload
+ * @param msg : message to modify
  * @return None
  ******************************************************************************/
 void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
@@ -107,7 +108,7 @@ void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
 
 /******************************************************************************
  * @brief Compute and write the latency in the message
- * @param msg Message that will be sent
+ * @param msg : Message that will be sent
  * @return None
  ******************************************************************************/
 _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
@@ -130,8 +131,8 @@ _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
 
 /******************************************************************************
  * @brief Compute and write the date in the message
- * @param msg Received message
- * @param reception_date Date of reception in ns
+ * @param msg : Received message
+ * @param reception_date : Date of reception in ns
  * @return None
  ******************************************************************************/
 _CRITICAL inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)

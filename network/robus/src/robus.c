@@ -66,6 +66,11 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.node.node_id = DEFAULTID;
     // By default node are not certified.
     ctx.node.certified = false;
+    // set node_info value
+    ctx.node.node_info = 0;
+#ifdef NO_RTB
+    ctx.node.node_info |= 1 << 0;
+#endif
     // no transmission lock
     ctx.tx.lock = false;
     // Init collision state
@@ -138,7 +143,7 @@ void Robus_Loop(void)
     }
 }
 /******************************************************************************
- * @brief crete a service in route table
+ * @brief create a service add in local route table
  * @param type of service create
  * @return None
  ******************************************************************************/
@@ -173,7 +178,7 @@ void Robus_ServicesClear(void)
  * @brief Formalize message Set tx task and send
  * @param service to send
  * @param msg to send
- * @return none
+ * @return error_return_t
  ******************************************************************************/
 error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
 {
@@ -182,6 +187,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     uint16_t crc_val   = 0xFFFF;
     // ***************************************************
     // don't send luos messages if network is down
+    // ***************************************************
     if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != DETECTION_OK))
     {
         return PROHIBITED;
@@ -211,7 +217,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     // Check the localhost situation
     luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if (((msg->header.target_mode == IDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
+    if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
         ack = ctx.rx.status.unmap;
@@ -497,20 +503,6 @@ node_t *Robus_GetNode(void)
     return (node_t *)&ctx.node;
 }
 /******************************************************************************
- * @brief Flush the entire msg buffer
- * @param None
- * @return None
- ******************************************************************************/
-void Robus_Flush(void)
-{
-    while (ctx.tx.lock != false)
-        ;
-    LuosHAL_SetIrqState(false);
-    MsgAlloc_Init(NULL);
-    LuosHAL_SetIrqState(true);
-}
-
-/******************************************************************************
  * @brief ID Mask calculation
  * @param ID and Number of service
  * @return None
@@ -539,6 +531,7 @@ void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
  * @brief set node_connected variable
  * @param state
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL inline void Robus_SetNodeDetected(network_state_t state)
 {
@@ -600,11 +593,11 @@ void Robus_SetFilterState(uint8_t state, ll_service_t *service)
     ctx.filter_state = state;
     ctx.filter_id    = service->id;
 }
-
 /******************************************************************************
  * @brief Set verbose mode
  * @param mode true or false
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Robus_SetVerboseMode(uint8_t mode)
 {

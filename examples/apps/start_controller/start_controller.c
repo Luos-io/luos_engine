@@ -74,7 +74,7 @@ void StartController_Loop(void)
 
                 msg_t msg;
                 msg.header.target      = result.result_table[0]->id;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 // Setup auto update each UPDATE_PERIOD_MS on button
                 // This value is resetted on all service at each detection
                 // It's important to setting it each time.
@@ -98,7 +98,7 @@ void StartController_Loop(void)
     if (state_switch & (control_app.flux == PLAY) & (animation_state == 0))
     {
         msg_t msg;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         // Share the lock state with the alarm_control app
         RTFilter_Alias(RTFilter_Reset(&result), "alarm_control");
         if (result.result_nbr > 0)
@@ -187,7 +187,7 @@ void StartController_Loop(void)
     {
         // 100ms after button turn of light and horn
         msg_t msg;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         RTFilter_Alias(RTFilter_Reset(&result), "horn");
         if (result.result_nbr > 0)
         {
@@ -208,7 +208,7 @@ void StartController_Loop(void)
     {
         // 600ms after switch turn light depending on the curent lock state
         msg_t msg;
-        msg.header.target_mode = IDACK;
+        msg.header.target_mode = SERVICEIDACK;
         RTFilter_Type(RTFilter_Reset(&result), COLOR_TYPE);
         if (result.result_nbr > 0)
         {

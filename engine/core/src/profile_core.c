@@ -1,3 +1,10 @@
+/******************************************************************************
+ * @file profile_core
+ * @brief Core functions to manage profiles
+ * @author Luos
+ * @version 0.0.0
+ ******************************************************************************/
+
 #include "profile_core.h"
 
 // static initialization of profile table
@@ -9,9 +16,9 @@ uint16_t head_profile_index = 0;
 static bool override_connect_handler = false;
 
 /******************************************************************************
- * @brief get profile_context from service
+ * @brief Get profile_context from service
  * @param service
- * @return profile_context pointer
+ * @return Pointer to profile context
  ******************************************************************************/
 profile_core_t *ProfileCore_GetFromService(service_t *service)
 {
@@ -19,9 +26,9 @@ profile_core_t *ProfileCore_GetFromService(service_t *service)
 }
 
 /******************************************************************************
- * @brief find a profile which can hold a new connect
- * @param profile_mode HEAD / CONNECT
- * @return profile pointer to the dedicated clot
+ * @brief Find a profile which can hold a new connect
+ * @param profile_mode : HEAD / CONNECT
+ * @return Profile pointer to the dedicated slot
  ******************************************************************************/
 profile_core_t *ProfileCore_GetNew(bool profile_mode)
 {
@@ -65,8 +72,8 @@ void ProfileCore_OverrideConnectHandler(void)
 
 /******************************************************************************
  * @brief Msg Handler call backed by Luos when a msg receive for this service
- * @param service destination
- * @param Msg receive
+ * @param service : Service destination
+ * @param msg : Messaged received
  * @return None
  ******************************************************************************/
 static void ProfileCore_Handler(service_t *service, msg_t *msg)
@@ -95,11 +102,11 @@ static void ProfileCore_Handler(service_t *service, msg_t *msg)
 }
 
 /******************************************************************************
- * @brief service creation following the template
+ * @brief Service creation following the template
  * @param profile_core_t the profile handler to launch
- * @param alias for the service string (15 caracters max).
- * @param revision FW for the service (tab[MajorVersion,MinorVersion,Patch])
- * @return None
+ * @param alias : Alias for the service (15 caracters max string)
+ * @param revision : FW for the service (tab[MajorVersion,MinorVersion,Patch])
+ * @return Pointer to created service
  ******************************************************************************/
 service_t *ProfileCore_StartService(SERVICE_CB callback, const char *alias, revision_t revision)
 {

@@ -10,6 +10,10 @@ concurrency:
   group: dev-build-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   unit-tests:
     name: Unit tests
@@ -65,6 +69,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        project_folders: [examples/projects/l0,
+                          examples/projects/Arduino,
+                          examples/projects/NUCLEO-L432KC,
+                          examples/projects/STM32F4-discovery,
+                          examples/projects/NUCLEO-F401RE,
+                          examples/projects/NUCLEO-F410RB,
+                          examples/projects/NUCLEO-G431KB,
+                          examples/projects/NUCLEO-G474RE,
+                          examples/projects/NUCLEO-F072RB,
+                          examples/projects/NUCLEO-L073RZ,
+                          examples/projects/STM32L4S5_discovery,
+                          examples/projects/ESP32
+                          ]
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
@@ -84,103 +101,33 @@ jobs:
 
       - name: Run PlatformIO
         run: |
-          # L0
-          platformio run -d examples/projects/l0/button
-          platformio run -d examples/projects/l0/button_freertos
-          platformio run -d examples/projects/l0/controller_motor
-          platformio run -d examples/projects/l0/dc_motor
-          platformio run -d examples/projects/l0/distance
-          platformio run -d examples/projects/l0/dxl
-          platformio run -d examples/projects/l0/gate_serialcom
-          platformio run -d examples/projects/l0/gpio
-          platformio run -d examples/projects/l0/imu
-          platformio run -d examples/projects/l0/led
-          platformio run -d examples/projects/l0/led_strip
-          platformio run -d examples/projects/l0/light_sensor
-          platformio run -d examples/projects/l0/load
-          platformio run -d examples/projects/l0/potentiometer
-          platformio run -d examples/projects/l0/power_switch
-          platformio run -d examples/projects/l0/servo
-          platformio run -d examples/projects/l0/stepper
-          platformio run -d examples/projects/l0/bike_alarm/alarm_controller
-          platformio run -d examples/projects/l0/bike_alarm/start_controller
-          platformio run -d examples/projects/l0/demo/detection_button
-          platformio run -d examples/projects/l0/demo/ledstrip_position
-          platformio run -d examples/projects/l0/demo/motor_copy_app
-          platformio run -d examples/projects/l0/demo/motor_demo_app
-          platformio run -d examples/projects/l0/bootloader
-          # arduino
-          platformio run -d examples/projects/Arduino/button
-          platformio run -d examples/projects/Arduino/fingerprint
-          platformio run -d examples/projects/Arduino/gate_serialcom
-          platformio run -d examples/projects/Arduino/inspector_serialcom
-          platformio run -d examples/projects/Arduino/lcd
-          platformio run -d examples/projects/Arduino/led
-          platformio run -d examples/projects/Arduino/servo_motor
-          platformio run -d examples/projects/Arduino/bldc_simple_foc
-          platformio run -d examples/projects/Arduino/stepper_simple_foc
-          # NUCLEO-L432KC
-          platformio run -d examples/projects/NUCLEO-L432KC/button
-          platformio run -d examples/projects/NUCLEO-L432KC/fingerprint
-          platformio run -d examples/projects/NUCLEO-L432KC/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-L432KC/gpio
-          platformio run -d examples/projects/NUCLEO-L432KC/inspector_serialcom
-          platformio run -d examples/projects/NUCLEO-L432KC/lcd
-          platformio run -d examples/projects/NUCLEO-L432KC/led
-          platformio run -d examples/projects/NUCLEO-L432KC/servo
-          platformio run -d examples/projects/NUCLEO-L432KC/bootloader
-          platformio run -d examples/projects/NUCLEO-L432KC/dc_motor
-          platformio run -d examples/projects/NUCLEO-L432KC/potentiometre
-          # STM32F4-discovery
-          platformio run -d examples/projects/STM32F4-discovery/button
-          platformio run -d examples/projects/STM32F4-discovery/gate_serialcom
-          platformio run -d examples/projects/STM32F4-discovery/inspector_serialcom
-          # ******** missing bootloader ********
-          # NUCLEO-F401RE
-          platformio run -d examples/projects/NUCLEO-F401RE/button
-          platformio run -d examples/projects/NUCLEO-F401RE/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-F401RE/inspector_serialcom
-          platformio run -d examples/projects/NUCLEO-F401RE/led
-          platformio run -d examples/projects/NUCLEO-F401RE/bootloader
-          platformio run -d examples/projects/NUCLEO-F401RE/dc_motor
-          platformio run -d examples/projects/NUCLEO-F401RE/potentiometer
-          # NUCLEO-F410RB
-          platformio run -d examples/projects/NUCLEO-F410RB/button
-          platformio run -d examples/projects/NUCLEO-F410RB/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-F410RB/inspector_serialcom
-          platformio run -d examples/projects/NUCLEO-F410RB/bootloader
-          platformio run -d examples/projects/NUCLEO-F410RB/dc_motor
-          platformio run -d examples/projects/NUCLEO-F410RB/potentiometer
-          # NUCLEO-G431KB
-          platformio run -d examples/projects/NUCLEO-G431KB/button
-          platformio run -d examples/projects/NUCLEO-G431KB/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-G431KB/inspector_serialcom
-          platformio run -d examples/projects/NUCLEO-G431KB/bootloader
-          platformio run -d examples/projects/NUCLEO-G431KB/dc_motor
-          platformio run -d examples/projects/NUCLEO-G431KB/potentiometer
-          # NUCLEO-G474RE
-          platformio run -d examples/projects/NUCLEO-G474RE/button
-          platformio run -d examples/projects/NUCLEO-G474RE/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-G474RE/inspector_serialcom
-          platformio run -d examples/projects/NUCLEO-G474RE/bootloader
-          # NUCLEO-F072RB
-          platformio run -d examples/projects/NUCLEO-F072RB/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-F072RB/inspector_serialcom
-          platformio run -d examples/projects/NUCLEO-F072RB/bootloader
-          platformio run -d examples/projects/NUCLEO-F072RB/button
-          platformio run -d examples/projects/NUCLEO-F072RB/dc_motor
-          platformio run -d examples/projects/NUCLEO-F072RB/potentiometer
-          # NUCLEO-L073RZ
-          platformio run -d examples/projects/NUCLEO-L073RZ/gate_serialcom
-          platformio run -d examples/projects/NUCLEO-L073RZ/button
-          platformio run -d examples/projects/NUCLEO-L073RZ/bootloader
-          # STM32L4S5_discovery
-          platformio run -d examples/projects/STM32L4S5_discovery/button
-          platformio run -d examples/projects/STM32L4S5_discovery/gate_serialcom
-          platformio run -d examples/projects/STM32L4S5_discovery/bootloader
-          # ESP32
-          platformio run -d examples/projects/ESP32/button
-          platformio run -d examples/projects/ESP32/button_arduino
-          platformio run -d examples/projects/ESP32/led
-          # SAMD21XPLAINED
+          for d in ${{ matrix.project_folders }}/*/
+          do
+            # Parse all folder
+            if [ -f "$d/platformio.ini" ]
+            then
+              # This is a PIO project compile it
+              echo "Compiling : $d"
+              platformio run -d $d
+            else
+              # This folder could contain other projects, continue digging
+              for dd in $d*/
+              do
+                # Parse all folder
+                if [ -f "$dd/platformio.ini" ]
+                then
+                  # This is a PIO project compile it
+                  echo "Compiling : $d"
+                  platformio run -d $dd
+                fi
+              done
+            fi
+          done
           # ******** missing bootloader CI ********
+
+  build-success:
+    name: Build success
+    needs: examples-build
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Build succeed!"

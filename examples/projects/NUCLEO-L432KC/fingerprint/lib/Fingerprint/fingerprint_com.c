@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file fingerprint_com
  * @brief This is a driver example for a fingerprint sensor. It will work as is
- * but if you want to see it inside of a project, I am using it to create a 
+ * but if you want to see it inside of a project, I am using it to create a
  * biometric security system using Luos. You can go check this project on my github :
  * https://github.com/mariebidouille/L432KC-Luos-Biometric-Security-System
  * @author mariebidouille
@@ -205,7 +205,7 @@ void Fingerprint_ComTransmit(void)
  ******************************************************************************/
 uint8_t Fingerprint_SendCommand(uint8_t command, uint16_t length, uint8_t data[])
 {
-    length = (length < 64) ? length : 64; //capacity
+    length = (length < 64) ? length : 64; // capacity
 
     uint16_t wire_length = length + 2;
 
@@ -244,8 +244,8 @@ uint8_t Fingerprint_SendCommand(uint8_t command, uint16_t length, uint8_t data[]
 /******************************************************************************
  * @brief Process the frame sent by the sensor
  * @param None
- * @return FINGERPRINT_BADPACKET or FINGERPRINT_OK depending on wheter the packet 
- *  was sent and processed successfully or not 
+ * @return FINGERPRINT_BADPACKET or FINGERPRINT_OK depending on wheter the packet
+ *  was sent and processed successfully or not
  ******************************************************************************/
 uint8_t FingerprintCom_GetPacket(void)
 {
@@ -319,8 +319,8 @@ uint16_t Fingerprint_GetTemplateCount(void)
 
 /******************************************************************************
  * @brief Turn on or off the built-in led
- * @param on      
- * @return FINGERPRINT_OK or an error 
+ * @param on
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_LEDcontrol(uint8_t on)
 {
@@ -331,7 +331,7 @@ uint8_t Fingerprint_LEDcontrol(uint8_t on)
 /******************************************************************************
  * @brief Ask the sensor to take an image of the finger pressed on surface
  * @param None
- * @return FINGERPRINT_OK or an error 
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_GetImage(void)
 {
@@ -342,7 +342,7 @@ uint8_t Fingerprint_GetImage(void)
 /******************************************************************************
  * @brief Ask the sensor to convert image to feature template
  * @param slot
- * @return FINGERPRINT_OK or an error 
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_Image2Tz(uint8_t slot)
 {
@@ -354,7 +354,7 @@ uint8_t Fingerprint_Image2Tz(uint8_t slot)
 /******************************************************************************
  * @brief Ask the sensor to take two print feature template and create a model
  * @param None
- * @return FINGERPRINT_OK or an error 
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_CreateModel(void)
 {
@@ -365,7 +365,7 @@ uint8_t Fingerprint_CreateModel(void)
 /******************************************************************************
  * @brief Ask the sensor to store the calculated model for later matching
  * @param location
- * @return FINGERPRINT_OK or an error 
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_StoreModel(uint16_t location)
 {
@@ -377,7 +377,7 @@ uint8_t Fingerprint_StoreModel(uint16_t location)
 /******************************************************************************
  * @brief Ask the sensor to delete ALL models in memory
  * @param None
- * @return FINGERPRINT_OK or an error 
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_EmptyDatabase(void)
 {
@@ -388,7 +388,7 @@ uint8_t Fingerprint_EmptyDatabase(void)
 /******************************************************************************
  * @brief Ask the sensor to search the current slot fingerprint features to match saved templates.
  * @param None
- * @return FINGERPRINT_OK or an error 
+ * @return FINGERPRINT_OK or an error
  ******************************************************************************/
 uint8_t Fingerprint_SearchFinger(void)
 {

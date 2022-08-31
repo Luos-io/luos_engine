@@ -114,7 +114,7 @@ void dummy_App_1_Init(void)
 }
 
 /******************************************************************************
-* @brief Init Service dummy_App_2
+ * @brief Init Service dummy_App_2
  * @param None
  * @return None
  ******************************************************************************/
@@ -161,7 +161,7 @@ void Scenario_template_Loop(int *stop)
                 msg_t msg;
                 msg.header.source      = 1;
                 msg.header.target      = 2;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 msg.header.cmd         = SET_CMD;
                 msg.header.size        = sizeof(uint8_t);
                 msg.data[0]            = 1;
@@ -179,7 +179,7 @@ void Scenario_template_Loop(int *stop)
                 msg_t msg;
                 msg.header.source      = 1;
                 msg.header.target      = 3;
-                msg.header.target_mode = IDACK;
+                msg.header.target_mode = SERVICEIDACK;
                 msg.header.cmd         = SET_CMD;
                 msg.header.size        = sizeof(uint8_t);
                 msg.data[0]            = 2;
@@ -208,7 +208,7 @@ static void App_Detection_MsgHandler(service_t *service, msg_t *msg)
         printf("[ Rx ] - [APP Detection]  - End detection\n");
         detection_state = DETECT_FIRST_APP;
     }
-    //printf("*** MsgHandler - APP detect: %d\n", msg->header.cmd);
+    // printf("*** MsgHandler - APP detect: %d\n", msg->header.cmd);
 }
 
 /******************************************************************************
@@ -224,7 +224,7 @@ static void dummy_App_1_MsgHandler(service_t *service, msg_t *msg)
         printf("[ Rx ] - [Dummy App 1]  - Receive data: %d\n", msg->data[0]);
         detection_state = DETECT_SECOND_APP;
     }
-    //printf("*** MsgHandler - APP 1: %d\n", msg->header.cmd);
+    // printf("*** MsgHandler - APP 1: %d\n", msg->header.cmd);
 }
 
 /******************************************************************************
@@ -240,5 +240,5 @@ static void dummy_App_2_MsgHandler(service_t *service, msg_t *msg)
         printf("[ Rx ] - [Dummy App 2]  - Receive data: %d\n", msg->data[0]);
         detection_state = DETECTION_IS_OK;
     }
-    //printf("*** MsgHandler - APP 2: %d\n", msg->header.cmd);
+    // printf("*** MsgHandler - APP 2: %d\n", msg->header.cmd);
 }

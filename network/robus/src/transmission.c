@@ -71,6 +71,7 @@ _CRITICAL static uint8_t Transmit_GetLockStatus(void);
  * @brief Transmit an ACK
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Transmit_SendAck(void)
 {
@@ -109,6 +110,7 @@ uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
 
 /******************************************************************************
  * @brief transmission process
+ * @param None
  * @return None
  ******************************************************************************/
 _CRITICAL void Transmit_Process()
@@ -146,7 +148,7 @@ _CRITICAL void Transmit_Process()
         }
         // Check if we will need an ACK for this message and compute the transmit status we will need to manage it
         transmitStatus_t initial_transmit_status = TX_OK;
-        if (((((msg_t *)data)->header.target_mode == IDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK)) && (!localhost || (((msg_t *)data)->header.target == DEFAULTID)))
+        if (((((msg_t *)data)->header.target_mode == SERVICEIDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK)) && (!localhost || (((msg_t *)data)->header.target == DEFAULTID)))
         {
             // We will need to validate the good reception of the ack.
             // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
@@ -198,6 +200,7 @@ _CRITICAL void Transmit_Process()
  * @brief Send ID to others service on network
  * @param None
  * @return lock status
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL static uint8_t Transmit_GetLockStatus(void)
 {
@@ -211,6 +214,7 @@ _CRITICAL static uint8_t Transmit_GetLockStatus(void)
  * @brief finish transmit and try to launch a new one
  * @param None
  * @return None
+ * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL void Transmit_End(void)
 {

@@ -11,7 +11,7 @@
  * Function
  ******************************************************************************/
 /******************************************************************************
- * @brief Mock : Redefine function RoutingTB_WaitRoutingTable 
+ * @brief Mock : Redefine function RoutingTB_WaitRoutingTable
  * @param service receive
  * @param intro msg in route table
  * @return None
