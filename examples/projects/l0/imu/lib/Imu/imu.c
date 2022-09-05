@@ -34,7 +34,7 @@ static void Imu_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Imu_Init(void)
 {
-    revision_t revision = {.unmap = REV};
+    revision_t revision = {.major = 1, .minor = 0, .build = 0};
     mpu_setup();
     hal.report.quat = 1;
     Luos_CreateService(Imu_MsgHandler, IMU_TYPE, "Imu", revision);
