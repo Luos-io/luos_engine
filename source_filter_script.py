@@ -80,16 +80,21 @@ for item in env.get("CPPDEFINES", []):
         telemetry = False
 
 
-if (telemetry == True):
-    click.secho("\t* Telemetry enabled.", fg="green")
-    try:
-        requests.post("https://monorepo-services.vercel.app/api/telemetry",
-                      data=luos_telemetry)
-    except:
-        click.secho("Telemetry request failed.", fg="red")
-else:
-    click.secho("\t* Telemetry disabled, please consider enabling it by removing the 'NOTELEMETRY' flag to help Luos_engine improve.", fg="red")
-click.secho("")
+if not visited_key in global_env:
+    if (telemetry == True):
+        click.secho("\t* Telemetry enabled.", fg="green")
+        try:
+            r = requests.post("https://monorepo-services.vercel.app/api/telemetry",
+                              data=luos_telemetry)
+            if not r:
+                click.secho("\tX Telemetry request failed : error " +
+                            str(r.status_code), fg="red")
+        except:
+            click.secho("\tX Telemetry request failed.", fg="red")
+    else:
+        click.secho(
+            "\t* Telemetry disabled, please consider enabling it by removing the 'NOTELEMETRY' flag to help Luos_engine improve.", fg="red")
+    click.secho("")
 
 # native unit testing
 find_MOCK_HAL = False
