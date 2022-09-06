@@ -17,7 +17,8 @@ luos_telemetry = {"telemetry_type": "luos_engine_build",
                   "unix_time": env.get("UNIX_TIME"),
                   "platform": env.get("PIOPLATFORM"),
                   "mcu": env.get("BOARD_MCU"),
-                  "f_cpu": env.get("BOARD_F_CPU")}
+                  "f_cpu": env.get("BOARD_F_CPU"),
+                  "project_path": env.get("PROJECT_DIR")}
 
 try:
     luos_telemetry["framework"] = env.get("PIOFRAMEWORK")[0]
