@@ -48,21 +48,10 @@ static inline void SerialProtocol_Init(void)
 
 static inline void SerialProtocol_CreateTxMsg(void)
 {
-    uint8_t size_at_end_ring_buffer = 0;
-    // Temporary remove protocol from the stream to evaluate data size
-    void *sample_ptr_bkp               = serialTx_StreamChannel->sample_ptr;
-    serialTx_StreamChannel->sample_ptr = (void *)((int)serialTx_StreamChannel->sample_ptr + sizeof(SerialHeader_t));
-    if (serialTx_StreamChannel->sample_ptr > serialTx_StreamChannel->end_ring_buffer)
-    {
-        size_at_end_ring_buffer            = 1;
-        serialTx_StreamChannel->sample_ptr = (void *)((int)serialTx_StreamChannel->ring_buffer + 1);
-    }
     // Evaluate size
-    uint16_t size = Stream_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel);
-    // Restore pointer
-    serialTx_StreamChannel->sample_ptr = sample_ptr_bkp;
+    uint16_t size = (Stream_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t));
     // Update size
-    if (size_at_end_ring_buffer)
+    if ((size_to_update + 2) > serialTx_StreamChannel->end_ring_buffer)
     {
         // Size is 2 bytes and those bytes are splitted, one at the end of the buffer and one at the beginning of the buffer
         size_to_update[0]                                   = size & 0xFF;
