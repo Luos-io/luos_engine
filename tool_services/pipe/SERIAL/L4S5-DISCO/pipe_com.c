@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "pipe_com.h"
 #include "luos_utils.h"
+#include "../serial_protocol.h"
 
 /*******************************************************************************
  * Definitions
@@ -15,13 +16,14 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-volatile uint8_t is_sending               = false;
-volatile uint16_t size_to_send            = 0;
-volatile uint16_t P2L_PrevPointerPosition = 0;
+volatile uint8_t is_sending              = false;
+volatile uint16_t size_to_send           = 0;
+volatile uint16_t RX_PrevPointerPosition = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static void PipeCom_DMAInit(void);
+static void PipeCom_SerialSend(void);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -78,8 +80,9 @@ void PipeCom_Init(void)
     HAL_NVIC_EnableIRQ(PIPE_COM_IRQ);
     HAL_NVIC_SetPriority(PIPE_COM_IRQ, 1, 1);
 
-    P2L_PrevPointerPosition = 0;
+    RX_PrevPointerPosition = 0;
     PipeCom_DMAInit();
+    SerialProtocol_Init();
 }
 /******************************************************************************
  * @brief init must be call in project init
@@ -88,75 +91,79 @@ void PipeCom_Init(void)
  ******************************************************************************/
 static void PipeCom_DMAInit(void)
 {
-    P2L_DMA_CLOCK_ENABLE();
-    L2P_DMA_CLOCK_ENABLE();
+    PIPE_RX_DMA_CLOCK_ENABLE();
+    PIPE_TX_DMA_CLOCK_ENABLE();
 
     // Pipe to Luos
-    LL_DMA_DisableChannel(P2L_DMA, P2L_DMA_CHANNEL);
-    LL_DMA_SetDataTransferDirection(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-    LL_DMA_SetChannelPriorityLevel(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_PRIORITY_LOW);
-    LL_DMA_SetMode(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_MODE_CIRCULAR);
-    LL_DMA_SetPeriphIncMode(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_PERIPH_NOINCREMENT);
-    LL_DMA_SetMemoryIncMode(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_MEMORY_INCREMENT);
-    LL_DMA_SetPeriphSize(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_PDATAALIGN_BYTE);
-    LL_DMA_SetMemorySize(P2L_DMA, P2L_DMA_CHANNEL, LL_DMA_MDATAALIGN_BYTE);
-    LL_DMA_SetPeriphRequest(P2L_DMA, P2L_DMA_CHANNEL, P2L_DMA_REQUEST);
+    LL_DMA_DisableChannel(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
+    LL_DMA_SetDataTransferDirection(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+    LL_DMA_SetChannelPriorityLevel(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetMode(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_MODE_CIRCULAR);
+    LL_DMA_SetPeriphIncMode(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_PERIPH_NOINCREMENT);
+    LL_DMA_SetMemoryIncMode(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_MEMORY_INCREMENT);
+    LL_DMA_SetPeriphSize(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_PDATAALIGN_BYTE);
+    LL_DMA_SetMemorySize(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, LL_DMA_MDATAALIGN_BYTE);
+    LL_DMA_SetPeriphRequest(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, PIPE_RX_DMA_REQUEST);
 
     // Prepare buffer
-    LL_DMA_SetPeriphAddress(P2L_DMA, P2L_DMA_CHANNEL, (uint32_t)&PIPE_COM->RDR);
-    LL_DMA_SetDataLength(P2L_DMA, P2L_DMA_CHANNEL, PIPE_TO_LUOS_BUFFER_SIZE);
-    LL_DMA_SetMemoryAddress(P2L_DMA, P2L_DMA_CHANNEL, (uint32_t)PipeBuffer_GetP2LBuffer());
+    LL_DMA_SetPeriphAddress(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, (uint32_t)&PIPE_COM->RDR);
+    LL_DMA_SetDataLength(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, PIPE_RX_BUFFER_SIZE);
+    LL_DMA_SetMemoryAddress(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL, (uint32_t)Pipe_GetRxStreamChannel()->ring_buffer);
     LL_USART_EnableDMAReq_RX(PIPE_COM);
-    LL_DMA_EnableChannel(P2L_DMA, P2L_DMA_CHANNEL);
+    LL_DMA_EnableChannel(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
 
     // Luos to Pipe
-    LL_DMA_SetDataTransferDirection(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
-    LL_DMA_SetChannelPriorityLevel(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_PRIORITY_LOW);
-    LL_DMA_SetMode(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_MODE_NORMAL);
-    LL_DMA_SetPeriphIncMode(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_PERIPH_NOINCREMENT);
-    LL_DMA_SetMemoryIncMode(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_MEMORY_INCREMENT);
-    LL_DMA_SetPeriphSize(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_PDATAALIGN_BYTE);
-    LL_DMA_SetMemorySize(L2P_DMA, L2P_DMA_CHANNEL, LL_DMA_MDATAALIGN_BYTE);
-    LL_DMA_SetPeriphRequest(L2P_DMA, L2P_DMA_CHANNEL, L2P_DMA_REQUEST);
+    LL_DMA_SetDataTransferDirection(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+    LL_DMA_SetChannelPriorityLevel(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetMode(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_MODE_NORMAL);
+    LL_DMA_SetPeriphIncMode(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_PERIPH_NOINCREMENT);
+    LL_DMA_SetMemoryIncMode(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_MEMORY_INCREMENT);
+    LL_DMA_SetPeriphSize(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_PDATAALIGN_BYTE);
+    LL_DMA_SetMemorySize(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, LL_DMA_MDATAALIGN_BYTE);
+    LL_DMA_SetPeriphRequest(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, PIPE_TX_DMA_REQUEST);
 
     // Prepare buffer
-    LL_DMA_SetPeriphAddress(L2P_DMA, L2P_DMA_CHANNEL, (uint32_t)&PIPE_COM->TDR);
+    LL_DMA_SetPeriphAddress(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, (uint32_t)&PIPE_COM->TDR);
     LL_USART_EnableDMAReq_TX(PIPE_COM);
-    HAL_NVIC_EnableIRQ(L2P_DMA_IRQ);
-    HAL_NVIC_SetPriority(L2P_DMA_IRQ, 1, 1);
+    HAL_NVIC_EnableIRQ(PIPE_TX_DMA_IRQ);
+    HAL_NVIC_SetPriority(PIPE_TX_DMA_IRQ, 1, 1);
 
-    LL_DMA_EnableIT_TC(L2P_DMA, L2P_DMA_CHANNEL);
+    LL_DMA_EnableIT_TC(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL);
 }
 /******************************************************************************
- * @brief init must be call in project init
+ * @brief loop must be call in project loop
  * @param None
  * @return None
  ******************************************************************************/
-void PipeCom_SendL2P(uint8_t *data, uint16_t size)
-{
-    LUOS_ASSERT(size > 0);
-    is_sending   = true;
-    size_to_send = size;
-    LL_DMA_DisableChannel(L2P_DMA, L2P_DMA_CHANNEL);
-    LL_DMA_SetMemoryAddress(L2P_DMA, L2P_DMA_CHANNEL, (uint32_t)data);
-    LL_DMA_SetDataLength(L2P_DMA, L2P_DMA_CHANNEL, size);
-    LL_DMA_EnableChannel(L2P_DMA, L2P_DMA_CHANNEL);
-} /******************************************************************************
-   * @brief loop must be call in project loop
-   * @param None
-   * @return None
-   ******************************************************************************/
 void PipeCom_Loop(void)
 {
 }
 /******************************************************************************
- * @brief check if pipe is sending
+ * @brief Create msg and send it
  * @param None
- * @return true/false
+ * @return None
  ******************************************************************************/
-volatile uint8_t PipeCom_SendL2PPending(void)
+void PipeCom_Send(void)
 {
-    return is_sending;
+    SerialProtocol_CreateTxMsg();
+    PipeCom_SerialSend();
+}
+/******************************************************************************
+ * @brief Send msg on serial Pipe
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void PipeCom_SerialSend(void)
+{
+    if (is_sending == false)
+    {
+        is_sending   = true;
+        size_to_send = SerialProtocol_GetSizeToSend();
+        LL_DMA_DisableChannel(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL);
+        LL_DMA_SetMemoryAddress(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, (uint32_t)SerialProtocol_GetDataToSend());
+        LL_DMA_SetDataLength(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL, size_to_send);
+        LL_DMA_EnableChannel(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL);
+    }
 }
 /******************************************************************************
  * @brief init must be call in project init
@@ -172,26 +179,26 @@ void PIPE_COM_IRQHANDLER()
     if (LL_USART_IsActiveFlag_IDLE(PIPE_COM))
     {
         LL_USART_ClearFlag_IDLE(PIPE_COM);
-        if (LL_DMA_GetDataLength(P2L_DMA, P2L_DMA_CHANNEL) == 0)
+        if (LL_DMA_GetDataLength(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL) == 0)
         {
             return;
         }
 
-        P2L_PointerPosition = PIPE_TO_LUOS_BUFFER_SIZE - LL_DMA_GetDataLength(P2L_DMA, P2L_DMA_CHANNEL);
+        P2L_PointerPosition = PIPE_RX_BUFFER_SIZE - LL_DMA_GetDataLength(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
 
-        if (P2L_DMA_TC(P2L_DMA) != RESET) // DMA buffer overflow
+        if (PIPE_RX_DMA_TC(PIPE_RX_DMA) != RESET) // DMA buffer overflow
         {
-            P2L_DMA_CLEAR_TC(P2L_DMA);
-            size = (PIPE_TO_LUOS_BUFFER_SIZE - P2L_PrevPointerPosition) + P2L_PointerPosition;
+            PIPE_RX_DMA_CLEAR_TC(PIPE_RX_DMA);
+            size = (PIPE_RX_BUFFER_SIZE - RX_PrevPointerPosition) + P2L_PointerPosition;
         }
         else
         {
-            size = P2L_PointerPosition - P2L_PrevPointerPosition;
+            size = P2L_PointerPosition - RX_PrevPointerPosition;
         }
-        P2L_PrevPointerPosition = P2L_PointerPosition;
+        RX_PrevPointerPosition = P2L_PointerPosition;
         if (size != 0)
         {
-            Stream_AddAvailableSampleNB(get_P2L_StreamChannel(), size);
+            Stream_AddAvailableSampleNB(Pipe_GetRxStreamChannel(), size);
         }
     }
 }
@@ -200,23 +207,21 @@ void PIPE_COM_IRQHANDLER()
  * @param None
  * @return None
  ******************************************************************************/
-void L2P_DMA_IRQHANDLER()
+void PIPE_TX_DMA_IRQHANDLER()
 {
     uint16_t size = 0;
-    // check if we receive an IDLE on usart1
-    if ((L2P_DMA_TC(L2P_DMA) != RESET) && (LL_DMA_IsEnabledIT_TC(L2P_DMA, L2P_DMA_CHANNEL) != RESET))
+    // check if we receive an IDLE on usart3
+    // check if we receive an IDLE on usart3
+    if ((PIPE_TX_DMA_TC(PIPE_TX_DMA) != RESET) && (LL_DMA_IsEnabledIT_TC(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL) != RESET))
     {
-        L2P_DMA_CLEAR_TC(L2P_DMA);
+        PIPE_TX_DMA_CLEAR_TC(PIPE_TX_DMA);
 
-        Stream_RmvAvailableSampleNB(get_L2P_StreamChannel(), size_to_send);
-        size = Stream_GetAvailableSampleNBUntilEndBuffer(get_L2P_StreamChannel());
+        Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size_to_send);
+        size       = SerialProtocol_GetSizeToSend();
+        is_sending = false;
         if (size > 0)
         {
-            PipeCom_SendL2P(get_L2P_StreamChannel()->sample_ptr, size);
-        }
-        else
-        {
-            is_sending = false;
+            PipeCom_SerialSend();
         }
     }
 }
