@@ -23,6 +23,7 @@ volatile uint16_t RX_PrevPointerPosition = 0;
  * Function
  ******************************************************************************/
 static void PipeCom_DMAInit(void);
+static void PipeCom_SerialSend(void);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -148,13 +149,22 @@ uint8_t PipeCom_Receive(uint16_t *size)
     return SerialProtocol_IsMsgComplete(size);
 }
 /******************************************************************************
- * @brief init must be call in project init
+ * @brief Create msg and send it
  * @param None
  * @return None
  ******************************************************************************/
-void PipeCom_Send()
+void PipeCom_Send(void)
 {
     SerialProtocol_CreateTxMsg();
+    PipeCom_SerialSend();
+}
+/******************************************************************************
+ * @brief Send msg on serial Pipe
+ * @param None
+ * @return None
+ ******************************************************************************/
+static void PipeCom_SerialSend(void)
+{
     if (is_sending == false)
     {
         is_sending   = true;
@@ -220,7 +230,7 @@ void PIPE_TX_DMA_IRQHANDLER()
         is_sending = false;
         if (size > 0)
         {
-            PipeCom_Send();
+            PipeCom_SerialSend();
         }
     }
 }
