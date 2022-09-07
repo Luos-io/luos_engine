@@ -91,6 +91,9 @@ void PipeCom_Init(void)
  ******************************************************************************/
 static void PipeCom_DMAInit(void)
 {
+    LL_DMA_DeInit(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
+    LL_DMA_DeInit(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL);
+
     PIPE_RX_DMA_CLOCK_ENABLE();
     PIPE_TX_DMA_CLOCK_ENABLE();
 
@@ -139,6 +142,15 @@ void PipeCom_Loop(void)
 {
 }
 /******************************************************************************
+ * @brief Check if a message is available
+ * @param None
+ * @return None
+ ******************************************************************************/
+uint8_t PipeCom_Receive(uint16_t *size)
+{
+    return SerialProtocol_IsMsgComplete(size);
+}
+/******************************************************************************
  * @brief Create msg and send it
  * @param None
  * @return None
@@ -172,10 +184,10 @@ static void PipeCom_SerialSend(void)
  ******************************************************************************/
 void PIPE_COM_IRQHANDLER()
 {
-    uint16_t size                = 0;
-    uint16_t P2L_PointerPosition = 0;
+    uint16_t size               = 0;
+    uint16_t RX_PointerPosition = 0;
 
-    // check if we receive an IDLE on usart
+    // check if we receive an IDLE on usart3
     if (LL_USART_IsActiveFlag_IDLE(PIPE_COM))
     {
         LL_USART_ClearFlag_IDLE(PIPE_COM);
@@ -184,18 +196,18 @@ void PIPE_COM_IRQHANDLER()
             return;
         }
 
-        P2L_PointerPosition = PIPE_RX_BUFFER_SIZE - LL_DMA_GetDataLength(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
+        RX_PointerPosition = PIPE_RX_BUFFER_SIZE - LL_DMA_GetDataLength(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
 
         if (PIPE_RX_DMA_TC(PIPE_RX_DMA) != RESET) // DMA buffer overflow
         {
             PIPE_RX_DMA_CLEAR_TC(PIPE_RX_DMA);
-            size = (PIPE_RX_BUFFER_SIZE - RX_PrevPointerPosition) + P2L_PointerPosition;
+            size = (PIPE_RX_BUFFER_SIZE - RX_PrevPointerPosition) + RX_PointerPosition;
         }
         else
         {
-            size = P2L_PointerPosition - RX_PrevPointerPosition;
+            size = RX_PointerPosition - RX_PrevPointerPosition;
         }
-        RX_PrevPointerPosition = P2L_PointerPosition;
+        RX_PrevPointerPosition = RX_PointerPosition;
         if (size != 0)
         {
             Stream_AddAvailableSampleNB(Pipe_GetRxStreamChannel(), size);

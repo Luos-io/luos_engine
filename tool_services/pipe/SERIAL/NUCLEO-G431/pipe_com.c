@@ -92,6 +92,9 @@ void PipeCom_Init(void)
  ******************************************************************************/
 static void PipeCom_DMAInit(void)
 {
+    LL_DMA_DeInit(PIPE_RX_DMA, PIPE_RX_DMA_CHANNEL);
+    LL_DMA_DeInit(PIPE_TX_DMA, PIPE_TX_DMA_CHANNEL);
+
     PIPE_RX_DMA_CLOCK_ENABLE();
     PIPE_TX_DMA_CLOCK_ENABLE();
 

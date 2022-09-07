@@ -98,7 +98,10 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
     }
     else if (msg->header.cmd == REINIT)
     {
+        tx_StreamChannel.data_ptr   = tx_StreamChannel.ring_buffer;
         tx_StreamChannel.sample_ptr = tx_StreamChannel.data_ptr;
+        rx_StreamChannel.data_ptr   = rx_StreamChannel.ring_buffer;
+        rx_StreamChannel.sample_ptr = rx_StreamChannel.data_ptr;
         PipeCom_Init();
     }
 }

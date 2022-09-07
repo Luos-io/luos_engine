@@ -96,7 +96,6 @@ static inline char *SerialProtocol_GetDataToSend(void)
 
 static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
 {
-
     streaming_channel_t *serialRx_StreamChannel = Pipe_GetRxStreamChannel();
     uint16_t TotalSize                          = Stream_GetAvailableSampleNB(serialRx_StreamChannel);
     uint16_t SizeUntilEnd                       = 0;
