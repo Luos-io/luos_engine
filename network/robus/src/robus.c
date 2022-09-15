@@ -182,9 +182,10 @@ void Robus_ServicesClear(void)
  ******************************************************************************/
 error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
 {
-    uint8_t ack        = 0;
-    uint16_t data_size = 0;
-    uint16_t crc_val   = 0xFFFF;
+    error_return_t error = SUCCEED;
+    uint8_t ack          = 0;
+    uint16_t data_size   = 0;
+    uint16_t crc_val     = 0xFFFF;
     // ***************************************************
     // don't send luos messages if network is down
     // ***************************************************
@@ -227,7 +228,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     // ********** Allocate the message ********************
     if (MsgAlloc_SetTxTask(ll_service, (uint8_t *)msg->stream, crc_val, full_size, localhost, ack) == FAILED)
     {
-        return FAILED;
+        error = FAILED;
     }
 // **********Try to send the message********************
 #ifndef VERBOSE_LOCALHOST
@@ -238,7 +239,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
 #ifndef VERBOSE_LOCALHOST
     }
 #endif
-    return SUCCEED;
+    return error;
 }
 /******************************************************************************
  * @brief Send Msg to a service
