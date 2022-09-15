@@ -208,6 +208,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
     if ((LL_USART_IsActiveFlag_TC(LUOS_COM) != RESET) && (LL_USART_IsEnabledIT_TC(LUOS_COM) != RESET))
     {
         // Transmission complete
+        data_size_to_transmit = 0;
         // Switch to reception mode
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
@@ -283,6 +284,7 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
     else
     {
         // Wait before send ack
+        data_size_to_transmit = 1;
         // This is a patch du to difference MCU frequency
         while (LL_TIM_GetCounter(LUOS_TIMER) < TIMEOUT_ACK)
             ;

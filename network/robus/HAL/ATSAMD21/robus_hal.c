@@ -219,6 +219,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
     if (((LUOS_COM->USART_INT.SERCOM_INTFLAG & SERCOM_USART_INT_INTFLAG_TXC_Msk) == SERCOM_USART_INT_INTFLAG_TXC_Msk) && ((LUOS_COM->USART_INT.SERCOM_INTENSET & SERCOM_USART_INT_INTENSET_TXC_Msk) == SERCOM_USART_INT_INTENSET_TXC_Msk))
     {
         // Transmission complete
+        data_size_to_transmit = 0;
         // Switch to reception mode
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
@@ -286,6 +287,7 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
     else
     {
         // Wait before send ack
+        data_size_to_transmit = 1;
         // This is a patch du to difference MCU frequency
         while (LUOS_TIMER->COUNT16.TC_COUNT < (0xFFFF - (timoutclockcnt * (DEFAULT_TIMEOUT - TIMEOUT_ACK))))
             ;
