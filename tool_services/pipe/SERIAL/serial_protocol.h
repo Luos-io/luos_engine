@@ -51,7 +51,7 @@ static inline void SerialProtocol_CreateTxMsg(void)
     // Evaluate size
     uint16_t size = (Stream_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t));
     // Update size
-    if ((size_to_update + 2) > serialTx_StreamChannel->end_ring_buffer)
+    if ((size_to_update + 2) > (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer))
     {
         // Size is 2 bytes and those bytes are splitted, one at the end of the buffer and one at the beginning of the buffer
         size_to_update[0]                                   = size & 0xFF;
@@ -131,7 +131,7 @@ static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
                     *size |= (uint16_t)(*((uint8_t *)((int)serialRx_StreamChannel->ring_buffer + 1)) << 8);
                 }
 
-                if (TotalSize > *size)
+                if (TotalSize > (*size + 3))
                 {
                     // We should have a complete message
                     if (SizeUntilEnd > (*size + 3))
