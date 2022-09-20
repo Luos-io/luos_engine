@@ -32,7 +32,7 @@ static void PipeCom_SerialSend(void);
  ******************************************************************************/
 void PipeCom_Init(void)
 {
-
+    LL_USART_DeInit(PIPE_COM);
     ///////////////////////////////
     // GPIO PIPE Init
     ///////////////////////////////
