@@ -1,28 +1,26 @@
 /******************************************************************************
- * @file pipe_com
- * @brief communication driver
+ * @file _pipe
+ * @brief Private pipe functions
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef PIPE_COM_H
-#define PIPE_COM_H
 
-#include "_pipe.h"
-
+#include "streaming.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-/*******************************************************************************
- * Variables
- ******************************************************************************/
+#ifndef PIPE_SERIAL_BAUDRATE
+    #define PIPE_SERIAL_BAUDRATE 1000000
+#endif
+#ifndef PIPE_TX_BUFFER_SIZE
+    #define PIPE_TX_BUFFER_SIZE 1024
+#endif
+#ifndef PIPE_RX_BUFFER_SIZE
+    #define PIPE_RX_BUFFER_SIZE 2048
+#endif
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void PipeCom_Init(void);
-void PipeCom_Loop(void);
-uint8_t PipeCom_Receive(uint16_t *size);
-void PipeCom_Send(void);
-
-#endif /* PIPE_H */
+streaming_channel_t *Pipe_GetTxStreamChannel(void);
+streaming_channel_t *Pipe_GetRxStreamChannel(void);

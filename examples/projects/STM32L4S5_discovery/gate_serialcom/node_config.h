@@ -181,4 +181,52 @@
 #define PIPE_TO_LUOS_BUFFER_SIZE 1024
 #define LUOS_TO_PIPE_BUFFER_SIZE 2048
 
+/*******************************************************************************
+ * OTHER GATE PARAMETERS
+ *******************************************************************************
+ *    Define         |   Default Value    | Description
+ *    :--------------|------------------------------------------------------
+ *    INIT_TIME      |      150           | Wait init time before first detection
+ * ******************************************************************************/
+
+/*******************************************************************************
+ * OTHER PIPE PARAMETERS
+ *******************************************************************************
+ *    Define               |     Default Value       | Description
+ *    :--------------------|----------------------------------------------------
+ *    PIPE_CONFIG          |          none           | To Modify pipe config
+ * ******************************************************************************/
+#define PIPE_CONFIG
+
+#define PIPE_TX_CLK() __HAL_RCC_GPIOB_CLK_ENABLE();
+#define PIPE_TX_PIN   GPIO_PIN_6
+#define PIPE_TX_PORT  GPIOB
+#define PIPE_TX_AF    GPIO_AF7_USART1
+
+#define PIPE_RX_CLK() __HAL_RCC_GPIOB_CLK_ENABLE();
+#define PIPE_RX_PIN   GPIO_PIN_7
+#define PIPE_RX_PORT  GPIOB
+#define PIPE_RX_AF    GPIO_AF7_USART1
+
+#define PIPE_COM_CLOCK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
+#define PIPE_COM                USART1
+#define PIPE_COM_IRQ            USART1_IRQn
+#define PIPE_COM_IRQHANDLER()   USART1_IRQHandler()
+
+#define PIPE_RX_DMA_CLOCK_ENABLE()        __HAL_RCC_DMA1_CLK_ENABLE();
+#define PIPE_RX_DMA                       DMA1
+#define PIPE_RX_DMA_CHANNEL               LL_DMA_CHANNEL_3
+#define PIPE_RX_DMA_REQUEST               LL_DMAMUX_REQ_USART1_RX
+#define PIPE_RX_DMA_TC(PIPE_RX_DMA)       LL_DMA_IsActiveFlag_TC3(PIPE_RX_DMA)
+#define PIPE_RX_DMA_CLEAR_TC(PIPE_RX_DMA) LL_DMA_ClearFlag_TC3(PIPE_RX_DMA)
+
+#define PIPE_TX_DMA_CLOCK_ENABLE()        __HAL_RCC_DMA1_CLK_ENABLE();
+#define PIPE_TX_DMA                       DMA1
+#define PIPE_TX_DMA_CHANNEL               LL_DMA_CHANNEL_4
+#define PIPE_TX_DMA_REQUEST               LL_DMAMUX_REQ_USART1_TX
+#define PIPE_TX_DMA_TC(PIPE_TX_DMA)       LL_DMA_IsActiveFlag_TC4(PIPE_TX_DMA)
+#define PIPE_TX_DMA_CLEAR_TC(PIPE_TX_DMA) LL_DMA_ClearFlag_TC4(PIPE_TX_DMA)
+#define PIPE_TX_DMA_IRQ                   DMA1_Channel4_IRQn
+#define PIPE_TX_DMA_IRQHANDLER()          DMA1_Channel4_IRQHandler()
+
 #endif /* _NODE_CONFIG_H_ */
