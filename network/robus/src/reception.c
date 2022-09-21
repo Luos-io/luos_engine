@@ -326,7 +326,6 @@ _CRITICAL void Recep_Reset(void)
 {
     data_count                     = 0;
     crc_val                        = 0xFFFF;
-    ctx.tx.lock                    = false;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.callback                = Recep_GetHeader;
     RobusHAL_SetRxDetecPin(true);

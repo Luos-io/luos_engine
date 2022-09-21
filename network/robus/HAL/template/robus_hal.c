@@ -206,7 +206,7 @@ void LUOS_COM_IRQHANDLER()
     /*************************************************************************
      * This is the callback function called when an transmission and/or
      * reception IRQ on UART is raised.
-     * 
+     *
      * This function name is a Macro containing the IRQ handler name.
      * This macro can have a default value in robus_hal_config.h file then users will be able to modify it on their project node_config.h file.
      *
@@ -253,6 +253,7 @@ void LUOS_COM_IRQHANDLER()
     /*4. Transmission management*/
     if ("Transmission complete interrupt is true and enable")
     {
+        data_size_to_transmit = 0;
         RobusHAL_SetRxState(true);
         RobusHAL_SetTxState(false);
         // Clear IRQ disable Transmission complete flag
@@ -285,7 +286,7 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
     /*************************************************************************
      * Luos engine use this function to send data from msg buffer.
      * There is two way to send data depending on your configuration DMA or IT.
-     * 
+     *
      * When only 1 byte is send HAL never use DMA. Robus do that to acknoledge the reception of the a message.
      *
      * This function send data over network :
@@ -324,6 +325,7 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
     // 3. A ack to send
     else
     {
+        data_size_to_transmit = 0;
         // Wait 5us before sending the ack
         while ("counter < TIMEOUT_ACK")
             ;
@@ -550,7 +552,7 @@ static void RobusHAL_RegisterPTP(void)
 {
     /*************************************************************************
      * This function associate PTP pin to the Port_t PTP[NBR_PORT] table.
-     * 
+     *
      * To works, robus need at least 2 PTP lines per board to daisy chain the nodes on the network during detection.
      *
      * NBR_PORT is a define that you can adapt to you project in node_config.h files
