@@ -130,6 +130,7 @@ void DataManager_Format(service_t *service)
     char *data_ptr  = data;
     msg_t *data_msg = 0;
     uint8_t data_ok = false;
+    uint8_t sending = false;
     search_result_t result;
 
     RTFilter_Reset(&result);
@@ -157,6 +158,7 @@ void DataManager_Format(service_t *service)
                 // check if a node send a bootloader message
                 if (data_msg->header.cmd == BOOTLOADER_RESP)
                 {
+                    sending = true;
                     Bootloader_LuosToJson(service, data_msg);
                     continue;
                 }
@@ -211,7 +213,7 @@ void DataManager_Format(service_t *service)
             Convert_EndData(service, data, data_ptr);
             FirstNoReceptionDate = 0;
         }
-        else
+        else if (sending == false)
         {
             // We don't receive anything.
             // After 1s void reception send void data allowing client to send commands (because client could be synchronized to reception).
