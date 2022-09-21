@@ -59,7 +59,7 @@ jobs:
           node-version: '14'
 
       - name: Install dependencies
-        run: npm install -g clang-format@1.5.0
+        run: npm install -g clang-format
 
       - name: Check for code format
         run: python .github/workflows/run-clang-format.py -r .
