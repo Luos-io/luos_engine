@@ -74,7 +74,18 @@ static inline void SerialProtocol_CreateTxMsg(void)
     Stream_PutSample(serialTx_StreamChannel, &SerialProtocol, sizeof(SerialProtocol_t));
 
     // Keep size to update, size are the last 2 bytes of the StreamChannel
-    size_to_update = (uint8_t *)((int)serialTx_StreamChannel->data_ptr - 2);
+    if (serialTx_StreamChannel->data_ptr == serialTx_StreamChannel->ring_buffer)
+    {
+        size_to_update = (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer - 2);
+    }
+    else if (serialTx_StreamChannel->data_ptr == serialTx_StreamChannel->ring_buffer + serialTx_StreamChannel->data_size)
+    {
+        size_to_update = (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer - 1);
+    }
+    else
+    {
+        size_to_update = (uint8_t *)((int)serialTx_StreamChannel->data_ptr - 2);
+    }
 }
 
 static inline uint16_t SerialProtocol_GetSizeToSend(void)
