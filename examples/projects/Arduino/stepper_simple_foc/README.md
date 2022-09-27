@@ -27,7 +27,7 @@ Version: 2.6.1
 
 ## Wiring schematic​
 
-![Wiring Stepper](https://raw.githubusercontent.com/Luos-io/Documentation/main/static/img/stepper_wiring.drawio.png)
+![Wiring Stepper](https://raw.githubusercontent.com/Luos-io/Documentation/main/static/assets/images/stepper_wiring.drawio.png)
 
 
 ## Join Luos Community
