@@ -9,7 +9,7 @@
     },
     "licence": "MIT",
     "dependencies": {
-	"luos/luos_engine": "^2.6.1"
+        "luos/luos_engine": "^2.6.2"
     },
     "build": {
         "flags": [
@@ -25,8 +25,7 @@
             "-D MPU9250",
             "-D EMPL",
             "-D EMPL_TARGET_STM32F4",
-            "-D MPL_LOG_NDEBUG=1",
-            "-DREV={1,0,0}"
+            "-D MPL_LOG_NDEBUG=1"
         ],
         "src_filter": [
             "+<motion_driver_6.12/core/mllite/*>",

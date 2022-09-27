@@ -11,7 +11,7 @@
     "build": {},
     "dependencies": {
         "askuric/Simple FOC": "^2.2.1",
-	"luos/luos_engine": "^2.6.1",
+	"luos/luos_engine": "^2.6.2",
         "Wire": "*",
         "SPI": "*"
     }

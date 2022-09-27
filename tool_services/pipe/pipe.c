@@ -4,8 +4,8 @@
  * @author Luos
  * @version 0.1.0
  ******************************************************************************/
-#include <stdbool.h>
 #include "pipe.h"
+#include "_pipe.h"
 #include "pipe_com.h"
 
 /*******************************************************************************
@@ -15,8 +15,10 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-streaming_channel_t P2L_StreamChannel;
-streaming_channel_t L2P_StreamChannel;
+streaming_channel_t rx_StreamChannel;
+streaming_channel_t tx_StreamChannel;
+uint8_t rx_Buffer[PIPE_RX_BUFFER_SIZE] = {0};
+uint8_t tx_Buffer[PIPE_TX_BUFFER_SIZE] = {0};
 
 /*******************************************************************************
  * Function
@@ -29,11 +31,11 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Pipe_Init(void)
 {
-    revision_t revision = {.major = 1, .minor = 0, .build = 0};
+    rx_StreamChannel = Stream_CreateStreamingChannel(rx_Buffer, PIPE_RX_BUFFER_SIZE, 1);
+    tx_StreamChannel = Stream_CreateStreamingChannel(tx_Buffer, PIPE_TX_BUFFER_SIZE, 1);
     PipeCom_Init();
+    revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Pipe_MsgHandler, PIPE_TYPE, "Pipe", revision);
-    P2L_StreamChannel = Stream_CreateStreamingChannel(PipeBuffer_GetP2LBuffer(), PIPE_TO_LUOS_BUFFER_SIZE, 1);
-    L2P_StreamChannel = Stream_CreateStreamingChannel(PipeBuffer_GetL2PBuffer(), LUOS_TO_PIPE_BUFFER_SIZE, 1);
 }
 /******************************************************************************
  * @brief loop must be call in project loop
@@ -52,45 +54,34 @@ void Pipe_Loop(void)
  ******************************************************************************/
 static void Pipe_MsgHandler(service_t *service, msg_t *msg)
 {
-    SerialProtocol_t SerialProtocol = {SERIAL_HEADER, 0, SERIAL_FOOTER};
-    uint16_t size                   = 0;
-    static bool L2P_CompleteMsg     = true;
+    uint16_t size = 0;
 
     if (msg->header.cmd == GET_CMD)
     {
-        if (true == PipeBuffer_GetP2LMsg(&size))
+        if (true == PipeCom_Receive(&size))
         {
             // fill the message infos
             msg_t pub_msg;
             pub_msg.header.cmd         = SET_CMD;
             pub_msg.header.target_mode = SERVICEID;
             pub_msg.header.target      = msg->header.source;
-            Luos_SendStreamingSize(service, &pub_msg, &P2L_StreamChannel, size);
+            Luos_SendStreamingSize(service, &pub_msg, &rx_StreamChannel, size);
         }
     }
     else if (msg->header.cmd == SET_CMD)
     {
         if (msg->header.size > 0)
         {
-            if (L2P_CompleteMsg == true)
+            if (Luos_ReceiveStreaming(service, msg, &tx_StreamChannel) == SUCCEED)
             {
-                L2P_CompleteMsg     = false;
-                SerialProtocol.Size = msg->header.size;
-                Stream_PutSample(&L2P_StreamChannel, &SerialProtocol, 3);
-            }
-            if (Luos_ReceiveStreaming(service, msg, &L2P_StreamChannel) == SUCCEED)
-            {
-                Stream_PutSample(&L2P_StreamChannel, &SerialProtocol.Footer, 1);
-                L2P_CompleteMsg = true;
+                // Data reception is complete, we can send it.
+                PipeCom_Send();
             }
         }
-        if (PipeCom_SendL2PPending() == false)
+        else
         {
-            size = Stream_GetAvailableSampleNBUntilEndBuffer(&L2P_StreamChannel);
-            if (size > 0)
-            {
-                PipeCom_SendL2P(L2P_StreamChannel.sample_ptr, size);
-            }
+            // The source of the data we have to send is localhost and the data is already in the buffer, we just have to send it.
+            PipeCom_Send();
         }
     }
     else if (msg->header.cmd == PARAMETERS)
@@ -100,31 +91,35 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
         pub_msg.header.cmd         = PARAMETERS;
         pub_msg.header.target_mode = SERVICEIDACK;
         pub_msg.header.target      = msg->header.source;
-        pub_msg.header.size        = sizeof(void *);
-        uintptr_t value            = (uintptr_t)&PipeBuffer_SetL2PMsg;
-        memcpy(pub_msg.data, &value, sizeof(void *));
+        pub_msg.header.size        = sizeof(uintptr_t);
+        uintptr_t value            = (uintptr_t)&tx_StreamChannel;
+        memcpy(pub_msg.data, &value, sizeof(uintptr_t));
         Luos_SendMsg(service, &pub_msg);
     }
     else if (msg->header.cmd == REINIT)
     {
-        L2P_StreamChannel.sample_ptr = L2P_StreamChannel.data_ptr;
+        tx_StreamChannel.data_ptr   = tx_StreamChannel.ring_buffer;
+        tx_StreamChannel.sample_ptr = tx_StreamChannel.data_ptr;
+        rx_StreamChannel.data_ptr   = rx_StreamChannel.ring_buffer;
+        rx_StreamChannel.sample_ptr = rx_StreamChannel.data_ptr;
+        PipeCom_Init();
     }
 }
 /******************************************************************************
- * @brief get Luos to Pipe StreamChannel
+ * @brief get TX (Luos to outside) StreamChannel
  * @param None
  * @return streaming_channel_t*
  ******************************************************************************/
-streaming_channel_t *get_L2P_StreamChannel(void)
+streaming_channel_t *Pipe_GetTxStreamChannel(void)
 {
-    return &L2P_StreamChannel;
+    return &tx_StreamChannel;
 }
 /******************************************************************************
- * @brief get Pipe to Luos StreamChannel
+ * @brief get RX (outside to Luos) StreamChannel
  * @param None
  * @return streaming_channel_t*
  ******************************************************************************/
-streaming_channel_t *get_P2L_StreamChannel(void)
+streaming_channel_t *Pipe_GetRxStreamChannel(void)
 {
-    return &P2L_StreamChannel;
+    return &rx_StreamChannel;
 }

@@ -223,6 +223,7 @@ _CRITICAL void Transmit_End(void)
         // A tx_task have been sucessfully transmitted
         nbrRetry         = 0;
         ctx.tx.collision = false;
+        ctx.tx.status    = TX_DISABLE;
         // Remove the task
         MsgAlloc_PullMsgFromTxTask();
     }
@@ -237,6 +238,7 @@ _CRITICAL void Transmit_End(void)
         ctx.tx.status = TX_DISABLE;
         return;
     }
+    ctx.tx.lock = false;
     // Try to send something if we need to.
     Transmit_Process();
 }

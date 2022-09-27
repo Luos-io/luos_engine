@@ -127,7 +127,7 @@ uint16_t Stream_GetSample(streaming_channel_t *stream, void *data, uint16_t size
  ******************************************************************************/
 uint16_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
 {
-    int16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
+    int32_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
     if (nb_available_sample < 0)
     {
         // The buffer have looped
@@ -143,7 +143,7 @@ uint16_t Stream_GetAvailableSampleNB(streaming_channel_t *stream)
  ******************************************************************************/
 uint16_t Stream_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
 {
-    int16_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
+    int32_t nb_available_sample = (stream->data_ptr - stream->sample_ptr) / stream->data_size;
     if (nb_available_sample < 0)
     {
         // The buffer have looped

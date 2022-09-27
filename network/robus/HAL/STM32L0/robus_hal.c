@@ -168,10 +168,12 @@ void RobusHAL_SetRxState(uint8_t Enable)
     if (Enable == true)
     {
         LL_USART_RequestRxDataFlush(LUOS_COM); // Clear data register
-        LL_USART_EnableIT_RXNE(LUOS_COM);      // Enable Rx IT
+        LL_USART_EnableDirectionRx(LUOS_COM);
+        LL_USART_EnableIT_RXNE(LUOS_COM); // Enable Rx IT
     }
     else
     {
+        LL_USART_DisableDirectionRx(LUOS_COM);
         LL_USART_DisableIT_RXNE(LUOS_COM); // Disable Rx IT
     }
 }
@@ -207,6 +209,7 @@ void LUOS_COM_IRQHANDLER()
     if ((LL_USART_IsActiveFlag_TC(LUOS_COM) != RESET) && (LL_USART_IsEnabledIT_TC(LUOS_COM) != RESET))
     {
         // Transmission complete
+        data_size_to_transmit = 0;
         // Switch to reception mode
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
@@ -279,6 +282,7 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
     else
     {
         // wait before send ack
+        data_size_to_transmit = 1;
         // this is a patch du to difference MCU frequency
         while (LL_TIM_GetCounter(LUOS_TIMER) < TIMEOUT_ACK)
             ;

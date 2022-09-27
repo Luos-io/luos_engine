@@ -40,7 +40,7 @@ static void rx_digit_read_cb(service_t *service, msg_t *msg);
  ******************************************************************************/
 void GpioDev_Init(void)
 {
-    revision_t revision = {.unmap = REV};
+    revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // ******************* Analog measurement *******************
 
     // ************* services creation *******************

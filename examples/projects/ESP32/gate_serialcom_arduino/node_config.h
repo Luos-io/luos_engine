@@ -43,10 +43,10 @@
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
-
-#define MAX_SERVICE_NUMBER 2
-#define MSG_BUFFER_SIZE    2048
-#define MAX_MSG_NB         40
+#define MAX_SERVICE_NUMBER 3
+#define MAX_PROFILE_NUMBER 1
+#define MAX_MSG_NB         5
+#define INIT_TIME          150
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -100,23 +100,29 @@
  *    :-------------------------|------------------------------------------------------
  *    MAX_RTB_ENTRY             |              40            | max number entry in routing table
  *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
- *    PIPE_TO_LUOS_BUFFER_SIZE  |             1024           | Receive pipe buffer size
- *    LUOS_TO_PIPE_BUFFER_SIZE  |             2048           | Transmit pipe buffer size
+ *    PIPE_TX_BUFFER_SIZE  |             1024           | Receive pipe buffer size
+ *    PIPE_RX_BUFFER_SIZE  |             2048           | Transmit pipe buffer size
+ *    INIT_TIME                 |              150           | Wait init time before first detection
  ******************************************************************************/
-
-#define MAX_RTB_ENTRY            40
-#define GATE_BUFF_SIZE           1024
-#define PIPE_TO_LUOS_BUFFER_SIZE 1024
-#define LUOS_TO_PIPE_BUFFER_SIZE 2048
+#define MAX_RTB_ENTRY       40
+#define GATE_BUFF_SIZE      1024
+#define PIPE_RX_BUFFER_SIZE 1024
+#define PIPE_TX_BUFFER_SIZE 2048
 
 /*******************************************************************************
  * OTHER GATE PARAMETERS
  *******************************************************************************
- *    Define                    | Default Value              | Description
- *    :-------------------------|------------------------------------------------------
- *    INIT_TIME                 |              150           | Wait init time before first detection
+ *    Define         |   Default Value    | Description
+ *    :--------------|------------------------------------------------------
+ *    INIT_TIME      |      150           | Wait init time before first detection
  * ******************************************************************************/
 
-#define PIPE_SERIAL_BAUDRATE 115200
+/*******************************************************************************
+ * OTHER PIPE PARAMETERS
+ *******************************************************************************
+ *    Define               |     Default Value       | Description
+ *    :--------------------|----------------------------------------------------
+ *    PIPE_CONFIG          |          none           | To Modify pipe config
+ * ******************************************************************************/
 
 #endif /* _NODE_CONFIG_H_ */

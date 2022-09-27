@@ -27,7 +27,7 @@ Version: 2.6.1
 
 ## Wiring schematic​
 
-![Wiring BLDC](https://raw.githubusercontent.com/Luos-io/Documentation/main/static/img/simplefoc_schematic.drawio.png)
+![Wiring BLDC](https://raw.githubusercontent.com/Luos-io/Documentation/main/static/assets/images/simplefoc_schematic.drawio.png)
 
 
 ## Join Luos Community

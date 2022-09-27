@@ -26,7 +26,7 @@ static void Button_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Button_Init(void)
 {
-    revision_t revision = {.unmap = REV};
+    revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Button_MsgHandler, STATE_TYPE, "button", revision);
 }
 /******************************************************************************

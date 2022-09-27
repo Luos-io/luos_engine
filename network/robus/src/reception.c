@@ -4,8 +4,44 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include "reception.h"
 
+/******************************* Description of the RX process ***********************************
+*                                          Byte Received
+*                                                +
+*                                                |
+*                                        no      v      yes
+*                         +-----------------+Tx Enable+---------------+
+*                         |                                           |
+*  +------+     true      v                                           v
+*  | Drop | <--------+Drop state<-----------------------+      +------+------+
+*  | byte |               +                             |      |  Get        |
+*  +------+               | false                       |      |   Collision |
+*                         v                             |      |             |
+*                   Header complete                     |      |  source ID  |yes
+*                         +                             |      |   received  +------>Disable Rx
+*                         | yes                            |      |      +      |           +
+*                         v                             |      |      |no    |           |
+*                  +------+------+   +-------------+    |    no|      v      |           v
+*                  |  Get        |   |  Get        |    +------+  Collision  |       Wait End
+*                  |    Header   |   |     Data    |           +-------------+        Transmit
+*                  |             |   |             |                  |yes               +
+*                  | +---------+ |   |             |                  v                  |
+*                no| |   Node  | |   |  Message    |             Disable Tx       no     v
+*Drop = true <-------+Concerned| |   |    Complete |                           +----+Ack needed
+*     ^            | +---------+ |   |      +      |                           |         +
+*     |            |      |yes   |   |      |yes   |    Drop message           |         |yes
+*     |            |      v      |   |      v      |no   Send NACK             |         v
+*     |          no|    valid    |   |  Valid    +---->   if needed +--+       |     +---+----+
+*     +---------------+ Header   |   |       CRC   |                   |       |     | Get    |
+*                  |      +      |   +------+------+                   |       |     |    Ack |
+*                  |      |yes   |          |yes                       v       v     +---+----+
+*                  |      v      |          v                  +-------+-------+-+       |
+*                  |   Header    |    Store message            |     Timeout     |       |
+*                  |   Complete  |   Send ACK if needed+------>+  End reception  +<------+
+*                  +-------------+                             +-----------------+
+***********************************************************************************************/
+
+#include "reception.h"
 #include <string.h>
 #include <stdbool.h>
 #include "robus_hal.h"
@@ -30,6 +66,7 @@
 
 #define COLLISION_DETECTION_NUMBER 4
 #define BYTE_TRANSMIT_TIME         8
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -326,7 +363,6 @@ _CRITICAL void Recep_Reset(void)
 {
     data_count                     = 0;
     crc_val                        = 0xFFFF;
-    ctx.tx.lock                    = false;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.callback                = Recep_GetHeader;
     RobusHAL_SetRxDetecPin(true);
