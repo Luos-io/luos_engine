@@ -9,7 +9,7 @@
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
 [![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
 
-Version: 2.6.2
+Version: 2.6.3
 
 # Luos Technology
 ## The most for the developer​
