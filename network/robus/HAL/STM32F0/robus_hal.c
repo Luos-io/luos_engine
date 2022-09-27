@@ -209,7 +209,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
     if ((LL_USART_IsActiveFlag_TC(LUOS_COM) != RESET) && (LL_USART_IsEnabledIT_TC(LUOS_COM) != RESET))
     {
         // Transmission complete
-        data_size_to_transmit == 0;
+        data_size_to_transmit = 0;
         // Switch to reception mode
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
