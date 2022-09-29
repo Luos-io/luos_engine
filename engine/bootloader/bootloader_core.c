@@ -430,7 +430,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
             {
                 // boot the application programmed in dedicated flash partition
                 LuosBootloader_DeInit();
-                LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
                 LuosBootloader_JumpToApp();
             }
             else
