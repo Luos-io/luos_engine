@@ -350,7 +350,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
 
     switch (bootloader_cmd)
     {
-#ifndef BOOTLOADER
+#ifdef WITH_BOOTLOADER
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
@@ -358,7 +358,8 @@ void LuosBootloader_MsgHandler(msg_t *input)
             LuosBootloader_SaveNodeID();
             LuosHAL_Reboot();
             break;
-#else
+#endif
+#ifdef BOOTLOADER
             // we're in the bootloader,
             // process cmd and data
         case BOOTLOADER_READY:
