@@ -87,6 +87,23 @@ void LuosBootloader_Init(void)
 
     // set ID node saved in flash
     LuosBootloader_SetNodeID();
+
+    switch (LuosBootloader_GetMode())
+    {
+        case JUMP_TO_APP_MODE:
+            // boot the application programmed in dedicated flash partition
+            LuosBootloader_DeInit();
+            LuosBootloader_JumpToApp();
+            break;
+
+        case APP_RELOAD_MODE:
+            LuosHAL_SetMode((uint8_t)JUMP_TO_APP_MODE);
+            break;
+
+        case BOOT_MODE:
+        default:
+            break;
+    }
 }
 
 /******************************************************************************
@@ -319,19 +336,6 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
  ******************************************************************************/
 void LuosBootloader_Loop(void)
 {
-    switch (LuosBootloader_GetMode())
-    {
-        case JUMP_TO_APP_MODE:
-            // boot the application programmed in dedicated flash partition
-            LuosBootloader_DeInit();
-            LuosBootloader_JumpToApp();
-            break;
-
-        case BOOT_MODE:
-        case APP_RELOAD_MODE:
-        default:
-            break;
-    }
 }
 #endif
 
@@ -361,6 +365,8 @@ void LuosBootloader_MsgHandler(msg_t *input)
             source_id            = input->header.source;
             bootloader_data_size = input->header.size - sizeof(char);
             memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+
+            LuosHAL_SetMode((uint8_t)BOOT_MODE);
 
             // save binary length
             memcpy(&nb_bytes, &bootloader_data[0], sizeof(uint32_t));
@@ -434,7 +440,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
             }
             else
             {
-                LuosHAL_SetMode((uint8_t)BOOT_MODE);
                 // reboot the node
                 LuosHAL_Reboot();
             }
