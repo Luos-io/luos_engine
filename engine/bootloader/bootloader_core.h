@@ -65,5 +65,8 @@ void LuosBootloader_Loop(void);
  * @brief function used by Luos to send message to the bootloader
  ******************************************************************************/
 void LuosBootloader_MsgHandler(msg_t *);
+#ifndef BOOTLOADER
+void LuosBootloader_JumpToBootloader(void);
+#endif
 
 #endif /* BOOTLOADER_H */
