@@ -57,8 +57,6 @@ static inline void LuosBootloader_ProcessData(void);
 static inline void LuosBootloader_SaveLastData(void);
 static void LuosBootloader_SendResponse(bootloader_cmd_t);
 static void LuosBootloader_SendCrc(bootloader_cmd_t, uint8_t);
-#else
-static void LuosBootloader_SaveNodeID(void);
 #endif
 
 /******************************************************************************
@@ -66,12 +64,19 @@ static void LuosBootloader_SaveNodeID(void);
  * @param None
  * @return None
  ******************************************************************************/
-void LuosBootloader_SaveNodeID(void)
+void LuosBootloader_JumpToBootloader(void)
 {
+    // Set bootlaoder mode
+    LuosHAL_SetMode((uint8_t)APP_RELOAD_MODE);
+
+    // Save node id in flash
     node_t *node     = Robus_GetNode();
     uint16_t node_id = node->node_id;
 
     LuosHAL_SaveNodeID(node_id);
+
+    // Reset the MCU
+    LuosHAL_Reboot();
 }
 
 #ifdef BOOTLOADER
@@ -354,9 +359,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_START:
             // We're in the app,
             // set bootloader mode, save node ID and reboot
-            LuosHAL_SetMode((uint8_t)APP_RELOAD_MODE);
-            LuosBootloader_SaveNodeID();
-            LuosHAL_Reboot();
+            LuosBootloader_JumpToBootloader();
             break;
 #endif
 #ifdef BOOTLOADER
