@@ -11,6 +11,9 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "stdbool.h"
+#ifdef WITH_BOOTLOADER
+    #include "bootloader_core.h"
+#endif
 
 /*******************************************************************************
  * Function
@@ -54,6 +57,13 @@ _CRITICAL __attribute__((weak)) void Luos_assert(char *file, uint32_t line)
     // wait for the transmission to finish before killing IRQ
     while (MsgAlloc_TxAllComplete() == FAILED)
         ;
+#ifdef WITH_BOOTLOADER
+    // We're in a failed app,
+    // Restart this node in bootloader mode instead of don't do anything
+    // We will come back on this app after a reboot.
+    // Set bootloader mode, save node ID and reboot
+    LuosBootloader_JumpToBootloader();
+#endif
     LuosHAL_SetIrqState(false);
     while (1)
     {
