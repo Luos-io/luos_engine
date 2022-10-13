@@ -43,10 +43,10 @@
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
-#define MAX_SERVICE_NUMBER 3
-#define MAX_PROFILE_NUMBER 1
-#define MAX_MSG_NB         5
-#define INIT_TIME          150
+
+#define MSG_BUFFER_SIZE      1024
+#define PIPE_SERIAL_BAUDRATE 500000
+#define DEFAULTBAUDRATE      500000
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -105,9 +105,9 @@
  *    INIT_TIME                 |              150           | Wait init time before first detection
  ******************************************************************************/
 #define MAX_RTB_ENTRY       40
-#define GATE_BUFF_SIZE      1024
-#define PIPE_RX_BUFFER_SIZE 1024
-#define PIPE_TX_BUFFER_SIZE 2048
+#define GATE_BUFF_SIZE      2048
+#define PIPE_RX_BUFFER_SIZE 2048
+#define PIPE_TX_BUFFER_SIZE 4096
 
 /*******************************************************************************
  * OTHER GATE PARAMETERS
