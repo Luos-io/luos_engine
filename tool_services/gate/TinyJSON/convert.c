@@ -18,7 +18,7 @@
 #define MAX_JSON_FIELDS 50
 
 static const char *Convert_Float(float value);
-static void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const json_t *jobj, msg_t *msg, char *bin_data);
+static void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *property, const json_t *jobj, msg_t *msg, char *bin_data);
 static const char *Convert_StringFromType(luos_type_t type);
 
 /*******************************************************************************
@@ -115,7 +115,14 @@ void Convert_DataToLuos(service_t *service, char *data)
                 // So here there is an error in alias.
                 return;
             }
-            Convert_JsonToMsg(service, result.result_table[0]->id, result.result_table[0]->type, service_jsn, &msg, (char *)data);
+            // This service is known by the gate, loop on the parameters
+            json_t const *parameter_jsn = json_getChild(service_jsn);
+            while (parameter_jsn != NULL)
+            {
+                char *property = (char *)json_getName(parameter_jsn);
+                Convert_JsonToMsg(service, result.result_table[0]->id, result.result_table[0]->type, property, parameter_jsn, &msg, (char *)data);
+                parameter_jsn = json_getSibling(parameter_jsn);
+            }
             // Get next service
             service_jsn = json_getSibling(service_jsn);
         }
@@ -123,208 +130,221 @@ void Convert_DataToLuos(service_t *service, char *data)
     }
 }
 // Create msg from a service json data
-void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const json_t *jobj, msg_t *msg, char *bin_data)
+void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *property, const json_t *jobj, msg_t *msg, char *bin_data)
 {
     time_luos_t time;
-    float data = 0.0;
-    json_t const *item;
-    msg->header.target_mode = SERVICEIDACK;
-    msg->header.target      = id;
+    float data                   = 0.0;
+    msg->header.target_mode      = SERVICEIDACK;
+    msg->header.target           = id;
+    const uint16_t property_type = json_getType(jobj);
     //********** global convertion***********
     // ratio
-    item = json_getProperty(jobj, "power_ratio");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "power_ratio")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        ratio_t ratio = (ratio_t)json_getReal(item);
+        ratio_t ratio = (ratio_t)json_getReal(jobj);
         RatioOD_RatioToMsg(&ratio, msg);
         while (Luos_SendMsg(service, msg) == FAILED)
         {
             Luos_Loop();
         }
+        return;
     }
     // target angular position
-    item = json_getProperty(jobj, "target_rot_position");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if (property && !strcmp(property, "target_rot_position"))
     {
-        angular_position_t angular_position = AngularOD_PositionFrom_deg(json_getReal(item));
-        AngularOD_PositionToMsg(&angular_position, msg);
-        Luos_SendMsg(service, msg);
-    }
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
-    {
-        int i = 0;
-        // this is a trajectory
-        int size = (int)json_getInteger(json_getChild(item));
-        // find the first \r of the current buf
-        for (i = 0; i < GATE_BUFF_SIZE; i++)
+        if ((property_type == JSON_REAL) || (property_type == JSON_INTEGER))
         {
-            if (bin_data[i] == '\n')
+            angular_position_t angular_position = AngularOD_PositionFrom_deg(json_getReal(jobj));
+            AngularOD_PositionToMsg(&angular_position, msg);
+            Luos_SendMsg(service, msg);
+            return;
+        }
+        if (property_type == JSON_ARRAY)
+        {
+            int i = 0;
+            // this is a trajectory
+            int size = (int)json_getInteger(json_getChild(jobj));
+            // find the first \r of the current buf
+            for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
-                i++;
-                break;
+                if (bin_data[i] == '\n')
+                {
+                    i++;
+                    break;
+                }
             }
+            if (i < GATE_BUFF_SIZE - 1)
+            {
+                msg->header.cmd = ANGULAR_POSITION;
+                Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
+            }
+            return;
         }
-        if (i < GATE_BUFF_SIZE - 1)
-        {
-            msg->header.cmd = ANGULAR_POSITION;
-            Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
-        }
+        return;
     }
     // Limit angular position
-    item = json_getProperty(jobj, "limit_rot_position");
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    if ((property && !strcmp(property, "limit_rot_position")) && (property_type == JSON_ARRAY))
     {
         angular_position_t limits[2];
-        item      = json_getChild(item);
-        limits[0] = AngularOD_PositionFrom_deg(json_getReal(item));
-        item      = json_getSibling(item);
-        limits[1] = AngularOD_PositionFrom_deg(json_getReal(item));
+        json_t const *item = json_getChild(jobj);
+        limits[0]          = AngularOD_PositionFrom_deg(json_getReal(item));
+        item               = json_getSibling(item);
+        limits[1]          = AngularOD_PositionFrom_deg(json_getReal(item));
         memcpy(&msg->data[0], limits, 2 * sizeof(float));
         msg->header.cmd  = ANGULAR_POSITION_LIMIT;
         msg->header.size = 2 * sizeof(float);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Limit linear position
-    item = json_getProperty(jobj, "limit_trans_position");
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    if ((property && !strcmp(property, "limit_trans_position")) && (property_type == JSON_ARRAY))
     {
         linear_position_t limits[2];
-        item      = json_getChild(item);
-        limits[0] = LinearOD_PositionFrom_mm(json_getReal(item));
-        item      = json_getSibling(item);
-        limits[1] = LinearOD_PositionFrom_mm(json_getReal(item));
+        json_t const *item = json_getChild(jobj);
+        limits[0]          = LinearOD_PositionFrom_mm(json_getReal(item));
+        item               = json_getSibling(item);
+        limits[1]          = LinearOD_PositionFrom_mm(json_getReal(item));
         memcpy(&msg->data[0], limits, 2 * sizeof(linear_position_t));
         msg->header.cmd  = LINEAR_POSITION_LIMIT;
         msg->header.size = 2 * sizeof(linear_position_t);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Limit angular speed
-    item = json_getProperty(jobj, "limit_rot_speed");
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    if ((property && !strcmp(property, "limit_rot_speed")) && (property_type == JSON_ARRAY))
     {
         angular_speed_t limits[2];
-        item      = json_getChild(item);
-        limits[0] = AngularOD_SpeedFrom_deg_s(json_getReal(item));
-        item      = json_getSibling(item);
-        limits[1] = AngularOD_SpeedFrom_deg_s(json_getReal(item));
+        json_t const *item = json_getChild(jobj);
+        limits[0]          = AngularOD_SpeedFrom_deg_s(json_getReal(item));
+        item               = json_getSibling(item);
+        limits[1]          = AngularOD_SpeedFrom_deg_s(json_getReal(item));
         memcpy(&msg->data[0], limits, 2 * sizeof(float));
         msg->header.cmd  = ANGULAR_SPEED_LIMIT;
         msg->header.size = 2 * sizeof(float);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Limit linear speed
-    item = json_getProperty(jobj, "limit_trans_speed");
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    if ((property && !strcmp(property, "limit_trans_speed")) && (property_type == JSON_ARRAY))
     {
         linear_speed_t limits[2];
-        item      = json_getChild(item);
-        limits[0] = LinearOD_Speedfrom_mm_s(json_getReal(item));
-        item      = json_getSibling(item);
-        limits[1] = LinearOD_Speedfrom_mm_s(json_getReal(item));
+        json_t const *item = json_getChild(jobj);
+        limits[0]          = LinearOD_Speedfrom_mm_s(json_getReal(item));
+        item               = json_getSibling(item);
+        limits[1]          = LinearOD_Speedfrom_mm_s(json_getReal(item));
         memcpy(&msg->data[0], limits, 2 * sizeof(linear_speed_t));
         msg->header.cmd  = LINEAR_SPEED_LIMIT;
         msg->header.size = 2 * sizeof(linear_speed_t);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Limit ratio
-    item = json_getProperty(jobj, "limit_power");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "limit_power")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        ratio_t ratio = RatioOD_RatioFromPercent((float)json_getReal(item));
+        ratio_t ratio = RatioOD_RatioFromPercent((float)json_getReal(jobj));
         RatioOD_RatioToMsg(&ratio, msg);
         msg->header.cmd = RATIO_LIMIT;
         Luos_SendMsg(service, msg);
+        return;
     }
     // Limit current
-    item = json_getProperty(jobj, "limit_current");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "limit_current")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        current_t current = ElectricOD_CurrentFrom_A(json_getReal(item));
+        current_t current = ElectricOD_CurrentFrom_A(json_getReal(jobj));
         ElectricOD_CurrentToMsg(&current, msg);
         msg->header.cmd = CURRENT_LIMIT;
         Luos_SendMsg(service, msg);
+        return;
     }
     // target Rotation speed
-    item = json_getProperty(jobj, "target_rot_speed");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if (property && !strcmp(property, "target_rot_speed"))
     {
-        // this should be a function because it is frequently used
-        angular_speed_t angular_speed = AngularOD_SpeedFrom_deg_s((float)json_getReal(item));
-        AngularOD_SpeedToMsg(&angular_speed, msg);
-        Luos_SendMsg(service, msg);
-    }
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
-    {
-        int i = 0;
-        // this is a trajectory
-        int size = (int)json_getInteger(json_getChild(item));
-        // find the first \r of the current buf
-        for (i = 0; i < GATE_BUFF_SIZE; i++)
+        if ((property_type == JSON_REAL) || (property_type == JSON_INTEGER))
         {
-            if (bin_data[i] == '\n')
+            // this should be a function because it is frequently used
+            angular_speed_t angular_speed = AngularOD_SpeedFrom_deg_s((float)json_getReal(jobj));
+            AngularOD_SpeedToMsg(&angular_speed, msg);
+            Luos_SendMsg(service, msg);
+            return;
+        }
+        if (property_type == JSON_ARRAY)
+        {
+            int i = 0;
+            // this is a trajectory
+            int size = (int)json_getInteger(json_getChild(jobj));
+            // find the first \r of the current buf
+            for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
-                i++;
-                break;
+                if (bin_data[i] == '\n')
+                {
+                    i++;
+                    break;
+                }
             }
+            if (i < GATE_BUFF_SIZE - 1)
+            {
+                msg->header.cmd = ANGULAR_SPEED;
+                Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
+            }
+            return;
         }
-        if (i < GATE_BUFF_SIZE - 1)
-        {
-            msg->header.cmd = ANGULAR_SPEED;
-            Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
-        }
+        return;
     }
     // target linear position
-    item = json_getProperty(jobj, "target_trans_position");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if (property && !strcmp(property, "target_trans_position"))
     {
-        linear_position_t linear_position = LinearOD_PositionFrom_mm((float)json_getReal(item));
-        LinearOD_PositionToMsg(&linear_position, msg);
-        Luos_SendMsg(service, msg);
-    }
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
-    {
-        int i = 0;
-        // this is a trajectory
-        int size = (int)json_getInteger(json_getChild(item));
-        // find the first \r of the current buf
-        for (i = 0; i < GATE_BUFF_SIZE; i++)
+        if ((property_type == JSON_REAL) || (property_type == JSON_INTEGER))
         {
-            if (bin_data[i] == '\n')
-            {
-                i++;
-                break;
-            }
+            linear_position_t linear_position = LinearOD_PositionFrom_mm((float)json_getReal(jobj));
+            LinearOD_PositionToMsg(&linear_position, msg);
+            Luos_SendMsg(service, msg);
+            return;
         }
-        if (i < GATE_BUFF_SIZE - 1)
+        if (property_type == JSON_ARRAY)
         {
-            msg->header.cmd = LINEAR_POSITION;
-            // todo WATCHOUT this could be mm !
-            Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
+            int i = 0;
+            // this is a trajectory
+            int size = (int)json_getInteger(json_getChild(jobj));
+            // find the first \r of the current buf
+            for (i = 0; i < GATE_BUFF_SIZE; i++)
+            {
+                if (bin_data[i] == '\n')
+                {
+                    i++;
+                    break;
+                }
+            }
+            if (i < GATE_BUFF_SIZE - 1)
+            {
+                msg->header.cmd = LINEAR_POSITION;
+                // todo WATCHOUT this could be mm !
+                Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
+            }
+            return;
         }
     }
     // target Linear speed
-    item = json_getProperty(jobj, "target_trans_speed");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "target_trans_speed")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        linear_speed_t linear_speed = LinearOD_Speedfrom_mm_s((float)json_getReal(item));
+        linear_speed_t linear_speed = LinearOD_Speedfrom_mm_s((float)json_getReal(jobj));
         LinearOD_SpeedToMsg(&linear_speed, msg);
         Luos_SendMsg(service, msg);
+        return;
     }
     // time
-    item = json_getProperty(jobj, "time");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "time")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
         // this should be a function because it is frequently used
-        time = TimeOD_TimeFrom_s((float)json_getReal(item));
+        time = TimeOD_TimeFrom_s((float)json_getReal(jobj));
         TimeOD_TimeToMsg(&time, msg);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Pid
-    item = json_getProperty(jobj, "pid");
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    if ((property && !strcmp(property, "pid")) && (property_type == JSON_ARRAY))
     {
         float pid[3];
-        item = json_getChild(item);
+        json_t const *item = json_getChild(jobj);
         for (int i = 0; i < 3; i++)
         {
             pid[i] = (float)json_getReal(item);
@@ -334,91 +354,92 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         msg->header.cmd  = PID;
         msg->header.size = sizeof(asserv_pid_t);
         Luos_SendMsg(service, msg);
+        return;
     }
     // resolution
-    item = json_getProperty(jobj, "resolution");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "resolution")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
         // this should be a function because it is frequently used
-        data = (float)json_getReal(item);
+        data = (float)json_getReal(jobj);
         memcpy(msg->data, &data, sizeof(data));
         msg->header.cmd  = RESOLUTION;
         msg->header.size = sizeof(data);
         Luos_SendMsg(service, msg);
+        return;
     }
     // offset
-    item = json_getProperty(jobj, "offset");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "offset")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
         // this should be a function because it is frequently used
-        data = (float)json_getReal(item);
+        data = (float)json_getReal(jobj);
         memcpy(msg->data, &data, sizeof(data));
         msg->header.cmd  = OFFSET;
         msg->header.size = sizeof(data);
         Luos_SendMsg(service, msg);
+        return;
     }
     // reduction ratio
-    item = json_getProperty(jobj, "reduction");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "reduction")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
         // this should be a function because it is frequently used
-        data = (float)json_getReal(item);
+        data = (float)json_getReal(jobj);
         memcpy(msg->data, &data, sizeof(data));
         msg->header.cmd  = REDUCTION;
         msg->header.size = sizeof(data);
         Luos_SendMsg(service, msg);
+        return;
     }
     // dimension (m)
-    item = json_getProperty(jobj, "dimension");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "dimension")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        linear_position_t linear_position = LinearOD_PositionFrom_mm((float)json_getReal(item));
+        linear_position_t linear_position = LinearOD_PositionFrom_mm((float)json_getReal(jobj));
         LinearOD_PositionToMsg(&linear_position, msg);
         // redefine a specific message type.
         msg->header.cmd = DIMENSION;
         Luos_SendMsg(service, msg);
+        return;
     }
     // voltage
-    item = json_getProperty(jobj, "volt");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "volt")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
         // this should be a function because it is frequently used
-        voltage_t volt = ElectricOD_VoltageFrom_V((float)json_getReal(item));
+        voltage_t volt = ElectricOD_VoltageFrom_V((float)json_getReal(jobj));
         ElectricOD_VoltageToMsg(&volt, msg);
         Luos_SendMsg(service, msg);
+        return;
     }
     // reinit
-    if (json_getProperty(jobj, "reinit") != NULL)
+    if (property && !strcmp(property, "reinit"))
     {
         msg->header.cmd  = REINIT;
         msg->header.size = 0;
         Luos_SendMsg(service, msg);
+        return;
     }
     // control (play, pause, stop, rec)
-    item = json_getProperty(jobj, "control");
-    if ((item != NULL) && (json_getType(item) == JSON_INTEGER))
+    if ((property && !strcmp(property, "control")) && (property_type == JSON_INTEGER))
     {
-        msg->data[0]     = json_getInteger(item);
+        msg->data[0]     = json_getInteger(jobj);
         msg->header.cmd  = CONTROL;
         msg->header.size = sizeof(control_t);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Pressure
-    item = json_getProperty(jobj, "pressure");
-    if ((item != NULL) && ((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)))
+    if ((property && !strcmp(property, "pressure")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
         // this should be a function because it is frequently used
-        data = (float)json_getReal(item);
+        data = (float)json_getReal(jobj);
         memcpy(msg->data, &data, sizeof(data));
         msg->header.cmd  = PRESSURE;
         msg->header.size = sizeof(data);
         Luos_SendMsg(service, msg);
+        return;
     }
     // Color
-    item = json_getProperty(jobj, "color");
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    if ((property && !strcmp(property, "color")) && (property_type == JSON_ARRAY))
     {
-        item = json_getChild(item);
+        json_t const *item = json_getChild(jobj);
         if (json_getSibling(item) != NULL)
         {
             color_t color;
@@ -450,33 +471,42 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
                 Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
             }
         }
+        return;
     }
     // IO_STATE
-    item = json_getProperty(jobj, "io_state");
-    if ((item != NULL) && (json_getType(item) == JSON_BOOLEAN))
+    if ((property && !strcmp(property, "io_state")) && (property_type == JSON_BOOLEAN))
     {
-        msg->data[0]     = json_getBoolean(item);
+        msg->data[0]     = json_getBoolean(jobj);
         msg->header.cmd  = IO_STATE;
         msg->header.size = sizeof(char);
         Luos_SendMsg(service, msg);
+        return;
     }
     // update time
-    item = json_getProperty(jobj, "update_time");
-    if (((json_getType(item) == JSON_REAL) || (json_getType(item) == JSON_INTEGER)) && (type != GATE_TYPE))
+    if ((property && !strcmp(property, "update_time")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        // this should be a function because it is frequently used
-        time = TimeOD_TimeFrom_s((float)json_getReal(item));
-        TimeOD_TimeToMsg(&time, msg);
-        msg->header.cmd = UPDATE_PUB;
-        Luos_SendMsg(service, msg);
+        if (type != GATE_TYPE)
+        {
+            // this should be a function because it is frequently used
+            time = TimeOD_TimeFrom_s((float)json_getReal(jobj));
+            TimeOD_TimeToMsg(&time, msg);
+            msg->header.cmd = UPDATE_PUB;
+            Luos_SendMsg(service, msg);
+        }
+        else
+        {
+            // Put all services with the same time value
+            update_time = TimeOD_TimeFrom_s((float)json_getReal(jobj));
+            DataManager_collect(service);
+        }
+        return;
     }
     // RENAMING
-    item = json_getProperty(jobj, "rename");
-    if ((item != NULL) && (json_getType(item) == JSON_TEXT))
+    if ((property && !strcmp(property, "rename")) && (property_type == JSON_TEXT))
     {
         // In this case we need to send the message as system message
         int i            = 0;
-        char *alias      = (char *)json_getValue(item);
+        char *alias      = (char *)json_getValue(jobj);
         msg->header.size = strlen(alias);
         // Change size to fit into 16 characters
         if (msg->header.size > 15)
@@ -493,82 +523,90 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
         msg->data[msg->header.size] = '\0';
         msg->header.cmd             = WRITE_ALIAS;
         Luos_SendMsg(service, msg);
+        return;
     }
     // FIRMWARE REVISION
-    if (json_getProperty(jobj, "revision") != NULL)
+    if (property && !strcmp(property, "revision"))
     {
         msg->header.cmd  = REVISION;
         msg->header.size = 0;
         Luos_SendMsg(service, msg);
+        return;
     }
     // Luos REVISION
-    if (json_getProperty(jobj, "luos_revision") != NULL)
+    if (property && !strcmp(property, "luos_revision"))
     {
         msg->header.cmd  = LUOS_REVISION;
         msg->header.size = 0;
         Luos_SendMsg(service, msg);
+        return;
     }
     // Luos STAT
-    if (json_getProperty(jobj, "luos_statistics") != NULL)
+    if (property && !strcmp(property, "luos_statistics"))
     {
         msg->header.cmd  = LUOS_STATISTICS;
         msg->header.size = 0;
         Luos_SendMsg(service, msg);
+        return;
     }
     // Parameters
-    item = json_getProperty(jobj, "parameters");
-    if ((item != NULL) && (json_getType(item) == JSON_INTEGER))
+    if (property && !strcmp(property, "parameters"))
     {
-        uint32_t val = (uint32_t)json_getInteger(item);
-        memcpy(msg->data, &val, sizeof(uint32_t));
-        msg->header.size = 4;
-        msg->header.cmd  = PARAMETERS;
-        Luos_SendMsg(service, msg);
-    }
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
-    {
-        item = json_getChild(item);
-        if (json_getSibling(item) != NULL)
+        if (property_type == JSON_INTEGER)
         {
-            // We have multiple field on this array
-            json_t const *val;
-            int i = 0;
-            for (val = item; val != 0; val = json_getSibling(val))
-            {
-                uint32_t value = (uint32_t)json_getInteger(val);
-                memcpy(&msg->data[i * sizeof(uint32_t)], &value, sizeof(uint32_t));
-                i++;
-            }
+            uint32_t val = (uint32_t)json_getInteger(jobj);
+            memcpy(msg->data, &val, sizeof(uint32_t));
+            msg->header.size = 4;
             msg->header.cmd  = PARAMETERS;
-            msg->header.size = i * sizeof(uint32_t);
             Luos_SendMsg(service, msg);
+            return;
         }
-        else
+        if (property_type == JSON_ARRAY)
         {
-            int i = 0;
-            // This is a binary
-            unsigned int size = (int)json_getInteger(item);
-            // find the first \r of the current buf
-            for (i = 0; i < GATE_BUFF_SIZE; i++)
+            json_t const *item = json_getChild(jobj);
+            if (json_getSibling(item) != NULL)
             {
-                if (bin_data[i] == '\n')
+                // We have multiple field on this array
+                json_t const *val;
+                int i = 0;
+                for (val = item; val != 0; val = json_getSibling(val))
                 {
+                    uint32_t value = (uint32_t)json_getInteger(val);
+                    memcpy(&msg->data[i * sizeof(uint32_t)], &value, sizeof(uint32_t));
                     i++;
-                    break;
+                }
+                msg->header.cmd  = PARAMETERS;
+                msg->header.size = i * sizeof(uint32_t);
+                Luos_SendMsg(service, msg);
+            }
+            else
+            {
+                int i = 0;
+                // This is a binary
+                unsigned int size = (int)json_getInteger(jobj);
+                // find the first \r of the current buf
+                for (i = 0; i < GATE_BUFF_SIZE; i++)
+                {
+                    if (bin_data[i] == '\n')
+                    {
+                        i++;
+                        break;
+                    }
+                }
+                if (i < GATE_BUFF_SIZE - 1)
+                {
+                    msg->header.cmd = PARAMETERS;
+                    Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
                 }
             }
-            if (i < GATE_BUFF_SIZE - 1)
-            {
-                msg->header.cmd = PARAMETERS;
-                Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
-            }
+            return;
         }
+        return;
     }
-
-    item = json_getProperty(jobj, "register"); // Watch out this one is only used by Dxl and specific to it.
-    if ((item != NULL) && (json_getType(item) == JSON_ARRAY))
+    // Register
+    if ((property && !strcmp(property, "register")) && (property_type == JSON_ARRAY)) // Watch out this one is only used by Dxl and specific to it.
     {
-        item = json_getChild(item);
+        json_t const *item = json_getChild(jobj);
         if (json_getSibling(item) != NULL)
         {
             // We have multiple field on this array
@@ -604,21 +642,16 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, const 
                 Luos_SendData(service, msg, &bin_data[i], (unsigned int)size);
             }
         }
+        return;
     }
-    item = json_getProperty(jobj, "set_id");
-    if ((item != NULL) && (json_getType(item) == JSON_INTEGER))
+    // Set_id
+    if ((property && !strcmp(property, "set_id")) && (property_type == JSON_INTEGER))
     {
-        msg->data[0]     = (char)json_getInteger(item);
+        msg->data[0]     = (char)json_getInteger(jobj);
         msg->header.cmd  = SETID;
         msg->header.size = sizeof(char);
         Luos_SendMsg(service, msg);
-    }
-    item = json_getProperty(jobj, "update_time");
-    if ((item != NULL) && (json_getType(item) == JSON_INTEGER))
-    {
-        // Put all services with the same time value
-        update_time = TimeOD_TimeFrom_s((float)json_getReal(item));
-        DataManager_collect(service);
+        return;
     }
 }
 
