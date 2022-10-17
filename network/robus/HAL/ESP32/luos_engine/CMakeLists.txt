@@ -17,7 +17,7 @@ set(srcs "../../../../../engine/core/src/luos_engine.c"
 set(inc "../../../../../engine/core/inc"
     "../../../../../engine/OD"
     "../../../../../engine/HAL/ESP32"
-    "../../../../../engine/Bootloader"
+    "../../../../../engine/bootloader"
     "../../../inc"
     "../../ESP32")
 
