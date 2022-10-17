@@ -14,29 +14,31 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "esp_err.h"
 
-/**
+    /**
 * @brief LED Strip Type
 *
 */
-typedef struct led_strip_s led_strip_t;
+    typedef struct led_strip_s led_strip_t;
 
-/**
+    /**
 * @brief LED Strip Device Type
 *
 */
-typedef void *led_strip_dev_t;
+    typedef void *led_strip_dev_t;
 
-/**
+    /**
 * @brief Declare of LED Strip Type
 *
 */
-struct led_strip_s {
-    /**
+    struct led_strip_s
+    {
+        /**
     * @brief Set RGB for a specific pixel
     *
     * @param strip: LED strip
@@ -50,9 +52,9 @@ struct led_strip_s {
     *      - ESP_ERR_INVALID_ARG: Set RGB for a specific pixel failed because of invalid parameters
     *      - ESP_FAIL: Set RGB for a specific pixel failed because other error occurred
     */
-    esp_err_t (*set_pixel)(led_strip_t *strip, uint32_t index, uint32_t red, uint32_t green, uint32_t blue);
+        esp_err_t (*set_pixel)(led_strip_t *strip, uint32_t index, uint32_t red, uint32_t green, uint32_t blue);
 
-    /**
+        /**
     * @brief Refresh memory colors to LEDs
     *
     * @param strip: LED strip
@@ -66,9 +68,9 @@ struct led_strip_s {
     * @note:
     *      After updating the LED colors in the memory, a following invocation of this API is needed to flush colors to strip.
     */
-    esp_err_t (*refresh)(led_strip_t *strip, uint32_t timeout_ms);
+        esp_err_t (*refresh)(led_strip_t *strip, uint32_t timeout_ms);
 
-    /**
+        /**
     * @brief Clear LED strip (turn off all LEDs)
     *
     * @param strip: LED strip
@@ -79,9 +81,9 @@ struct led_strip_s {
     *      - ESP_ERR_TIMEOUT: Clear LEDs failed because of timeout
     *      - ESP_FAIL: Clear LEDs failed because some other error occurred
     */
-    esp_err_t (*clear)(led_strip_t *strip, uint32_t timeout_ms);
+        esp_err_t (*clear)(led_strip_t *strip, uint32_t timeout_ms);
 
-    /**
+        /**
     * @brief Free LED strip resources
     *
     * @param strip: LED strip
@@ -90,17 +92,18 @@ struct led_strip_s {
     *      - ESP_OK: Free resources successfully
     *      - ESP_FAIL: Free resources failed because error occurred
     */
-    esp_err_t (*del)(led_strip_t *strip);
-};
+        esp_err_t (*del)(led_strip_t *strip);
+    };
 
-/**
+    /**
 * @brief LED Strip Configuration Type
 *
 */
-typedef struct {
-    uint32_t max_leds;   /*!< Maximum LEDs in a single strip */
-    led_strip_dev_t dev; /*!< LED strip device (e.g. RMT channel, PWM channel, etc) */
-} led_strip_config_t;
+    typedef struct
+    {
+        uint32_t max_leds;   /*!< Maximum LEDs in a single strip */
+        led_strip_dev_t dev; /*!< LED strip device (e.g. RMT channel, PWM channel, etc) */
+    } led_strip_config_t;
 
 /**
  * @brief Default configuration for LED strip
@@ -109,19 +112,19 @@ typedef struct {
 #define LED_STRIP_DEFAULT_CONFIG(number, dev_hdl) \
     {                                             \
         .max_leds = number,                       \
-        .dev = dev_hdl,                           \
+        .dev      = dev_hdl,                      \
     }
 
-/**
+    /**
 * @brief Install a new ws2812 driver (based on RMT peripheral)
 *
 * @param config: LED strip configuration
 * @return
 *      LED strip instance or NULL
 */
-led_strip_t *led_strip_new_rmt_ws2812(const led_strip_config_t *config);
+    led_strip_t *led_strip_new_rmt_ws2812(const led_strip_config_t *config);
 
-/**
+    /**
  * @brief Init the RMT peripheral and LED strip configuration.
  *
  * @param[in] channel: RMT peripheral channel number.
@@ -130,9 +133,9 @@ led_strip_t *led_strip_new_rmt_ws2812(const led_strip_config_t *config);
  * @return
  *      LED strip instance or NULL
  */
-led_strip_t * led_strip_init(uint8_t channel, uint8_t gpio, uint16_t led_num);
+    led_strip_t *led_strip_init(uint8_t channel, uint8_t gpio, uint16_t led_num);
 
-/**
+    /**
  * @brief Denit the RMT peripheral.
  *
  * @param[in] strip: LED strip
@@ -140,7 +143,7 @@ led_strip_t * led_strip_init(uint8_t channel, uint8_t gpio, uint16_t led_num);
  *     - ESP_OK
  *     - ESP_FAIL
  */
-esp_err_t led_strip_denit(led_strip_t *strip);
+    esp_err_t led_strip_denit(led_strip_t *strip);
 
 #ifdef __cplusplus
 }

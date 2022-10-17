@@ -50,8 +50,8 @@ void Led_Init(void)
     Luos_CreateService(Led_MsgHandler, STATE_TYPE, "led", revision);
 #else
     pStrip_a = led_strip_init(0, LED_GPIO, 1);
-	pStrip_a->set_pixel(pStrip_a, 0, 0, 0, 0);
-	pStrip_a->refresh(pStrip_a, 50);
+    pStrip_a->set_pixel(pStrip_a, 0, 0, 0, 0);
+    pStrip_a->refresh(pStrip_a, 50);
     Luos_CreateService(Led_MsgHandler, COLOR_TYPE, "led_rgb", revision);
 #endif
 }
