@@ -37,6 +37,8 @@
 #define DEFAULT_TIMEOUT 20
 #define TIMEOUT_ACK     DEFAULT_TIMEOUT / 4
 
+#define RX_BUFFER_SIZE 140
+#define TX_BUFFER_SIZE 140
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -53,8 +55,10 @@ uint16_t data_size_to_transmit = 0;
 uint8_t *tx_data               = 0;
 uint32_t Rsize                 = 0;
 
-volatile uint8_t RxEn = true;
-volatile uint8_t TxEn = true;
+volatile uint8_t RxEn         = true;
+volatile uint8_t TxEn         = true;
+volatile uint32_t enable_mask = 0;
+
 /*******************************************************************************
  * esp
  ******************************************************************************/
@@ -112,26 +116,32 @@ _CRITICAL void RobusHAL_SetIrqState(uint8_t Enable)
 
     if ((Enable == true) && (irq_mutex != true))
     {
-        if (RxEn == true)
-        {
-            uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-        }
+        irq_mutex   = true;
+        enable_mask = 0;
         if (TxEn == true)
         {
-            uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
+            enable_mask |= UART_INTR_TX_DONE;
         }
+        if (RxEn == true)
+        {
+            enable_mask |= (UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
+        }
+        uart_hal_ena_intr_mask(&uart_hal_context, enable_mask);
         timer_enable_intr(LUOS_TIMER_GROUP, LUOS_TIMER);
         irq_mutex = true;
     }
-    else if ((Enable == false) && (irq_mutex != false))
+    else if ((Enable == false) && (irq_mutex != true))
     {
-#ifndef CONFIG_IDF_TARGET_ESP32
-        uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
+        irq_mutex = true;
+#ifdef CONFIG_IDF_TARGET_ESP32
+        uart_hal_disable_intr_mask(&uart_hal_context, (UART_INTR_TX_DONE));
+#else
+        uart_hal_disable_intr_mask(&uart_hal_context, (UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT | UART_INTR_TX_DONE));
+
 #endif
-        uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
         timer_disable_intr(LUOS_TIMER_GROUP, LUOS_TIMER);
-        irq_mutex = false;
     }
+    irq_mutex = false;
 }
 /******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
@@ -153,7 +163,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     {
         ESP_ERROR_CHECK(uart_driver_delete(LUOS_COM));
     }
-    ESP_ERROR_CHECK(uart_driver_install(LUOS_COM, 256, 256, 0, NULL, ESP_INTR_FLAG_IRAM));
+    ESP_ERROR_CHECK(uart_driver_install(LUOS_COM, RX_BUFFER_SIZE, TX_BUFFER_SIZE, 0, NULL, ESP_INTR_FLAG_IRAM));
     ESP_ERROR_CHECK(uart_param_config(LUOS_COM, &uart_config));
     ESP_ERROR_CHECK(uart_set_pin(LUOS_COM, COM_TX_PIN, COM_RX_PIN, GPIO_NUM_NC, GPIO_NUM_NC));
 
@@ -179,30 +189,35 @@ void RobusHAL_ComInit(uint32_t Baudrate)
  ******************************************************************************/
 _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
 {
+    if (TxEn == Enable)
+    {
+        return;
+    }
     TxEn = Enable;
     if (Enable == true)
     {
         // Put Tx in push pull
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
         esp_rom_gpio_connect_out_signal(COM_TX_PIN, UART_PERIPH_SIGNAL(LUOS_COM, SOC_UART_TX_PIN_IDX), 0, 0);
-#else
-        esp_rom_gpio_connect_out_signal(COM_TX_PIN, uart_periph_signal[LUOS_COM].tx_sig, 0, 0);
-#endif
         if (TX_EN_PIN != DISABLE)
         {
-            gpio_set_level(TX_EN_PIN, 1);
+            gpio_hal_set_level(&gpio_hal_context, TX_EN_PIN, 1);
         }
     }
     else
     {
         // Put Tx in open drain
+#ifdef CONFIG_IDF_TARGET_ESP32
+        gpio_hal_output_disable(&gpio_hal_context, COM_TX_PIN);
+
+#else
         gpio_set_direction(COM_TX_PIN, GPIO_MODE_DISABLE);
-        gpio_hal_iomux_func_sel(GPIO_PIN_MUX_REG[COM_TX_PIN], PIN_FUNC_GPIO);
+
+#endif
+        esp_rom_gpio_pad_select_gpio(COM_TX_PIN);
         if (TX_EN_PIN != DISABLE)
         {
-            gpio_set_level(TX_EN_PIN, 0);
+            gpio_hal_set_level(&gpio_hal_context, TX_EN_PIN, 0);
         }
-        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
         uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
         uart_hal_txfifo_rst(&uart_hal_context);
     }
@@ -214,24 +229,25 @@ _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
  ******************************************************************************/
 _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 {
+    if (RxEn == Enable)
+    {
+        return;
+    }
     RxEn = Enable;
 #ifdef CONFIG_IDF_TARGET_ESP32
     if (Enable == true)
     {
-        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-        uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
+        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
     }
 #else
     if (Enable == true)
     {
-        uart_hal_rxfifo_rst(&uart_hal_context);
-        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-        uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
+        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
+        uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
     }
     else
     {
-        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-        uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
+        uart_hal_disable_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
     }
 #endif
 }
@@ -242,40 +258,28 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
  ******************************************************************************/
 _CRITICAL void RobusHAL_ComIrqHandler(void *arg)
 {
-    uint8_t data;
-    int size = 1;
+    uint8_t data[RX_BUFFER_SIZE];
+    int size = 0;
 
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 
     uint32_t Flag      = uart_hal_get_intsts_mask(&uart_hal_context);
     uint32_t UartIntEn = uart_hal_get_intr_ena_status(&uart_hal_context);
 
-    if (((Flag & UART_INTR_RXFIFO_FULL) == UART_INTR_RXFIFO_FULL) && ((UartIntEn & UART_INTR_RXFIFO_FULL) == UART_INTR_RXFIFO_FULL))
+    if ((((Flag & UART_INTR_RXFIFO_FULL) == UART_INTR_RXFIFO_FULL) && ((UartIntEn & UART_INTR_RXFIFO_FULL) == UART_INTR_RXFIFO_FULL)) || (((Flag & UART_INTR_RXFIFO_TOUT) == UART_INTR_RXFIFO_TOUT) && ((UartIntEn & UART_INTR_RXFIFO_TOUT) == UART_INTR_RXFIFO_TOUT)))
     {
-        uart_hal_read_rxfifo(&uart_hal_context, &data, &size);
-        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL);
-#ifdef CONFIG_IDF_TARGET_ESP32
+        uart_hal_read_rxfifo(&uart_hal_context, &data[0], &size);
+        uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
         if (RxEn == true)
         {
-            ctx.rx.callback(&data);
-            if (data_size_to_transmit == 0)
-            {
-                return;
-            }
+            ctx.rx.callback(&data[size - 1]);
         }
         else
         {
             return;
         }
-#else
-        ctx.rx.callback(&data);
-        if (data_size_to_transmit == 0)
-        {
-            return;
-        }
-#endif
     }
-    else if ((Flag & UART_INTR_FRAM_ERR) == UART_INTR_FRAM_ERR)
+    else if (Flag & UART_INTR_FRAM_ERR)
     {
         uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_FRAM_ERR);
         ctx.rx.status.rx_framing_error = true;
@@ -291,11 +295,15 @@ _CRITICAL void RobusHAL_ComIrqHandler(void *arg)
         }
         else
         {
+#ifndef CONFIG_IDF_TARGET_ESP32
+            RobusHAL_ResetTimeout(0);
+#endif
             uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
             uart_hal_write_txfifo(&uart_hal_context, tx_data, data_size_to_transmit, &Rsize);
             data_size_to_transmit = 0;
         }
     }
+    uart_hal_clr_intsts_mask(&uart_hal_context, UART_LL_INTR_MASK);
 }
 /******************************************************************************
  * @brief Process data transmit
@@ -304,13 +312,15 @@ _CRITICAL void RobusHAL_ComIrqHandler(void *arg)
  ******************************************************************************/
 _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
-    RobusHAL_SetTxState(true);
+    while ((uart_hal_get_intsts_mask(&uart_hal_context) & UART_INTR_TXFIFO_EMPTY) != 0)
+        ;
     if (size > 1)
     {
         if (size <= 128)
         {
             uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
             uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
+            RobusHAL_SetTxState(true);
             uart_hal_write_txfifo(&uart_hal_context, data, size, &Rsize);
             data_size_to_transmit = 0;
         }
@@ -319,6 +329,7 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
             tx_data = data + 128;
             uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
             uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
+            RobusHAL_SetTxState(true);
             uart_hal_write_txfifo(&uart_hal_context, data, 128, &Rsize);
             data_size_to_transmit = size - 128;
         }
@@ -334,6 +345,7 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
                 ;
             uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
             uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
+            RobusHAL_SetTxState(true);
             uart_hal_write_txfifo(&uart_hal_context, data, size, &Rsize);
             data_size_to_transmit = 0;
         }
@@ -419,6 +431,7 @@ _CRITICAL timer_isr_t RobusHAL_TimeoutIrqHandler(void *arg)
     if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
     {
         // Enable RX detection pin if needed
+        uart_hal_rxfifo_rst(&uart_hal_context);
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
         Recep_Timeout();
@@ -463,14 +476,16 @@ static void RobusHAL_GPIOInit(void)
     {
         // Setup PTP lines
         gpio_reset_pin(PTP[i].Pin);
-        PinConfig.intr_type    = GPIO_INTR_POSEDGE;
-        PinConfig.mode         = GPIO_MODE_INPUT_OUTPUT_OD;
+        PinConfig.intr_type    = GPIO_INTR_DISABLE;
+        PinConfig.mode         = GPIO_MODE_OUTPUT_OD;
         PinConfig.pin_bit_mask = (1ULL << PTP[i].Pin);
         PinConfig.pull_down_en = GPIO_PULLDOWN_ENABLE;
         PinConfig.pull_up_en   = GPIO_PULLUP_DISABLE;
         gpio_config(&PinConfig);
+        gpio_intr_disable(PTP[i].Pin);
         // activate IT for PTP
         gpio_isr_handler_add(PTP[i].Pin, &RobusHAL_PinoutIrqHandler, (void *)PTP[i].Pin);
+        RobusHAL_SetPTPDefaultState(i);
     }
 }
 /******************************************************************************
@@ -558,9 +573,10 @@ _CRITICAL void RobusHAL_PushPTP(uint8_t PTPNbr)
     // Pull Down / Output mode
     gpio_intr_disable(PTP[PTPNbr].Pin);
     gpio_set_direction(PTP[PTPNbr].Pin, GPIO_MODE_OUTPUT);
+    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_DISABLE);
 
     // Clean edge/state detection and set the PTP pin as output
-    gpio_set_level(PTP[PTPNbr].Pin, 1);
+    gpio_hal_set_level(&gpio_hal_context, PTP[PTPNbr].Pin, 1);
 }
 /******************************************************************************
  * @brief Get PTP line
@@ -573,6 +589,7 @@ _CRITICAL uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
     gpio_intr_disable(PTP[PTPNbr].Pin);
     gpio_set_direction(PTP[PTPNbr].Pin, GPIO_MODE_INPUT);
     gpio_set_pull_mode(PTP[PTPNbr].Pin, GPIO_FLOATING);
+    gpio_set_intr_type(PTP[PTPNbr].Pin, GPIO_INTR_DISABLE);
 
     return gpio_get_level(PTP[PTPNbr].Pin);
 }

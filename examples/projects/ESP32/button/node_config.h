@@ -13,7 +13,7 @@
  *     or network speed for example
  *
  *     Luos libraries can be use with a lot a MCU family. Luos compagny give you
- *     a default configuration, for specific MCU family, in luos_hal_config.h.
+ *     a default configuration, for specific MCU family, in robus_hal_config.h.
  *     This configuration can be modify here to fit with you design by
  *     preprocessor definitions of MCU Hardware needs
  *
@@ -39,11 +39,13 @@
  *    :---------------------|------------------------------------------------------
  *    MAX_SERVICE_NUMBER    |              5             | Service number in the node
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
- *    MAX_MSG_NB            |   2*MAX_SERVICE_NUMBER     | Message number in Luos buffer
- *    MAX_RTB_ENTRY         |             40             | Max entries in the routing table
+ *    MAX_MSG_NB            |   2*MAX_SERVICE_NUMBER   | Message number in Luos buffer
  *    NBR_PORT              |              2             | PTP Branch number Max 8
- *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
+ *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
+
+#define MSG_BUFFER_SIZE 1024
+#define DEFAULTBAUDRATE 500000
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -77,27 +79,45 @@
  *    LUOS_TIMER              | Timer number
  *    LUOS_TIMER_IRQ          | Timer IRQ number
  *    LUOS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
-
- *    FLASH_SECTOR               | FLASH page size
- *    PAGE_SIZE               | FLASH page size
- *    ADDRESS_LAST_PAGE_FLASH | Page to write alias
 ******************************************************************************/
 
-// ESPC3
-//  #define TIMERDIV 2 // clock divider for timer clock chosen
-//  /*******************************************************************************
-//   * PINOUT CONFIG
-//   ******************************************************************************/
-//  // PTP pin definition
-//  #define PTPA_PIN GPIO_NUM_6
-//  #define PTPB_PIN GPIO_NUM_7
-//  #define TX_EN_PIN GPIO_NUM_9
-//  #define COM_TX_PIN GPIO_NUM_4
-//  #define COM_RX_PIN GPIO_NUM_5
+/*******************************************************************************
+ * FLASH CONFIGURATION FOR APP WITH BOOTLOADER
+ ********************************************************************************
+ *    Define                | Default Value              | Description
+ *    :---------------------|------------------------------------------------------
+ *    BOOT_START_ADDRESS    | FLASH_BASE = 0x8000000     | Start address of Bootloader in flash
+ *    SHARED_MEMORY_ADDRESS | 0x0800C000                 | Start address of shared memory to save boot flag
+ *    APP_START_ADDRESS     | 0x0800C800                 | Start address of application with bootloader
+ *    APP_END_ADDRESS       | FLASH_BANK1_END=0x0801FFFF | End address of application with bootloader
+ ******************************************************************************/
 
-// /*******************************************************************************
-//  * COM TIMEOUT CONFIG
-//  ******************************************************************************/
-// #define LUOS_TIMER TIMER_0
+/*******************************************************************************
+ * GATE SERIAL COM DEFINITION
+ *******************************************************************************
+ *    Define                    | Default Value              | Description
+ *    :-------------------------|------------------------------------------------------
+ *    MAX_RTB_ENTRY             |              40            | max number entry in routing table
+ *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
+ *    PIPE_TX_BUFFER_SIZE  |             1024           | Receive pipe buffer size
+ *    PIPE_RX_BUFFER_SIZE  |             2048           | Transmit pipe buffer size
+ *    INIT_TIME                 |              150           | Wait init time before first detection
+ ******************************************************************************/
+
+/*******************************************************************************
+ * OTHER GATE PARAMETERS
+ *******************************************************************************
+ *    Define         |   Default Value    | Description
+ *    :--------------|------------------------------------------------------
+ *    INIT_TIME      |      150           | Wait init time before first detection
+ * ******************************************************************************/
+
+/*******************************************************************************
+ * OTHER PIPE PARAMETERS
+ *******************************************************************************
+ *    Define               |     Default Value       | Description
+ *    :--------------------|----------------------------------------------------
+ *    PIPE_CONFIG          |          none           | To Modify pipe config
+ * ******************************************************************************/
 
 #endif /* _NODE_CONFIG_H_ */
