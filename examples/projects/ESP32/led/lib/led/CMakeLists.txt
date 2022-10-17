@@ -1,7 +1,7 @@
-set(srcs    "led.c")
+set(srcs "led.c")
 
-set(inc     ".")
+set(inc ".")
 
-idf_component_register( SRCS ${srcs}
-                        INCLUDE_DIRS ${inc}
-                        REQUIRES luos_engine led_strip)
+idf_component_register(SRCS ${srcs}
+    INCLUDE_DIRS ${inc}
+    REQUIRES luos_engine led_strip)
