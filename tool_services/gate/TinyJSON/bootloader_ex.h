@@ -21,7 +21,9 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Bootloader_LuosToJson(service_t *, msg_t *);
+uint16_t Bootloader_LuosToJson(msg_t *, char *);
 void Bootloader_JsonToLuos(service_t *, char *, json_t const *);
+uint16_t Bootloader_StartData(char *);
+void Bootloader_EndData(service_t *, char *, char *);
 
 #endif /* BOOTLOADER_H */

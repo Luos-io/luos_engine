@@ -28,43 +28,63 @@
  * @param service pointer, luos message
  * @return None
  ******************************************************************************/
-void Bootloader_LuosToJson(service_t *service, msg_t *msg)
+uint16_t Bootloader_StartData(char *data)
 {
-    char boot_json[64]   = "\0";
+    sprintf(data, "{\"bootloader\":[");
+    return (sizeof("{\"bootloader\":[") - 1);
+}
+
+/******************************************************************************
+ * @brief Process node responses and send them to the Host
+ * @param service pointer, luos message
+ * @return None
+ ******************************************************************************/
+uint16_t Bootloader_LuosToJson(msg_t *msg, char *data)
+{
     uint8_t response_cmd = msg->data[0];
     uint16_t node_id     = RoutingTB_NodeIDFromID(msg->header.source);
     switch (response_cmd)
     {
         case BOOTLOADER_READY_RESP:
-            sprintf(boot_json, "{\"bootloader\":{\"response\":%d, \"node\":%d}}\n", BOOTLOADER_READY_RESP, node_id);
+            sprintf(data, "{\"response\":%d,\"node\":%d},", BOOTLOADER_READY_RESP, node_id);
             break;
 
         case BOOTLOADER_ERASE_RESP:
-            sprintf(boot_json, "{\"bootloader\":{\"response\":%d, \"node\":%d}}\n", BOOTLOADER_ERASE_RESP, node_id);
+            sprintf(data, "{\"response\":%d,\"node\":%d},", BOOTLOADER_ERASE_RESP, node_id);
             break;
 
         case BOOTLOADER_BIN_CHUNK_RESP:
-            sprintf(boot_json, "{\"bootloader\":{\"response\":%d, \"node\":%d}}\n", BOOTLOADER_BIN_CHUNK_RESP, node_id);
+            sprintf(data, "{\"response\":%d,\"node\":%d},", BOOTLOADER_BIN_CHUNK_RESP, node_id);
             break;
 
         case BOOTLOADER_BIN_END_RESP:
-            sprintf(boot_json, "{\"bootloader\":{\"response\":%d, \"node\":%d}}\n", BOOTLOADER_BIN_END_RESP, node_id);
+            sprintf(data, "{\"response\":%d,\"node\":%d},", BOOTLOADER_BIN_END_RESP, node_id);
             break;
 
         case BOOTLOADER_CRC_RESP:
-            sprintf(boot_json, "{\"bootloader\":{\"response\":%d,\"crc_value\":%d, \"node\":%d}}\n", BOOTLOADER_CRC_RESP, msg->data[1], node_id);
+            sprintf(data, "{\"response\":%d,\"crc_value\":%d,\"node\":%d},", BOOTLOADER_CRC_RESP, msg->data[1], node_id);
             break;
 
         case BOOTLOADER_ERROR_SIZE:
-            sprintf(boot_json, "{\"bootloader\":{\"response\":%d, \"node\":%d}}\n", BOOTLOADER_ERROR_SIZE, node_id);
+            sprintf(data, "{\"response\":%d,\"node\":%d},", BOOTLOADER_ERROR_SIZE, node_id);
             break;
 
         default:
             break;
     }
+    return (uint16_t)strlen(data);
+}
 
+// This function start a Json structure and return the string size.
+void Bootloader_EndData(service_t *service, char *data, char *data_ptr)
+{
+    // remove the last "," char
+    *(--data_ptr) = '\0';
+    // End the Json message
+    memcpy(data_ptr, "]}\n", sizeof("]}\n"));
+    data_ptr += sizeof("]}\n") - 1;
     // Send the message to pipe
-    PipeLink_Send(service, boot_json, strlen(boot_json));
+    PipeLink_Send(service, data, data_ptr - data);
 }
 
 /******************************************************************************
@@ -83,9 +103,9 @@ void Bootloader_JsonToLuos(service_t *service, char *bin_data, json_t const *boo
         uint8_t topic_target = (uint8_t)json_getReal(json_getProperty(command_item, "topic"));
         // create a message to send to nodes
         msg_t boot_msg;
-        boot_msg.header.target      = topic_target;   // first node of the network
-        boot_msg.header.cmd         = BOOTLOADER_CMD; // bootloader cmd
-        boot_msg.header.target_mode = TOPIC;          // msg send to the node
+        boot_msg.header.target      = (uint16_t)topic_target; // first node of the network
+        boot_msg.header.cmd         = BOOTLOADER_CMD;         // bootloader cmd
+        boot_msg.header.target_mode = TOPIC;                  // msg send to the node
 
         uint32_t binary_size = 0;
         json_t *item         = NULL;
