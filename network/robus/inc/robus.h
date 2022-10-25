@@ -22,7 +22,7 @@ typedef enum
 } network_state_t;
 
 #ifndef _WEAKED
-#define _WEAKED
+    #define _WEAKED
 #endif
 /*******************************************************************************
  * Variables

@@ -5,9 +5,9 @@
  * @version 1.0.0
  ******************************************************************************/
 #ifdef UNIT_TEST
-#include "unit_test.h"
+    #include "unit_test.h"
 #else
-#include "luos_hal.h"
+    #include "luos_hal.h"
 #endif
 /*******************************************************************************
  * Function

@@ -24,7 +24,7 @@
 #define LUOS_RUN() Luos_Run();
 
 #ifndef _WEAKED
-#define _WEAKED
+    #define _WEAKED
 #endif
 
 /******************************************************************************
