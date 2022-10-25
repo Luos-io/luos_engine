@@ -43,7 +43,7 @@ void Button_Init(void)
     // Service creation following state profile
     ProfileState_CreateService(&button, 0, "button", revision);
     // set_fl(STDOUT_FILENO, O_NONBLOCK);
-    printf("Button serice running.\n\tUse the SPACE button to swap the button state.\n");
+    printf("Button service running.\n\tUse the SPACE button to swap the button state.\n");
 }
 #ifndef _WIN32
 int kbhit(void)
