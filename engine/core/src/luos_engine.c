@@ -473,6 +473,13 @@ static void Luos_AutoUpdateManager(void)
             // check if there is a timed update setted and if it's time to update it.
             if (service_table[i].auto_refresh.time_ms)
             {
+                if (service_table[i].ll_service->dead_service_spotted == service_table[i].auto_refresh.target)
+                {
+                    service_table[i].auto_refresh.target      = 0;
+                    service_table[i].auto_refresh.time_ms     = 0;
+                    service_table[i].auto_refresh.last_update = 0;
+                    continue;
+                }
                 if ((LuosHAL_GetSystick() - service_table[i].auto_refresh.last_update) >= service_table[i].auto_refresh.time_ms)
                 {
                     // This service need to send an update
