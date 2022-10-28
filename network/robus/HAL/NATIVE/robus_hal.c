@@ -14,6 +14,7 @@
 
 #include "reception.h"
 #include "context.h"
+#include <mongoose.h>
 
 /*******************************************************************************
  * Definitions
@@ -34,6 +35,12 @@ typedef struct
 Port_t PTP[NBR_PORT];
 
 volatile uint8_t *tx_data = 0;
+
+// Mongoose connection information
+struct mg_mgr mgr;            // Event manager
+bool connection_done = false; // Event handler flips it to true
+struct mg_connection *c;      // Client connection
+static const char *s_url = "ws://192.33.0.75:8000/ws";
 
 /*******************************************************************************
  * Function
@@ -69,8 +76,43 @@ void RobusHAL_Init(void)
  ******************************************************************************/
 void RobusHAL_Loop(void)
 {
+    if (c && connection_done)
+    {
+        mg_mgr_poll(&mgr, 1000);
+    }
 }
 
+// Print websocket response and signal that we're done
+static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
+{
+    if (ev == MG_EV_OPEN)
+    {
+        c->is_hexdumping = 1;
+        printf("This is really working\n");
+    }
+    else if (ev == MG_EV_ERROR)
+    {
+        // On error, log error message
+        MG_ERROR(("%p %s", c->fd, (char *)ev_data));
+    }
+    else if (ev == MG_EV_WS_OPEN)
+    {
+        // When websocket handshake is successful, send message
+        printf("Handshake is OK\n");
+        // mg_ws_send(c, "hello", 5, WEBSOCKET_OP_TEXT);
+    }
+    else if (ev == MG_EV_WS_MSG)
+    {
+        // When we get echo response, print it
+        struct mg_ws_message *wm = (struct mg_ws_message *)ev_data;
+        printf("GOT ECHO REPLY: [%.*s]\n", (int)wm->data.len, wm->data.ptr);
+    }
+
+    if (ev == MG_EV_ERROR || ev == MG_EV_CLOSE || ev == MG_EV_WS_MSG)
+    {
+        *(bool *)fn_data = true; // Signal that we're done
+    }
+}
 /******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
  * @param Select a baudrate for the Com
@@ -78,6 +120,13 @@ void RobusHAL_Loop(void)
  ******************************************************************************/
 void RobusHAL_ComInit(uint32_t Baudrate)
 {
+    mg_mgr_init(&mgr);                                          // Initialise event manager
+    mg_log_set(MG_LL_DEBUG);                                    // Set log level
+    c = mg_ws_connect(&mgr, s_url, fn, &connection_done, NULL); // Create client
+    if (c)
+    {
+        printf("Connected to %s\n", s_url);
+    }
 }
 
 /******************************************************************************
