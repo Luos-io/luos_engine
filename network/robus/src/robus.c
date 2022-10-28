@@ -141,6 +141,7 @@ void Robus_Loop(void)
             Recep_InterpretMsgProtocol(msg);
         }
     }
+    RobusHAL_Loop();
 }
 /******************************************************************************
  * @brief create a service add in local route table

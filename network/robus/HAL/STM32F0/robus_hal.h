@@ -16,6 +16,7 @@
  * Function
  ******************************************************************************/
 void RobusHAL_Init(void);
+void RobusHAL_Loop(void);
 void RobusHAL_ComInit(uint32_t Baudrate);
 void RobusHAL_SetTxState(uint8_t Enable);
 void RobusHAL_SetRxState(uint8_t Enable);
