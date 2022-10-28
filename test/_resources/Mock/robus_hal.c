@@ -63,6 +63,15 @@ void RobusHAL_Init(void)
 }
 
 /******************************************************************************
+ * @brief Luos HAL general loop
+ * @param None
+ * @return None
+ ******************************************************************************/
+void RobusHAL_Loop(void)
+{
+}
+
+/******************************************************************************
  * @brief Luos HAL Initialize Generale communication inter node
  * @param Select a baudrate for the Com
  * @return none
