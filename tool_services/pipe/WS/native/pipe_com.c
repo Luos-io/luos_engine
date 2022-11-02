@@ -60,6 +60,10 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         struct mg_ws_message *wm = (struct mg_ws_message *)ev_data;
         Stream_PutSample(Pipe_GetRxStreamChannel(), wm->data.ptr, wm->data.len);
     }
+    else if (ev == MG_EV_CLOSE)
+    {
+        printf("Websocket is disconnected \n");
+    }
     (void)fn_data;
 }
 
