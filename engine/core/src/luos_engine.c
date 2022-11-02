@@ -1215,6 +1215,10 @@ void Luos_Detect(service_t *service)
  ******************************************************************************/
 error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
 {
+    if (service == 0)
+    {
+        return Robus_TopicSubscribe(0, topic);
+    }
     return Robus_TopicSubscribe(service->ll_service, topic);
 }
 /******************************************************************************
@@ -1225,5 +1229,9 @@ error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
  ******************************************************************************/
 error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic)
 {
+    if (service == 0)
+    {
+        return Robus_TopicUnsubscribe(0, topic);
+    }
     return Robus_TopicUnsubscribe(service->ll_service, topic);
 }

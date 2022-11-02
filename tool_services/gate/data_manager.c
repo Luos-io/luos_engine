@@ -127,10 +127,12 @@ void DataManager_Format(service_t *service)
     static uint32_t FirstNoReceptionDate = 0;
     static uint32_t LastVoidMsg          = 0;
     char data[GATE_BUFF_SIZE];
-    char *data_ptr  = data;
-    msg_t *data_msg = 0;
-    uint8_t data_ok = false;
-    uint8_t sending = false;
+    char *data_ptr = data;
+    char boot_data[GATE_BUFF_SIZE];
+    char *boot_data_ptr  = boot_data;
+    msg_t *data_msg      = 0;
+    uint8_t data_ok      = false;
+    uint8_t boot_data_ok = false;
     search_result_t result;
 
     RTFilter_Reset(&result);
@@ -139,6 +141,7 @@ void DataManager_Format(service_t *service)
     {
         // Init the data string
         data_ptr += Convert_StartData(data_ptr);
+        boot_data_ptr += Bootloader_StartData(boot_data_ptr);
         // loop into services.
         int i = 0;
         while (i < result.result_nbr)
@@ -158,8 +161,12 @@ void DataManager_Format(service_t *service)
                 // check if a node send a bootloader message
                 if (data_msg->header.cmd == BOOTLOADER_RESP)
                 {
-                    sending = true;
-                    Bootloader_LuosToJson(service, data_msg);
+                    do
+                    {
+                        boot_data_ptr += Bootloader_LuosToJson(data_msg, boot_data_ptr);
+                    } while (Luos_ReadFromService(service, data_msg->header.source, &data_msg) == SUCCEED);
+                    boot_data_ok = true;
+                    i++;
                     continue;
                 }
                 // check if a node send a end detection
@@ -213,7 +220,11 @@ void DataManager_Format(service_t *service)
             Convert_EndData(service, data, data_ptr);
             FirstNoReceptionDate = 0;
         }
-        else if (sending == false)
+        else if (boot_data_ok)
+        {
+            Bootloader_EndData(service, boot_data, boot_data_ptr);
+        }
+        else
         {
             // We don't receive anything.
             // After 1s void reception send void data allowing client to send commands (because client could be synchronized to reception).
