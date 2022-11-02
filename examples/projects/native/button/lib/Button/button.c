@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include "button.h"
 #include "profile_state.h"
+#include <stdlib.h>
 
 /*******************************************************************************
  * Definitions
@@ -28,6 +29,16 @@ profile_state_t button;
 /*******************************************************************************
  * Function
  ******************************************************************************/
+
+void clear_screen()
+{
+#ifdef _WIN32
+    system("cls");
+#else
+    // Assume POSIX
+    system("clear");
+#endif
+}
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -43,7 +54,20 @@ void Button_Init(void)
     // Service creation following state profile
     ProfileState_CreateService(&button, 0, "button", revision);
     // set_fl(STDOUT_FILENO, O_NONBLOCK);
-    printf("Button service running.\n\tUse the SPACE button to swap the button state.\n");
+    clear_screen();
+    printf("Button service running.\n\n\tUse the SPACE button to swap the button state.\n");
+    printf(
+        "         ______________________________________________\n"
+        "        /                                             /;\n"
+        "       /    ________________         .-.             //\n"
+        "      /    /               /;       |`-°|           //\n"
+        "     /    /               //        |   |          //\n"
+        "    /    /               //        [ `-° )        //\n"
+        "   /    /______________ //          `---°        //\n"
+        "  /     '---------------'                       //\n"
+        " /                                             //\n"
+        "/_____________________________________________//\n"
+        "'---------------------------------------------'");
 }
 #ifndef _WIN32
 int kbhit(void)
@@ -73,6 +97,7 @@ int kbhit(void)
     return 0;
 }
 #endif
+
 /******************************************************************************
  * @brief loop must be call in project loop
  * @param None
@@ -84,12 +109,35 @@ void Button_Loop(void)
     {
         if (getchar() == ' ')
         {
-            printf("\nButton state : ");
+            clear_screen();
+            printf("Button service running.\n\n\tUse the SPACE button to swap the button state.\n");
             button.state = !button.state;
             if (button.state)
-                printf("True");
+                printf(
+                    "         ______________________________________________\n"
+                    "        /                                             /;\n"
+                    "       /    ________________        \\ | /            //\n"
+                    "      /    /               /;        .-.            //\n"
+                    "     /    /               //        |`-°|          //\n"
+                    "    /    /               //        [ `-° )        //\n"
+                    "   /    /______________ //          `---°        //\n"
+                    "  /     '---------------'                       //\n"
+                    " /                                             //\n"
+                    "/_____________________________________________//\n"
+                    "'---------------------------------------------'");
             else
-                printf("False");
+                printf(
+                    "         ______________________________________________\n"
+                    "        /                                             /;\n"
+                    "       /    ________________         .-.             //\n"
+                    "      /    /               /;       |`-°|           //\n"
+                    "     /    /               //        |   |          //\n"
+                    "    /    /               //        [ `-° )        //\n"
+                    "   /    /______________ //          `---°        //\n"
+                    "  /     '---------------'                       //\n"
+                    " /                                             //\n"
+                    "/_____________________________________________//\n"
+                    "'---------------------------------------------'");
         }
     }
 }
