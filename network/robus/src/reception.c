@@ -486,7 +486,7 @@ _CRITICAL static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
  * warning : this function can be redefined only for mock testing purpose
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL __attribute__((weak)) luos_localhost_t Recep_NodeConcerned(header_t *header)
+_WEAKED luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
 

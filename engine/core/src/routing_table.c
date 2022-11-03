@@ -218,7 +218,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
  * @param intro_msg : into route table message
  * @return None
  ******************************************************************************/
-__attribute__((weak)) bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
+_WEAKED bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
 {
     const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;
