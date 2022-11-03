@@ -20,11 +20,40 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifdef _WIN32
+    #define get_character() getch()
+#else
+    #define get_character() getchar()
+#endif
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
 profile_state_t button;
+
+char button_ON[768] = "         ______________________________________________\n"
+                      "        /                                             /;\n"
+                      "       /    ________________        \\ | /            //\n"
+                      "      /    /               /;        .-.            //\n"
+                      "     /    /     MCU       //        |`-'|          //\n"
+                      "    /    /               //        [ `-' )        //\n"
+                      "   /    /______________ //          `---'        //\n"
+                      "  /     '---------------'                       //\n"
+                      " /                                             //\n"
+                      "/_____________________________________________//\n"
+                      "'---------------------------------------------'\n";
+
+char button_OFF[768] = "         ______________________________________________\n"
+                       "        /                                             /;\n"
+                       "       /    ________________         .-.             //\n"
+                       "      /    /               /;       |`-'|           //\n"
+                       "     /    /     MCU       //        |   |          //\n"
+                       "    /    /               //        [ `-' )        //\n"
+                       "   /    /______________ //          `---'        //\n"
+                       "  /     '---------------'                       //\n"
+                       " /                                             //\n"
+                       "/_____________________________________________//\n"
+                       "'---------------------------------------------'\n";
 
 /*******************************************************************************
  * Function
@@ -36,7 +65,8 @@ void clear_screen()
     system("cls");
 #else
     // Assume POSIX
-    system("clear");
+    int systemRet;
+    systemRet = system("clear");
 #endif
 }
 
@@ -55,19 +85,8 @@ void Button_Init(void)
     ProfileState_CreateService(&button, 0, "button", revision);
     // set_fl(STDOUT_FILENO, O_NONBLOCK);
     clear_screen();
-    printf("Button service running.\n\n\tUse the SPACE button to swap the button state.\n");
-    printf(
-        "         ______________________________________________\n"
-        "        /                                             /;\n"
-        "       /    ________________         .-.             //\n"
-        "      /    /               /;       |`-'|           //\n"
-        "     /    /     MCU       //        |   |          //\n"
-        "    /    /               //        [ `-' )        //\n"
-        "   /    /______________ //          `---'        //\n"
-        "  /     '---------------'                       //\n"
-        " /                                             //\n"
-        "/_____________________________________________//\n"
-        "'---------------------------------------------'\n");
+    printf("Button service running. Press Q to quit.\n\n\tUse the SPACE button to swap the button state.\n");
+    printf("%s", button_OFF);
 }
 #ifndef _WIN32
 int kbhit(void)
@@ -105,39 +124,30 @@ int kbhit(void)
  ******************************************************************************/
 void Button_Loop(void)
 {
-    if (kbhit())
+    static bool stop_loop = false;
+    int c;
+    if ((kbhit()) && (!stop_loop))
     {
-        if (getchar() == ' ')
+        c = get_character();
+        if (c == ' ')
         {
             clear_screen();
-            printf("Button service running.\n\n\tUse the SPACE button to swap the button state.\n");
+            printf("Button service is running. Press Q to quit.\n\n\tUse the SPACE button to swap the button state.\n");
             button.state = !button.state;
             if (button.state)
-                printf(
-                    "         ______________________________________________\n"
-                    "        /                                             /;\n"
-                    "       /    ________________        \\ | /            //\n"
-                    "      /    /               /;        .-.            //\n"
-                    "     /    /     MCU       //        |`-'|          //\n"
-                    "    /    /               //        [ `-' )        //\n"
-                    "   /    /______________ //          `---'        //\n"
-                    "  /     '---------------'                       //\n"
-                    " /                                             //\n"
-                    "/_____________________________________________//\n"
-                    "'---------------------------------------------'\n");
+            {
+                printf("%s", button_ON);
+            }
             else
-                printf(
-                    "         ______________________________________________\n"
-                    "        /                                             /;\n"
-                    "       /    ________________         .-.             //\n"
-                    "      /    /               /;       |`-'|           //\n"
-                    "     /    /     MCU       //        |   |          //\n"
-                    "    /    /               //        [ `-' )        //\n"
-                    "   /    /______________ //          `---'        //\n"
-                    "  /     '---------------'                       //\n"
-                    " /                                             //\n"
-                    "/_____________________________________________//\n"
-                    "'---------------------------------------------'\n");
+            {
+                printf("%s", button_OFF);
+            }
+        }
+        else if ((c == 'q') || (c == 'Q'))
+        {
+            clear_screen();
+            printf("\n\n--- Quit button service ---\n(press \"CTRL + C\" to close program)\n\n");
+            stop_loop = true;
         }
     }
 }
