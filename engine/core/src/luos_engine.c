@@ -27,7 +27,7 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.major = 2, .minor = 6, .build = 4};
+revision_t luos_version = {.major = 2, .minor = 7, .build = 0};
 package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
@@ -473,6 +473,13 @@ static void Luos_AutoUpdateManager(void)
             // check if there is a timed update setted and if it's time to update it.
             if (service_table[i].auto_refresh.time_ms)
             {
+                if (service_table[i].ll_service->dead_service_spotted == service_table[i].auto_refresh.target)
+                {
+                    service_table[i].auto_refresh.target      = 0;
+                    service_table[i].auto_refresh.time_ms     = 0;
+                    service_table[i].auto_refresh.last_update = 0;
+                    continue;
+                }
                 if ((LuosHAL_GetSystick() - service_table[i].auto_refresh.last_update) >= service_table[i].auto_refresh.time_ms)
                 {
                     // This service need to send an update
@@ -1208,6 +1215,10 @@ void Luos_Detect(service_t *service)
  ******************************************************************************/
 error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
 {
+    if (service == 0)
+    {
+        return Robus_TopicSubscribe(0, topic);
+    }
     return Robus_TopicSubscribe(service->ll_service, topic);
 }
 /******************************************************************************
@@ -1218,5 +1229,9 @@ error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
  ******************************************************************************/
 error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic)
 {
+    if (service == 0)
+    {
+        return Robus_TopicUnsubscribe(0, topic);
+    }
     return Robus_TopicUnsubscribe(service->ll_service, topic);
 }

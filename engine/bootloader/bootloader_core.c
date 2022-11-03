@@ -314,7 +314,10 @@ void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
     ready_msg.header.size        = 2 * sizeof(uint8_t);
     ready_msg.data[0]            = response;
     ready_msg.data[1]            = data;
-
+    node_t *node                 = Robus_GetNode();
+    uint32_t tick                = LuosHAL_GetSystick();
+    while (LuosHAL_GetSystick() - tick < node->node_id)
+        ;
     Luos_SendMsg(0, &ready_msg);
 }
 
@@ -331,6 +334,10 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
     ready_msg.header.target      = source_id;
     ready_msg.header.size        = sizeof(uint8_t);
     ready_msg.data[0]            = response;
+    node_t *node                 = Robus_GetNode();
+    uint32_t tick                = LuosHAL_GetSystick();
+    while (LuosHAL_GetSystick() - tick < node->node_id)
+        ;
     Luos_SendMsg(0, &ready_msg);
 }
 
@@ -367,8 +374,9 @@ void LuosBootloader_MsgHandler(msg_t *input)
             // process cmd and data
         case BOOTLOADER_READY:
             source_id            = input->header.source;
-            bootloader_data_size = input->header.size - sizeof(char);
-            memcpy(bootloader_data, &(input->data[1]), bootloader_data_size);
+            bootloader_data_size = input->header.size - 2 * sizeof(char);
+            Luos_TopicSubscribe(0, (uint16_t)input->data[1]);
+            memcpy(bootloader_data, &(input->data[2]), bootloader_data_size);
 
             LuosHAL_SetMode((uint8_t)BOOT_MODE);
 
@@ -427,6 +435,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_APP_SAVED:
             // set load flag
             load_flag = true;
+            Luos_TopicUnsubscribe(0, input->header.target);
             break;
 
         case BOOTLOADER_STOP:
@@ -434,7 +443,6 @@ void LuosBootloader_MsgHandler(msg_t *input)
             tickstart = LuosHAL_GetSystick();
             while ((LuosHAL_GetSystick() - tickstart) < 1000)
                 ;
-
             // save bootloader mode in flash
             if (load_flag || (LuosBootloader_GetMode() == APP_RELOAD_MODE))
             {

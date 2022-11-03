@@ -2,7 +2,7 @@
     "name": "Inspector",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,cJSON",
     "description": "A Luos service application allowing a computer to inspect a product.",
-    "version": "1.3.4",
+    "version": "1.4.0",
     "authors": {
         "name": "Luos",
         "url": "https://luos.io"
@@ -11,7 +11,7 @@
     "licence": "MIT",
     "headers": "inspector.h",
     "dependencies": {
-        "luos/luos_engine": "^2.6.4"
+	"luos/luos_engine": "^2.7.0"
     },
     "repository": {
         "type": "git",

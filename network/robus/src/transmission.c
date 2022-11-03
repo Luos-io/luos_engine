@@ -129,13 +129,9 @@ _CRITICAL void Transmit_Process()
             if (nbrRetry >= NBR_RETRY)
             {
                 // We failed to transmit this message. We can't allow it, there is a issue on this target.
-                // If it was an ACK issue, save the target as dead service into the sending ll_service
-                if (ctx.tx.collision)
-                {
-                    ll_service_pt->dead_service_spotted = (uint16_t)(((msg_t *)data)->header.target);
-                }
-                nbrRetry         = 0;
-                ctx.tx.collision = false;
+                ll_service_pt->dead_service_spotted = (uint16_t)(((msg_t *)data)->header.target);
+                nbrRetry                            = 0;
+                ctx.tx.collision                    = false;
                 // Remove all transmist messages of this specific target
                 MsgAlloc_PullServiceFromTxTask((uint16_t)(((msg_t *)data)->header.target));
                 // Try to get a tx_task for another service

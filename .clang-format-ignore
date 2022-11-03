@@ -23,3 +23,4 @@
 # Third party libs
 ./tool_services/gate/TinyJSON/tiny-json.h
 ./tool_services/gate/TinyJSON/tiny-json.c
+./tool_services/pipe/WS/native/mongoose

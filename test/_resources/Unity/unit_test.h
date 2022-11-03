@@ -1,6 +1,9 @@
 #ifndef UNIT_TEST_H
 #define UNIT_TEST_H
 
+#undef _WEAKED
+#define _WEAKED __attribute__((weak))
+
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
