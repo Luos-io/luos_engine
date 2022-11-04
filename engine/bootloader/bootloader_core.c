@@ -41,8 +41,10 @@ bool load_flag          = false;
 uint16_t source_id      = 0; // used to save source_id, ie gate_id
 uint32_t tickstart      = 0;
 
+    #ifndef BOOTLOADER_UPDATER
 // Create a variable of the size of mode flash value allowing to init the shared flash section
 const uint8_t __attribute__((used)) __attribute__((section(".boot_flags"))) sharedSection = BOOT_MODE;
+    #endif
 
 /*******************************************************************************
  * Function
@@ -88,7 +90,11 @@ void LuosBootloader_JumpToBootloader(void)
 void LuosBootloader_Init(void)
 {
     revision_t version = {.major = 2, .minor = 0, .build = 0};
+    #ifdef BOOTLOADER_UPDATER
+    Luos_CreateService(0, VOID_TYPE, "boot_updater", version);
+    #else
     Luos_CreateService(0, VOID_TYPE, "boot_service", version);
+    #endif
 
     // set ID node saved in flash
     LuosBootloader_SetNodeID();
@@ -161,7 +167,11 @@ void LuosBootloader_SetNodeID(void)
  ******************************************************************************/
 uint8_t LuosBootloader_IsEnoughSpace(uint32_t binary_size)
 {
+    #ifdef BOOTLOADER_UPDATER
+    uint32_t free_space = BOOT_START_ADDRESS - APP_START_ADDRESS - 1;
+    #else
     uint32_t free_space = APP_END_ADDRESS - APP_START_ADDRESS;
+    #endif
     if (free_space > binary_size)
     {
         return SUCCEED;
