@@ -1,0 +1,4 @@
+config LUOS
+	bool "LUOS real-time orchestrator engine"
+	help
+	  This option enables the LUOS real-time orchestrator engine.
