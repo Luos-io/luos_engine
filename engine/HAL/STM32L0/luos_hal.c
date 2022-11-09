@@ -17,6 +17,8 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+#define RSVD_SECTION ".rsvd.data,\"aw\",%nobits//"
+#define _RSVD        __attribute__((used, section(RSVD_SECTION)))
 // timestamp variable
 static ll_timestamp_t ll_timestamp;
 /*******************************************************************************
@@ -77,7 +79,23 @@ static void LuosHAL_SystickInit(void)
  ******************************************************************************/
 static void LuosHAL_VectorTableRemap(void)
 {
-    SCB->VTOR = LUOS_VECT_TAB;
+    /* Copy the vector table from the Flash (mapped at the base of the application
+        load address 0x0800C800) to the base address of the SRAM at 0x20000000. */
+    // check if we are at the beginning of flash
+    if (LUOS_VECT_TAB > FLASH_BASE)
+    {
+        static volatile _RSVD uint32_t VectorTable[48];
+
+        for (uint32_t i = 0; i < 48; i++)
+        {
+            VectorTable[i] = *(__IO uint32_t *)(LUOS_VECT_TAB + (i << 2));
+        }
+
+        /* Enable the SYSCFG peripheral clock*/
+        __HAL_RCC_SYSCFG_CLK_ENABLE();
+        /* Remap SRAM at 0x00000000 */
+        __HAL_SYSCFG_REMAPMEMORY_SRAM();
+    }
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms
@@ -307,7 +325,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 
 /******************************************************************************
  * @brief Programm flash memory
- * @param address : Start address 
+ * @param address : Start address
  * @param size :: Data size
  * @param data : Pointer to data
  * @return

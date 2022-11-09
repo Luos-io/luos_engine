@@ -45,7 +45,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20K
+  RAM_RSVD (xrw)  : ORIGIN = 0x20000000,   LENGTH = 1K
+  RAM    (xrw)    : ORIGIN = 0x20000400,   LENGTH = 19K
   FLASH    (rx)    : ORIGIN = 0x800C800,   LENGTH = 142K
 }
 
@@ -173,6 +174,12 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+
+  .boot_data :
+  {
+    *(.rsvd.data)
+    *(.rsvd.data*)
+  } > RAM_RSVD
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :
