@@ -2,12 +2,25 @@ name: Upload platformio library
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "*"
   workflow_dispatch:
 
 jobs:
+  check_valid_tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: No upload if tag is a release candidate
+        if: contains(github.event.ref, 'rc')
+        run: |
+          echo "Stop job: do not upload a release candidate tag"
+          exit 1
+
   deploy_engine:
+    needs: check_valid_tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,6 +41,7 @@ jobs:
           pio package publish --owner luos --non-interactive
 
   deploy_gate:
+    needs: check_valid_tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -97,6 +111,7 @@ jobs:
           cd ../..
 
   deploy_inspector:
+    needs: check_valid_tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -166,6 +181,7 @@ jobs:
           cd ../..
 
   deploy_pipe:
+    needs: check_valid_tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
