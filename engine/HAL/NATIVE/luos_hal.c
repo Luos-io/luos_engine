@@ -11,6 +11,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 /*******************************************************************************
  * Function
@@ -65,8 +66,23 @@ static void LuosHAL_SystickInit(void)
  ******************************************************************************/
 uint32_t LuosHAL_GetSystick(void)
 {
-    clock_t tick = clock();
-    return tick; // return  tick
+    struct timespec time;
+    uint32_t ms; // Milliseconds
+    time_t s;    // Seconds
+#ifdef linux
+    clock_gettime(CLOCK_BOOTTIME, &time);
+#else
+    clock_gettime(CLOCK_MONOTONIC, &time);
+#endif
+    s  = time.tv_sec;
+    ms = round(time.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+    if (ms > 999)
+    {
+        s++;
+        ms = 0;
+    }
+    ms += s * 1000;
+    return ms;
 }
 
 /******************************************************************************
@@ -76,7 +92,13 @@ uint32_t LuosHAL_GetSystick(void)
  ******************************************************************************/
 uint64_t LuosHAL_GetTimestamp(void)
 {
-    return (LuosHAL_GetSystick() * 1000);
+    struct timespec time;
+#ifdef linux
+    clock_gettime(CLOCK_BOOTTIME, &time);
+#else
+    clock_gettime(CLOCK_MONOTONIC, &time);
+#endif
+    return time.tv_nsec;
 }
 
 /******************************************************************************
