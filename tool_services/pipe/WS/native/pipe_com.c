@@ -135,5 +135,5 @@ uint8_t PipeCom_Receive(uint16_t *size)
  ******************************************************************************/
 void PipeCom_Loop(void)
 {
-    mg_mgr_poll(&mgr, 1000); // Infinite event loop
+    mg_mgr_poll(&mgr, 10); // Infinite event loop
 }
