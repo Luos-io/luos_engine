@@ -48,7 +48,7 @@ void DataManager_collect(service_t *service)
             }
     #endif
 #else
-            // This container is a sensor so create a msg to enable auto update
+            // This service is a sensor so create a msg to enable auto update
             update_msg.header.target = result.result_table[i]->id;
             TimeOD_TimeToMsg(&update_time, &update_msg);
             update_msg.header.cmd = UPDATE_PUB;
@@ -56,10 +56,6 @@ void DataManager_collect(service_t *service)
 #endif
         }
     }
-    // wait a little bit for the first reply
-    uint32_t start_time = Luos_GetSystick();
-    while ((start_time == Luos_GetSystick()) && (Luos_NbrAvailableMsg() == 0))
-        ;
 }
 
 // This function manage entirely data conversion
