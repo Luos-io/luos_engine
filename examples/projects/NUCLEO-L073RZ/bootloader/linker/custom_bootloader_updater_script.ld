@@ -47,12 +47,19 @@ MEMORY
 {
   RAM_RSVD (xrw)  : ORIGIN = 0x20000000,   LENGTH = 1K
   RAM    (xrw)    : ORIGIN = 0x20000400,   LENGTH = 19K
-  FLASH    (rx)    : ORIGIN = 0x800C800,   LENGTH = 142K
+  FLASH    (rx)    : ORIGIN = 0x800C800,   LENGTH = 48K
+  SHRD_MEM  (rw) : ORIGIN = 0x0800C000,   LENGTH = 2K
 }
 
 /* Sections */
 SECTIONS
 {
+  /* placing my boot flags section at given address: */
+  .boot_flags :
+  {
+    KEEP(*(.boot_flags)) /* keep my variable even if not referenced */
+  } > SHRD_MEM
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {

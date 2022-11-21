@@ -154,6 +154,12 @@
  *    APP_START_ADDRESS     | 0x0800C800                 | Start address of application with bootloader
  *    APP_END_ADDRESS       | FLASH_END                  | End address of application with bootloader
  ******************************************************************************/
-#define APP_START_ADDRESS (uint32_t)0x0800D000
+#ifndef BOOTLOADER_UPDATER
+    #define APP_START_ADDRESS (uint32_t)0x0800D000
+#else
+    #define BOOT_START_ADDRESS (uint32_t)0x0800D000
+    #define APP_START_ADDRESS  (uint32_t)0x08000000
+    #define APP_END_ADDRESS    (uint32_t)0x0800BFFF
+#endif
 
 #endif /* _NODE_CONFIG_H_ */
