@@ -73,9 +73,10 @@ void Gate_Loop(void)
                 last_time = Luos_GetSystick();
                 DataManager_Run(gate);
 #ifndef GATE_POLLING
-                if (first_conversion == 1)
+                if (first_conversion == true)
                 {
                     // This is the first time we perform a convertion
+    #ifdef GATE_REFRESH_AUTOSCALE
                     // Evaluate the time needed to convert all the data of this configuration and update refresh rate
                     search_result_t result;
                     RTFilter_Reset(&result);
@@ -87,15 +88,13 @@ void Gate_Loop(void)
                     }
                     else
                     {
-                        update_time = GATE_REFRESH_TIME_S;
+                        update_time = TimeOD_TimeFrom_s(GATE_REFRESH_TIME_S);
                     }
-
+    #endif
                     // Update refresh rate for all services of the network
                     DataManager_collect(gate);
-                    first_conversion = 0;
+                    first_conversion = false;
                 }
-#else
-                update_time = 0.005;
 #endif
             }
         }
