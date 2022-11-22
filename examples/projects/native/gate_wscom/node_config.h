@@ -108,15 +108,7 @@
 #define GATE_BUFF_SIZE      1024
 #define PIPE_RX_BUFFER_SIZE 1024
 #define PIPE_TX_BUFFER_SIZE 2048
-
-/*******************************************************************************
- * OTHER GATE PARAMETERS
- *******************************************************************************
- *    Define                    | Default Value              | Description
- *    :-------------------------|------------------------------------------------------
- *    INIT_TIME                 |              150           | Wait init time before first detection
- * ******************************************************************************/
-
-#define INIT_TIME 150
+#define INIT_TIME           150
+#define GATE_REFRESH_TIME_S 0.05f
 
 #endif /* _NODE_CONFIG_H_ */
