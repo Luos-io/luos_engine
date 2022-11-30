@@ -10,6 +10,7 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
+#include "sdkconfig.h"
 #include "hal/gpio_hal.h"
 #include "hal/timer_hal.h"
 #include "hal/uart_hal.h"
@@ -26,7 +27,7 @@
     #define LUOS_TIMER_GROUP TIMER_GROUP_1
 
 #elif CONFIG_IDF_TARGET_ESP32C3
-    #define TIMERDIV 2 // clock divider for timer clock chosen
+    #define TIMERDIV         1 // clock divider for timer clock chosen
 
     #define PTPA_PIN   GPIO_NUM_6
     #define PTPB_PIN   GPIO_NUM_7
@@ -35,7 +36,7 @@
     #define COM_RX_PIN GPIO_NUM_5
 
 #else
-    #define TIMERDIV 2 // clock divider for timer clock chosen
+    #define TIMERDIV 1 // clock divider for timer clock chosen
 
     #define PTPA_PIN   GPIO_NUM_12
     #define PTPB_PIN   GPIO_NUM_13

@@ -16,6 +16,10 @@
 
 #define DISABLE 0x00
 
+#ifndef MCUFREQ
+    #define MCUFREQ 80000000 // MCU frequence
+#endif
+
 // If your MCU do not Have DMA for tx transmit #define USE_TX_IT
 // If your MCU have CRC polynome 16 #define USE_CRC_HW 1 else #define USE_CRC_HW 0
 #ifndef USE_CRC_HW
