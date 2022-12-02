@@ -42,7 +42,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint32_t Timer_Prescaler = (uint32_t)(MCUFREQ/DEFAULTBAUDRATE); //(freq MCU/freq timer)/divider timer clock source
+uint32_t Timer_Prescaler = (uint32_t)(MCUFREQ / DEFAULTBAUDRATE); //(freq MCU/freq timer)/divider timer clock source
 
 typedef struct
 {
@@ -178,7 +178,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     RobusHAL_SetRxState(true);
 
     // Timeout Initialization
-    Timer_Prescaler = (uint32_t)(MCUFREQ / Baudrate);// / TIMERDIV;
+    Timer_Prescaler = (uint32_t)(MCUFREQ / Baudrate); // / TIMERDIV;
     RobusHAL_TimeoutInit();
 }
 /******************************************************************************
@@ -235,7 +235,7 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 #else
     if (Enable == true)
     {
-    	uart_hal_rxfifo_rst(&uart_hal_context);
+        uart_hal_rxfifo_rst(&uart_hal_context);
         uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
         uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
     }
@@ -401,7 +401,7 @@ static void RobusHAL_TimeoutInit(void)
 _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
     // disable Counter
-	timer_hal_set_counter_value(&timeout_hal_context, 0);
+    timer_hal_set_counter_value(&timeout_hal_context, 0);
     timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
     timer_hal_clear_intr_status(&timeout_hal_context);
     timer_hal_intr_disable(&timeout_hal_context);
@@ -409,7 +409,7 @@ _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
     // Reset counter
     if (nbrbit != 0)
     {
-    	timer_hal_intr_enable(&timeout_hal_context);
+        timer_hal_intr_enable(&timeout_hal_context);
         timer_hal_set_counter_enable(&timeout_hal_context, TIMER_START);
     }
 }

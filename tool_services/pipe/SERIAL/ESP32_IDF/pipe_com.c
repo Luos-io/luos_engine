@@ -8,7 +8,7 @@
 #include "pipe_com.h"
 #include "../serial_protocol.h"
 
-//ESP32
+// ESP32
 #include "sdkconfig.h"
 #include "esp_log.h"
 #include "driver/uart.h"
@@ -43,12 +43,12 @@ void PipeCom_Init(void)
  ******************************************************************************/
 void PipeCom_Loop(void)
 {
-	int size = uart_hal_get_rxfifo_len(&uart_hal_context_log);
+    int size = uart_hal_get_rxfifo_len(&uart_hal_context_log);
     uint8_t data[256];
     if (size != 0)
     {
-    	uart_hal_read_rxfifo(&uart_hal_context_log, &data[0], &size);
-    	uart_hal_rxfifo_rst(&uart_hal_context_log);
+        uart_hal_read_rxfifo(&uart_hal_context_log, &data[0], &size);
+        uart_hal_rxfifo_rst(&uart_hal_context_log);
         Stream_PutSample(Pipe_GetRxStreamChannel(), &data[0], size);
     }
 }
@@ -68,13 +68,13 @@ uint8_t PipeCom_Receive(uint16_t *size)
  ******************************************************************************/
 void PipeCom_Send(void)
 {
-	uint32_t wr_size                 = 0;
+    uint32_t wr_size = 0;
 
     SerialProtocol_CreateTxMsg();
     volatile uint16_t size = SerialProtocol_GetSizeToSend();
     while (size > 0)
     {
-    	uart_hal_write_txfifo(&uart_hal_context_log, (uint8_t*)SerialProtocol_GetDataToSend(), size, &wr_size);
+        uart_hal_write_txfifo(&uart_hal_context_log, (uint8_t *)SerialProtocol_GetDataToSend(), size, &wr_size);
         Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), wr_size);
         size = SerialProtocol_GetSizeToSend();
     }
