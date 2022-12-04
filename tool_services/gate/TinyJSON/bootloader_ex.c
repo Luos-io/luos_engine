@@ -101,32 +101,39 @@ void Bootloader_JsonToLuos(service_t *service, char *bin_data, json_t const *boo
         // parse all relevant values in json object
         uint16_t type        = (uint16_t)json_getReal(json_getProperty(command_item, "type"));
         uint8_t topic_target = (uint8_t)json_getReal(json_getProperty(command_item, "topic"));
+        uint16_t node_id     = (uint16_t)json_getReal(json_getProperty(command_item, "node"));
+
         // create a message to send to nodes
         msg_t boot_msg;
-        boot_msg.header.target      = (uint16_t)topic_target; // first node of the network
-        boot_msg.header.cmd         = BOOTLOADER_CMD;         // bootloader cmd
-        boot_msg.header.target_mode = TOPIC;                  // msg send to the node
+
+        if (node_id == 0)
+        {
+            boot_msg.header.target      = (uint16_t)topic_target; // topic
+            boot_msg.header.cmd         = BOOTLOADER_CMD;         // bootloader cmd
+            boot_msg.header.target_mode = TOPIC;                  // msg send to the node
+        }
+        else
+        {
+            boot_msg.header.target      = node_id;        // node_id to send the message
+            boot_msg.header.cmd         = BOOTLOADER_CMD; // bootloader cmd
+            boot_msg.header.target_mode = NODEIDACK;      // msg send to the node
+        }
 
         uint32_t binary_size = 0;
         json_t *item         = NULL;
         switch (type)
         {
             case BOOTLOADER_START:
-                boot_msg.header.target_mode = NODEIDACK;
-                boot_msg.header.target      = (uint16_t)json_getReal(json_getProperty(command_item, "node"));
-                boot_msg.header.size        = sizeof(char);
-                boot_msg.data[0]            = BOOTLOADER_START;
+                boot_msg.header.size = sizeof(char);
+                boot_msg.data[0]     = BOOTLOADER_START;
                 Luos_SendMsg(service, &boot_msg);
                 break;
 
             case BOOTLOADER_STOP:
                 // send stop command to bootloader app
-                boot_msg.header.target_mode = NODEIDACK;
-                boot_msg.header.target      = (uint16_t)json_getReal(json_getProperty(command_item, "node"));
-                boot_msg.header.size        = sizeof(char);
-                boot_msg.data[0]            = BOOTLOADER_STOP;
+                boot_msg.header.size = sizeof(char);
+                boot_msg.data[0]     = BOOTLOADER_STOP;
                 Luos_SendMsg(service, &boot_msg);
-
                 break;
 
             case BOOTLOADER_READY:
@@ -134,11 +141,9 @@ void Bootloader_JsonToLuos(service_t *service, char *bin_data, json_t const *boo
                 binary_size = (uint32_t)json_getReal(json_getProperty(command_item, "size"));
 
                 // send ready command to bootloader app
-                boot_msg.header.target_mode = NODEIDACK;
-                boot_msg.header.target      = (uint16_t)json_getReal(json_getProperty(command_item, "node"));
-                boot_msg.header.size        = 2 * sizeof(char) + sizeof(uint32_t);
-                boot_msg.data[0]            = BOOTLOADER_READY;
-                boot_msg.data[1]            = topic_target;
+                boot_msg.header.size = 2 * sizeof(char) + sizeof(uint32_t);
+                boot_msg.data[0]     = BOOTLOADER_READY;
+                boot_msg.data[1]     = topic_target;
                 memcpy(&(boot_msg.data[2]), &binary_size, sizeof(uint32_t));
                 Luos_SendMsg(service, &boot_msg);
                 break;
