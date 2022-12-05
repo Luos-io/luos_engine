@@ -38,6 +38,16 @@
 #endif
 
 /*******************************************************************************
+ * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
+ ******************************************************************************/
+#ifndef THREAD_LOCK
+    #define THREAD_LOCK
+#endif
+#ifndef THREAD_UNLOCK
+    #define THREAD_UNLOCK
+#endif
+
+/*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
 #define FLASH_END FLASH_SIZE - 1

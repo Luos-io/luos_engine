@@ -16,6 +16,26 @@
     #define MCUFREQ 48000000 // MCU frequence
 #endif
 /*******************************************************************************
+ * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
+ ******************************************************************************/
+#ifndef THREAD_LOCK
+    #define THREAD_LOCK
+#endif
+#ifndef THREAD_UNLOCK
+    #define THREAD_UNLOCK
+#endif
+
+/*******************************************************************************
+ * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
+ ******************************************************************************/
+#ifndef THREAD_LOCK
+    #define THREAD_LOCK
+#endif
+#ifndef THREAD_UNLOCK
+    #define THREAD_UNLOCK
+#endif
+
+/*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE
