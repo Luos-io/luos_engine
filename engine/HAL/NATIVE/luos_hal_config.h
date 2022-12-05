@@ -27,6 +27,18 @@ static uint32_t stub_flash_x86[FLASH_PAGE_NUMBER][FLASH_PAGE_SIZE];
 static uint32_t *last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE];
 
 /*******************************************************************************
+ * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
+ ******************************************************************************/
+#include <pthread.h>
+extern pthread_mutex_t mutex;
+#ifndef THREAD_LOCK
+    #define THREAD_LOCK pthread_mutex_lock(&mutex);
+#endif
+#ifndef THREAD_UNLOCK
+    #define THREAD_UNLOCK pthread_mutex_unlock(&mutex);
+#endif
+
+/*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE
