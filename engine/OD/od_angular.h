@@ -28,7 +28,7 @@ typedef struct{
 // deg
 static inline float AngularOD_PositionTo_deg(angular_position_t self)
 {
-    return self;
+    return self.private;
 }
 
 static inline angular_position_t AngularOD_PositionFrom_deg(float deg)
@@ -39,7 +39,7 @@ static inline angular_position_t AngularOD_PositionFrom_deg(float deg)
 // rev
 static inline float AngularOD_PositionTo_rev(angular_position_t self)
 {
-    return self / 360.0f;
+    return self.private / 360.0f;
 }
 
 static inline angular_position_t AngularOD_PositionFrom_rev(float rev)
@@ -50,7 +50,7 @@ static inline angular_position_t AngularOD_PositionFrom_rev(float rev)
 // rad
 static inline float AngularOD_PositionTo_rad(angular_position_t self)
 {
-    return (self * 2.0f * 3.141592653589793f) / 360.0f;
+    return (self.private * 2.0f * 3.141592653589793f) / 360.0f;
 }
 
 static inline angular_position_t AngularOD_PositionFrom_rad(float rad)
@@ -81,7 +81,7 @@ typedef struct{
 // deg_s
 static inline float AngularOD_SpeedTo_deg_s(angular_speed_t self)
 {
-    return self;
+    return self.private;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_deg_s(float deg)
@@ -92,7 +92,7 @@ static inline angular_speed_t AngularOD_SpeedFrom_deg_s(float deg)
 // rev_s
 static inline float AngularOD_SpeedTo_rev_s(angular_speed_t self)
 {
-    return self / 360.0f;
+    return self.private / 360.0f;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_rev_s(float rev_s)
@@ -103,7 +103,7 @@ static inline angular_speed_t AngularOD_SpeedFrom_rev_s(float rev_s)
 // rev_min
 static inline float AngularOD_SpeedTo_rev_min(angular_speed_t self)
 {
-    return self * 60.0f / 360.0f;
+    return self.private * 60.0f / 360.0f;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_rev_min(float rev_min)
@@ -114,7 +114,7 @@ static inline angular_speed_t AngularOD_SpeedFrom_rev_min(float rev_min)
 // rad_s
 static inline float AngularOD_SpeedTo_rad_s(angular_speed_t self)
 {
-    return (self * 2.0f * 3.141592653589793f) / 360.0f;
+    return (self.private * 2.0f * 3.141592653589793f) / 360.0f;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_rad_s(float rad_s)
