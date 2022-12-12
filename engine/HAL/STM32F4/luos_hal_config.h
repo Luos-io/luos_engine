@@ -40,11 +40,11 @@
 /*******************************************************************************
  * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
  ******************************************************************************/
-#ifndef THREAD_LOCK
-    #define THREAD_LOCK
+#ifndef MSGALLOC_MUTEX_LOCK
+    #define MSGALLOC_MUTEX_LOCK
 #endif
-#ifndef THREAD_UNLOCK
-    #define THREAD_UNLOCK
+#ifndef MSGALLOC_MUTEX_UNLOCK
+    #define MSGALLOC_MUTEX_UNLOCK
 #endif
 
 /*******************************************************************************

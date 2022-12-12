@@ -30,12 +30,12 @@ static uint32_t *last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 
  * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
  ******************************************************************************/
 #include <pthread.h>
-extern pthread_mutex_t mutex;
-#ifndef THREAD_LOCK
-    #define THREAD_LOCK pthread_mutex_lock(&mutex);
+extern pthread_mutex_t mutex_msg_alloc;
+#ifndef MSGALLOC_MUTEX_LOCK
+    #define MSGALLOC_MUTEX_LOCK pthread_mutex_lock(&mutex_msg_alloc);
 #endif
-#ifndef THREAD_UNLOCK
-    #define THREAD_UNLOCK pthread_mutex_unlock(&mutex);
+#ifndef MSGALLOC_MUTEX_UNLOCK
+    #define MSGALLOC_MUTEX_UNLOCK pthread_mutex_unlock(&mutex_msg_alloc);
 #endif
 
 /*******************************************************************************
