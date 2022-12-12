@@ -13,7 +13,7 @@
 #include <string.h>
 #include <math.h>
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_msg_alloc = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************************************
  * Function
