@@ -15,7 +15,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define DEFAULT_TIMEOUT 20
+#define DEFAULT_TIMEOUT 30
 #define TIMEOUT_ACK     DEFAULT_TIMEOUT / 4
 /*******************************************************************************
  * Variables
@@ -236,7 +236,7 @@ uint16_t LuosHAL_GetNodeID(void)
 
 /******************************************************************************
  * @brief Programm flash memory
- * @param address : Start address 
+ * @param address : Start address
  * @param size :: Data size
  * @param data : Pointer to data
  * @return
