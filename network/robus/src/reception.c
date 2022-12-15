@@ -6,40 +6,40 @@
  ******************************************************************************/
 
 /******************************* Description of the RX process ***********************************
-*                                          Byte Received
-*                                                +
-*                                                |
-*                                        no      v      yes
-*                         +-----------------+Tx Enable+---------------+
-*                         |                                           |
-*  +------+     true      v                                           v
-*  | Drop | <--------+Drop state<-----------------------+      +------+------+
-*  | byte |               +                             |      |  Get        |
-*  +------+               | false                       |      |   Collision |
-*                         v                             |      |             |
-*                   Header complete                     |      |  source ID  |yes
-*                         +                             |      |   received  +------>Disable Rx
-*                         | yes                            |      |      +      |           +
-*                         v                             |      |      |no    |           |
-*                  +------+------+   +-------------+    |    no|      v      |           v
-*                  |  Get        |   |  Get        |    +------+  Collision  |       Wait End
-*                  |    Header   |   |     Data    |           +-------------+        Transmit
-*                  |             |   |             |                  |yes               +
-*                  | +---------+ |   |             |                  v                  |
-*                no| |   Node  | |   |  Message    |             Disable Tx       no     v
-*Drop = true <-------+Concerned| |   |    Complete |                           +----+Ack needed
-*     ^            | +---------+ |   |      +      |                           |         +
-*     |            |      |yes   |   |      |yes   |    Drop message           |         |yes
-*     |            |      v      |   |      v      |no   Send NACK             |         v
-*     |          no|    valid    |   |  Valid    +---->   if needed +--+       |     +---+----+
-*     +---------------+ Header   |   |       CRC   |                   |       |     | Get    |
-*                  |      +      |   +------+------+                   |       |     |    Ack |
-*                  |      |yes   |          |yes                       v       v     +---+----+
-*                  |      v      |          v                  +-------+-------+-+       |
-*                  |   Header    |    Store message            |     Timeout     |       |
-*                  |   Complete  |   Send ACK if needed+------>+  End reception  +<------+
-*                  +-------------+                             +-----------------+
-***********************************************************************************************/
+ *                                          Byte Received
+ *                                                +
+ *                                                |
+ *                                        no      v      yes
+ *                         +-----------------+Tx Enable+---------------+
+ *                         |                                           |
+ *  +------+     true      v                                           v
+ *  | Drop | <--------+Drop state<-----------------------+      +------+------+
+ *  | byte |               +                             |      |  Get        |
+ *  +------+               | false                       |      |   Collision |
+ *                         v                             |      |             |
+ *                   Header complete                     |      |  source ID  |yes
+ *                         +                             |      |   received  +------>Disable Rx
+ *                         | yes                            |      |      +      |           +
+ *                         v                             |      |      |no    |           |
+ *                  +------+------+   +-------------+    |    no|      v      |           v
+ *                  |  Get        |   |  Get        |    +------+  Collision  |       Wait End
+ *                  |    Header   |   |     Data    |           +-------------+        Transmit
+ *                  |             |   |             |                  |yes               +
+ *                  | +---------+ |   |             |                  v                  |
+ *                no| |   Node  | |   |  Message    |             Disable Tx       no     v
+ *Drop = true <-------+Concerned| |   |    Complete |                           +----+Ack needed
+ *     ^            | +---------+ |   |      +      |                           |         +
+ *     |            |      |yes   |   |      |yes   |    Drop message           |         |yes
+ *     |            |      v      |   |      v      |no   Send NACK             |         v
+ *     |          no|    valid    |   |  Valid    +---->   if needed +--+       |     +---+----+
+ *     +---------------+ Header   |   |       CRC   |                   |       |     | Get    |
+ *                  |      +      |   +------+------+                   |       |     |    Ack |
+ *                  |      |yes   |          |yes                       v       v     +---+----+
+ *                  |      v      |          v                  +-------+-------+-+       |
+ *                  |   Header    |    Store message            |     Timeout     |       |
+ *                  |   Complete  |   Send ACK if needed+------>+  End reception  +<------+
+ *                  +-------------+                             +-----------------+
+ ***********************************************************************************************/
 
 #include "reception.h"
 #include <string.h>
@@ -74,14 +74,12 @@ uint16_t data_count            = 0;
 uint16_t data_size             = 0;
 uint16_t crc_val               = 0;
 static int64_t ll_rx_timestamp = 0;
-uint16_t large_data_num        = 0;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
 static inline uint8_t Recep_IsAckNeeded(void);
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id);
-_CRITICAL void Recep_ComputeMsgNumber(void);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -147,8 +145,6 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
             if (current_msg->header.size > MAX_DATA_MSG_SIZE)
             {
                 data_size = MAX_DATA_MSG_SIZE;
-                // store the number of the messages that compose the large message
-                Recep_ComputeMsgNumber();
             }
             else
             {
@@ -188,8 +184,6 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
  ******************************************************************************/
 _CRITICAL void Recep_GetData(volatile uint8_t *data)
 {
-    static uint16_t last_crc = 0;
-
     MsgAlloc_SetData(*data);
     if (data_count < data_size)
     {
@@ -231,27 +225,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
             }
             else
             {
-                // check if we have already received the same message
-                if ((crc == last_crc) && (large_data_num > 0))
-                {
-                    // if yes remove this message from memory
-                    MsgAlloc_InvalidMsg();
-                    ctx.rx.callback = Recep_Drop;
-                    return;
-                }
-                // if not treat message normally
                 MsgAlloc_EndMsg();
-                // reduce the number of remaining messages in case of a large message
-                if (large_data_num > 0)
-                {
-                    large_data_num--;
-                    // store the current crc for the next message comparison
-                    last_crc = crc;
-                }
-                else
-                {
-                    last_crc = 0;
-                }
             }
         }
         else
@@ -729,25 +703,4 @@ _CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
 static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
 {
     return (id - ctx.ll_service_table[0].id);
-}
-
-/******************************************************************************
- * @brief computes the number of the messages that compose a large data message
- * @param None
- * @return None
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL void Recep_ComputeMsgNumber(void)
-{
-    LUOS_ASSERT(current_msg->header.size > MAX_DATA_MSG_SIZE);
-    // check if it is the first msg of large data received
-    if (large_data_num == 0)
-    {
-        // find the number of the messages that belong to the same large message
-        large_data_num = current_msg->header.size / MAX_DATA_MSG_SIZE;
-        if (current_msg->header.size % MAX_DATA_MSG_SIZE != 0)
-        {
-            large_data_num++;
-        }
-    }
 }

@@ -24,3 +24,5 @@
 ./tool_services/gate/TinyJSON/tiny-json.h
 ./tool_services/gate/TinyJSON/tiny-json.c
 ./tool_services/pipe/WS/native/mongoose
+./tool_services/pipe/WS/ESP32_IDF/mongoose
+./tool_services/pipe/WS/ARDUINO/WebSockets
