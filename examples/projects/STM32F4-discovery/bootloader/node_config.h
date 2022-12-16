@@ -96,5 +96,11 @@
  *    APP_START_SECTOR      | FLASH_SECTOR_4             | Start sector of application with bootloader
  *    APP_END_SECTOR        | FLASH_SECTOR_TOTAL - 1     | last sector of application with bootloader
  ******************************************************************************/
-
+#ifdef BOOTLOADER_UPDATER
+    #define BOOT_START_ADDRESS 0x08010000
+    #define APP_START_ADDRESS  0x8000000
+    #define APP_END_ADDRESS    0x0800BFFF
+    #define APP_START_SECTOR   FLASH_SECTOR_0
+    #define APP_END_SECTOR     FLASH_SECTOR_2
+#endif
 #endif /* _NODE_CONFIG_H_ */

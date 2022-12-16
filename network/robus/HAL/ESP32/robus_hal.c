@@ -34,7 +34,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define DEFAULT_TIMEOUT 20
+#define DEFAULT_TIMEOUT 30
 #define TIMEOUT_ACK     DEFAULT_TIMEOUT / 4
 
 #define RX_BUFFER_SIZE 140
@@ -42,7 +42,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV; //(freq MCU/freq timer)/divider timer clock source
+uint32_t Timer_Prescaler = (uint32_t)(MCUFREQ / DEFAULTBAUDRATE); //(freq MCU/freq timer)/divider timer clock source
 
 typedef struct
 {
@@ -55,7 +55,7 @@ uint16_t data_size_to_transmit = 0;
 uint8_t *tx_data               = 0;
 uint32_t Rsize                 = 0;
 
-volatile uint8_t RxEn         = true;
+volatile uint8_t RxEn         = false;
 volatile uint8_t TxEn         = true;
 volatile uint32_t enable_mask = 0;
 
@@ -127,8 +127,7 @@ _CRITICAL void RobusHAL_SetIrqState(uint8_t Enable)
             enable_mask |= (UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
         }
         uart_hal_ena_intr_mask(&uart_hal_context, enable_mask);
-        timer_enable_intr(LUOS_TIMER_GROUP, LUOS_TIMER);
-        irq_mutex = true;
+        timer_hal_intr_enable(&timeout_hal_context);
     }
     else if ((Enable == false) && (irq_mutex != true))
     {
@@ -139,7 +138,7 @@ _CRITICAL void RobusHAL_SetIrqState(uint8_t Enable)
         uart_hal_disable_intr_mask(&uart_hal_context, (UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT | UART_INTR_TX_DONE));
 
 #endif
-        timer_disable_intr(LUOS_TIMER_GROUP, LUOS_TIMER);
+        timer_hal_intr_disable(&timeout_hal_context);
     }
     irq_mutex = false;
 }
@@ -179,7 +178,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     RobusHAL_SetRxState(true);
 
     // Timeout Initialization
-    Timer_Prescaler = (MCUFREQ / Baudrate) / TIMERDIV;
+    Timer_Prescaler = (uint32_t)(MCUFREQ / Baudrate); // / TIMERDIV;
     RobusHAL_TimeoutInit();
 }
 /******************************************************************************
@@ -206,13 +205,7 @@ _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
     else
     {
         // Put Tx in open drain
-#ifdef CONFIG_IDF_TARGET_ESP32
         gpio_hal_output_disable(&gpio_hal_context, COM_TX_PIN);
-
-#else
-        gpio_set_direction(COM_TX_PIN, GPIO_MODE_DISABLE);
-
-#endif
         esp_rom_gpio_pad_select_gpio(COM_TX_PIN);
         if (TX_EN_PIN != DISABLE)
         {
@@ -242,6 +235,7 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 #else
     if (Enable == true)
     {
+        uart_hal_rxfifo_rst(&uart_hal_context);
         uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
         uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
     }
@@ -341,7 +335,7 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         if (size != 0)
         {
             uint32_t ActualTime = esp_timer_get_time();
-            while ((esp_timer_get_time() - ActualTime) < TIMEOUT_ACK)
+            while ((esp_timer_get_time() - ActualTime) < (uint32_t)(TIMEOUT_ACK))
                 ;
             uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_TX_DONE);
             uart_hal_ena_intr_mask(&uart_hal_context, UART_INTR_TX_DONE);
@@ -396,7 +390,7 @@ static void RobusHAL_TimeoutInit(void)
     Timeout.divider     = Timer_Prescaler - 1; /*!< Counter clock divider. The divider's range is from from 2 to 65536. */
     timer_init(LUOS_TIMER_GROUP, LUOS_TIMER, &Timeout);
     timer_isr_callback_add(LUOS_TIMER_GROUP, LUOS_TIMER, &RobusHAL_TimeoutIrqHandler, NULL, ESP_INTR_FLAG_IRAM);
-    timer_set_alarm_value(LUOS_TIMER_GROUP, LUOS_TIMER, DEFAULT_TIMEOUT);
+    timer_hal_set_alarm_value(&timeout_hal_context, DEFAULT_TIMEOUT);
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }
 /******************************************************************************
@@ -407,10 +401,10 @@ static void RobusHAL_TimeoutInit(void)
 _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
     // disable Counter
+    timer_hal_set_counter_value(&timeout_hal_context, 0);
     timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
     timer_hal_clear_intr_status(&timeout_hal_context);
     timer_hal_intr_disable(&timeout_hal_context);
-    timer_hal_set_counter_value(&timeout_hal_context, 0);
 
     // Reset counter
     if (nbrbit != 0)
@@ -426,8 +420,8 @@ _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
  ******************************************************************************/
 _CRITICAL timer_isr_t RobusHAL_TimeoutIrqHandler(void *arg)
 {
-    timer_hal_clear_intr_status(&timeout_hal_context);
     timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
+    timer_hal_clear_intr_status(&timeout_hal_context);
     if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
     {
         // Enable RX detection pin if needed

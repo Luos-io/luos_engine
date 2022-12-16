@@ -206,7 +206,7 @@ void EXTI9_5_IRQHandler(void)
     HAL_GPIO_EXTI_IRQHandler(PTPA_PIN);
 }
 
-void EXTI15_10_IRQHandler(void)
+void EXTI4_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(PTPB_PIN);
 }

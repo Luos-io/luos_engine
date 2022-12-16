@@ -5,6 +5,6 @@
     "version": "1.0.0",
     "licence": "MIT",
     "dependencies": {
-	"luos/luos_engine": "^2.7.0"
+        "luos/luos_engine": "^2.8.0"
     }
 }
