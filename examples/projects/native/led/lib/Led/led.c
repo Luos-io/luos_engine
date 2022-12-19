@@ -11,7 +11,6 @@
 #else
     #include <termios.h>
 #endif
-//#include <fcntl.h>
 #include "led.h"
 #include <stdlib.h>
 
@@ -93,18 +92,7 @@ void Led_Loop(void) {}
  ******************************************************************************/
 static void Led_MsgHandler(service_t *service, msg_t *msg)
 {
-    if (msg->header.cmd == GET_CMD)
-    {
-        // fill the message infos
-        msg_t pub_msg;
-        pub_msg.header.cmd         = IO_STATE;
-        pub_msg.header.target_mode = SERVICEID;
-        pub_msg.header.target      = msg->header.source;
-        pub_msg.header.size        = sizeof(char);
-        Luos_SendMsg(service, &pub_msg);
-        return;
-    }
-    else if (msg->header.cmd == IO_STATE)
+    if (msg->header.cmd == IO_STATE)
     {
         if (msg->data[0] != Led_last_state)
         {
