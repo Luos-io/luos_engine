@@ -63,7 +63,7 @@
  * This structure is used to link services and messages into the allocator.
  *
  ******************************************************************************/
-typedef struct __attribute__((__packed__))
+typedef struct
 {
     msg_t *msg_pt;               /*!< Start pointer of the msg on msg_buffer. */
     ll_service_t *ll_service_pt; /*!< Pointer to the concerned ll_service. */
