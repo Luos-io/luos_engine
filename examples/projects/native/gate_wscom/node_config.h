@@ -43,9 +43,9 @@
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
-#define MAX_SERVICE_NUMBER 3
+#define MAX_SERVICE_NUMBER 2
 #define MAX_PROFILE_NUMBER 1
-#define MAX_MSG_NB         5
+#define MAX_MSG_NB         30
 #define INIT_TIME          150
 
 /*******************************************************************************
