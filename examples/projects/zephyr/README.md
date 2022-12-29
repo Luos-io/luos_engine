@@ -26,16 +26,15 @@ $ west update
 ```
 Now you should be able to compile the example app.
 
-To run this example on the **mps2_an521 (Cortex M33) emulator**, run the
+To run this example on the **STM Microelectronics Nucleo G474RE** board, run the
 following commands which will compile the application, run it on the emulator,
 and output the result to the console:
 
 ```console
-$ west build -p auto -b mps2_an521 path/to/luos_engine/examples/projects/zephyr
+$ west build -p auto -b nucleo_g474re path/to/luos_engine/examples/projects/zephyr
 ```
-Run the simulation using: 
+To flash the firmware: 
 
 ```console
-$ west build -t run
+$ west flash
 ```
-Press ``CTRL+A`` to exit QEMU.

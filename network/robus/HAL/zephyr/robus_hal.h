@@ -8,8 +8,6 @@
 #ifndef _RobusHAL_H_
 #define _RobusHAL_H_
 
-#include <stdint.h>
-#include "robus_hal_config.h"
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -26,5 +24,6 @@ void RobusHAL_SetPTPReverseState(uint8_t PTPNbr);
 void RobusHAL_PushPTP(uint8_t PTPNbr);
 uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr);
 void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc);
+void RobusHAL_WaitNetworkActivity(void);
 
 #endif /* _HAL_H_ */
