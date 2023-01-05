@@ -15,6 +15,7 @@
         "flags": [
             "-I network/robus/inc",
             "-I network/robus/selftest",
+            "-I engine",
             "-I engine/OD",
             "-I engine/core/inc",
             "-I engine/IO/inc",
