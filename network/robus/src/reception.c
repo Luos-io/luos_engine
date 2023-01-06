@@ -368,6 +368,7 @@ _CRITICAL void Recep_CatchAck(volatile uint8_t *data)
 ll_service_t *Recep_GetConcernedLLService(header_t *header)
 {
     uint16_t i = 0;
+    LUOS_ASSERT(header);
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {

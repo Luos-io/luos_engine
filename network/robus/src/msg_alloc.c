@@ -609,6 +609,7 @@ _CRITICAL void MsgAlloc_EndMsg(void)
     {
         MsgAlloc_OldestMsgCandidate((msg_t *)msg_tasks[0]);
     }
+    LUOS_ASSERT((msg_tasks[msg_tasks_stack_id] != 0));
     msg_tasks_stack_id++;
 
     //******** Prepare the next msg *********
@@ -881,6 +882,7 @@ _CRITICAL static inline void MsgAlloc_ClearMsgTask(void)
     {
         LuosHAL_SetIrqState(true);
         LuosHAL_SetIrqState(false);
+        LUOS_ASSERT((msg_tasks[rm] != 0));
         msg_tasks[rm] = msg_tasks[rm + 1];
     }
 
@@ -1739,6 +1741,7 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         LuosHAL_SetIrqState(false);
         LUOS_ASSERT(msg_tasks[msg_tasks_stack_id] == 0);
         msg_tasks[msg_tasks_stack_id] = tx_msg;
+        LUOS_ASSERT((msg_tasks[msg_tasks_stack_id] != 0));
         msg_tasks_stack_id++;
         LuosHAL_SetIrqState(true);
         MSGALLOC_MUTEX_UNLOCK
