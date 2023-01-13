@@ -3,10 +3,11 @@ import os
 from os import path
 from os.path import realpath
 import click
+import time
 Import("env")
 
-
 if (not path.exists("mongoose")):
+    time.sleep(1)
     env.Execute(
         "git clone --depth 1 --branch 7.8 https://github.com/cesanta/mongoose.git")
 
