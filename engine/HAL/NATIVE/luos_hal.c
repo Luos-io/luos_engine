@@ -250,3 +250,67 @@ void LuosHAL_ProgramFlash(uint32_t address, uint16_t size, uint8_t *data)
 {
 }
 #endif
+
+/******************************************************************************
+ * @brief Specific luos assert for native
+ * @param file, line
+ * @return
+ ******************************************************************************/
+#include "luos_engine.h"
+#include "port_manager.h"
+#include "msg_alloc.h"
+
+_CRITICAL void Luos_assert(char *file, uint32_t line)
+{
+    // prepare a message as a node.
+    // To do that we have to reset the service ID and clear PTP states to unlock others.
+    PortMng_Init();
+    // completely reinit the allocator
+    MsgAlloc_Init(NULL);
+
+    uint32_t start_tick;
+    // Print error on console
+    printf("\nASSERT:");
+    printf("file: %s\n", file);
+    printf("line: %d\n", line);
+    start_tick = LuosHAL_GetSystick();
+    while (LuosHAL_GetSystick() - start_tick < 10)
+        ;
+
+    msg_t msg;
+    msg.header.target_mode = BROADCAST;
+    msg.header.target      = BROADCAST_VAL;
+    msg.header.cmd         = ASSERT;
+    msg.header.size        = sizeof(line) + strlen(file);
+    memcpy(msg.data, &line, sizeof(line));
+    memcpy(&msg.data[sizeof(line)], file, strlen(file));
+
+    while (Luos_SendMsg(0, &msg) != SUCCEED)
+    {
+        start_tick = LuosHAL_GetSystick();
+        while (LuosHAL_GetSystick() - start_tick < 100)
+            ;
+    }
+
+    // wait for the transmission to finish before killing IRQ
+    // printf("\nSend all remaining messages\n");
+    while (MsgAlloc_TxAllComplete() == FAILED)
+    {
+        start_tick = LuosHAL_GetSystick();
+        while (LuosHAL_GetSystick() - start_tick < 100)
+            ;
+        printf(".");
+    }
+
+    for (uint32_t i = 0; i < 10; i++)
+    {
+        start_tick = LuosHAL_GetSystick();
+        while (LuosHAL_GetSystick() - start_tick < 500)
+            ;
+        printf(".");
+    }
+    printf("\n\n--- Fatal Error ---\n(press \"CTRL + C\" to kill the program)\n\n");
+
+    while (1)
+        ;
+}

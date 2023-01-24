@@ -37,7 +37,7 @@ __attribute__((weak)) void node_assert(char *file, uint32_t line)
  * @return None
  *  warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
-_CRITICAL _WEAKED void Luos_assert(char *file, uint32_t line)
+_CRITICAL __attribute__((weak)) void Luos_assert(char *file, uint32_t line)
 {
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.
