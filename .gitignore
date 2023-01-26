@@ -31,5 +31,4 @@
 /examples/projects/SAMD21XPLAINED/bootloader/firmware/luos_bootloader_samd21j18a.X/build/
 /examples/projects/SAMD21XPLAINED/bootloader/firmware/luos_bootloader_samd21j18a.X/.generated_files/
 /examples/projects/SAMD21XPLAINED/bootloader/firmware/luos_bootloader_samd21j18a.X/dist/
-
-
+mongoose/
