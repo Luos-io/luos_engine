@@ -62,6 +62,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
     }
     else if (ev == MG_EV_CLOSE)
     {
+        ws_connection = NULL;
         printf("Websocket is disconnected \n");
     }
     (void)fn_data;
