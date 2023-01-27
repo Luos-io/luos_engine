@@ -26,6 +26,13 @@
     #define MSGALLOC_MUTEX_UNLOCK
 #endif
 
+#ifndef LUOS_MUTEX_LOCK
+    #define LUOS_MUTEX_LOCK
+#endif
+#ifndef LUOS_MUTEX_UNLOCK
+    #define LUOS_MUTEX_UNLOCK
+#endif
+
 /*******************************************************************************
  * BOOTLOADER CONFIG
  ******************************************************************************/
