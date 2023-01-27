@@ -231,7 +231,7 @@ void game_over()
     char c;
     clear_screen();
     printf("GAME_OVER\n");
-    printf("Press SPACE BAR to restart\n");
+    printf("Press SPACE BAR to restart\a\n");
     while (Luos_IsNodeDetected())
     {
         if ((kbhit()))
@@ -265,7 +265,7 @@ void PingPong_Loop(void)
             last_ball = ball;
             clear_screen();
             printf("%s\n", table[ball]);
-            printf("Game is running\n");
+            printf("Game is running\a\n");
         }
         if (get_service)
         {
