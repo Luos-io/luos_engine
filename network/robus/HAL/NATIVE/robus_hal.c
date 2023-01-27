@@ -27,6 +27,9 @@
  ******************************************************************************/
 #define DEFAULT_TIMEOUT 30
 #define TIMEOUT_ACK     DEFAULT_TIMEOUT / 4
+#ifndef WS_BROKER_ADDR
+    #define WS_BROKER_ADDR "ws://127.0.0.1:8000"
+#endif
 
 // #define WS_PRINT
 
@@ -47,7 +50,7 @@ volatile uint8_t *tx_data = 0;
 // Mongoose connection information
 struct mg_mgr robus_mgr; // Event manager
 struct mg_connection *c; // Client connection
-static const char *s_url = "ws://127.0.0.1:8000/";
+static const char *s_url = WS_BROKER_ADDR;
 volatile bool ptpa       = false;
 volatile bool ptpb       = false;
 volatile bool ptp_update = true;
