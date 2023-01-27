@@ -192,9 +192,7 @@ void send_random()
     int target;
     do
     {
-        printf("found services:%d\n", target_list.result_nbr);
         target = randint(target_list.result_nbr);
-        printf("target is %d", target);
     } while (target_list.result_table[target]->id == player->ll_service->id);
 
     // Our target is OK, Send the message
@@ -211,10 +209,10 @@ void game_service()
 {
     clear_screen();
     ball = EMPTY;
-    printf("%s", table[ball]);
-    printf("Press SPACE BAR to serve");
+    printf("%s\n", table[ball]);
+    printf("Press SPACE BAR to serve\n");
     char c;
-    while (1)
+    while (Luos_IsNodeDetected())
     {
         if ((kbhit()))
         {
@@ -231,9 +229,10 @@ void game_service()
 void game_over()
 {
     char c;
+    clear_screen();
     printf("GAME_OVER\n");
     printf("Press SPACE BAR to restart\n");
-    while (1)
+    while (Luos_IsNodeDetected())
     {
         if ((kbhit()))
         {
@@ -241,7 +240,7 @@ void game_over()
             if (c == ' ')
             {
                 send_random();
-                return;
+                break;
             }
         }
     }
@@ -255,13 +254,20 @@ void game_over()
  ******************************************************************************/
 void PingPong_Loop(void)
 {
+    static ball_t last_ball = EMPTY;
     uint32_t empty_date;
     char c;
     if (Luos_IsNodeDetected())
     {
+        initialized = true;
         // Game running
-        clear_screen();
-        printf("%s", table[ball]);
+        if (last_ball != ball)
+        {
+            last_ball = ball;
+            clear_screen();
+            printf("%s\n", table[ball]);
+            printf("Game is running\n");
+        }
         if (get_service)
         {
             game_service();
@@ -312,7 +318,6 @@ void PingPong_Loop(void)
                 default:
                     break;
             }
-            printf("Game is running\n");
         }
     }
     else
@@ -334,8 +339,8 @@ void PingPong_Loop(void)
         else
         {
             clear_screen();
-            printf("%s", table[EMPTY]);
-            printf("Game is starting, please wait...");
+            printf("%s\n", table[EMPTY]);
+            printf("Game is starting, please wait...\n");
         }
     }
 }
