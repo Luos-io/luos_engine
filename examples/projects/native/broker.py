@@ -1,5 +1,6 @@
 from simple_websocket_server import WebSocketServer, WebSocket
 import json
+import argparse
 
 
 class RobusEmulator(WebSocket):
@@ -114,7 +115,23 @@ class RobusEmulator(WebSocket):
         clients.remove(self)
 
 
+## Parse arguments ##
+parser = argparse.ArgumentParser(description='Robus WebSocket emulator broker\n',
+                                 formatter_class=argparse.RawTextHelpFormatter)
+# General arguments
+parser.add_argument("-p", "--port", metavar="PORT", action="store",
+                    help="The port used by the websocket.\n"
+                    "By default port = 8000.\n",
+                    default=8000)
+parser.add_argument("--ip", metavar="IP", action="store",
+                    help="The ip used by the websocket.\n"
+                    "By default ip = '127.0.0.1'.\n",
+                    default='127.0.0.1')
+
+args = parser.parse_args()
 clients = []
 
-server = WebSocketServer('127.0.0.1', 8000, RobusEmulator)
+server = WebSocketServer(args.ip, args.port, RobusEmulator)
+print("WebSocket Robus emulation opened on " +
+      str(args.ip) + ":" + str(args.port))
 server.serve_forever()
