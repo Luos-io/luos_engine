@@ -12,11 +12,14 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifndef PIPE_WS_SERVER_ADDR
+    #define PIPE_WS_SERVER_ADDR "ws://localhost:9342"
+#endif
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static const char *s_listen_on = "ws://localhost:9342";
+static const char *s_listen_on = PIPE_WS_SERVER_ADDR;
 static struct mg_mgr mgr;                          // Event manager
 static struct mg_connection *ws_connection = NULL; // Websocket connection
 /*******************************************************************************
