@@ -30,6 +30,10 @@
 #define STATION_WIFI_PORT     80
 #define STATION_MAXIMUM_RETRY 10
 
+#ifndef PIPE_WS_SERVER_ADDR
+    #define PIPE_WS_SERVER_ADDR "ws://192.168.1.0:9342"
+#endif
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
