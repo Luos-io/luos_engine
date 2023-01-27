@@ -27,7 +27,7 @@
     #define get_character() getchar()
 #endif
 
-#define BALL_TIMEOUT 2000
+#define BALL_TIMEOUT 500
 
 /*******************************************************************************
  * Variables
@@ -239,7 +239,6 @@ void game_over()
             c = get_character();
             if (c == ' ')
             {
-                send_random();
                 break;
             }
         }
@@ -254,8 +253,8 @@ void game_over()
  ******************************************************************************/
 void PingPong_Loop(void)
 {
-    static ball_t last_ball = EMPTY;
-    uint32_t empty_date;
+    static ball_t last_ball = LEFT;
+    static uint32_t empty_date;
     char c;
     if (Luos_IsNodeDetected())
     {
@@ -295,6 +294,7 @@ void PingPong_Loop(void)
                             else
                             {
                                 game_over();
+                                return;
                             }
                         }
                         if (c == 'z')
@@ -307,12 +307,14 @@ void PingPong_Loop(void)
                             else
                             {
                                 game_over();
+                                return;
                             }
                         }
                     }
                     if (Luos_GetSystick() - empty_date > BALL_TIMEOUT)
                     {
                         game_over();
+                        return;
                     }
                     break;
                 default:
