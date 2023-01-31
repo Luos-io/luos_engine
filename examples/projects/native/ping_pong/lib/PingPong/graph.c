@@ -5,41 +5,23 @@
 #include <fcntl.h>
 #include <time.h>
 #include <errno.h>
+#include "luos_engine.h"
+#include "game_anim.h"
 
-const char table[3][768]
-    = {"         _____________________________________________\n"
-       "        /                      /                      /;\n"
-       "       /                      /                      //\n"
-       "      /                      /                      //\n"
-       "     /                      /                      //\n"
-       "    /                      /                      //\n"
-       "   /                      /                      //\n"
-       "  /                      /                      //\n"
-       " /                      /                      //\n"
-       "/______________________/______________________//\n"
-       "'---------------------------------------------'\n",
-       "         _____________________________________________\n"
-       "        /                      /                      /;\n"
-       "       /                      /                      //\n"
-       "      /                      /                      //\n"
-       "     /      ,---.           /                      //\n"
-       "    /      [     )         /                      //\n"
-       "   /        `---'         /                      //\n"
-       "  /                      /                      //\n"
-       " /                      /                      //\n"
-       "/______________________/______________________//\n"
-       "'---------------------------------------------'\n",
-       "         _____________________________________________\n"
-       "        /                      /                      /;\n"
-       "       /                      /                      //\n"
-       "      /                      /                      //\n"
-       "     /                      /     ,---.            //\n"
-       "    /                      /     [     )          //\n"
-       "   /                      /       `---'          //\n"
-       "  /                      /                      //\n"
-       " /                      /                      //\n"
-       "/______________________/______________________//\n"
-       "'---------------------------------------------'\n"};
+const char start[768]
+    = "                          ((((.       \n"
+      "                     ,(((((((((((((   \n"
+      "          (#########((((((((((((((((( \n"
+      "        ###########(((((((((((((((((((\n"
+      "      ,###########((((((((((((((((((((\n"
+      "      #############(((((((((((((((((((\n"
+      "      ,,*###########((((((((((((((((( \n"
+      "       ,,,,###########,,,,,,,,,,,,.   \n"
+      "      ***,,,,*#########  ,*****       \n"
+      "   *******  .,,,###       ****.       \n"
+      " ******            *//    ****,       \n"
+      "  ***             *////   *****       \n"
+      "                    ''      .         \n";
 
 SCREEN view        = start_view;
 bool need_update   = false;
@@ -108,7 +90,7 @@ void start_view(void)
     {
         need_update = false;
         clear_screen();
-        printf("%s", table[EMPTY]);
+        printf("%s", start);
         printf("THE LUOS PING PONG GAME\n\tPress SPACE BAR to start!\n");
     }
 }
@@ -119,8 +101,8 @@ void alone_view(void)
     {
         need_update = false;
         clear_screen();
-        printf("%s", table[EMPTY]);
-        printf("You are alone, go get a friend!\n");
+        printf("%s", start);
+        printf("You don't have any friends?\n\nYou should find some on the Luos discord :\n\thttps://discord.gg/luos\n\n");
         printf("THE LUOS PING PONG GAME\n\tPress SPACE BAR to start!\n");
     }
 }
@@ -131,7 +113,7 @@ void service_view(void)
     {
         need_update = false;
         clear_screen();
-        printf("%s\n", table[EMPTY]);
+        printf("%s\n", table[EMPTY][1]);
         printf("Press SPACE BAR to serve\n");
     }
 }
@@ -149,12 +131,22 @@ void gameOver_view(void)
 
 void game_view(void)
 {
+    static int animation_frame = 0;
     if (need_update)
     {
         need_update = false;
         clear_screen();
-        printf("%s\n", table[*ball_state]);
-        printf("Game is running\a\n");
+        animation_frame = 0;
+        printf("%s\n", table[*ball_state][animation_frame]);
+        printf("Game is running\n");
+    }
+    if (animation_frame < GAME_ANIMATION_FRAME_NB)
+    {
+        clear_screen();
+        printf("%s\n", table[*ball_state][animation_frame]);
+        printf("Game is running\n");
+        animation_frame++;
+        msleep(10);
     }
 }
 
@@ -164,7 +156,7 @@ void wait_view(void)
     {
         need_update = false;
         clear_screen();
-        printf("%s\n", table[EMPTY]);
+        printf("%s", start);
         printf("Game is starting, please wait...\n");
     }
 }
