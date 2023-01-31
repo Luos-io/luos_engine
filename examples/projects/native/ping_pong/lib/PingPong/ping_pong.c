@@ -19,6 +19,7 @@
 #include <time.h>
 #include "graph.h"
 #include <pthread.h>
+#include "scoring.h"
 
 /*******************************************************************************
  * Definitions
@@ -29,7 +30,7 @@
     #define get_character() getchar()
 #endif
 
-#define BALL_TIMEOUT 500
+#define BALL_TIMEOUT 700
 
 static void game_start(void);
 static void game_loading(void);
@@ -51,6 +52,7 @@ ball_t ball = EMPTY;
 typedef void (*GAME_STATE)(void);
 GAME_STATE game_state = NULL;
 bool initialized      = false;
+uint16_t last_id      = 0;
 
 /*******************************************************************************
  * Function
@@ -58,9 +60,22 @@ bool initialized      = false;
 
 void Player_MsgHandler(service_t *service, msg_t *msg)
 {
+    if ((msg->header.target_mode == TOPIC) & (msg->header.target = SCORE_TOPIC) & (msg->header.source != service->ll_service->id))
+    {
+        score_update(msg);
+        set_screen_to(score_view);
+    }
     if (msg->header.cmd == BALL_POS_CMD)
     {
-        ball = (ball_t)msg->data[0];
+        ball    = (ball_t)msg->data[0];
+        last_id = msg->header.source;
+    }
+    if (msg->header.cmd == END_DETECTION)
+    {
+        search_result_t target_list;
+        RTFilter_Reset(&target_list);
+        RTFilter_Type(&target_list, PLAYER_TYPE);
+        score_init(player, &target_list);
     }
 }
 
@@ -214,7 +229,7 @@ void game_service()
 void game_over()
 {
     char c;
-
+    score_increase(player, last_id);
     set_screen_to(gameOver_view);
     while (Luos_IsNodeDetected())
     {
