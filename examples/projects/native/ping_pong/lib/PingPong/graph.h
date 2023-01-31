@@ -1,6 +1,6 @@
 /******************************************************************************
- * @file ping_pong
- * @brief driver example a simple button
+ * @file graph
+ * @brief The graph of the game
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
