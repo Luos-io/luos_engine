@@ -17,6 +17,8 @@
 #include "profile_state.h"
 #include <stdlib.h>
 #include <time.h>
+#include "graph.h"
+#include <pthread.h>
 
 /*******************************************************************************
  * Definitions
@@ -29,6 +31,13 @@
 
 #define BALL_TIMEOUT 500
 
+static void game_start(void);
+static void game_loading(void);
+static void game_service(void);
+static void game_over(void);
+static void game_running(void);
+static void game_alone(void);
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -36,67 +45,16 @@ service_t *player;
 #define PLAYER_TYPE LUOS_LAST_TYPE
 bool get_service = false;
 
-typedef enum
-{
-    EMPTY,
-    LEFT,
-    RIGHT
-} ball_t;
-
 #define BALL_POS_CMD LUOS_LAST_STD_CMD
 
 ball_t ball = EMPTY;
-
-const char table[3][768]
-    = {"         _____________________________________________\n"
-       "        /                      /                      /;\n"
-       "       /                      /                      //\n"
-       "      /                      /                      //\n"
-       "     /                      /                      //\n"
-       "    /                      /                      //\n"
-       "   /                      /                      //\n"
-       "  /                      /                      //\n"
-       " /                      /                      //\n"
-       "/______________________/______________________//\n"
-       "'---------------------------------------------'\n",
-       "         _____________________________________________\n"
-       "        /                      /                      /;\n"
-       "       /                      /                      //\n"
-       "      /                      /                      //\n"
-       "     /      ,---.           /                      //\n"
-       "    /      [     )         /                      //\n"
-       "   /        `---'         /                      //\n"
-       "  /                      /                      //\n"
-       " /                      /                      //\n"
-       "/______________________/______________________//\n"
-       "'---------------------------------------------'\n",
-       "         _____________________________________________\n"
-       "        /                      /                      /;\n"
-       "       /                      /                      //\n"
-       "      /                      /                      //\n"
-       "     /                      /     ,---.            //\n"
-       "    /                      /     [     )          //\n"
-       "   /                      /       `---'          //\n"
-       "  /                      /                      //\n"
-       " /                      /                      //\n"
-       "/______________________/______________________//\n"
-       "'---------------------------------------------'\n"};
+typedef void (*GAME_STATE)(void);
+GAME_STATE game_state = NULL;
+bool initialized      = false;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-
-void clear_screen()
-{
-#ifdef _WIN32
-    system("cls");
-#else
-    // Assume POSIX
-    int systemRet;
-    systemRet = system("clear");
-#endif
-}
-bool initialized = false;
 
 void Player_MsgHandler(service_t *service, msg_t *msg)
 {
@@ -116,12 +74,20 @@ void PingPong_Init(void)
     // service initialization
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // Service creation
+    char str[30];
 
-    player = Luos_CreateService(Player_MsgHandler, PLAYER_TYPE, "Player", revision);
-    // set_fl(STDOUT_FILENO, O_NONBLOCK);
-    clear_screen();
-    printf("%s", table[EMPTY]);
-    printf("THE LUOS PING PONG GAME\n\tPress SPACE BAR to start!\n");
+    printf("Enter your player name :");
+    scanf("%s", str);
+
+    player = Luos_CreateService(Player_MsgHandler, PLAYER_TYPE, str, revision);
+
+    create_ball(&ball);
+    set_screen_to(start_view);
+    game_state = game_start;
+
+    pthread_t thread_id;
+    pthread_create(&thread_id, NULL, Graph_LoopThread, NULL);
+
     srand(time(NULL)); // Initialization, should only be called once.
 }
 #ifndef _WIN32
@@ -180,15 +146,18 @@ int randint(int n)
         return r % n;
     }
 }
-void send_random()
+bool send_random()
 {
     // Randomize ball position.
     uint8_t r = (rand() % 2) + 1; // Returns a pseudo-random integer between 0 and RAND_MAX.
     // Randomize target
     search_result_t target_list;
     RTFilter_Reset(&target_list);
-    printf("found services:%d\n", target_list.result_nbr);
     RTFilter_Type(&target_list, PLAYER_TYPE);
+    if (target_list.result_nbr == 1)
+    {
+        return false;
+    }
     int target;
     do
     {
@@ -203,25 +172,41 @@ void send_random()
     msg.header.cmd         = BALL_POS_CMD;
     msg.data[0]            = r;
     Luos_SendMsg(player, &msg);
+    return true;
 }
 
 void game_service()
 {
-    clear_screen();
-    ball = EMPTY;
-    printf("%s\n", table[ball]);
-    printf("Press SPACE BAR to serve\n");
+    ball        = EMPTY;
+    get_service = false;
+    set_screen_to(service_view);
     char c;
-    while (Luos_IsNodeDetected())
+    while (1)
     {
         if ((kbhit()))
         {
             c = get_character();
             if (c == ' ')
             {
-                send_random();
+
+                if (send_random())
+                {
+                    set_screen_to(game_view);
+                    game_state = game_running;
+                }
+                else
+                {
+                    // You are probably alone
+                    game_state = game_alone;
+                }
                 return;
             }
+        }
+        if (!Luos_IsNodeDetected())
+        {
+            // Someone relaunch a detection
+            game_state = game_loading;
+            return;
         }
     }
 }
@@ -229,9 +214,8 @@ void game_service()
 void game_over()
 {
     char c;
-    clear_screen();
-    printf("GAME_OVER\n");
-    printf("Press SPACE BAR to restart\a\n");
+
+    set_screen_to(gameOver_view);
     while (Luos_IsNodeDetected())
     {
         if ((kbhit()))
@@ -246,6 +230,143 @@ void game_over()
     game_service();
 }
 
+void game_start()
+{
+    char c;
+    set_screen_to(start_view);
+    // Game is not running
+    while (!Luos_IsNodeDetected())
+    {
+        // This is the initialization
+        if ((kbhit()))
+        {
+            c = get_character();
+            if (c == ' ')
+            {
+                // This player lanch the detection
+                Luos_Detect(player);
+                get_service = true;
+                game_state  = game_loading;
+                return;
+            }
+        }
+    }
+    // Someone did a detection.
+    game_state = game_running;
+}
+
+void game_alone()
+{
+    static bool update_alone = true;
+    char c;
+    if (update_alone)
+    {
+        update_alone = false;
+        set_screen_to(alone_view);
+    }
+    // Game is not running
+    // This is the initialization
+    if ((kbhit()))
+    {
+        c = get_character();
+        if (c == ' ')
+        {
+            // This player lanch the detection
+            Luos_Detect(player);
+            get_service  = true;
+            game_state   = game_loading;
+            update_alone = true;
+            while (Luos_IsNodeDetected())
+            {
+            }
+            return;
+        }
+    }
+}
+
+void game_loading()
+{
+    set_screen_to(wait_view);
+    while (!Luos_IsNodeDetected())
+    {
+    }
+    if (get_service)
+    {
+        game_state = game_service;
+    }
+    else
+    {
+        game_state = game_running;
+    }
+}
+
+void game_running(void)
+{
+    // printf("running\n");
+    static ball_t last_ball = LEFT;
+    static uint32_t empty_date;
+    char c;
+    if (!Luos_IsNodeDetected())
+    {
+        game_state = game_loading;
+        return;
+    }
+    // Game running
+    if (last_ball != ball)
+    {
+        last_ball = ball;
+        set_screen_to(game_view);
+    }
+    // Game loop
+    if (ball == EMPTY)
+    {
+        // printf("empty\n");
+        empty_date = Luos_GetSystick();
+    }
+    else
+    {
+        // We have the ball on our table, user have to react.
+        if ((kbhit()))
+        {
+            c = get_character();
+            if (c == 'a')
+            {
+                if (ball == LEFT)
+                {
+                    ball = EMPTY;
+                    send_random();
+                }
+                else
+                {
+                    // Wrong key
+                    game_state = game_over;
+                    return;
+                }
+            }
+            if (c == 'z')
+            {
+                if (ball == RIGHT)
+                {
+                    ball = EMPTY;
+                    send_random();
+                }
+                else
+                {
+                    // Wrong key
+                    game_state = game_over;
+                    return;
+                }
+            }
+        }
+        if (Luos_GetSystick() - empty_date > BALL_TIMEOUT)
+        {
+            // Timeout!
+            game_state = game_over;
+            return;
+        }
+    }
+}
+
 /******************************************************************************
  * @brief loop must be call in project loop
  * @param None
@@ -253,96 +374,5 @@ void game_over()
  ******************************************************************************/
 void PingPong_Loop(void)
 {
-    static ball_t last_ball = LEFT;
-    static uint32_t empty_date;
-    char c;
-    if (Luos_IsNodeDetected())
-    {
-        initialized = true;
-        // Game running
-        if (last_ball != ball)
-        {
-            last_ball = ball;
-            clear_screen();
-            printf("%s\n", table[ball]);
-            printf("Game is running\a\n");
-        }
-        if (get_service)
-        {
-            game_service();
-            get_service = false;
-        }
-        else
-        {
-            switch (ball)
-            {
-                case EMPTY:
-                    empty_date = Luos_GetSystick();
-                    break;
-                case LEFT:
-                case RIGHT:
-                    if ((kbhit()))
-                    {
-                        c = get_character();
-                        if (c == 'a')
-                        {
-                            if (ball == LEFT)
-                            {
-                                ball = EMPTY;
-                                send_random();
-                            }
-                            else
-                            {
-                                game_over();
-                                return;
-                            }
-                        }
-                        if (c == 'z')
-                        {
-                            if (ball == RIGHT)
-                            {
-                                ball = EMPTY;
-                                send_random();
-                            }
-                            else
-                            {
-                                game_over();
-                                return;
-                            }
-                        }
-                    }
-                    if (Luos_GetSystick() - empty_date > BALL_TIMEOUT)
-                    {
-                        game_over();
-                        return;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-    else
-    {
-        // Game is not running
-        if (!initialized) //& space
-        {
-            if ((kbhit()))
-            {
-                c = get_character();
-                if (c == ' ')
-                {
-                    Luos_Detect(player);
-                    initialized = true;
-                    get_service = true;
-                }
-            }
-        }
-        else
-        {
-            clear_screen();
-            printf("%s\n", table[EMPTY]);
-            printf("Game is starting, please wait...\n");
-        }
-    }
+    game_state();
 }
