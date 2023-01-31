@@ -7,6 +7,9 @@
 #include <errno.h>
 #include "luos_engine.h"
 #include "game_anim.h"
+#include "scoring.h"
+
+static void score_display(void);
 
 const char start[768]
     = "                          ((((.       \n"
@@ -91,7 +94,7 @@ void start_view(void)
         need_update = false;
         clear_screen();
         printf("%s", start);
-        printf("THE LUOS PING PONG GAME\n\tPress SPACE BAR to start!\n");
+        printf("THE LUOS PING PONG World cup!\n\tPress SPACE BAR to start!\n");
     }
 }
 
@@ -111,10 +114,11 @@ void service_view(void)
 {
     if (need_update)
     {
-        need_update = false;
         clear_screen();
         printf("%s\n", table[EMPTY][1]);
-        printf("Press SPACE BAR to serve\n");
+        score_display();
+        printf("\n\tPress SPACE BAR to serve\n");
+        need_update = false;
     }
 }
 
@@ -122,10 +126,11 @@ void gameOver_view(void)
 {
     if (need_update)
     {
-        need_update = false;
         clear_screen();
         printf("GAME_OVER\n");
-        printf("Press SPACE BAR to restart\a\n");
+        score_display();
+        printf("\n\tPress SPACE BAR to restart\a\n");
+        need_update = false;
     }
 }
 
@@ -134,17 +139,17 @@ void game_view(void)
     static int animation_frame = 0;
     if (need_update)
     {
-        need_update = false;
         clear_screen();
         animation_frame = 0;
         printf("%s\n", table[*ball_state][animation_frame]);
-        printf("Game is running\n");
+        score_display();
+        need_update = false;
     }
     if (animation_frame < GAME_ANIMATION_FRAME_NB)
     {
         clear_screen();
         printf("%s\n", table[*ball_state][animation_frame]);
-        printf("Game is running\n");
+        score_display();
         animation_frame++;
         msleep(10);
     }
@@ -158,5 +163,26 @@ void wait_view(void)
         clear_screen();
         printf("%s", start);
         printf("Game is starting, please wait...\n");
+    }
+}
+
+void score_display(void)
+{
+    score_table_t *score = get_score();
+    for (int i = 0; i < score->player_nb; i++)
+    {
+        printf("\t%d |%16s |\t %d\n", i + 1, score->scores[i].alias, score->scores[i].score);
+    }
+}
+
+void score_view(void)
+{
+    if (need_update)
+    {
+        clear_screen();
+        printf("%s\n", table[EMPTY][1]);
+        score_display();
+        printf("\n\tSomeone just lost...\n");
+        need_update = false;
     }
 }

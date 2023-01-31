@@ -25,5 +25,6 @@ void gameOver_view(void);
 void game_view(void);
 void wait_view(void);
 void alone_view(void);
+void score_view(void);
 
 #endif /* PINGPONG_H */
