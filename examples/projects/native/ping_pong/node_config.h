@@ -46,6 +46,7 @@
 #define MAX_SERVICE_NUMBER 1
 #define MAX_PROFILE_NUMBER 1
 #define MAX_MSG_NB         5
+#define MAX_RTB_ENTRY      100
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -79,6 +80,8 @@
  *    LUOS_TIMER              | Timer number
  *    LUOS_TIMER_IRQ          | Timer IRQ number
  *    LUOS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
+ *
+ *    WS_BROKER_ADDR          | The broker adress in native mode. Default value is "ws://127.0.0.1:8000"
 ******************************************************************************/
 
 /*******************************************************************************
@@ -91,5 +94,7 @@
  *    APP_START_ADDRESS     | 0x0800C800                 | Start address of application with bootloader
  *    APP_END_ADDRESS       | FLASH_BANK1_END=0x0801FFFF | End address of application with bootloader
  ******************************************************************************/
+
+#define WS_BROKER_ADDR "ws://127.0.0.1:8000"
 
 #endif /* _NODE_CONFIG_H_ */
