@@ -112,8 +112,8 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
         {
             // set state to 0
             LuosHAL_SetIrqState(false);
-            servo_motor_profile->angular_position        = 0.0;
-            servo_motor_profile->target_angular_position = 0.0;
+            servo_motor_profile->angular_position        = AngularOD_PositionFrom_deg(0.0);
+            servo_motor_profile->target_angular_position = AngularOD_PositionFrom_deg(0.0);
             LuosHAL_SetIrqState(true);
         }
         break;
@@ -163,7 +163,7 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
                 linear_position_t linear_position = 0.0;
                 LinearOD_PositionFromMsg(&linear_position, msg);
                 // Convert it directly into angle
-                servo_motor_profile->target_angular_position = (linear_position * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter);
+                servo_motor_profile->target_angular_position = AngularOD_PositionFrom_deg((linear_position * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter));
             }
             else
             {
@@ -183,7 +183,7 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
                 linear_speed_t linear_speed = 0.0;
                 LinearOD_SpeedFromMsg(&linear_speed, msg);
                 // Convert it directly
-                servo_motor_profile->target_angular_speed = (linear_speed * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter);
+                servo_motor_profile->target_angular_speed = AngularOD_SpeedFrom_deg_s((linear_speed * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter));
             }
         }
         break;
@@ -209,8 +209,8 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
                 linear_position_t linear_position[2] = {0.0, 0.0};
                 LinearOD_PositionFromMsg((linear_position_t *)&linear_position[0], msg);
                 // Directly convert it
-                servo_motor_profile->limit_angular_position[0] = (linear_position[0] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter);
-                servo_motor_profile->limit_angular_position[1] = (linear_position[1] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter);
+                servo_motor_profile->limit_angular_position[0] = AngularOD_PositionFrom_deg((linear_position[0] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter));
+                servo_motor_profile->limit_angular_position[1] = AngularOD_PositionFrom_deg((linear_position[1] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter));
             }
         }
         break;
@@ -222,8 +222,8 @@ void ProfileServo_Handler(service_t *service, msg_t *msg)
                 linear_speed_t linear_speed[2] = {0.0, 0.0};
                 LinearOD_SpeedFromMsg((linear_speed_t *)&linear_speed[0], msg);
                 // Directly convert it
-                servo_motor_profile->limit_angular_speed[0] = (linear_speed[0] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter);
-                servo_motor_profile->limit_angular_speed[1] = (linear_speed[1] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter);
+                servo_motor_profile->limit_angular_speed[0] = AngularOD_SpeedFrom_deg_s((linear_speed[0] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter));
+                servo_motor_profile->limit_angular_speed[1] = AngularOD_SpeedFrom_deg_s((linear_speed[1] * 360.0) / (3.141592653589793 * servo_motor_profile->wheel_diameter));
             }
         }
         break;

@@ -121,6 +121,5 @@ void PotentiometerDMA_Init(void)
 angular_position_t PotentiometerDrv_Read(void)
 {
     // get the analog input angle value
-    angular_position_t angle = ((float)analog_input.pos / 4096.0) * 300.0;
-    return angle;
+    return AngularOD_PositionFrom_deg(((float)analog_input.pos / 4096.0) * 300.0);
 }
