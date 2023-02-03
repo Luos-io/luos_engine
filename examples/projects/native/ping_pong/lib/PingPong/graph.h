@@ -18,6 +18,7 @@ typedef void (*SCREEN)(void);
 void set_screen_to(SCREEN);
 void create_ball(ball_t *ballpt);
 void *Graph_LoopThread(void *vargp);
+int msleep(long msec);
 
 void start_view(void);
 void service_view(void);

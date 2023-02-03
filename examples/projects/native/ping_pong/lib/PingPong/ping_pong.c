@@ -25,9 +25,13 @@
  * Definitions
  ******************************************************************************/
 #ifdef _WIN32
-    #define get_character() getch()
+    #define get_character() _getch()
+    #define LEFT_KEY        'K'
+    #define RIGHT_KEY       'M'
 #else
     #define get_character() getchar()
+    #define LEFT_KEY        'D'
+    #define RIGHT_KEY       'C'
 #endif
 
 #define BALL_TIMEOUT 700
@@ -90,7 +94,7 @@ void PingPong_Init(void)
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // Service creation
     char str[30];
-
+    printf("\n\t\tWelcome to \n\tThe Luos ping pong world cup!\n");
     printf("Enter your player name :");
     scanf("%s", str);
 
@@ -105,6 +109,19 @@ void PingPong_Init(void)
 
     srand(time(NULL)); // Initialization, should only be called once.
 }
+
+/******************************************************************************
+ * @brief loop must be call in project loop
+ * @param None
+ * @return None
+ ******************************************************************************/
+void PingPong_Loop(void)
+{
+    // This is a function pointer that will louch the good function depending on the state of the game.
+    game_state();
+    msleep(10);
+}
+
 #ifndef _WIN32
 int kbhit(void)
 {
@@ -133,36 +150,10 @@ int kbhit(void)
     return 0;
 }
 #endif
-/* Returns an integer in the range [0, n).
- *
- * Uses rand(), and so is affected-by/affects the same seed.
- */
-int randint(int n)
-{
-    if ((n - 1) == RAND_MAX)
-    {
-        return rand();
-    }
-    else
-    {
 
-        // Chop off all of the values that would cause skew...
-        int end
-            = RAND_MAX / n; // truncate skew
-        end *= n;
-
-        // ... and ignore results from rand() that fall above that limit.
-        // (Worst case the loop condition should succeed 50% of the time,
-        // so we can expect to bail out of this loop pretty quickly.)
-        int r;
-        while ((r = rand()) >= end)
-            ;
-
-        return r % n;
-    }
-}
 bool send_random()
 {
+    // This function send the ball to a random player at a random position.
     // Randomize ball position.
     uint8_t r = (rand() % 2) + 1; // Returns a pseudo-random integer between 0 and RAND_MAX.
     // Randomize target
@@ -176,7 +167,7 @@ bool send_random()
     int target;
     do
     {
-        target = randint(target_list.result_nbr);
+        target = rand() % target_list.result_nbr;
     } while (target_list.result_table[target]->id == player->ll_service->id);
 
     // Our target is OK, Send the message
@@ -315,27 +306,26 @@ void game_loading()
     }
 }
 
-void game_running(void)
+void game_running()
 {
-    // printf("running\n");
     static ball_t last_ball = LEFT;
     static uint32_t empty_date;
-    char c;
+    uint8_t c;
     if (!Luos_IsNodeDetected())
     {
+        // Someone relaunch a detection
         game_state = game_loading;
         return;
     }
-    // Game running
     if (last_ball != ball)
     {
+        // Update the screen to display
         last_ball = ball;
         set_screen_to(game_view);
     }
     // Game loop
     if (ball == EMPTY)
     {
-        // printf("empty\n");
         empty_date = Luos_GetSystick();
     }
     else
@@ -343,33 +333,43 @@ void game_running(void)
         // We have the ball on our table, user have to react.
         if ((kbhit()))
         {
+#ifdef _WIN32
             c = get_character();
-            if (c == 'a')
+            if (c == 0 || c == 224)
             {
-                if (ball == LEFT)
-                {
-                    ball = EMPTY;
-                    send_random();
-                }
-                else
-                {
-                    // Wrong key
-                    game_state = game_over;
-                    return;
-                }
-            }
-            if (c == 'z')
+#else
+            if (get_character() == '\033')
             {
-                if (ball == RIGHT)
+                get_character(); // skip the [
+#endif
+                c = get_character();
+                if (c == LEFT_KEY)
                 {
-                    ball = EMPTY;
-                    send_random();
+                    if (ball == LEFT)
+                    {
+                        ball = EMPTY;
+                        send_random();
+                    }
+                    else
+                    {
+                        // Wrong key
+                        game_state = game_over;
+                        return;
+                    }
                 }
-                else
+                if (c == RIGHT_KEY)
                 {
-                    // Wrong key
-                    game_state = game_over;
-                    return;
+                    if (ball == RIGHT)
+                    {
+                        ball = EMPTY;
+                        send_random();
+                    }
+                    else
+                    {
+                        // Wrong key
+                        game_state = game_over;
+                        return;
+                    }
                 }
             }
         }
@@ -380,14 +380,4 @@ void game_running(void)
             return;
         }
     }
-}
-
-/******************************************************************************
- * @brief loop must be call in project loop
- * @param None
- * @return None
- ******************************************************************************/
-void PingPong_Loop(void)
-{
-    game_state();
 }

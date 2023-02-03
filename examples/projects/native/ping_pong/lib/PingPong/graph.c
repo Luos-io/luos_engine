@@ -31,7 +31,7 @@ bool need_update   = false;
 ball_t *ball_state = NULL;
 
 /* msleep(): Sleep for the requested number of milliseconds. */
-static int msleep(long msec)
+int msleep(long msec)
 {
     struct timespec ts;
     int res;
@@ -93,8 +93,12 @@ void start_view(void)
     {
         need_update = false;
         clear_screen();
+        printf("\tThe Luos ping pong world cup!\n");
         printf("%s", start);
-        printf("THE LUOS PING PONG World cup!\n\tPress SPACE BAR to start!\n");
+        printf("Controls:\n");
+        printf("\t - If the ball is going left press '←'\n");
+        printf("\t - If the ball is going right press '→'\n");
+        printf("\tPress SPACE BAR to start!\n");
     }
 }
 
@@ -104,9 +108,13 @@ void alone_view(void)
     {
         need_update = false;
         clear_screen();
+        printf("\tThe Luos ping pong world cup!\n");
         printf("%s", start);
         printf("You don't have any friends?\n\nYou should find some on the Luos discord :\n\thttps://discord.gg/luos\n\n");
-        printf("THE LUOS PING PONG GAME\n\tPress SPACE BAR to start!\n");
+        printf("Controls:\n");
+        printf("\t - If the ball is going left press '←'\n");
+        printf("\t - If the ball is going right press '→'\n");
+        printf("\tPress SPACE BAR to start!\n");
     }
 }
 
@@ -161,6 +169,7 @@ void wait_view(void)
     {
         need_update = false;
         clear_screen();
+        printf("\tThe Luos ping pong world cup!\n");
         printf("%s", start);
         printf("Game is starting, please wait...\n");
     }

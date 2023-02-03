@@ -14,20 +14,44 @@
 
 
 
-# Button project example :bulb:
-This project demonstrate how to make and use a simple button through Luos. Feel free to use electronics and code example as you want.
+# The Luos ping pong world cup project example :bulb:
+```
+The Luos ping pong world cup!
+                          ((((.
+                     ,(((((((((((((
+          (#########(((((((((((((((((
+        ###########(((((((((((((((((((
+      ,###########((((((((((((((((((((
+      #############(((((((((((((((((((
+      ,,*###########(((((((((((((((((
+       ,,,,###########,,,,,,,,,,,,.
+      ***,,,,*#########  ,*****
+   *******  .,,,###       ****.
+ ******            *//    ****,
+  ***             *////   *****
+                    ''      .
+Controls:
+     - If the ball is going left press '←'
+     - If the ball is going right press '→'
+    Press SPACE BAR to start!
+```
+This project demonstrate how to make and use a simple multiplayer game through Luos.
+This small and simple game run on your computer terminal and allow you to play with your friends.
 
-## How to compile the code :computer:
+## Before playing :computer:
 
- 1. Download and install [Platformio](https://platformio.org/platformio-ide)
- 2. Open this folder into Platformio
- 3. Build (Platformio will do the rest)
+ 1. Open a terminal on this project and run the broker at a given IP and port `./../broker.py --ip 'YOUR_LOCAL_IP' -p 8000` 
 
-## How to open the electronic design :electric_plug:
-You can open [a working example electronic design](https://github.com/Luos-io/luos_engine/tree/main/examples/hardware) with Kicad. This design use Luos_components library for more information to install and use it read [our doc](https://docs.luos.io).
+You only need to have one somewhere running, it's a kind of server, then anyone on your local network will be able to play.
 
-## Linked driver
-This project is linked to the [Button driver](../../Drivers/button).
+## How to compile and play the game :video_game:
+
+ 1. Install GCC on your computer
+ 2. Download and install [Platformio](https://platformio.org/platformio-ide)
+ 3. Open this folder into Platformio
+ 4. Set the broker IP and port on the `node_config.h` file by replacing `#define WS_BROKER_ADDR "ws://127.0.0.1:8000"` with the corect IP and port
+ 5. Build (Platformio will do the rest)
+ 6. Open a new terminal on this projet and run the compiled binary `./.pio/build/native/program`
 
 ## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
 
