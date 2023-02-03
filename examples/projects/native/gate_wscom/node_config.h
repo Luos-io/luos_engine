@@ -46,7 +46,6 @@
 #define MAX_SERVICE_NUMBER 2
 #define MAX_PROFILE_NUMBER 1
 #define MAX_MSG_NB         30
-#define INIT_TIME          150
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
