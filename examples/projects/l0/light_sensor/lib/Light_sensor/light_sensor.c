@@ -16,7 +16,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-illuminance_t lux = 0.0;
+illuminance_t lux;
 time_luos_t lux_timestamp;
 /*******************************************************************************
  * Function
@@ -30,6 +30,7 @@ static void LightSensor_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void LightSensor_Init(void)
 {
+    lux                 = IlluminanceOD_IlluminanceFrom_Lux(0.0f);
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // **************** communication driver init *************
     LightSensorDrv_Init();
