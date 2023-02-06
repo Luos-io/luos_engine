@@ -68,7 +68,7 @@ void Stepper_Init(void)
     // default motor limits
     stepper_motor.limit_angular_position[MINI] = AngularOD_PositionFrom_deg(-FLT_MAX);
     stepper_motor.limit_angular_position[MAXI] = AngularOD_PositionFrom_deg(FLT_MAX);
-    stepper_motor.motor.limit_current          = 6.0;
+    stepper_motor.motor.limit_current          = ElectricOD_CurrentFrom_A(6.0);
 
     // Control mode default values
     stepper_motor.control.unmap = 0; // PLAY and no REC

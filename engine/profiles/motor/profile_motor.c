@@ -27,12 +27,12 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
             pub_msg.header.target      = msg->header.source;
             if (profile_motor->mode.current)
             {
-                ElectricOD_CurrentToMsg((current_t *)&profile_motor->current, &pub_msg);
+                ElectricOD_CurrentToMsg(&profile_motor->current, &pub_msg);
                 Luos_SendMsg(service, &pub_msg);
             }
             if (profile_motor->mode.temperature)
             {
-                TemperatureOD_TemperatureToMsg((current_t *)&profile_motor->temperature, &pub_msg);
+                TemperatureOD_TemperatureToMsg(&profile_motor->temperature, &pub_msg);
                 Luos_SendMsg(service, &pub_msg);
             }
         }
@@ -60,7 +60,7 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
         {
             // set the motor current limit
             ElectricOD_CurrentFromMsg((current_t *)&profile_motor->limit_current, msg);
-            profile_motor->limit_current = fabs(profile_motor->limit_current);
+            profile_motor->limit_current = ElectricOD_CurrentFrom_A(fabs(ElectricOD_CurrentTo_A(profile_motor->limit_current)));
         }
         break;
         case TEMPERATURE_LIMIT:
