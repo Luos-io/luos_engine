@@ -190,7 +190,7 @@ void ControllerMotor_Loop(void)
         }
         else if (servo_motor.mode.mode_power)
         {
-            ll_motor_Command(servo_motor.mode.mode_compliant, servo_motor.motor.power);
+            ll_motor_Command(servo_motor.mode.mode_compliant, RatioOD_RatioTo_Percent(servo_motor.motor.power));
         }
         else
         {

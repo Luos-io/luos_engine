@@ -309,7 +309,7 @@ static void Dxl_MsgHandler(service_t *service, msg_t *msg)
     }
     if (msg->header.cmd == RATIO_LIMIT)
     {
-        unsigned short limit = (unsigned short)(dxl[index].dxl_motor.motor.power * 1023.0 / 100.0);
+        unsigned short limit = (unsigned short)(RatioOD_RatioTo_Percent(dxl[index].dxl_motor.motor.power) * 1023.0 / 100.0);
         servo_set_raw_word(dxl[index].id, SERVO_REGISTER_TORQUE_LIMIT, limit, DXL_TIMEOUT);
         return;
     }
@@ -454,7 +454,7 @@ static void discover_dxl(void)
             dxl[dxl_index].dxl_motor.wheel_diameter = LinearOD_PositionFrom_m(0.100f);
 
             // default motor limits
-            dxl[dxl_index].dxl_motor.motor.limit_ratio            = 100.0;
+            dxl[dxl_index].dxl_motor.motor.limit_ratio            = RatioOD_RatioFrom_Percent(100.0);
             dxl[dxl_index].dxl_motor.limit_angular_position[MINI] = AngularOD_PositionFrom_deg(-FLT_MAX);
             dxl[dxl_index].dxl_motor.limit_angular_position[MAXI] = AngularOD_PositionFrom_deg(FLT_MAX);
 

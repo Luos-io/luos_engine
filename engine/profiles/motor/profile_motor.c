@@ -41,19 +41,19 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
         {
             // get the motor power ratio
             RatioOD_RatioFromMsg(&profile_motor->power, msg);
-            if (profile_motor->power > 100.0)
-                profile_motor->power = 100.0;
-            if (profile_motor->power < -100.0)
-                profile_motor->power = -100.0;
+            if (RatioOD_RatioTo_Percent(profile_motor->power) > 100.0)
+                profile_motor->power = RatioOD_RatioFrom_Percent(100.0);
+            if (RatioOD_RatioTo_Percent(profile_motor->power) < -100.0)
+                profile_motor->power = RatioOD_RatioFrom_Percent(-100.0);
         }
         break;
         case RATIO_LIMIT:
         {
             // set the motor power ratio limit
             RatioOD_RatioFromMsg(&profile_motor->limit_ratio, msg);
-            profile_motor->limit_ratio = fabs(profile_motor->limit_ratio);
-            if (profile_motor->limit_ratio > 100.0)
-                profile_motor->limit_ratio = 100.0;
+            profile_motor->limit_ratio = RatioOD_RatioFrom_Percent(fabs(RatioOD_RatioTo_Percent(profile_motor->limit_ratio)));
+            if (RatioOD_RatioTo_Percent(profile_motor->limit_ratio) > 100.0)
+                profile_motor->limit_ratio = RatioOD_RatioFrom_Percent(100.0);
         }
         break;
         case CURRENT_LIMIT:

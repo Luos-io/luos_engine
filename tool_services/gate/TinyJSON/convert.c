@@ -141,7 +141,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     // ratio
     if ((property && !strcmp(property, "power_ratio")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        ratio_t ratio = (ratio_t)json_getReal(jobj);
+        ratio_t ratio = RatioOD_RatioFrom_Percent(json_getReal(jobj));
         RatioOD_RatioToMsg(&ratio, msg);
         while (Luos_SendMsg(service, msg) == FAILED)
         {
@@ -241,7 +241,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     // Limit ratio
     if ((property && !strcmp(property, "limit_power")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        ratio_t ratio = RatioOD_RatioFromPercent((float)json_getReal(jobj));
+        ratio_t ratio = RatioOD_RatioFrom_Percent((float)json_getReal(jobj));
         RatioOD_RatioToMsg(&ratio, msg);
         msg->header.cmd = RATIO_LIMIT;
         Luos_SendMsg(service, msg);
