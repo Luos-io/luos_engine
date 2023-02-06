@@ -67,7 +67,7 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
         {
             // set the motor power ratio limit
             TemperatureOD_TemperatureFromMsg(&profile_motor->limit_temperature, msg);
-            profile_motor->limit_temperature = fabs(profile_motor->limit_temperature);
+            profile_motor->limit_temperature = TemperatureOD_TemperatureFrom_deg_c(fabs(TemperatureOD_TemperatureTo_deg_c(profile_motor->limit_temperature)));
         }
         break;
         case PARAMETERS:
