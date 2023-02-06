@@ -11,7 +11,10 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-typedef float pressure_t;
+typedef struct
+{
+    float _private;
+} pressure_t;
 
 /*******************************************************************************
  * Variables
@@ -26,39 +29,47 @@ typedef float pressure_t;
 // Pa
 static inline float PressureOD_PressureTo_Pa(pressure_t self)
 {
-    return self;
+    return self._private;
 }
 
 static inline pressure_t PressureOD_PressureFrom_Pa(float Pa)
 {
-    return Pa;
+    pressure_t self;
+    self._private = Pa;
+    return self;
 }
 
 // Bars
 static inline float PressureOD_PressureTo_Bars(pressure_t self)
 {
-    return self / 100000.0f;
+    return self._private / 100000.0f;
 }
 
 static inline pressure_t PressureOD_PressureFrom_Bars(float Bars)
 {
-    return Bars * (float)100000.0f;
+    pressure_t self;
+    self._private = Bars * (float)100000.0f;
+    return self;
 }
 
 // hPa
 static inline float PressureOD_PressureTo_hPa(pressure_t self)
 {
-    return self / (float)100.0f;
+    return self._private / (float)100.0f;
 }
 
 static inline pressure_t PressureOD_PressureFrom_hPa(float hPa)
 {
-    return hPa * 100.0f;
+    pressure_t self;
+    self._private = hPa * 100.0f;
+    return self;
 }
 
 //******** Messages management ***********
 static inline void PressureOD_PressureToMsg(const pressure_t *const self, msg_t *const msg)
 {
+    LUOS_ASSERT(self);
+    LUOS_ASSERT(msg);
     msg->header.cmd = PRESSURE;
     memcpy(msg->data, self, sizeof(pressure_t));
     msg->header.size = sizeof(pressure_t);
@@ -66,6 +77,8 @@ static inline void PressureOD_PressureToMsg(const pressure_t *const self, msg_t 
 
 static inline void PressureOD_PressureFromMsg(pressure_t *const self, const msg_t *const msg)
 {
+    LUOS_ASSERT(self);
+    LUOS_ASSERT(msg);
     memcpy(self, msg->data, msg->header.size);
 }
 

@@ -83,8 +83,8 @@ float Pressure_temp1 = 0;
 float Pressure_temp2 = 0;
 
 /* Final Data */
-float Temperature = 0;
-float Pressure    = 0;
+float Temperature   = 0;
+pressure_t Pressure = {0.0};
 
 static void BMP280_MsgHandler(service_t *service, msg_t *msg);
 
@@ -285,5 +285,5 @@ void BMP280_Loop()
     Pressure_temp2 = (Pressure_temp1 - (Var23_P / 4096)) * 6250 / Var13_P;
     Var14_P        = ((float)Pressure9) * Pressure_temp2 * Pressure_temp2 / 2147483648;
     Var24_P        = Pressure_temp2 * ((float)Pressure8) / 32768;
-    Pressure       = Pressure_temp2 + (Var14_P + Var24_P + ((float)Pressure7)) / 16;
+    Pressure       = PressureOD_PressureFrom_Pa(Pressure_temp2 + (Var14_P + Var24_P + ((float)Pressure7)) / 16);
 }
