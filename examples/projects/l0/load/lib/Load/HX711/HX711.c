@@ -73,7 +73,7 @@ uint8_t hx711_shiftIn(uint8_t bitOrder)
 }
 /******************************************************************************
  * @brief hx711_is_ready
- * @param 
+ * @param
  * @return None
  ******************************************************************************/
 uint8_t hx711_is_ready(void)
@@ -179,7 +179,7 @@ void hx711_wait_ready(unsigned long delay_ms)
 }
 /******************************************************************************
  * @brief hx711_wait_ready_retry
- * @param delay_ms, retries 
+ * @param delay_ms, retries
  * @return None
  ******************************************************************************/
 uint8_t hx711_wait_ready_retry(int retries, unsigned long delay_ms)
@@ -201,7 +201,7 @@ uint8_t hx711_wait_ready_retry(int retries, unsigned long delay_ms)
 }
 /******************************************************************************
  * @brief hx711_wait_ready_timeout
- * @param delay_ms, retries 
+ * @param delay_ms, retries
  * @return None
  ******************************************************************************/
 uint8_t hx711_wait_ready_timeout(unsigned long timeout, unsigned long delay_ms)
@@ -220,7 +220,7 @@ uint8_t hx711_wait_ready_timeout(unsigned long timeout, unsigned long delay_ms)
 }
 /******************************************************************************
  * @brief hx711_read_average
- * @param times 
+ * @param times
  * @return None
  ******************************************************************************/
 long hx711_read_average(uint8_t times)
@@ -234,7 +234,7 @@ long hx711_read_average(uint8_t times)
 }
 /******************************************************************************
  * @brief hx711_get_value
- * @param times 
+ * @param times
  * @return None
  ******************************************************************************/
 double hx711_get_value(uint8_t times)
@@ -243,7 +243,7 @@ double hx711_get_value(uint8_t times)
 }
 /******************************************************************************
  * @brief hx711_get_units
- * @param times 
+ * @param times
  * @return None
  ******************************************************************************/
 float hx711_get_units(uint8_t times)
@@ -252,7 +252,7 @@ float hx711_get_units(uint8_t times)
 }
 /******************************************************************************
  * @brief hx711_tare
- * @param times 
+ * @param times
  * @return None
  ******************************************************************************/
 void hx711_tare(uint8_t times)
@@ -262,7 +262,7 @@ void hx711_tare(uint8_t times)
 }
 /******************************************************************************
  * @brief hx711_set_scale
- * @param scale 
+ * @param scale
  * @return None
  ******************************************************************************/
 void hx711_set_scale(float scale)
@@ -322,7 +322,7 @@ void hx711_power_up()
  ******************************************************************************/
 void hx711_HWInit(void)
 {
-    //peripherial init
+    // peripherial init
     PIN_CLK();
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -360,7 +360,7 @@ uint8_t hx711_ReadValue(force_t *load)
     uint8_t result = FAILED;
     if (hx711_is_ready())
     {
-        *load  = hx711_get_units(1);
+        *load  = ForceOD_ForceFrom_N(hx711_get_units(1));
         result = SUCCEED;
     }
     return result;

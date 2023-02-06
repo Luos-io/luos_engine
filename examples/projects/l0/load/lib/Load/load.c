@@ -16,7 +16,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-force_t load        = 0.0;
+force_t load;
 bool new_data_ready = false;
 
 /*******************************************************************************
@@ -31,6 +31,7 @@ static void Load_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Load_Init(void)
 {
+    load                = ForceOD_ForceFrom_N(0.0f);
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
 
     hx711_Init();
@@ -85,9 +86,9 @@ static void Load_MsgHandler(service_t *service, msg_t *msg)
     }
     if (msg->header.cmd == OFFSET)
     {
-        force_t value = 0.0;
+        force_t value = ForceOD_ForceFrom_N(0.0);
         ForceOD_ForceFromMsg(&value, msg);
-        hx711_set_offset((long)(value * hx711_get_scale()));
+        hx711_set_offset((long)(ForceOD_ForceTo_N(value) * hx711_get_scale()));
         return;
     }
 }
