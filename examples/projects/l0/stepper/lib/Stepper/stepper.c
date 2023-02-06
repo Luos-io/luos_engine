@@ -62,7 +62,7 @@ void Stepper_Init(void)
     // default motor configuration
     stepper_motor.motor_reduction      = 131;
     stepper_motor.resolution           = 200;
-    stepper_motor.wheel_diameter       = 0.100f;
+    stepper_motor.wheel_diameter       = LinearOD_PositionFrom_m(0.100f);
     stepper_motor.target_angular_speed = AngularOD_SpeedFrom_deg_s(100.0);
 
     // default motor limits

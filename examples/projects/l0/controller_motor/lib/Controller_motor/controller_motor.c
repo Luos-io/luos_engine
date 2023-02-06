@@ -158,7 +158,7 @@ void ControllerMotor_Loop(void)
         last_angular_positions[SPEED_NB_INTEGRATION - 1] = servo_motor.angular_position;
         servo_motor.angular_speed                        = AngularOD_SpeedFrom_deg_s((AngularOD_PositionTo_deg(last_angular_positions[SPEED_NB_INTEGRATION - 1]) - AngularOD_PositionTo_deg(last_angular_positions[0])) * 1000.0 / SPEED_PERIOD);
         // linear_speed => m/seconds
-        servo_motor.linear_speed = LinearOD_SpeedFrom_m_s((AngularOD_SpeedTo_deg_s(servo_motor.angular_speed) / 360.0) * M_PI * servo_motor.wheel_diameter);
+        servo_motor.linear_speed = LinearOD_SpeedFrom_m_s((AngularOD_SpeedTo_deg_s(servo_motor.angular_speed) / 360.0) * M_PI * LinearOD_PositionTo_m(servo_motor.wheel_diameter));
         // ************* Limit clamping *************
         if (motion_target_position < AngularOD_PositionTo_deg(servo_motor.limit_angular_position[MINI]))
         {
@@ -327,7 +327,7 @@ void HAL_SYSTICK_Motor_Callback(void)
         {
             linear_position_t linear_position_tmp;
             Stream_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
-            servo_motor.target_angular_position = AngularOD_PositionFrom_deg((linear_position_tmp * 360.0) / (3.141592653589793 * servo_motor.wheel_diameter));
+            servo_motor.target_angular_position = AngularOD_PositionFrom_deg((LinearOD_PositionTo_m(linear_position_tmp) * 360.0) / (3.141592653589793 * LinearOD_PositionTo_m(servo_motor.wheel_diameter)));
         }
         else
         {

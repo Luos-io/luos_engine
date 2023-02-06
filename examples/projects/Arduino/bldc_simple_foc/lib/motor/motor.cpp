@@ -83,8 +83,8 @@ void Motor_Init(void)
     // measures
     servo_motor.angular_position = AngularOD_PositionFrom_deg(0.0);
     servo_motor.angular_speed    = AngularOD_SpeedFrom_deg_s(0.0);
-    servo_motor.linear_position  = 0.0;
-    servo_motor.linear_speed     = 0.0;
+    servo_motor.linear_position  = LinearOD_PositionFrom_m(0.0);
+    servo_motor.linear_speed     = LinearOD_SpeedFrom_m_s(0.0);
 
     // target commands
     servo_motor.target_angular_position = AngularOD_PositionFrom_deg(0.0);
@@ -109,7 +109,7 @@ void Motor_Init(void)
     // motor parameters
     servo_motor.motor_reduction = GEAR_RATE;
     servo_motor.resolution      = 0.0;
-    servo_motor.wheel_diameter  = 0.0;
+    servo_motor.wheel_diameter  = LinearOD_PositionFrom_m(0.0);
 
     // Streaming control channels
     servo_motor.control.unmap   = 0; // PLAY and no REC
@@ -209,9 +209,9 @@ void Motor_Loop(void)
 
     // update sensor position
     servo_motor.angular_position = AngularOD_PositionFrom_rad(sensor.getAngle() / servo_motor.motor_reduction);
-    servo_motor.linear_position  = (AngularOD_PositionTo_deg(servo_motor.angular_position) * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
+    servo_motor.linear_position  = LinearOD_PositionFrom_m((AngularOD_PositionTo_deg(servo_motor.angular_position) * 3.141592653589793 * LinearOD_PositionTo_m(servo_motor.wheel_diameter)) / 360.0);
     servo_motor.angular_speed    = AngularOD_SpeedFrom_rad_s(Motor_getVelocity() / servo_motor.motor_reduction);
-    servo_motor.linear_speed     = (AngularOD_SpeedTo_deg_s(servo_motor.angular_speed) * 3.141592653589793 * servo_motor.wheel_diameter) / 360.0;
+    servo_motor.linear_speed     = LinearOD_SpeedFrom_m_s((AngularOD_SpeedTo_deg_s(servo_motor.angular_speed) * 3.141592653589793 * LinearOD_PositionTo_m(servo_motor.wheel_diameter)) / 360.0);
 
     // call streaming handler each millisecond
     if ((millis() - tickstart) > TRAJECTORY_PERIOD_CALLBACK)
@@ -282,7 +282,7 @@ void Motor_TrajectoryCallback(void)
         {
             linear_position_t linear_position_tmp;
             Stream_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
-            servo_motor.target_angular_position = AngularOD_PositionFrom_deg(linear_position_tmp * 360.0 / (3.141592653589793 * servo_motor.wheel_diameter));
+            servo_motor.target_angular_position = AngularOD_PositionFrom_deg(LinearOD_PositionTo_m(linear_position_tmp) * 360.0 / (3.141592653589793 * LinearOD_PositionTo_m(servo_motor.wheel_diameter)));
         }
         else
         {

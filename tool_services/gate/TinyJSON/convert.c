@@ -229,9 +229,9 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     {
         linear_speed_t limits[2];
         json_t const *item = json_getChild(jobj);
-        limits[0]          = LinearOD_Speedfrom_mm_s(json_getReal(item));
+        limits[0]          = LinearOD_SpeedFrom_mm_s(json_getReal(item));
         item               = json_getSibling(item);
-        limits[1]          = LinearOD_Speedfrom_mm_s(json_getReal(item));
+        limits[1]          = LinearOD_SpeedFrom_mm_s(json_getReal(item));
         memcpy(&msg->data[0], limits, 2 * sizeof(linear_speed_t));
         msg->header.cmd  = LINEAR_SPEED_LIMIT;
         msg->header.size = 2 * sizeof(linear_speed_t);
@@ -326,7 +326,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     // target Linear speed
     if ((property && !strcmp(property, "target_trans_speed")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        linear_speed_t linear_speed = LinearOD_Speedfrom_mm_s((float)json_getReal(jobj));
+        linear_speed_t linear_speed = LinearOD_SpeedFrom_mm_s((float)json_getReal(jobj));
         LinearOD_SpeedToMsg(&linear_speed, msg);
         Luos_SendMsg(service, msg);
         return;

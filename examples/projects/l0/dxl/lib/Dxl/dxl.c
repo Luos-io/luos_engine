@@ -104,7 +104,7 @@ void Dxl_Loop(void)
             {
                 linear_position_t linear_position_tmp;
                 Stream_GetSample(&dxl[index].dxl_motor.trajectory, &linear_position_tmp, 1);
-                dxl[index].dxl_motor.target_angular_position = AngularOD_PositionFrom_deg((linear_position_tmp * 360.0) / (3.141592653589793 * dxl[index].dxl_motor.wheel_diameter));
+                dxl[index].dxl_motor.target_angular_position = AngularOD_PositionFrom_deg((LinearOD_PositionTo_m(linear_position_tmp) * 360.0) / (3.141592653589793 * LinearOD_PositionTo_m(dxl[index].dxl_motor.wheel_diameter)));
             }
             else
             {
@@ -451,7 +451,7 @@ static void discover_dxl(void)
             dxl[dxl_index].dxl_motor.mode.temperature           = 1;
 
             // default motor configuration
-            dxl[dxl_index].dxl_motor.wheel_diameter = 0.100f;
+            dxl[dxl_index].dxl_motor.wheel_diameter = LinearOD_PositionFrom_m(0.100f);
 
             // default motor limits
             dxl[dxl_index].dxl_motor.motor.limit_ratio            = 100.0;
