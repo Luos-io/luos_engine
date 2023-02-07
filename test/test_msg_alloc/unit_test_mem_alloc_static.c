@@ -298,7 +298,7 @@ void unittest_BufferAvailableSpaceComputation(void)
             //---------------
             current_msg         = (msg_t *)&msg_buffer[i];
             data_end_estimation = (uint8_t *)&msg_buffer[i + 1];
-            for (uint8_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
+            for (uint32_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
             {
                 // Test is launched only if "data_end_estimation" doesn't overflows "msg_buffer" size
                 if (data_end_estimation < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
@@ -533,7 +533,7 @@ void unittest_ValidDataIntegrity(void)
 
         uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
         mem_clear_needed = 0;
-        copy_task_pointer == NULL;
+        copy_task_pointer = NULL;
 
         memset((void *)&msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
         memset((void *)&expected_msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);

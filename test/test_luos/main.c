@@ -141,7 +141,7 @@ void unittest_Luos_ReceiveData()
         msg_t msg;
         uint32_t bin_data[64] = {0xDEADBEEF};
         NEW_STEP("Verify if we return an error");
-        TEST_ASSERT_EQUAL(Luos_ReceiveData(10, &msg, bin_data), -1);
+        TEST_ASSERT_EQUAL(Luos_ReceiveData((service_t *)10, &msg, bin_data), -1);
     }
 
     NEW_TEST_CASE("Test the regular usage");

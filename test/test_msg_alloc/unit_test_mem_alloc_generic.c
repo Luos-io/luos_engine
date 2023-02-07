@@ -1101,7 +1101,7 @@ void unittest_MsgAlloc_PullMsg()
 
         // Init variables
         luos_tasks_stack_id = MAX_MSG_NB - 1;
-        for (uint32_t i = 0; i < MAX_MSG_NB; i++)
+        for (uintptr_t i = 0; i < MAX_MSG_NB; i++)
         {
             luos_tasks[i].ll_service_pt = (ll_service_t *)i;
         }
@@ -1329,7 +1329,7 @@ void unittest_MsgAlloc_LookAtLuosTask()
         ll_service_t *oldest_ll_service = NULL;
         luos_tasks_stack_id             = MAX_MSG_NB;
 
-        for (uint32_t i = 0; i < MAX_MSG_NB; i++)
+        for (uintptr_t i = 0; i < MAX_MSG_NB; i++)
         {
             luos_tasks[i].ll_service_pt = (ll_service_t *)i;
         }
@@ -1788,7 +1788,7 @@ void unittest_MsgAlloc_PullMsgFromTxTask()
 
         for (uint8_t i = 0; i < MAX_MSG_NB; i++)
         {
-            tx_tasks[i].data_pt = &msg_buffer[i];
+            tx_tasks[i].data_pt = (uint8_t *)&msg_buffer[i];
             tx_tasks[i].size    = i;
         }
 
