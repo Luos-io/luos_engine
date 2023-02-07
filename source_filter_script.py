@@ -102,45 +102,40 @@ if not visited_key in global_env:
     click.secho("")
 
 # Native only
-find_MOCK_HAL = False
 for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
     if (item == 'UNIT_TEST'):
         click.secho("Native unit testing:", underline=True)
         current_os = pf.system()
-        if find_MOCK_HAL == False:
-            click.secho("\t* Native Mock HAL for %s is selected for Luos and Robus." % current_os, fg="green")
-        find_MOCK_HAL = True
+        click.secho("\t* Native Mock HAL for %s is selected for Luos and Robus." %
+                    current_os, fg="green")
         find_HAL = True
         env.Replace(SRC_FILTER=sources)
         env.Append(SRC_FILTER=["-<test/>"])
         env.Append(SRC_FILTER=["+<../../../test/_resources/*>"])
+
         for resources in scandir(getcwd() + "/test/_resources"):
             if resources.is_dir():
                 env.Append(CPPPATH=[(resources.path)])
 
-        if (current_os == 'Linux') or (current_os == 'Darwin'):
-            env.Append(LINKFLAGS=["-m32"])
-        elif current_os == 'Windows':
-            env.Append(LINKFLAGS=["-lgcov"])
-            env.Append(LINKFLAGS=["--coverage"])
-            env.Append(LINKFLAGS=["-fprofile-arcs"])
+        # CODE COVERAGE WILL BE ADDED SOON
+        # if (current_os == 'Linux') or (current_os == 'Darwin') or (current_os == 'Windows'):
+        #     env.Append(LINKFLAGS=["-lgcov"])
+        #     env.Append(LINKFLAGS=["--coverage"])
+        #     env.Append(LINKFLAGS=["-fprofile-arcs"])
 
-            def generateCoverageInfo(source, target, env):
-                for file in os.listdir("test"):
-                    env.Execute(".pio/build/native/program test/"+file)
-                env.Execute("lcov -d .pio/build/native/ -c -o lcov.info")
-                env.Execute(
-                    "lcov --remove lcov.info '*/tool-unity/*' '*/test/*' -o filtered_lcov.info")
-                env.Execute(
-                    "genhtml -o cov/ --demangle-cpp filtered_lcov.info")
+        #     def generateCoverageInfo(source, target, env):
+        #         for file in os.listdir("test"):
+        #             env.Execute(".pio/build/native/program test/"+file)
+        #         env.Execute("lcov -d .pio/build/native/ -c -o lcov.info")
+        #         env.Execute(
+        #             "lcov --remove lcov.info '*/tool-unity/*' '*/test/*' -o filtered_lcov.info")
+        #         env.Execute(
+        #             "genhtml -o cov/ --demangle-cpp filtered_lcov.info")
 
-            # Generate code coverage when testing workflow is ended
-            # CODE COVERAGE WILL BE ADDED SOON
-            # env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
-        else:
-            click.echo("Unit tests are not supported on your os ", current_os)
-        break
-    else:
+        # Generate code coverage when testing workflow is ended
+        # env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
+        # else:
+        #     click.echo("Unit tests are not supported on your os ", current_os)
         break
 
 if not visited_key in global_env:
