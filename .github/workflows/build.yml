@@ -39,10 +39,10 @@ jobs:
       - name: Run PlatformIO Unit Tests
         run: |
           # Clean all projects
-          platformio run -t clean -c ./test/_resources/platformio.ini
+          platformio run -t clean
 
           # Run Unit tests
-          platformio test -c ./test/_resources/platformio.ini  -vvv
+          platformio test -vvv
 
   code-format:
     name: Code format
