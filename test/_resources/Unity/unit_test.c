@@ -83,7 +83,7 @@ void NEW_STEP(char *title)
  ******************************************************************************/
 void NEW_STEP_IN_LOOP(char title[], uint32_t index)
 {
-    char index2string[5];
+    char index2string[11];
     char step_title[128];
 
     memset((void *)step_title, 0, sizeof(step_title));

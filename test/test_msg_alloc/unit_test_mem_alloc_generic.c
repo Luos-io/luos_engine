@@ -1033,7 +1033,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
             // Init variables
             luos_tasks_stack_id          = i;
             expected_luos_tasks_stack_id = i + 1;
-            expected_mem_stat            = (i + 1) * 10;
+            expected_mem_stat            = ((i + 1) * 100 / MAX_MSG_NB);
             message                      = (msg_t *)&msg_buffer[0];
             service_concerned            = (ll_service_t *)&msg_buffer[0];
 
@@ -1888,9 +1888,10 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
 
         // Init variables
         //---------------
-        tx_tasks_stack_id = 10;
+        const int task_number = 10;
+        tx_tasks_stack_id     = task_number;
 
-        for (uint16_t i = 0; i < MAX_MSG_NB; i++)
+        for (uint16_t i = 0; i < task_number; i++)
         {
             msg_tasks[i]                = (msg_t *)&msg_buffer[i * 20];
             msg_tasks[i]->header.target = i + 1;
@@ -1905,13 +1906,13 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
 
         expected_tx_tasks[0].data_pt = tx_tasks[1].data_pt;
         expected_tx_tasks[1].data_pt = tx_tasks[3].data_pt;
-        for (uint16_t i = 2; i < MAX_MSG_NB - 3; i++)
+        for (uint16_t i = 2; i < task_number - 3; i++)
         {
             expected_tx_tasks[i].data_pt = tx_tasks[i + 3].data_pt;
         }
-        expected_tx_tasks[MAX_MSG_NB - 1].data_pt = 0;
-        expected_tx_tasks[MAX_MSG_NB - 2].data_pt = 0;
-        expected_tx_tasks[MAX_MSG_NB - 3].data_pt = 0;
+        expected_tx_tasks[task_number - 1].data_pt = 0;
+        expected_tx_tasks[task_number - 2].data_pt = 0;
+        expected_tx_tasks[task_number - 3].data_pt = 0;
 
         // Call function
         //---------------
@@ -1919,7 +1920,7 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
 
         // Verify
         //---------------
-        for (uint16_t i = 0; i < MAX_MSG_NB; i++)
+        for (uint16_t i = 0; i < task_number; i++)
         {
             NEW_STEP_IN_LOOP("Check Tx task message pointer are correctly allocated after pulling expected service tx task", i);
             TEST_ASSERT_EQUAL(expected_tx_tasks[i].data_pt, tx_tasks[i].data_pt);
