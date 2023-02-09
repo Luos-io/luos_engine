@@ -19,6 +19,10 @@ ut_luos_assert_t ut_assert = {.state = 0, .enable = 1};
 uint16_t test_case_number;
 uint16_t step_number;
 
+// external error context
+jmp_buf err_ctx;
+bool try_state = false;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -192,6 +196,12 @@ void UNIT_TEST_ASSERT(char *file, uint32_t line)
     memcpy(msg.data, &line, sizeof(line));
     memcpy(&msg.data[sizeof(line)], file, strlen(file));
     ut_assert.msg = msg;
+    // This is the THROW of the TRY CATCH
+    if (try_state)
+    {
+        _LONGJMP(err_ctx, 1);
+        try_state = false;
+    }
 }
 
 void setUp(void)

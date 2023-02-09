@@ -13,10 +13,22 @@
 #include "luos_engine.h"
 #include "luos_utils.h"
 #include "robus_struct.h"
+#include <setjmp.h>
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifdef _WIN32
+    #define _SETJMP  __builtin_setjmp
+    #define _LONGJMP __builtin_longjmp
+#else
+    #define _SETJMP  setjmp
+    #define _LONGJMP longjmp
+#endif
+
+extern jmp_buf err_ctx;
+extern bool try_state;
+
 #ifndef UNIT_TEST_RUN
     #define UNIT_TEST_RUN(f) RUN(#f, f)
 #endif
@@ -31,6 +43,12 @@ typedef struct
     uint32_t line_size;
     msg_t msg;
 } ut_luos_assert_t;
+
+#define TRY           \
+    try_state = true; \
+    if (!_SETJMP(err_ctx))
+
+#define CATCH else
 
 /*******************************************************************************
  * Function
