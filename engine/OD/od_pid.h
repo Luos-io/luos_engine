@@ -44,6 +44,8 @@ typedef struct __attribute__((__packed__))
 //******** Messages management ***********
 static inline void PidOD_PidToMsg(const asserv_pid_t *const self, msg_t *const msg)
 {
+    LUOS_ASSERT(self);
+    LUOS_ASSERT(msg);
     msg->header.cmd = PID;
     memcpy(msg->data, self, sizeof(asserv_pid_t));
     msg->header.size = sizeof(asserv_pid_t);
@@ -51,6 +53,8 @@ static inline void PidOD_PidToMsg(const asserv_pid_t *const self, msg_t *const m
 
 static inline void PidOD_PidFromMsg(asserv_pid_t *const self, const msg_t *const msg)
 {
+    LUOS_ASSERT(self);
+    LUOS_ASSERT(msg);
     LUOS_ASSERT(msg->header.size == sizeof(asserv_pid_t));
     memcpy(self, msg->data, sizeof(asserv_pid_t));
 }
