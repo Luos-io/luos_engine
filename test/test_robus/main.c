@@ -52,8 +52,12 @@ void unittest_Robus_IDMaskCalculation()
 
     NEW_TEST_CASE("Limit 0");
     {
+        RESET_ASSERT();
         Robus_MaskInit();
-        Robus_IDMaskCalculation(0, SERVICE_NUMBER);
+        TRY
+        {
+            Robus_IDMaskCalculation(0, SERVICE_NUMBER);
+        }
         TEST_ASSERT_TRUE(IS_ASSERT());
         RESET_ASSERT();
     }
