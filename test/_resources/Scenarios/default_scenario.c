@@ -20,20 +20,12 @@
  ******************************************************************************/
 
 default_scenario_t default_sc;
-extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
-
-// msg_t receive_msg[DUMMY_SERVICE_NUMBER];
-uint8_t stream_Buffer1[STREAM_BUFFER_SIZE] = {0};
-uint8_t stream_Buffer2[STREAM_BUFFER_SIZE] = {0};
-streaming_channel_t Default_StreamChannel1;
-streaming_channel_t Default_StreamChannel2;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
 extern void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_t *concerned_msg);
 
-static void Reset_Streaming(void);
 static void Detection(service_t *service);
 static void App_1_MsgHandler(service_t *service, msg_t *msg);
 static void App_2_MsgHandler(service_t *service, msg_t *msg);
@@ -54,11 +46,6 @@ void Init_Context(void)
     default_sc.App_1.app = Luos_CreateService(App_1_MsgHandler, VOID_TYPE, "Dummy_App_1", revision);
     default_sc.App_2.app = Luos_CreateService(App_2_MsgHandler, VOID_TYPE, "Dummy_App_2", revision);
     default_sc.App_3.app = Luos_CreateService(App_3_MsgHandler, VOID_TYPE, "Dummy_App_3", revision);
-
-    Reset_Streaming();
-    // Create stream channels
-    Default_StreamChannel1 = Stream_CreateStreamingChannel(stream_Buffer1, STREAM_BUFFER_SIZE, 1);
-    Default_StreamChannel2 = Stream_CreateStreamingChannel(stream_Buffer2, STREAM_BUFFER_SIZE, 1);
 
     // Detection
     Detection(default_sc.App_1.app);
@@ -82,7 +69,6 @@ void Reset_Context(void)
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
-    Reset_Streaming();
     if (IS_ASSERT())
     {
         printf("[FATAL] Can't reset scenario context\n");
@@ -105,25 +91,6 @@ static void Detection(service_t *service)
     RTFilter_Reset(&result);
     printf("[INFO] %d services are active\n", result.result_nbr);
     TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, result.result_nbr);
-}
-
-/******************************************************************************
- * @brief Create a streaming channel
- * @param None
- * @return None
- ******************************************************************************/
-static void Reset_Streaming(void)
-{
-    // Stream Channel reset
-    Stream_ResetStreamingChannel(&Default_StreamChannel1);
-    Stream_ResetStreamingChannel(&Default_StreamChannel2);
-    default_sc.streamChannel1 = &Default_StreamChannel1;
-    default_sc.streamChannel2 = &Default_StreamChannel2;
-    for (uint16_t i = 0; i < STREAM_BUFFER_SIZE; i++)
-    {
-        stream_Buffer1[i] = (uint8_t)(i);
-        stream_Buffer2[i] = (uint8_t)(i);
-    }
 }
 /******************************************************************************
  * @brief Loop Service App_1

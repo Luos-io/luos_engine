@@ -10,9 +10,11 @@ void unittest_Streaming_SendStreamingSize()
     {
         uint32_t ExpectedMaxSize;
         msg_t tx_msg;
-        tx_msg.header.target      = 2;
-        tx_msg.header.target_mode = SERVICEIDACK;
-        tx_msg.header.cmd         = DEFAULT_CMD;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
         Reset_Context();
         //  Init default scenario context
@@ -20,10 +22,10 @@ void unittest_Streaming_SendStreamingSize()
         //  Init variable
         ExpectedMaxSize = 1;
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
 
         NEW_STEP("Verify 1 byte is received when stream channels size is 2");
-        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, default_sc.streamChannel1, 1);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 1);
         Luos_Loop();
         // Verify
         TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
@@ -33,9 +35,11 @@ void unittest_Streaming_SendStreamingSize()
     {
         uint32_t ExpectedMaxSize;
         msg_t tx_msg;
-        tx_msg.header.target      = 2;
-        tx_msg.header.target_mode = SERVICEIDACK;
-        tx_msg.header.cmd         = DEFAULT_CMD;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
         Reset_Context();
         //  Init default scenario context
@@ -43,10 +47,10 @@ void unittest_Streaming_SendStreamingSize()
         //  Init variable
         ExpectedMaxSize = 2;
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
 
         NEW_STEP("Verify 2 byte are received when stream channels size is 2");
-        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, default_sc.streamChannel1, 2);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 2);
         Luos_Loop();
         // Verify
         TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
@@ -56,9 +60,11 @@ void unittest_Streaming_SendStreamingSize()
     {
         uint32_t ExpectedMaxSize;
         msg_t tx_msg;
-        tx_msg.header.target      = 2;
-        tx_msg.header.target_mode = SERVICEIDACK;
-        tx_msg.header.cmd         = DEFAULT_CMD;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
         Reset_Context();
         //  Init default scenario context
@@ -69,8 +75,8 @@ void unittest_Streaming_SendStreamingSize()
 
         NEW_STEP("Verify 2 byte are received when we try to send 3 bytes");
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
-        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, default_sc.streamChannel1, 3);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 3);
         Luos_Loop();
         // Verify
         TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
@@ -80,9 +86,11 @@ void unittest_Streaming_SendStreamingSize()
     {
         uint32_t ExpectedMaxSize;
         msg_t tx_msg;
-        tx_msg.header.target      = 2;
-        tx_msg.header.target_mode = SERVICEIDACK;
-        tx_msg.header.cmd         = DEFAULT_CMD;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
         Reset_Context();
         //  Init default scenario context
@@ -97,8 +105,8 @@ void unittest_Streaming_SendStreamingSize()
         tx_msg.header.target = 3;
 
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
-        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, default_sc.streamChannel1, 0);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 0);
         Luos_Loop();
         // Verify
         TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_3.last_rx_msg.header.size);
@@ -110,8 +118,8 @@ void unittest_Streaming_SendStreamingSize()
         tx_msg.header.target = 2;
 
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 128);
-        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, default_sc.streamChannel1, 128);
+        Stream_AddAvailableSampleNB(&streamChannel, 128);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 128);
         Luos_Loop();
         // Verify
         TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);

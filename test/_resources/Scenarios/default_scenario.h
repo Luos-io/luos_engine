@@ -21,8 +21,6 @@ typedef struct
     dummy_app_t App_1;
     dummy_app_t App_2;
     dummy_app_t App_3;
-    streaming_channel_t *streamChannel1;
-    streaming_channel_t *streamChannel2;
 } default_scenario_t;
 
 typedef enum
