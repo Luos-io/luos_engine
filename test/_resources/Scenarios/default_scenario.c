@@ -34,7 +34,6 @@ streaming_channel_t Default_StreamChannel2;
 extern void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_t *concerned_msg);
 
 static void Reset_Streaming(void);
-static void Init_Messages(void);
 static void Detection(service_t *service);
 static void App_1_MsgHandler(service_t *service, msg_t *msg);
 static void App_2_MsgHandler(service_t *service, msg_t *msg);
@@ -65,9 +64,6 @@ void Init_Context(void)
     Detection(default_sc.App_1.app);
     Luos_Loop();
 
-    // Fill basic messages
-    Init_Messages();
-
     if (IS_ASSERT())
     {
         printf("[FATAL] Can't initialize scenario context\n");
@@ -86,7 +82,6 @@ void Reset_Context(void)
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
-    Init_Messages();
     Reset_Streaming();
     if (IS_ASSERT())
     {
@@ -110,63 +105,6 @@ static void Detection(service_t *service)
     RTFilter_Reset(&result);
     printf("[INFO] %d services are active\n", result.result_nbr);
     TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, result.result_nbr);
-}
-
-/******************************************************************************
- * @brief Messages are reseted to default values
- * @param None
- * @return None
- ******************************************************************************/
-void Init_Messages(void)
-{
-    // App 1 : Send message to App 2
-    // -------------------------------
-    default_sc.App_1.tx_msg.header.config      = PROTOCOL_REVISION;
-    default_sc.App_1.tx_msg.header.source      = 1;
-    default_sc.App_1.tx_msg.header.target      = 2;
-    default_sc.App_1.tx_msg.header.target_mode = SERVICEIDACK;
-    default_sc.App_1.tx_msg.header.cmd         = DEFAULT_CMD;
-    default_sc.App_1.tx_msg.header.size        = MAX_DATA_MSG_SIZE;
-
-    // App 2 : Send message to App 1
-    // -------------------------------
-    default_sc.App_2.tx_msg.header.config      = PROTOCOL_REVISION;
-    default_sc.App_2.tx_msg.header.source      = 2;
-    default_sc.App_2.tx_msg.header.target      = 1;
-    default_sc.App_2.tx_msg.header.target_mode = SERVICEIDACK;
-    default_sc.App_2.tx_msg.header.cmd         = DEFAULT_CMD;
-    default_sc.App_2.tx_msg.header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
-
-    // App 3 : Send message to App 2
-    // -------------------------------
-    default_sc.App_3.tx_msg.header.config      = PROTOCOL_REVISION;
-    default_sc.App_3.tx_msg.header.source      = 3;
-    default_sc.App_3.tx_msg.header.target      = 2;
-    default_sc.App_3.tx_msg.header.target_mode = SERVICEIDACK;
-    default_sc.App_3.tx_msg.header.cmd         = DEFAULT_CMD;
-    default_sc.App_3.tx_msg.header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
-
-    // TX message : Only fill half of datas with a counter
-    for (uint16_t i = 0; i < MAX_DATA_MSG_SIZE / 2; i++)
-    {
-        default_sc.App_1.tx_msg.data[i] = (uint8_t)i;
-        default_sc.App_2.tx_msg.data[i] = (uint8_t)i;
-        default_sc.App_3.tx_msg.data[i] = (uint8_t)i;
-    }
-    // TX message : Last half of datas is set to 0
-    for (uint16_t i = MAX_DATA_MSG_SIZE / 2; i < MAX_DATA_MSG_SIZE; i++)
-    {
-        default_sc.App_1.tx_msg.data[i] = 0;
-        default_sc.App_2.tx_msg.data[i] = 0;
-        default_sc.App_3.tx_msg.data[i] = 0;
-    }
-    // RX message : datas are set to 0
-    for (uint16_t i = 0; i < MAX_DATA_MSG_SIZE; i++)
-    {
-        default_sc.App_1.last_rx_msg.data[i] = 0;
-        default_sc.App_2.last_rx_msg.data[i] = 0;
-        default_sc.App_3.last_rx_msg.data[i] = 0;
-    }
 }
 
 /******************************************************************************

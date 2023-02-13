@@ -13,7 +13,6 @@
 typedef struct
 {
     service_t *app;
-    msg_t tx_msg;
     msg_t last_rx_msg;
 } dummy_app_t;
 
