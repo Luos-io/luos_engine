@@ -111,14 +111,21 @@ void unittest_RTFilter_Type(void)
         Luos_CreateService(0, STATE_TYPE, "mycustom_service", revision);
 
         Luos_Detect(default_sc.App_1.app);
-        Luos_Loop();
+        do
+        {
+            Luos_Loop();
+        } while (!Luos_IsNodeDetected());
         //  Init variables
-        ExpectedServiceNB = 3;
         search_result_t result;
-        // Add samples
+
+        NEW_STEP("Verify that we have the 4 services");
+        RTFilter_Reset(&result);
+        ExpectedServiceNB = 4;
+        TEST_ASSERT_EQUAL(ExpectedServiceNB, result.result_nbr);
 
         NEW_STEP("Verify that we have the 3 VOID_TYPE services");
         RTFilter_Type(RTFilter_Reset(&result), VOID_TYPE);
+        ExpectedServiceNB = 3;
         TEST_ASSERT_EQUAL(ExpectedServiceNB, result.result_nbr);
 
         NEW_STEP("Verify that we have the STATE_TYPE service");
@@ -233,7 +240,10 @@ void unittest_RTFilter_Alias()
         Luos_CreateService(0, STATE_TYPE, "Custom_App", revision);
 
         Luos_Detect(default_sc.App_1.app);
-        Luos_Loop();
+        do
+        {
+            Luos_Loop();
+        } while (!Luos_IsNodeDetected());
         //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
