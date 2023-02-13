@@ -27,6 +27,18 @@ static void App_3_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Init_Context(void)
 {
+    // Reset context
+    RESET_ASSERT();
+    Luos_ServicesClear();
+    RoutingTB_Erase(); // Delete RTB
+    Luos_Init();
+    if (IS_ASSERT())
+    {
+        printf("[FATAL] Can't reset scenario context\n");
+        TEST_ASSERT_TRUE(IS_ASSERT());
+    }
+    Luos_Loop();
+
     RESET_ASSERT();
     Luos_Init();
 
@@ -43,24 +55,6 @@ void Init_Context(void)
     if (IS_ASSERT())
     {
         printf("[FATAL] Can't initialize scenario context\n");
-        TEST_ASSERT_TRUE(IS_ASSERT());
-    }
-}
-
-/******************************************************************************
- * @brief Reset context to init state
- * @param None
- * @return None
- ******************************************************************************/
-void Reset_Context(void)
-{
-    RESET_ASSERT();
-    Luos_ServicesClear();
-    RoutingTB_Erase(); // Delete RTB
-    Luos_Init();
-    if (IS_ASSERT())
-    {
-        printf("[FATAL] Can't reset scenario context\n");
         TEST_ASSERT_TRUE(IS_ASSERT());
     }
 }

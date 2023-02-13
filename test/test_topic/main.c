@@ -11,7 +11,6 @@ void unittest_Topic_IsTopicSubscribed(void)
 {
     NEW_TEST_CASE("Search Topics");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 1);
@@ -28,7 +27,6 @@ void unittest_Topic_Subscribe(void)
 {
     NEW_TEST_CASE("Add random Topics");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -43,7 +41,6 @@ void unittest_Topic_Subscribe(void)
     }
     NEW_TEST_CASE("Add max topics number");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -64,7 +61,6 @@ void unittest_Topic_Unsubscribe(void)
 {
     NEW_TEST_CASE("Remove random topics");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -95,7 +91,6 @@ void unittest_Topic_Unsubscribe(void)
     }
     NEW_TEST_CASE("Remove same topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -113,7 +108,6 @@ void unittest_Topic_Unsubscribe(void)
 
     NEW_TEST_CASE("Last topic position is corrupted");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 

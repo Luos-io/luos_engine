@@ -10,7 +10,6 @@ void unittest_RTFilter_Reset(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -44,7 +43,6 @@ void unittest_RTFilter_InitCheck(void)
 {
     NEW_TEST_CASE("Test the result initialization check function");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -70,7 +68,6 @@ void unittest_RTFilter_Type(void)
     {
         RESET_ASSERT();
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -85,7 +82,6 @@ void unittest_RTFilter_Type(void)
         RESET_ASSERT();
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -103,7 +99,6 @@ void unittest_RTFilter_Type(void)
     NEW_TEST_CASE("Add new service and retest");
     {
         uint32_t ExpectedServiceNB;
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -146,7 +141,6 @@ void unittest_RTFilter_Node(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -171,7 +165,6 @@ void unittest_RTFilter_ID(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -204,7 +197,6 @@ void unittest_RTFilter_Service(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         ExpectedServiceNB = 1;
@@ -232,7 +224,6 @@ void unittest_RTFilter_Alias()
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};

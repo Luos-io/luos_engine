@@ -67,7 +67,6 @@ void unittest_Robus_TopicSubscribe(void)
 {
     NEW_TEST_CASE("Normal Add to node topic list");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -84,7 +83,6 @@ void unittest_Robus_TopicSubscribe(void)
     }
     NEW_TEST_CASE("Assert when adding last topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -100,7 +98,6 @@ void unittest_Robus_TopicSubscribe(void)
     }
     NEW_TEST_CASE("Add same topic multiple times");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -124,7 +121,6 @@ void unittest_Robus_TopicUnsubscribe(void)
 {
     NEW_TEST_CASE("Remove from an empty list");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -133,7 +129,6 @@ void unittest_Robus_TopicUnsubscribe(void)
     }
     NEW_TEST_CASE("Normal Remove from topic list");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -164,7 +159,6 @@ void unittest_Robus_TopicUnsubscribe(void)
     }
     NEW_TEST_CASE("Demand to remove last topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC - 1);
@@ -178,7 +172,6 @@ void unittest_Robus_TopicUnsubscribe(void)
     }
     NEW_TEST_CASE("Remove multiple times same topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);

@@ -20,7 +20,6 @@ void unittest_Timestamp()
     NEW_TEST_CASE("Timestamp measurement");
     {
         NEW_STEP("Save events");
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Luos_Loop();
@@ -44,7 +43,6 @@ void unittest_Timestamp()
 
         NEW_STEP("Transmit timestamps");
         // Init scenario context
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Luos_Loop();

@@ -17,7 +17,6 @@ void unittest_Streaming_SendStreamingSize()
         uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
         streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variable
@@ -42,7 +41,6 @@ void unittest_Streaming_SendStreamingSize()
         uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
         streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variable
@@ -67,7 +65,6 @@ void unittest_Streaming_SendStreamingSize()
         uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
         streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -93,7 +90,6 @@ void unittest_Streaming_SendStreamingSize()
         uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
         streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -131,7 +127,6 @@ void unittest_Luos_ReceiveData()
 {
     NEW_TEST_CASE("Try to send a void message argument");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision   = {.major = 1, .minor = 0, .build = 0};
@@ -146,7 +141,6 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Try to send a void table argument");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -160,7 +154,6 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Try to send a shity service argument");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         msg_t msg;
@@ -171,7 +164,6 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Test the regular usage");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -198,7 +190,6 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Try to send a void service argument to reset the data reception");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
