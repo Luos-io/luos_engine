@@ -22,7 +22,6 @@
 default_scenario_t default_sc;
 extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
 
-volatile uint8_t *transmit_msg;
 msg_t receive_msg[DUMMY_SERVICE_NUMBER];
 uint8_t stream_Buffer1[STREAM_BUFFER_SIZE] = {0};
 uint8_t stream_Buffer2[STREAM_BUFFER_SIZE] = {0};
@@ -66,9 +65,6 @@ void Init_Context(void)
     Detection(default_sc.App_1.app);
     Luos_Loop();
 
-    // Init messages pointers
-    transmit_msg = msg_buffer;
-
     // Fill basic messages
     Init_Messages();
 
@@ -90,7 +86,6 @@ void Reset_Context(void)
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
-    transmit_msg = msg_buffer;
     Init_Messages();
     Reset_Streaming();
     if (IS_ASSERT())
