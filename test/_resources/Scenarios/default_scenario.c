@@ -22,7 +22,7 @@
 default_scenario_t default_sc;
 extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
 
-msg_t receive_msg[DUMMY_SERVICE_NUMBER];
+// msg_t receive_msg[DUMMY_SERVICE_NUMBER];
 uint8_t stream_Buffer1[STREAM_BUFFER_SIZE] = {0};
 uint8_t stream_Buffer2[STREAM_BUFFER_SIZE] = {0};
 streaming_channel_t Default_StreamChannel1;
@@ -119,63 +119,53 @@ static void Detection(service_t *service)
  ******************************************************************************/
 void Init_Messages(void)
 {
-    // Init tx messages pointers
-    default_sc.App_1.tx_msg = (msg_t *)(&msg_buffer[0]);
-    default_sc.App_2.tx_msg = (msg_t *)(&msg_buffer[sizeof(msg_t)]);
-    default_sc.App_3.tx_msg = (msg_t *)(&msg_buffer[0]);
-
-    // Init rx messages pointers
-    default_sc.App_1.last_rx_msg = &receive_msg[0];
-    default_sc.App_2.last_rx_msg = &receive_msg[1];
-    default_sc.App_3.last_rx_msg = &receive_msg[2];
-
     // App 1 : Send message to App 2
     // -------------------------------
-    default_sc.App_1.tx_msg->header.config      = PROTOCOL_REVISION;
-    default_sc.App_1.tx_msg->header.source      = 1;
-    default_sc.App_1.tx_msg->header.target      = 2;
-    default_sc.App_1.tx_msg->header.target_mode = SERVICEIDACK;
-    default_sc.App_1.tx_msg->header.cmd         = DEFAULT_CMD;
-    default_sc.App_1.tx_msg->header.size        = MAX_DATA_MSG_SIZE;
+    default_sc.App_1.tx_msg.header.config      = PROTOCOL_REVISION;
+    default_sc.App_1.tx_msg.header.source      = 1;
+    default_sc.App_1.tx_msg.header.target      = 2;
+    default_sc.App_1.tx_msg.header.target_mode = SERVICEIDACK;
+    default_sc.App_1.tx_msg.header.cmd         = DEFAULT_CMD;
+    default_sc.App_1.tx_msg.header.size        = MAX_DATA_MSG_SIZE;
 
     // App 2 : Send message to App 1
     // -------------------------------
-    default_sc.App_2.tx_msg->header.config      = PROTOCOL_REVISION;
-    default_sc.App_2.tx_msg->header.source      = 2;
-    default_sc.App_2.tx_msg->header.target      = 1;
-    default_sc.App_2.tx_msg->header.target_mode = SERVICEIDACK;
-    default_sc.App_2.tx_msg->header.cmd         = DEFAULT_CMD;
-    default_sc.App_2.tx_msg->header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
+    default_sc.App_2.tx_msg.header.config      = PROTOCOL_REVISION;
+    default_sc.App_2.tx_msg.header.source      = 2;
+    default_sc.App_2.tx_msg.header.target      = 1;
+    default_sc.App_2.tx_msg.header.target_mode = SERVICEIDACK;
+    default_sc.App_2.tx_msg.header.cmd         = DEFAULT_CMD;
+    default_sc.App_2.tx_msg.header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
 
     // App 3 : Send message to App 2
     // -------------------------------
-    default_sc.App_3.tx_msg->header.config      = PROTOCOL_REVISION;
-    default_sc.App_3.tx_msg->header.source      = 3;
-    default_sc.App_3.tx_msg->header.target      = 2;
-    default_sc.App_3.tx_msg->header.target_mode = SERVICEIDACK;
-    default_sc.App_3.tx_msg->header.cmd         = DEFAULT_CMD;
-    default_sc.App_3.tx_msg->header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
+    default_sc.App_3.tx_msg.header.config      = PROTOCOL_REVISION;
+    default_sc.App_3.tx_msg.header.source      = 3;
+    default_sc.App_3.tx_msg.header.target      = 2;
+    default_sc.App_3.tx_msg.header.target_mode = SERVICEIDACK;
+    default_sc.App_3.tx_msg.header.cmd         = DEFAULT_CMD;
+    default_sc.App_3.tx_msg.header.size        = MAX_DATA_MSG_SIZE; // data = half of max size
 
     // TX message : Only fill half of datas with a counter
     for (uint16_t i = 0; i < MAX_DATA_MSG_SIZE / 2; i++)
     {
-        default_sc.App_1.tx_msg->data[i] = (uint8_t)i;
-        default_sc.App_2.tx_msg->data[i] = (uint8_t)i;
-        default_sc.App_3.tx_msg->data[i] = (uint8_t)i;
+        default_sc.App_1.tx_msg.data[i] = (uint8_t)i;
+        default_sc.App_2.tx_msg.data[i] = (uint8_t)i;
+        default_sc.App_3.tx_msg.data[i] = (uint8_t)i;
     }
     // TX message : Last half of datas is set to 0
     for (uint16_t i = MAX_DATA_MSG_SIZE / 2; i < MAX_DATA_MSG_SIZE; i++)
     {
-        default_sc.App_1.tx_msg->data[i] = 0;
-        default_sc.App_2.tx_msg->data[i] = 0;
-        default_sc.App_3.tx_msg->data[i] = 0;
+        default_sc.App_1.tx_msg.data[i] = 0;
+        default_sc.App_2.tx_msg.data[i] = 0;
+        default_sc.App_3.tx_msg.data[i] = 0;
     }
     // RX message : datas are set to 0
     for (uint16_t i = 0; i < MAX_DATA_MSG_SIZE; i++)
     {
-        default_sc.App_1.last_rx_msg->data[i] = 0;
-        default_sc.App_2.last_rx_msg->data[i] = 0;
-        default_sc.App_3.last_rx_msg->data[i] = 0;
+        default_sc.App_1.last_rx_msg.data[i] = 0;
+        default_sc.App_2.last_rx_msg.data[i] = 0;
+        default_sc.App_3.last_rx_msg.data[i] = 0;
     }
 }
 
@@ -232,23 +222,7 @@ void App_3_Loop(void)
  ******************************************************************************/
 static void App_1_MsgHandler(service_t *service, msg_t *msg)
 {
-    default_sc.App_1.last_rx_msg->header.config      = msg->header.config;
-    default_sc.App_1.last_rx_msg->header.source      = msg->header.source;
-    default_sc.App_1.last_rx_msg->header.target      = msg->header.target;
-    default_sc.App_1.last_rx_msg->header.target_mode = msg->header.target_mode;
-    default_sc.App_1.last_rx_msg->header.cmd         = msg->header.cmd;
-    default_sc.App_1.last_rx_msg->header.size        = msg->header.size;
-    for (uint16_t i = 0; i < msg->header.size; i++)
-    {
-        default_sc.App_1.last_rx_msg->data[i] = msg->data[i];
-    }
-    if (msg->header.config == TIMESTAMP_PROTOCOL)
-    {
-        for (uint16_t i = 0; i < sizeof(time_luos_t); i++)
-        {
-            default_sc.App_1.last_rx_msg->data[msg->header.size + i] = msg->data[msg->header.size + i];
-        }
-    }
+    memcpy(&default_sc.App_1.last_rx_msg, msg, sizeof(msg_t));
 }
 
 /******************************************************************************
@@ -259,23 +233,7 @@ static void App_1_MsgHandler(service_t *service, msg_t *msg)
  ******************************************************************************/
 static void App_2_MsgHandler(service_t *service, msg_t *msg)
 {
-    default_sc.App_2.last_rx_msg->header.config      = msg->header.config;
-    default_sc.App_2.last_rx_msg->header.source      = msg->header.source;
-    default_sc.App_2.last_rx_msg->header.target      = msg->header.target;
-    default_sc.App_2.last_rx_msg->header.target_mode = msg->header.target_mode;
-    default_sc.App_2.last_rx_msg->header.cmd         = msg->header.cmd;
-    default_sc.App_2.last_rx_msg->header.size        = msg->header.size;
-    for (uint16_t i = 0; i < msg->header.size; i++)
-    {
-        default_sc.App_2.last_rx_msg->data[i] = msg->data[i];
-    }
-    if (msg->header.config == TIMESTAMP_PROTOCOL)
-    {
-        for (uint16_t i = 0; i < sizeof(time_luos_t); i++)
-        {
-            default_sc.App_2.last_rx_msg->data[msg->header.size + i] = msg->data[msg->header.size + i];
-        }
-    }
+    memcpy(&default_sc.App_2.last_rx_msg, msg, sizeof(msg_t));
 }
 
 /******************************************************************************
@@ -286,23 +244,5 @@ static void App_2_MsgHandler(service_t *service, msg_t *msg)
  ******************************************************************************/
 static void App_3_MsgHandler(service_t *service, msg_t *msg)
 {
-    // Save last message
-    default_sc.App_3.last_rx_msg->header.config      = msg->header.config;
-    default_sc.App_3.last_rx_msg->header.source      = msg->header.source;
-    default_sc.App_3.last_rx_msg->header.target      = msg->header.target;
-    default_sc.App_3.last_rx_msg->header.target_mode = msg->header.target_mode;
-    default_sc.App_3.last_rx_msg->header.cmd         = msg->header.cmd;
-    default_sc.App_3.last_rx_msg->header.size        = msg->header.size;
-    for (uint16_t i = 0; i < msg->header.size; i++)
-    {
-        default_sc.App_3.last_rx_msg->data[i] = msg->data[i];
-    }
-
-    if (msg->header.config == TIMESTAMP_PROTOCOL)
-    {
-        for (uint16_t i = 0; i < sizeof(time_luos_t); i++)
-        {
-            default_sc.App_3.last_rx_msg->data[msg->header.size + i] = msg->data[msg->header.size + i];
-        }
-    }
+    memcpy(&default_sc.App_3.last_rx_msg, msg, sizeof(msg_t));
 }
