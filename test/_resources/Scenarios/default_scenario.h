@@ -6,10 +6,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define DUMMY_SERVICE_NUMBER           3
-#define DUMMY_STREAMING_CHANNEL_NUMBER 3
-#define STREAM_BUFFER_SIZE             1024
-
 typedef struct
 {
     service_t *app;
@@ -29,16 +25,9 @@ typedef enum
 } default_scenario_cmd_t;
 
 /*******************************************************************************
- * Variables
- ******************************************************************************/
-
-/*******************************************************************************
  * Function
  ******************************************************************************/
 void Reset_Context(void);
 void Init_Context(void);
-void App_1_Loop(void);
-void App_2_Loop(void);
-void App_3_Loop(void);
 
 #endif // DEFAULT_SCENARIO_H

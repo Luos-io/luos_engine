@@ -1,6 +1,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <default_scenario.h>
+#define STREAM_BUFFER_SIZE 1024
 
 extern default_scenario_t default_sc;
 

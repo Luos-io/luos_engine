@@ -5,27 +5,16 @@
  * @version 1.0.0
  ******************************************************************************/
 #include <stdio.h>
-#include "context.h"
 #include "default_scenario.h"
-#include "unit_test.h"
-
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-#define LUOS_TASK_NUMBER 3
-#define TX_TASK_NUMBER   3
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-
 default_scenario_t default_sc;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-extern void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_t *concerned_msg);
-
 static void Detection(service_t *service);
 static void App_1_MsgHandler(service_t *service, msg_t *msg);
 static void App_2_MsgHandler(service_t *service, msg_t *msg);
@@ -90,33 +79,7 @@ static void Detection(service_t *service)
 
     RTFilter_Reset(&result);
     printf("[INFO] %d services are active\n", result.result_nbr);
-    TEST_ASSERT_EQUAL(DUMMY_SERVICE_NUMBER, result.result_nbr);
-}
-/******************************************************************************
- * @brief Loop Service App_1
- * @param None
- * @return None
- ******************************************************************************/
-void App_1_Loop(void)
-{
-}
-
-/******************************************************************************
- * @brief Loop Service App_2
- * @param None
- * @return None
- ******************************************************************************/
-void App_2_Loop(void)
-{
-}
-
-/******************************************************************************
- * @brief Loop Service App_3
- * @param None
- * @return None
- ******************************************************************************/
-void App_3_Loop(void)
-{
+    TEST_ASSERT_EQUAL(3, result.result_nbr);
 }
 
 /******************************************************************************
