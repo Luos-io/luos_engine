@@ -60,7 +60,6 @@ void NEW_TEST_CASE(char *title);
 void NEW_STEP(char *title);
 void RUN(const char *name, void (*f)(void));
 void NEW_STEP_IN_LOOP(char message[], uint32_t index);
-void UNIT_TEST_ASSERT(char *file, uint32_t line);
 void setUp(void);
 void tearDown(void);
 

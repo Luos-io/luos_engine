@@ -181,7 +181,7 @@ void ASSERT_ACTIVATION(uint8_t activation)
  * @param line number
  * @return None
  ******************************************************************************/
-void UNIT_TEST_ASSERT(char *file, uint32_t line)
+void Luos_assert(char *file, uint32_t line)
 {
     msg_t msg;
 
