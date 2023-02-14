@@ -46,8 +46,8 @@ void unittest_Robus_IDMaskCalculation()
     NEW_TEST_CASE("Limit 4096");
     {
         Robus_MaskInit();
-        Robus_IDMaskCalculation(4096 - SERVICE_NUMBER, SERVICE_NUMBER);
-        TEST_ASSERT_EQUAL(511, ctx.IDShiftMask);
+        Robus_IDMaskCalculation(4096 - MAX_SERVICE_NUMBER, SERVICE_NUMBER);
+        TEST_ASSERT_EQUAL(508, ctx.IDShiftMask);
     }
 
     NEW_TEST_CASE("Limit 0");
