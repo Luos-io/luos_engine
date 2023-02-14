@@ -11,7 +11,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-ut_luos_assert_t ut_assert = {.state = 0, .enable = 1};
+bool ut_assert = false;
 
 /*******************************************************************************
  * Variables
@@ -108,43 +108,9 @@ void NEW_STEP_IN_LOOP(char title[], uint32_t index)
  ******************************************************************************/
 bool IS_ASSERT(void)
 {
-    if ((ut_assert.enable == 1) && (ut_assert.state == 1))
-    {
-        ut_assert.state = 0;
-
-#ifdef UNIT_TEST_DEBUG
-        uint32_t line = (ut_assert.msg.data[0]);
-        if (ut_assert.line_size > 3)
-        {
-            line += (ut_assert.msg.data[2] << 4) + (ut_assert.msg.data[1] << 8) + (ut_assert.msg.data[3] << 12);
-        }
-        else if (ut_assert.line_size > 2)
-        {
-            line += (ut_assert.msg.data[2] << 4) + (ut_assert.msg.data[1] << 8);
-        }
-        else if (ut_assert.line_size > 1)
-        {
-            line += (ut_assert.msg.data[2] << 4);
-        }
-
-        printf("\n*\t[INFO] Assert message received\t");
-        printf("- Line : ");
-        printf("%d - ", line);
-        printf("\t- File : ");
-        for (uint32_t i = 0; i < ut_assert.file_size; i++)
-        {
-            printf("%c", ut_assert.msg.data[i + ut_assert.line_size]);
-        }
-        printf("\n");
-#endif
-
-        return true;
-    }
-    else
-    {
-        ut_assert.state = 0;
-        return false;
-    }
+    bool ret_val = ut_assert;
+    ut_assert    = false;
+    return ret_val;
 }
 
 /******************************************************************************
@@ -154,25 +120,7 @@ bool IS_ASSERT(void)
  ******************************************************************************/
 void RESET_ASSERT(void)
 {
-    ut_assert.state = 0;
-}
-
-/******************************************************************************
- * @brief Assert activation or desactivation
- * @param activation : Set to 1 to activate asserts
- * @return None
- ******************************************************************************/
-void ASSERT_ACTIVATION(uint8_t activation)
-{
-    if (activation)
-    {
-        ut_assert.enable = 1;
-    }
-    else
-    {
-        ut_assert.enable = 0;
-    }
-    RESET_ASSERT();
+    ut_assert = false;
 }
 
 /******************************************************************************
@@ -181,21 +129,13 @@ void ASSERT_ACTIVATION(uint8_t activation)
  * @param line number
  * @return None
  ******************************************************************************/
-void UNIT_TEST_ASSERT(char *file, uint32_t line)
+void Luos_assert(char *file, uint32_t line)
 {
-    msg_t msg;
-
-    ut_assert.state     = 1;
-    ut_assert.line_size = sizeof(line);
-    ut_assert.file_size = strlen(file);
-
-    msg.header.target_mode = BROADCAST;
-    msg.header.target      = BROADCAST_VAL;
-    msg.header.cmd         = ASSERT;
-    msg.header.size        = sizeof(line) + strlen(file);
-    memcpy(msg.data, &line, sizeof(line));
-    memcpy(&msg.data[sizeof(line)], file, strlen(file));
-    ut_assert.msg = msg;
+#ifdef UNIT_TEST_DEBUG
+    printf("\n*\t[INFO] Assert message received\n");
+    printf("\t- Line : %d\n\t- File : %s\n", line, file);
+#endif
+    ut_assert = true;
     // This is the THROW of the TRY CATCH
     if (try_state)
     {

@@ -1065,8 +1065,6 @@ void unittest_ClearLuosTask(void)
 
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
 
-        ASSERT_ACTIVATION(0);
-
         NEW_STEP("Check Luos Task is cleared in all cases");
         for (uint16_t task_id = 0; task_id < MAX_MSG_NB; task_id++)
         {
@@ -1112,6 +1110,5 @@ void unittest_ClearLuosTask(void)
                 }
             }
         }
-        ASSERT_ACTIVATION(1);
     }
 }

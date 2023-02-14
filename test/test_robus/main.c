@@ -46,14 +46,18 @@ void unittest_Robus_IDMaskCalculation()
     NEW_TEST_CASE("Limit 4096");
     {
         Robus_MaskInit();
-        Robus_IDMaskCalculation(4096 - SERVICE_NUMBER, SERVICE_NUMBER);
-        TEST_ASSERT_EQUAL(511, ctx.IDShiftMask);
+        Robus_IDMaskCalculation(4096 - MAX_SERVICE_NUMBER, SERVICE_NUMBER);
+        TEST_ASSERT_EQUAL(508, ctx.IDShiftMask);
     }
 
     NEW_TEST_CASE("Limit 0");
     {
+        RESET_ASSERT();
         Robus_MaskInit();
-        Robus_IDMaskCalculation(0, SERVICE_NUMBER);
+        TRY
+        {
+            Robus_IDMaskCalculation(0, SERVICE_NUMBER);
+        }
         TEST_ASSERT_TRUE(IS_ASSERT());
         RESET_ASSERT();
     }
@@ -63,7 +67,6 @@ void unittest_Robus_TopicSubscribe(void)
 {
     NEW_TEST_CASE("Normal Add to node topic list");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -80,7 +83,6 @@ void unittest_Robus_TopicSubscribe(void)
     }
     NEW_TEST_CASE("Assert when adding last topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -89,14 +91,14 @@ void unittest_Robus_TopicSubscribe(void)
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
         TEST_ASSERT_FALSE(IS_ASSERT());
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
+        TRY
+        {
+            Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
+        }
         TEST_ASSERT_TRUE(IS_ASSERT());
-
-        RESET_ASSERT();
     }
     NEW_TEST_CASE("Add same topic multiple times");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -120,7 +122,6 @@ void unittest_Robus_TopicUnsubscribe(void)
 {
     NEW_TEST_CASE("Remove from an empty list");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -129,7 +130,6 @@ void unittest_Robus_TopicUnsubscribe(void)
     }
     NEW_TEST_CASE("Normal Remove from topic list");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -160,7 +160,6 @@ void unittest_Robus_TopicUnsubscribe(void)
     }
     NEW_TEST_CASE("Demand to remove last topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC - 1);
@@ -174,7 +173,6 @@ void unittest_Robus_TopicUnsubscribe(void)
     }
     NEW_TEST_CASE("Remove multiple times same topic");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
@@ -223,7 +221,6 @@ void unittest_Robus_TopicUnsubscribe(void)
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Big data reception
     UNIT_TEST_RUN(unittest_Robus_IDMaskCalculation);
