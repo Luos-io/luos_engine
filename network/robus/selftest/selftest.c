@@ -69,15 +69,15 @@ result_t selftest_com(void)
 
     Luos_SendMsg(0, &msg);
 
-    uint32_t tickstart = LuosHAL_GetSystick();
+    uint32_t tickstart = Luos_GetSystick();
     while (!rx_flag)
     {
-        if ((LuosHAL_GetSystick() - tickstart) > 2000)
+        if ((Luos_GetSystick() - tickstart) > 2000)
         {
             return KO;
         }
     }
-    while ((LuosHAL_GetSystick() - tickstart) < 2000)
+    while ((Luos_GetSystick() - tickstart) < 2000)
         ;
 
     if (ctx.tx.lock == true)
@@ -95,13 +95,13 @@ result_t selftest_com(void)
  ******************************************************************************/
 result_t selftest_ptp(void)
 {
-    uint32_t start_tick = LuosHAL_GetSystick();
+    uint32_t start_tick = Luos_GetSystick();
 
     RobusHAL_SetPTPDefaultState(0);
     RobusHAL_SetPTPDefaultState(1);
     RobusHAL_PushPTP(0);
 
-    while (LuosHAL_GetSystick() - start_tick < 2)
+    while (Luos_GetSystick() - start_tick < 2)
         ;
     RobusHAL_SetPTPDefaultState(0);
     // Test  pinout and IRQ
@@ -114,7 +114,7 @@ result_t selftest_ptp(void)
     RobusHAL_SetPTPDefaultState(1);
     RobusHAL_PushPTP(1);
 
-    while (LuosHAL_GetSystick() - start_tick < 3)
+    while (Luos_GetSystick() - start_tick < 3)
         ;
     RobusHAL_SetPTPDefaultState(1);
     // Test  pinout and IRQ
