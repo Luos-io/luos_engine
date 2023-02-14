@@ -15,8 +15,8 @@ defaults:
     shell: bash
 
 jobs:
-  unit-tests:
-    name: Unit tests
+  tests-run:
+    name: Tests run
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -43,6 +43,13 @@ jobs:
 
           # Run Unit tests
           platformio test -vvv
+
+  unit-tests:
+    name: Unit tests
+    needs: tests-run
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Tests succeed!"
 
   code-format:
     name: Code format
