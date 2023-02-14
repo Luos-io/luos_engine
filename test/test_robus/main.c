@@ -91,10 +91,11 @@ void unittest_Robus_TopicSubscribe(void)
         Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
         TEST_ASSERT_FALSE(IS_ASSERT());
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
+        TRY
+        {
+            Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
+        }
         TEST_ASSERT_TRUE(IS_ASSERT());
-
-        RESET_ASSERT();
     }
     NEW_TEST_CASE("Add same topic multiple times");
     {
