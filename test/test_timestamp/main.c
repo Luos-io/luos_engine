@@ -85,7 +85,6 @@ void unittest_Timestamp()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Timestamp function
     UNIT_TEST_RUN(unittest_Timestamp);

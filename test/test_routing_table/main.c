@@ -273,7 +273,6 @@ void unittest_RTFilter_Alias()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Streaming functions
     UNIT_TEST_RUN(unittest_RTFilter_Reset);

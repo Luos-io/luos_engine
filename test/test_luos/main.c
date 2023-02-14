@@ -215,7 +215,6 @@ void unittest_Luos_ReceiveData()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Big data reception
     UNIT_TEST_RUN(unittest_Luos_ReceiveData);

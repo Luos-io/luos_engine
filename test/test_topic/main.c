@@ -123,7 +123,6 @@ void unittest_Topic_Unsubscribe(void)
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     UNIT_TEST_RUN(unittest_Topic_IsTopicSubscribed);
     UNIT_TEST_RUN(unittest_Topic_Subscribe);
