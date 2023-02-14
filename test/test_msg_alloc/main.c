@@ -6,8 +6,6 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
-    ASSERT_ACTIVATION(1);
-
     // Static functions
     UNIT_TEST_RUN(unittest_DoWeHaveSpace);
     UNIT_TEST_RUN(unittest_CheckMsgSpace);

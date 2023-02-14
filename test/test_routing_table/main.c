@@ -10,7 +10,6 @@ void unittest_RTFilter_Reset(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -44,7 +43,6 @@ void unittest_RTFilter_InitCheck(void)
 {
     NEW_TEST_CASE("Test the result initialization check function");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -70,7 +68,6 @@ void unittest_RTFilter_Type(void)
     {
         RESET_ASSERT();
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -85,7 +82,6 @@ void unittest_RTFilter_Type(void)
         RESET_ASSERT();
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -103,7 +99,6 @@ void unittest_RTFilter_Type(void)
     NEW_TEST_CASE("Add new service and retest");
     {
         uint32_t ExpectedServiceNB;
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -111,14 +106,21 @@ void unittest_RTFilter_Type(void)
         Luos_CreateService(0, STATE_TYPE, "mycustom_service", revision);
 
         Luos_Detect(default_sc.App_1.app);
-        Luos_Loop();
+        do
+        {
+            Luos_Loop();
+        } while (!Luos_IsNodeDetected());
         //  Init variables
-        ExpectedServiceNB = 3;
         search_result_t result;
-        // Add samples
+
+        NEW_STEP("Verify that we have the 4 services");
+        RTFilter_Reset(&result);
+        ExpectedServiceNB = 4;
+        TEST_ASSERT_EQUAL(ExpectedServiceNB, result.result_nbr);
 
         NEW_STEP("Verify that we have the 3 VOID_TYPE services");
         RTFilter_Type(RTFilter_Reset(&result), VOID_TYPE);
+        ExpectedServiceNB = 3;
         TEST_ASSERT_EQUAL(ExpectedServiceNB, result.result_nbr);
 
         NEW_STEP("Verify that we have the STATE_TYPE service");
@@ -139,7 +141,6 @@ void unittest_RTFilter_Node(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -164,7 +165,6 @@ void unittest_RTFilter_ID(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variables
@@ -197,7 +197,6 @@ void unittest_RTFilter_Service(void)
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         ExpectedServiceNB = 1;
@@ -225,7 +224,6 @@ void unittest_RTFilter_Alias()
     {
         uint32_t ExpectedServiceNB;
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -233,7 +231,10 @@ void unittest_RTFilter_Alias()
         Luos_CreateService(0, STATE_TYPE, "Custom_App", revision);
 
         Luos_Detect(default_sc.App_1.app);
-        Luos_Loop();
+        do
+        {
+            Luos_Loop();
+        } while (!Luos_IsNodeDetected());
         //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;
@@ -272,7 +273,6 @@ void unittest_RTFilter_Alias()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Streaming functions
     UNIT_TEST_RUN(unittest_RTFilter_Reset);

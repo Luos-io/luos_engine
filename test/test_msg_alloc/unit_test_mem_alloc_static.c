@@ -298,7 +298,7 @@ void unittest_BufferAvailableSpaceComputation(void)
             //---------------
             current_msg         = (msg_t *)&msg_buffer[i];
             data_end_estimation = (uint8_t *)&msg_buffer[i + 1];
-            for (uint8_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
+            for (uint32_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
             {
                 // Test is launched only if "data_end_estimation" doesn't overflows "msg_buffer" size
                 if (data_end_estimation < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
@@ -532,8 +532,8 @@ void unittest_ValidDataIntegrity(void)
         //
 
         uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
-        mem_clear_needed = 0;
-        copy_task_pointer == NULL;
+        mem_clear_needed  = 0;
+        copy_task_pointer = NULL;
 
         memset((void *)&msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
         memset((void *)&expected_msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
@@ -750,8 +750,8 @@ void unittest_ClearMsgSpace(void)
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
         NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, luos_tasks_stack_id);
-        NEW_STEP("Check that 8 messages has been dropped");
-        TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
+        NEW_STEP("Check that MAX_MSG_NB - 2 messages has been dropped");
+        TEST_ASSERT_EQUAL(MAX_MSG_NB - 2, memory_stats.msg_drop_number);
         NEW_STEP("Check Luos Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
@@ -834,8 +834,8 @@ void unittest_ClearMsgSpace(void)
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
         NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, msg_tasks_stack_id);
-        NEW_STEP("Check that 8 messages has been dropped");
-        TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
+        NEW_STEP("Check that MAX_MSG_NB - 2 messages has been dropped");
+        TEST_ASSERT_EQUAL(MAX_MSG_NB - 2, memory_stats.msg_drop_number);
         NEW_STEP("Check Message Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
@@ -918,8 +918,8 @@ void unittest_ClearMsgSpace(void)
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
         NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP("Check that 8 messages has been dropped");
-        TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
+        NEW_STEP("Check that MAX_MSG_NB - 2 messages has been dropped");
+        TEST_ASSERT_EQUAL(MAX_MSG_NB - 2, memory_stats.msg_drop_number);
         NEW_STEP("Check Tx Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
@@ -1065,8 +1065,6 @@ void unittest_ClearLuosTask(void)
 
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
 
-        ASSERT_ACTIVATION(0);
-
         NEW_STEP("Check Luos Task is cleared in all cases");
         for (uint16_t task_id = 0; task_id < MAX_MSG_NB; task_id++)
         {
@@ -1112,6 +1110,5 @@ void unittest_ClearLuosTask(void)
                 }
             }
         }
-        ASSERT_ACTIVATION(1);
     }
 }

@@ -7,11 +7,11 @@ extern default_scenario_t default_sc;
 
 static void MessageHandler(service_t *service, msg_t *msg)
 {
-    default_sc.App_1.last_rx_msg->header.config = msg->header.config;
-    default_sc.App_1.last_rx_msg->header.size   = msg->header.size;
-    for (uint16_t i = 0; i < default_sc.App_1.last_rx_msg->header.size; i++)
+    default_sc.App_1.last_rx_msg.header.config = msg->header.config;
+    default_sc.App_1.last_rx_msg.header.size   = msg->header.size;
+    for (uint16_t i = 0; i < default_sc.App_1.last_rx_msg.header.size; i++)
     {
-        default_sc.App_1.last_rx_msg->data[i] = msg->data[i];
+        default_sc.App_1.last_rx_msg.data[i] = msg->data[i];
     }
 }
 
@@ -20,7 +20,6 @@ void unittest_Timestamp()
     NEW_TEST_CASE("Timestamp measurement");
     {
         NEW_STEP("Save events");
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Luos_Loop();
@@ -44,7 +43,6 @@ void unittest_Timestamp()
 
         NEW_STEP("Transmit timestamps");
         // Init scenario context
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         Luos_Loop();
@@ -63,7 +61,7 @@ void unittest_Timestamp()
 
         // Get the message received
         msg_t *rx_msg;
-        rx_msg = default_sc.App_2.last_rx_msg;
+        rx_msg = &default_sc.App_2.last_rx_msg;
         uint64_t low_level_rx_timestamp;
         // Get back the 1st timestamp
         time_luos_t rx_event_a_timestamp = Timestamp_GetTimestamp(rx_msg);
@@ -73,7 +71,7 @@ void unittest_Timestamp()
         Luos_Loop();
 
         // Get the message received
-        rx_msg = default_sc.App_2.last_rx_msg;
+        rx_msg = &default_sc.App_2.last_rx_msg;
         // Get back the 2nd timestamp
         time_luos_t rx_event_b_timestamp = Timestamp_GetTimestamp(rx_msg);
 
@@ -87,7 +85,6 @@ void unittest_Timestamp()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Timestamp function
     UNIT_TEST_RUN(unittest_Timestamp);

@@ -30,6 +30,7 @@ __attribute__((weak)) void node_assert(char *file, uint32_t line)
     return;
 }
 
+#ifndef UNIT_TEST
 /******************************************************************************
  * @brief Luos assertion management
  * @param file : File name as a string
@@ -37,7 +38,7 @@ __attribute__((weak)) void node_assert(char *file, uint32_t line)
  * @return None
  *  warning : this function can be redefined only for mock testing purpose
  ******************************************************************************/
-_CRITICAL _WEAKED void Luos_assert(char *file, uint32_t line)
+_CRITICAL void Luos_assert(char *file, uint32_t line)
 {
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.
@@ -57,15 +58,16 @@ _CRITICAL _WEAKED void Luos_assert(char *file, uint32_t line)
     // wait for the transmission to finish before killing IRQ
     while (MsgAlloc_TxAllComplete() == FAILED)
         ;
-#ifdef WITH_BOOTLOADER
+    #ifdef WITH_BOOTLOADER
     // We're in a failed app,
     // Restart this node in bootloader mode instead of don't do anything
     // We will come back on this app after a reboot.
     // Set bootloader mode, save node ID and reboot
     LuosBootloader_JumpToBootloader();
-#endif
+    #endif
     LuosHAL_SetIrqState(false);
     while (1)
     {
     }
 }
+#endif

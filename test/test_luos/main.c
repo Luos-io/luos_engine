@@ -1,6 +1,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <default_scenario.h>
+#define STREAM_BUFFER_SIZE 1024
 
 extern default_scenario_t default_sc;
 
@@ -9,46 +10,61 @@ void unittest_Streaming_SendStreamingSize()
     NEW_TEST_CASE("Sample size sent to streaming < Available samples");
     {
         uint32_t ExpectedMaxSize;
+        msg_t tx_msg;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variable
         ExpectedMaxSize = 1;
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
 
         NEW_STEP("Verify 1 byte is received when stream channels size is 2");
-        Luos_SendStreamingSize(default_sc.App_1.app, default_sc.App_1.tx_msg, default_sc.streamChannel1, 1);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 1);
         Luos_Loop();
         // Verify
-        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg->header.size);
+        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
     }
 
     NEW_TEST_CASE("Sample size sent to streaming = available samples");
     {
         uint32_t ExpectedMaxSize;
+        msg_t tx_msg;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         //  Init variable
         ExpectedMaxSize = 2;
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
 
         NEW_STEP("Verify 2 byte are received when stream channels size is 2");
-        Luos_SendStreamingSize(default_sc.App_1.app, default_sc.App_1.tx_msg, default_sc.streamChannel1, 2);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 2);
         Luos_Loop();
         // Verify
-        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg->header.size);
+        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
     }
 
     NEW_TEST_CASE("Sample size sent to streaming > available samples");
     {
         uint32_t ExpectedMaxSize;
+        msg_t tx_msg;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -57,18 +73,23 @@ void unittest_Streaming_SendStreamingSize()
 
         NEW_STEP("Verify 2 byte are received when we try to send 3 bytes");
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
-        Luos_SendStreamingSize(default_sc.App_1.app, default_sc.App_1.tx_msg, default_sc.streamChannel1, 3);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 3);
         Luos_Loop();
         // Verify
-        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg->header.size);
+        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
     }
 
     NEW_TEST_CASE("Limit test");
     {
         uint32_t ExpectedMaxSize;
+        msg_t tx_msg;
+        tx_msg.header.target                      = 2;
+        tx_msg.header.target_mode                 = SERVICEIDACK;
+        tx_msg.header.cmd                         = DEFAULT_CMD;
+        uint8_t stream_Buffer[STREAM_BUFFER_SIZE] = {0};
+        streaming_channel_t streamChannel         = Stream_CreateStreamingChannel(stream_Buffer, STREAM_BUFFER_SIZE, 1);
 
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
 
@@ -77,28 +98,28 @@ void unittest_Streaming_SendStreamingSize()
         NEW_STEP("Try to send 0 byte : it does nothing");
 
         //  Init variable new step
-        ExpectedMaxSize                        = 0;
-        default_sc.App_1.tx_msg->header.target = 3;
+        ExpectedMaxSize      = 0;
+        tx_msg.header.target = 3;
 
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 2);
-        Luos_SendStreamingSize(default_sc.App_1.app, default_sc.App_1.tx_msg, default_sc.streamChannel1, 0);
+        Stream_AddAvailableSampleNB(&streamChannel, 2);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 0);
         Luos_Loop();
         // Verify
-        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_3.last_rx_msg->header.size);
+        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_3.last_rx_msg.header.size);
 
         NEW_STEP("try to send 128 byte the max size of a msg");
 
         //  Init variable
-        ExpectedMaxSize                        = 128;
-        default_sc.App_1.tx_msg->header.target = 2;
+        ExpectedMaxSize      = 128;
+        tx_msg.header.target = 2;
 
         // Add samples
-        Stream_AddAvailableSampleNB(default_sc.streamChannel1, 128);
-        Luos_SendStreamingSize(default_sc.App_1.app, default_sc.App_1.tx_msg, default_sc.streamChannel1, 128);
+        Stream_AddAvailableSampleNB(&streamChannel, 128);
+        Luos_SendStreamingSize(default_sc.App_1.app, &tx_msg, &streamChannel, 128);
         Luos_Loop();
         // Verify
-        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg->header.size);
+        TEST_ASSERT_EQUAL(ExpectedMaxSize, default_sc.App_2.last_rx_msg.header.size);
     }
 }
 
@@ -106,7 +127,6 @@ void unittest_Luos_ReceiveData()
 {
     NEW_TEST_CASE("Try to send a void message argument");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision   = {.major = 1, .minor = 0, .build = 0};
@@ -121,7 +141,6 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Try to send a void table argument");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -135,18 +154,16 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Try to send a shity service argument");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         msg_t msg;
         uint32_t bin_data[64] = {0xDEADBEEF};
         NEW_STEP("Verify if we return an error");
-        TEST_ASSERT_EQUAL(Luos_ReceiveData(10, &msg, bin_data), -1);
+        TEST_ASSERT_EQUAL(Luos_ReceiveData((service_t *)10, &msg, bin_data), -1);
     }
 
     NEW_TEST_CASE("Test the regular usage");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -173,7 +190,6 @@ void unittest_Luos_ReceiveData()
 
     NEW_TEST_CASE("Try to send a void service argument to reset the data reception");
     {
-        Reset_Context();
         //  Init default scenario context
         Init_Context();
         revision_t revision = {.major = 1, .minor = 0, .build = 0};
@@ -199,7 +215,6 @@ void unittest_Luos_ReceiveData()
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    ASSERT_ACTIVATION(1);
 
     // Big data reception
     UNIT_TEST_RUN(unittest_Luos_ReceiveData);

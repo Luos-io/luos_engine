@@ -218,7 +218,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
  * @param intro_msg : into route table message
  * @return None
  ******************************************************************************/
-_WEAKED bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
+bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
 {
     const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;
@@ -499,7 +499,7 @@ uint16_t RoutingTB_GetLastEntry(void)
 /******************************************************************************
  * @brief Check if result is in routing table
  * @param result : Pointer to search result structure
- * @return SUCCEED : If the result address is available, else FAILED 
+ * @return SUCCEED : If the result address is available, else FAILED
  ******************************************************************************/
 
 error_return_t RTFilter_InitCheck(search_result_t *result)
