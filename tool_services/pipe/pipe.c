@@ -7,6 +7,7 @@
 #include "pipe.h"
 #include "_pipe.h"
 #include "pipe_com.h"
+#include <stdio.h>
 
 /*******************************************************************************
  * Definitions
@@ -104,6 +105,18 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
         rx_StreamChannel.sample_ptr = rx_StreamChannel.data_ptr;
         PipeCom_Init();
     }
+}
+
+// This function is directly called by Luos_utils in case of curent node assert. DO NOT RENAME IT
+void node_assert(char *file, uint32_t line)
+{
+    // manage self crashing scenario
+    char json[512];
+    sprintf(json, "{\"assert\":{\"node_id\":1,\"file\":\"%s\",\"line\":%d}}\n", file, (unsigned int)line);
+    Stream_PutSample(&tx_StreamChannel, json, strlen(json));
+
+    // Send the message
+    PipeCom_Send();
 }
 /******************************************************************************
  * @brief get TX (Luos to outside) StreamChannel
