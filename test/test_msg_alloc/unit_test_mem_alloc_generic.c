@@ -31,7 +31,6 @@ extern volatile uint8_t *data_end_estimation;
 extern volatile msg_t *oldest_msg;
 extern volatile msg_t *used_msg;
 extern volatile uint8_t mem_clear_needed;
-extern volatile header_t *copy_task_pointer;
 extern volatile msg_t *msg_tasks[MAX_MSG_NB];
 extern volatile uint16_t msg_tasks_stack_id;
 extern volatile luos_task_t luos_tasks[MAX_MSG_NB];
@@ -244,18 +243,17 @@ void unittest_MsgAlloc_ValidHeader()
         //
         //        msg_buffer ending state :
         //        +-------------------------------------------------------------+
-        //        |------------------------------------|  Header  | Datas to be received |
-        //        +----------^-------------------------^------------------------+
-        //        |          |                         |
-        //     current_msg  data_ptr             copy_task_pointer
+        //        ||  Header  | Datas to be received |--------------------------
+        //        +----------^--------------------------------------------------+
+        //        |          |
+        //     current_msg  data_ptr
         //
 
-        uint8_t valid                        = true;
-        uint16_t data_size                   = DATA_SIZE;
-        current_msg                          = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - 1];
-        header_t *expected_copy_task_pointer = (header_t *)current_msg;
-        uint8_t *expected_data_ptr           = (uint8_t *)&msg_buffer[0] + sizeof(header_t);
-        uint8_t *expected_data_end           = expected_data_ptr + data_size + CRC_SIZE;
+        uint8_t valid              = true;
+        uint16_t data_size         = DATA_SIZE;
+        current_msg                = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - 1];
+        uint8_t *expected_data_ptr = (uint8_t *)&msg_buffer[0] + sizeof(header_t);
+        uint8_t *expected_data_end = expected_data_ptr + data_size + CRC_SIZE;
 
         MsgAlloc_ValidHeader(valid, data_size);
         NEW_STEP("Check mem cleared flag is raised");
@@ -264,8 +262,6 @@ void unittest_MsgAlloc_ValidHeader()
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
         NEW_STEP("Check \"data end estimation\" has been computed");
         TEST_ASSERT_EQUAL(expected_data_end, data_end_estimation);
-        NEW_STEP("Check \"copy task pointer\" points to message to copy");
-        TEST_ASSERT_EQUAL(expected_copy_task_pointer, copy_task_pointer);
     }
 
     NEW_TEST_CASE("There is enough space : save the end position and raise the clear flag");
@@ -405,14 +401,11 @@ void unittest_MsgAlloc_InvalidMsg()
         TEST_ASSERT_EQUAL(current_msg, data_ptr);
         NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(data_end_estimation, ((uint8_t *)current_msg + DATA_END));
-        NEW_STEP("Check no copy is needed : \"copy task pointer\" is reseted");
-        TEST_ASSERT_NULL(copy_task_pointer);
 
         // Init variables
         //---------------
-        current_msg       = (msg_t *)&msg_buffer[100];
-        data_ptr          = &msg_buffer[110];
-        copy_task_pointer = (header_t *)data_ptr;
+        current_msg = (msg_t *)&msg_buffer[100];
+        data_ptr    = &msg_buffer[110];
 
         // Call function
         //---------------
@@ -424,8 +417,6 @@ void unittest_MsgAlloc_InvalidMsg()
         TEST_ASSERT_EQUAL(current_msg, data_ptr);
         NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(data_end_estimation, ((uint8_t *)current_msg + DATA_END));
-        NEW_STEP("Check \"copy task pointer\" is not cleared");
-        TEST_ASSERT_NOT_NULL(copy_task_pointer);
     }
 
     NEW_TEST_CASE("Clean memory");
