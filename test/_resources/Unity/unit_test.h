@@ -9,7 +9,7 @@
 #include "robus_hal.h"
 #include "luos_engine.h"
 #include "luos_utils.h"
-#include "robus_struct.h"
+#include "io_struct.h"
 #include <setjmp.h>
 
 /*******************************************************************************

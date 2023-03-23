@@ -7,7 +7,7 @@
 #ifndef BOOTLOADER_H
 #define BOOTLOADER_H
 
-#include "robus_struct.h"
+#include "io_struct.h"
 
 /*******************************************************************************
  * Definitions

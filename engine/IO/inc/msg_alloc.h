@@ -7,7 +7,7 @@
 #ifndef _MSGALLOC_H_
 #define _MSGALLOC_H_
 
-#include "robus_struct.h"
+#include "io_struct.h"
 #include "stdint.h"
 
 /*******************************************************************************
