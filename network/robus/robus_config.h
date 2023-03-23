@@ -1,11 +1,11 @@
 /******************************************************************************
- * @file config
- * @brief config for luos library ans robus protocole
+ * @file robus_config config
+ * @brief config of the Robus protocol
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef _ROBUS_CONFIG_H_
+#define _ROBUS_CONFIG_H_
 
 /*******************************************************************************
  * Definitions
@@ -65,4 +65,4 @@
  * Function
  ******************************************************************************/
 
-#endif /* _CONFIG_H_ */
+#endif /* _ROBUS_CONFIG_H_ */

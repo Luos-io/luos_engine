@@ -45,7 +45,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <limits.h>
-#include "config.h"
+#include "robus_config.h"
 #include "msg_alloc.h"
 #include "luos_hal.h"
 #include "luos_utils.h"

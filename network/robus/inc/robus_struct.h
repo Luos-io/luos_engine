@@ -8,7 +8,7 @@
 #define _ROBUS_STRUCT_H_
 
 #include "stdint.h"
-#include "config.h"
+#include "robus_config.h"
 
 /*******************************************************************************
  * Definitions

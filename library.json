@@ -13,6 +13,7 @@
     "build": {
         "srcDir": "engine/core/src",
         "flags": [
+            "-I network/robus",
             "-I network/robus/inc",
             "-I network/robus/selftest",
             "-I engine",
