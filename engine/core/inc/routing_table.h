@@ -11,9 +11,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#ifndef MAX_RTB_ENTRY
-    #define MAX_RTB_ENTRY 40
-#endif
 
 typedef enum
 {
@@ -21,9 +18,6 @@ typedef enum
     SERVICE, // Contain a service informations
     NODE,    // Contain a node informations
 } entry_mode_t;
-/*******************************************************************************
- * Variables
- ******************************************************************************/
 
 /* This structure is used to receive or send messages between services in slave
  * and master mode.

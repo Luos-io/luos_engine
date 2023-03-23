@@ -21,6 +21,10 @@
     #define MAX_SERVICE_NUMBER 5
 #endif
 
+#ifndef MAX_RTB_ENTRY
+    #define MAX_RTB_ENTRY 40
+#endif
+
 #ifdef MAX_CONTAINER_NUMBER
     #error 'MAX_CONTAINER_NUMBER' is deprecated since luos_engine@2.0.0, replace it by 'MAX_SERVICE_NUMBER', see: www.github.com/Luos-io/luos_engine/releases/tag/2.0.0 for more information.
 #endif

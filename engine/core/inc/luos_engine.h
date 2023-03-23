@@ -64,37 +64,32 @@ void Luos_ServicesClear(void);
 // ***************** Messaging management *****************
 void Luos_Flush(void);
 
-// *** Timestamping
+// *** Timestamping management ***
 time_luos_t Luos_Timestamp(void);
 bool Luos_IsMsgTimstamped(msg_t *msg);
 time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
-
-// *** Send
-error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
 error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp);
+
+// *** Big data management ***
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
+int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
+
+// *** Streaming management ***
 void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
-error_return_t Luos_TxComplete(void);
-
-void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t target, uint16_t newid);
-
-// *** Receive
-error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg);
-error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **returned_msg);
-int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
-uint16_t Luos_NbrAvailableMsg(void);
-uint32_t Luos_GetSystick(void);
-error_return_t Luos_TxComplete(void);
-void Luos_ResetStatistic(void);
-bool Luos_IsNodeDetected(void);
-void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
-void Luos_SetVerboseMode(uint8_t mode);
-void Luos_SetFilterState(uint8_t state, service_t *service);
+
+// *** Pub/Sub management ***
 error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic);
 error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic);
-void Luos_Run(void);
-void Luos_Detect(service_t *service);
+
+// *** Basic transmission management ***
+error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
+error_return_t Luos_TxComplete(void);
+
+// *** Polling reception management ***
+error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg);
+error_return_t Luos_ReadFromService(service_t *service, int16_t id, msg_t **returned_msg);
+uint16_t Luos_NbrAvailableMsg(void);
 
 #endif /* LUOS_ENGINE_H */

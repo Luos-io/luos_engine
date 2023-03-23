@@ -996,26 +996,6 @@ error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t 
     return SUCCEED;
 }
 /******************************************************************************
- * @brief Set Id of a service trough the network
- * @param service : Service sending request
- * @param target_mode
- * @param target
- * @param newid : The new Id of service(s)
- * @return None
- ******************************************************************************/
-void Luos_SetExternId(service_t *service, target_mode_t target_mode, uint16_t target, uint16_t newid)
-{
-    msg_t msg;
-    msg.header.config      = BASE_PROTOCOL;
-    msg.header.target      = target;
-    msg.header.target_mode = target_mode;
-    msg.header.cmd         = WRITE_NODE_ID;
-    msg.header.size        = 2;
-    msg.data[1]            = newid;
-    msg.data[0]            = (newid << 8);
-    Robus_SendMsg(service->ll_service, &msg);
-}
-/******************************************************************************
  * @brief Return the number of messages available
  * @param None
  * @return The number of messages
