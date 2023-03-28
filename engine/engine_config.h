@@ -10,6 +10,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#define BOOT_TIMEOUT      1000
 #define DEFAULTID         0x00
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL     0x0FFF

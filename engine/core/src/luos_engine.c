@@ -14,17 +14,6 @@
 #include "_timestamp.h"
 
 /*******************************************************************************
- * Definitions
- ******************************************************************************/
-#define BOOT_TIMEOUT 1000
-
-typedef enum
-{
-    NODE_INIT,
-    NODE_RUN
-} node_state_t;
-
-/*******************************************************************************
  * Variables
  ******************************************************************************/
 revision_t luos_version = {.major = 3, .minor = 0, .build = 0};
@@ -1038,32 +1027,27 @@ void Luos_PackageLoop(void)
  ******************************************************************************/
 void Luos_Run(void)
 {
-    static node_state_t node_state = NODE_INIT;
+    static bool node_run = false;
 
-    switch (node_state)
+    if (!node_run)
     {
-        case NODE_INIT:
-            Luos_Init();
+        Luos_Init();
 #ifdef BOOTLOADER
-            LuosBootloader_Init();
+        LuosBootloader_Init();
 #else
-            Luos_PackageInit();
+        Luos_PackageInit();
 #endif
-            // go to run state after initialization
-            node_state = NODE_RUN;
-            break;
-        case NODE_RUN:
-            Luos_Loop();
+        // go to run state after initialization
+        node_run = true;
+    }
+    else
+    {
+        Luos_Loop();
 #ifdef BOOTLOADER
-            LuosBootloader_Loop();
+        LuosBootloader_Loop();
 #else
-            Luos_PackageLoop();
+        Luos_PackageLoop();
 #endif
-            break;
-        default:
-            Luos_Loop();
-            Luos_PackageLoop();
-            break;
     }
 }
 /******************************************************************************
