@@ -420,7 +420,6 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
  ******************************************************************************/
 static error_return_t Robus_MsgHandler(msg_t *input)
 {
-    uint32_t baudrate;
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
     ll_service_t *ll_service = Recep_GetConcernedLLService(&input->header);
@@ -483,14 +482,6 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             // Detect end of detection
             Robus_SetNodeDetected(DETECTION_OK);
             return FAILED;
-            break;
-        case SET_BAUDRATE:
-            // We have to wait the end of transmission of all the messages we have to transmit
-            while (MsgAlloc_TxAllComplete() == FAILED)
-                ;
-            memcpy(&baudrate, input->data, sizeof(uint32_t));
-            RobusHAL_ComInit(baudrate);
-            return SUCCEED;
             break;
         default:
             return FAILED;

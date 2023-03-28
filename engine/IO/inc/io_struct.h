@@ -154,7 +154,6 @@ typedef enum
     WRITE_NODE_ID,   /*!< Get and save a new given node ID. */
     START_DETECTION, /*!< Start a detection*/
     END_DETECTION,   /*!< Detect the end of a detection*/
-    SET_BAUDRATE,    /*!< Set Robus baudrate*/
     ASSERT,          /*!< Node Assert message (only broadcast with a source as a node */
 
     /*!< Compatibility area*/

@@ -188,7 +188,6 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
     {
         case WRITE_NODE_ID:
         case START_DETECTION:
-        case SET_BAUDRATE:
             // ERROR
             LUOS_ASSERT(0);
             break;
