@@ -23,10 +23,6 @@
 
 #define LUOS_RUN() Luos_Run();
 
-#ifndef _WEAKED
-    #define _WEAKED
-#endif
-
 /******************************************************************************
  * @struct general_stats_t
  * @brief format all datas to be sent trough msg
