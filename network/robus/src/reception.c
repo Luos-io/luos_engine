@@ -46,7 +46,7 @@
 #include <stdbool.h>
 #include "robus_hal.h"
 #include "luos_hal.h"
-#include "topic.h"
+#include "pub_sub.h"
 #include "transmission.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
@@ -579,7 +579,7 @@ static inline void Recep_DoubleAlloc(msg_t *msg)
                 }
                 break;
             case (TOPIC):
-                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[idx], msg->header.target) == false)
+                if (PubSub_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[idx], msg->header.target) == false)
                 {
                     // store the message if it is not so that we dont have double messages in memory
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
@@ -640,7 +640,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
         case TOPIC:
             for (i = 0; i < ctx.ll_service_number; i++)
             {
-                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
+                if (PubSub_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
                 {
                     // TODO manage multiple slave concerned
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);

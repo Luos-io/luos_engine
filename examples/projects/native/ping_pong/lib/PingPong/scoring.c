@@ -14,7 +14,7 @@ score_table_t score_table;
 
 void score_init(service_t *player, search_result_t *player_list)
 {
-    Luos_TopicSubscribe(player, SCORE_TOPIC);
+    Luos_Subscribe(player, SCORE_TOPIC);
     memset(scores, 0, sizeof(scores));
     score_table.player_nb = player_list->result_nbr;
     score_table.scores    = scores;

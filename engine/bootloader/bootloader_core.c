@@ -385,7 +385,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_READY:
             source_id            = input->header.source;
             bootloader_data_size = input->header.size - 2 * sizeof(char);
-            Luos_TopicSubscribe(0, (uint16_t)input->data[1]);
+            Luos_Subscribe(0, (uint16_t)input->data[1]);
             memcpy(bootloader_data, &(input->data[2]), bootloader_data_size);
 
             LuosHAL_SetMode((uint8_t)BOOT_MODE);
@@ -445,7 +445,7 @@ void LuosBootloader_MsgHandler(msg_t *input)
         case BOOTLOADER_APP_SAVED:
             // set load flag
             load_flag = true;
-            Luos_TopicUnsubscribe(0, input->header.target);
+            Luos_Unsubscribe(0, input->header.target);
             break;
 
         case BOOTLOADER_STOP:

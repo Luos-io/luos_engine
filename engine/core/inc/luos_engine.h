@@ -70,6 +70,10 @@ bool Luos_IsMsgTimstamped(msg_t *msg);
 time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
 error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp);
 
+// *** Pub/Sub management (in file `pub_sub.c`)***
+error_return_t Luos_Subscribe(service_t *service, uint16_t topic);
+error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic);
+
 // *** Big data management ***
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
 int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
@@ -79,9 +83,9 @@ void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *str
 void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 
-// *** Pub/Sub management ***
-error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic);
-error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic);
+// *** Pub/Sub management (in file `pub_sub.c`)***
+error_return_t PubSub_Subscribe(service_t *service, uint16_t topic);
+error_return_t PubSub_Unsubscribe(service_t *service, uint16_t topic);
 
 // *** Basic transmission management ***
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg);

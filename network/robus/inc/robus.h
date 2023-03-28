@@ -42,7 +42,5 @@ network_state_t Robus_IsNodeDetected(void);
 void Robus_SetFilterState(uint8_t state, ll_service_t *service);
 void Robus_SetVerboseMode(uint8_t mode);
 void Robus_MaskInit(void);
-error_return_t Robus_TopicSubscribe(ll_service_t *ll_service, uint16_t topic_id);
-error_return_t Robus_TopicUnsubscribe(ll_service_t *ll_service, uint16_t topic_id);
 
 #endif /* _ROBUS_H_ */

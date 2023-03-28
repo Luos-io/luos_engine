@@ -1203,31 +1203,3 @@ void Luos_Detect(service_t *service)
         Luos_SendMsg(service, &detect_msg);
     }
 }
-/******************************************************************************
- * @brief Subscribe to a new topic
- * @param service
- * @param topic
- * @return None
- ******************************************************************************/
-error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
-{
-    if (service == 0)
-    {
-        return Robus_TopicSubscribe(0, topic);
-    }
-    return Robus_TopicSubscribe(service->ll_service, topic);
-}
-/******************************************************************************
- * @brief Unsubscribe from a topic
- * @param service
- * @param topic
- * @return None
- ******************************************************************************/
-error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic)
-{
-    if (service == 0)
-    {
-        return Robus_TopicUnsubscribe(0, topic);
-    }
-    return Robus_TopicUnsubscribe(service->ll_service, topic);
-}
