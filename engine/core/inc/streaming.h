@@ -29,9 +29,6 @@ typedef struct
     void *data_ptr;        // Current pointer of data
     uint8_t data_size;     // Size granularity of the data contained on the ring buffer
 } streaming_channel_t;
-/*******************************************************************************
- * Variables
- ******************************************************************************/
 
 /*******************************************************************************
  * Function

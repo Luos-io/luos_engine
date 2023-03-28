@@ -1,6 +1,6 @@
 /******************************************************************************
- * @file services structure
- * @brief describs all the
+ * @file services structures
+ * @brief describe all the service related structures
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
@@ -13,9 +13,11 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-/* store informations about luos stats
+
+/******************************************************************************
+ * store informations about luos stats
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
     union
@@ -28,9 +30,10 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[sizeof(memory_stats_t) + 1]; /*!< streamable form. */
     };
 } luos_stats_t;
-/* This structure is used to create services version
+/******************************************************************************
+ * This structure is used to create services version
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
     union
@@ -44,9 +47,10 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[3]; /*!< streamable form. */
     };
 } revision_t;
-/* This structure is used to manage services statistic
+/******************************************************************************
+ * This structure is used to manage services statistic
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef struct __attribute__((__packed__)) service_stats_t
 {
     union
@@ -59,9 +63,27 @@ typedef struct __attribute__((__packed__)) service_stats_t
     };
 } service_stats_t;
 
-/* This structure is used to manage services timed auto update
+/******************************************************************************
+ * @struct general_stats_t
+ * @brief format all datas to be sent trough msg
+ ******************************************************************************/
+typedef struct __attribute__((__packed__))
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            luos_stats_t node_stat;
+            service_stats_t service_stat;
+        };
+        uint8_t unmap[sizeof(luos_stats_t) + sizeof(service_stats_t)]; /*!< streamable form. */
+    };
+} general_stats_t;
+
+/******************************************************************************
+ * This structure is used to manage services timed auto update
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef struct __attribute__((__packed__)) timed_update_t
 {
     uint32_t last_update;
@@ -69,9 +91,10 @@ typedef struct __attribute__((__packed__)) timed_update_t
     uint16_t target;
 } timed_update_t;
 
-/* This structure is used to manage read or write access
+/******************************************************************************
+ * This structure is used to manage read or write access
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef enum
 {
     READ_WRITE_ACCESS,
@@ -80,18 +103,20 @@ typedef enum
     NO_ACCESS
 } access_t;
 
-/* This structure is used to manage packages
+/******************************************************************************
+ * This structure is used to manage packages
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef struct
 {
     void (*Init)(void);
     void (*Loop)(void);
 } package_t;
 
-/* This structure is used to manage services
+/******************************************************************************
+ * This structure is used to manage services
  * please refer to the documentation
- */
+ ******************************************************************************/
 typedef struct __attribute__((__packed__)) service_t
 {
     ll_service_t *ll_service;
@@ -110,6 +135,10 @@ typedef struct __attribute__((__packed__)) service_t
 
 typedef void (*SERVICE_CB)(service_t *service, msg_t *msg);
 
+/******************************************************************************
+ * This enum list all CMD reserved to Luos
+ * please refer to the documentation
+ ******************************************************************************/
 typedef enum
 {
     // Luos specific registers
@@ -134,13 +163,5 @@ typedef enum
     // compatibility area
     LUOS_LAST_RESERVED_CMD = 42
 } reserved_luos_cmd_t;
-
-/*******************************************************************************
- * Variables
- ******************************************************************************/
-
-/*******************************************************************************
- * Function
- ******************************************************************************/
 
 #endif /*__SERVICE_STRUCT_H */

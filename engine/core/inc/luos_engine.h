@@ -21,23 +21,6 @@
 
 #define LUOS_RUN() Luos_Run();
 
-/******************************************************************************
- * @struct general_stats_t
- * @brief format all datas to be sent trough msg
- ******************************************************************************/
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            luos_stats_t node_stat;
-            service_stats_t service_stat;
-        };
-        uint8_t unmap[sizeof(luos_stats_t) + sizeof(service_stats_t)]; /*!< streamable form. */
-    };
-} general_stats_t;
-
 /*******************************************************************************
  * Function
  ******************************************************************************/
