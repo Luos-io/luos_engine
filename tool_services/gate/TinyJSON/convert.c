@@ -935,15 +935,6 @@ void Convert_ExcludedServiceData(service_t *service)
     // Send the message to pipe
     PipeLink_Send(service, json, strlen(json));
 }
-// This function is directly called by Luos_utils in case of curent node assert. DO NOT RENAME IT
-void node_assert(char *file, uint32_t line)
-{
-    // manage self crashing scenario
-    char json[512];
-    sprintf(json, "{\"assert\":{\"node_id\":1,\"file\":\"%s\",\"line\":%d}}\n", file, (unsigned int)line);
-    // Send the message to pipe
-    PipeLink_Send(0, json, strlen(json));
-}
 
 /*******************************************************************************
  * Luos routing table information to Json convertion
