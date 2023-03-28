@@ -36,10 +36,10 @@ void unittest_Timestamp()
         // Save event B
         event_b_timestamp = Timestamp_now();
         // check the time elapsed between the two events
-        time_luos_t time_elapsed = event_b_timestamp - event_a_timestamp;
+        time_luos_t time_elapsed = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(event_b_timestamp) - TimeOD_TimeTo_s(event_a_timestamp));
 
         // Verify
-        TEST_ASSERT_EQUAL(((TimeOD_TimeTo_s(time_elapsed) > TimeOD_TimeFrom_ms(1.15)) && (TimeOD_TimeTo_s(time_elapsed) < TimeOD_TimeFrom_ms(1.25))), true);
+        TEST_ASSERT_EQUAL(((TimeOD_TimeTo_ms(time_elapsed) > 1.15) && (TimeOD_TimeTo_ms(time_elapsed) < 1.25)), true);
 
         NEW_STEP("Transmit timestamps");
         // Init scenario context
@@ -76,9 +76,9 @@ void unittest_Timestamp()
         time_luos_t rx_event_b_timestamp = Timestamp_GetTimestamp(rx_msg);
 
         // check the time elapsed between the two events
-        time_elapsed = rx_event_b_timestamp - rx_event_a_timestamp;
+        time_elapsed = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(rx_event_b_timestamp) - TimeOD_TimeTo_s(rx_event_a_timestamp));
         // Verify
-        TEST_ASSERT_EQUAL(((TimeOD_TimeTo_s(time_elapsed) > TimeOD_TimeFrom_ms(1.15)) && (TimeOD_TimeTo_s(time_elapsed) < TimeOD_TimeFrom_ms(1.25))), true);
+        TEST_ASSERT_EQUAL(((TimeOD_TimeTo_ms(time_elapsed) > 1.15) && (TimeOD_TimeTo_ms(time_elapsed) < 1.25)), true);
     }
 }
 

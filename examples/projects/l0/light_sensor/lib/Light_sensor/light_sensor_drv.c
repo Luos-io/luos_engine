@@ -110,7 +110,7 @@ void LightSensorDMA_Init(void)
 illuminance_t LightSensorDrv_Read(void)
 {
     // get the value of the analog input
-    illuminance_t lux = (((float)analog_input.light / 4096.0f) * 3.3f) * 1000.0f;
+    illuminance_t lux = IlluminanceOD_IlluminanceFrom_Lux((((float)analog_input.light / 4096.0f) * 3.3f) * 1000.0f);
     // send a pointer of the scanned illuminance value
     return lux;
 }

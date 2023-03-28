@@ -52,6 +52,8 @@ typedef struct __attribute__((__packed__))
 //******** Messages management ***********
 static inline void ControlOD_ControlToMsg(const control_t *const self, msg_t *const msg)
 {
+    LUOS_ASSERT(self);
+    LUOS_ASSERT(msg);
     msg->header.cmd = CONTROL;
     memcpy(msg->data, self, sizeof(control_t));
     msg->header.size = sizeof(control_t);
@@ -59,6 +61,8 @@ static inline void ControlOD_ControlToMsg(const control_t *const self, msg_t *co
 
 static inline void ControlOD_ControlFromMsg(control_t *const self, const msg_t *const msg)
 {
+    LUOS_ASSERT(self);
+    LUOS_ASSERT(msg);
     LUOS_ASSERT(msg->header.size == sizeof(control_t));
     memcpy(self, msg->data, sizeof(control_t));
     // check data validity

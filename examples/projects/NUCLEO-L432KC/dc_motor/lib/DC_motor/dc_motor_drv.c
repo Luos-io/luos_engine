@@ -58,26 +58,26 @@ uint8_t DRV_DCMotorSetPower(uint8_t Motor, ratio_t power)
 {
     uint16_t CLKWpulse;
     uint16_t CCLKWpulse;
-    if (power > 0.0)
+    if (RatioOD_RatioTo_Percent(power) > 0.0)
     {
         // limit power value
-        if (power > 100.0)
+        if (RatioOD_RatioTo_Percent(power) > 100.0)
         {
-            power = 100.0;
+            power = RatioOD_RatioFrom_Percent(100.0);
         }
         // transform power ratio to timer value
-        CLKWpulse  = (uint16_t)(power * 50.0);
+        CLKWpulse  = (uint16_t)(RatioOD_RatioTo_Percent(power) * 50.0);
         CCLKWpulse = 0;
     }
     else
     {
         // limit power value
-        if (power < -100.0)
+        if (RatioOD_RatioTo_Percent(power) < -100.0)
         {
-            power = -100.0;
+            power = RatioOD_RatioFrom_Percent(-100.0);
         }
         // transform power ratio to timer value
-        CCLKWpulse = (uint16_t)(-power * 50.0);
+        CCLKWpulse = (uint16_t)(-RatioOD_RatioTo_Percent(power) * 50.0);
         CLKWpulse  = 0;
     }
 

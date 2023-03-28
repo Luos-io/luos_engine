@@ -25,7 +25,7 @@ volatile gate_state_t gate_running = NOT_RUNNING;
 volatile bool first_conversion = false;
 #endif
 
-time_luos_t update_time = GATE_REFRESH_TIME_S;
+time_luos_t update_time = {GATE_REFRESH_TIME_S};
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -83,11 +83,11 @@ void Gate_Loop(void)
                     if (result.result_table[result.result_nbr - 1]->id)
                     {
                         // update time is related to the biggest id
-                        update_time = (float)result.result_table[result.result_nbr - 1]->id * 0.001;
+                        update_time = TimeOD_TimeFrom_s((float)result.result_table[result.result_nbr - 1]->id * 0.001);
                     }
                     else
                     {
-                        update_time = GATE_REFRESH_TIME_S;
+                        update_time = TimeOD_TimeFrom_s(GATE_REFRESH_TIME_S);
                     }
 
                     // Update refresh rate for all services of the network

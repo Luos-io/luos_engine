@@ -35,12 +35,12 @@ void ServoDrv_Init(void)
     ServoDrv_HWInit();
 
     servo_parameters_t param;
-    param.max_angle      = 180.0;
+    param.max_angle      = AngularOD_PositionFrom_deg(180.0);
     param.max_pulse_time = 1.5 / 1000;
     param.min_pulse_time = 0.5 / 1000;
 
     servo.param           = param;
-    servo.angle           = 0.0;
+    servo.angle           = AngularOD_PositionFrom_deg(0.0);
     servo.control.Timer   = SERVO_TIMER;
     servo.control.Channel = SERVO_CHANNEL;
 }
@@ -54,18 +54,18 @@ uint8_t ServoDrv_SetPosition(angular_position_t angle)
 {
     servo.angle = angle;
     // limit angle value
-    if (servo.angle < 0.0)
+    if (AngularOD_PositionTo_deg(servo.angle) < 0.0)
     {
-        servo.angle = 0.0;
+        servo.angle = AngularOD_PositionFrom_deg(0.0);
     }
-    else if (servo.angle > servo.param.max_angle)
+    else if (AngularOD_PositionTo_deg(servo.angle) > AngularOD_PositionTo_deg(servo.param.max_angle))
     {
         servo.angle = servo.param.max_angle;
     }
 
     uint32_t pulse_min = (uint32_t)(servo.param.min_pulse_time * (float)(MCUFREQ / DEFAULT_PRESACALER));
     uint32_t pulse_max = (uint32_t)(servo.param.max_pulse_time * (float)(MCUFREQ / DEFAULT_PRESACALER));
-    uint32_t pulse     = pulse_min + (uint32_t)(servo.angle / servo.param.max_angle * (pulse_max - pulse_min));
+    uint32_t pulse     = pulse_min + (uint32_t)(AngularOD_PositionTo_deg(servo.angle) / AngularOD_PositionTo_deg(servo.param.max_angle) * (pulse_max - pulse_min));
 
     LL_TIM_EnableCounter(servo.control.Timer);
     LL_TIM_CC_EnableChannel(servo.control.Timer, servo.control.Channel);

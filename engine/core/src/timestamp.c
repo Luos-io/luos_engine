@@ -78,17 +78,13 @@ _CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
  ******************************************************************************/
 time_luos_t Timestamp_GetTimestamp(msg_t *msg)
 {
+    time_luos_t timestamp = {0.0f};
     if (Timestamp_IsTimestampMsg(msg))
     {
-        time_luos_t timestamp = 0.0f;
         // Timestamp is at the end of the message
         memcpy(&timestamp, (msg->data + msg->header.size), sizeof(time_luos_t));
-        return timestamp;
     }
-    else
-    {
-        return 0.0f;
-    }
+    return timestamp;
 }
 
 //************************* Private functions *********************************/
@@ -113,7 +109,7 @@ void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
  ******************************************************************************/
 _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
 {
-    static time_luos_t timestamp_date = 0.0f;
+    static time_luos_t timestamp_date = {0.0f};
     static msg_t *last_msg            = NULL;
 
     if (last_msg != msg)
@@ -124,7 +120,7 @@ _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
         last_msg = msg;
     }
     // Compute the latency from date
-    time_luos_t latency = timestamp_date - Timestamp_now();
+    time_luos_t latency = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(timestamp_date) - TimeOD_TimeTo_s(Timestamp_now()));
     // Write latency on the message
     memcpy(&msg->data[msg->header.size], &latency, sizeof(time_luos_t));
 }
@@ -137,11 +133,11 @@ _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
  ******************************************************************************/
 _CRITICAL inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)
 {
-    time_luos_t timestamp_latency = 0.0f;
+    time_luos_t timestamp_latency = {0.0f};
     // Get latency
     memcpy(&timestamp_latency, &msg->data[msg->header.size], sizeof(time_luos_t));
     // Compute the date from latency
-    time_luos_t timestamp_date = timestamp_latency + TimeOD_TimeFrom_ns(reception_date);
+    time_luos_t timestamp_date = TimeOD_TimeFrom_ns(TimeOD_TimeTo_ns(timestamp_latency) + reception_date);
     // Write the date on the message
     memcpy(&msg->data[msg->header.size], &timestamp_date, sizeof(time_luos_t));
 }

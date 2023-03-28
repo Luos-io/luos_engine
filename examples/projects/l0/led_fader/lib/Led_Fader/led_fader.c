@@ -58,7 +58,7 @@ void LedFader_Loop(void)
     color_t rgb;
     // calculate how much time is the led fading
     elapsed_ms = Luos_GetSystick() - init_time;
-    if (time != 0)
+    if (TimeOD_TimeTo_s(time) != 0.0f)
     {
         if ((float)elapsed_ms > TimeOD_TimeTo_ms(time))
         {

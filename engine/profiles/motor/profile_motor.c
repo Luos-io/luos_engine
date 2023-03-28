@@ -27,12 +27,12 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
             pub_msg.header.target      = msg->header.source;
             if (profile_motor->mode.current)
             {
-                ElectricOD_CurrentToMsg((current_t *)&profile_motor->current, &pub_msg);
+                ElectricOD_CurrentToMsg(&profile_motor->current, &pub_msg);
                 Luos_SendMsg(service, &pub_msg);
             }
             if (profile_motor->mode.temperature)
             {
-                TemperatureOD_TemperatureToMsg((current_t *)&profile_motor->temperature, &pub_msg);
+                TemperatureOD_TemperatureToMsg(&profile_motor->temperature, &pub_msg);
                 Luos_SendMsg(service, &pub_msg);
             }
         }
@@ -41,33 +41,33 @@ void ProfileMotor_Handler(service_t *service, msg_t *msg)
         {
             // get the motor power ratio
             RatioOD_RatioFromMsg(&profile_motor->power, msg);
-            if (profile_motor->power > 100.0)
-                profile_motor->power = 100.0;
-            if (profile_motor->power < -100.0)
-                profile_motor->power = -100.0;
+            if (RatioOD_RatioTo_Percent(profile_motor->power) > 100.0)
+                profile_motor->power = RatioOD_RatioFrom_Percent(100.0);
+            if (RatioOD_RatioTo_Percent(profile_motor->power) < -100.0)
+                profile_motor->power = RatioOD_RatioFrom_Percent(-100.0);
         }
         break;
         case RATIO_LIMIT:
         {
             // set the motor power ratio limit
             RatioOD_RatioFromMsg(&profile_motor->limit_ratio, msg);
-            profile_motor->limit_ratio = fabs(profile_motor->limit_ratio);
-            if (profile_motor->limit_ratio > 100.0)
-                profile_motor->limit_ratio = 100.0;
+            profile_motor->limit_ratio = RatioOD_RatioFrom_Percent(fabs(RatioOD_RatioTo_Percent(profile_motor->limit_ratio)));
+            if (RatioOD_RatioTo_Percent(profile_motor->limit_ratio) > 100.0)
+                profile_motor->limit_ratio = RatioOD_RatioFrom_Percent(100.0);
         }
         break;
         case CURRENT_LIMIT:
         {
             // set the motor current limit
             ElectricOD_CurrentFromMsg((current_t *)&profile_motor->limit_current, msg);
-            profile_motor->limit_current = fabs(profile_motor->limit_current);
+            profile_motor->limit_current = ElectricOD_CurrentFrom_A(fabs(ElectricOD_CurrentTo_A(profile_motor->limit_current)));
         }
         break;
         case TEMPERATURE_LIMIT:
         {
             // set the motor power ratio limit
             TemperatureOD_TemperatureFromMsg(&profile_motor->limit_temperature, msg);
-            profile_motor->limit_temperature = fabs(profile_motor->limit_temperature);
+            profile_motor->limit_temperature = TemperatureOD_TemperatureFrom_deg_c(fabs(TemperatureOD_TemperatureTo_deg_c(profile_motor->limit_temperature)));
         }
         break;
         case PARAMETERS:

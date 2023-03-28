@@ -16,8 +16,8 @@
  * Variables
  ******************************************************************************/
 
-linear_position_t dist = -0.001;
-bool new_data_ready    = false;
+linear_position_t dist;
+bool new_data_ready = false;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -30,6 +30,7 @@ static void Distance_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Distance_Init(void)
 {
+    dist                = LinearOD_PositionFrom_mm(-1);
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
 
     vl53l0x_DRVInit();
