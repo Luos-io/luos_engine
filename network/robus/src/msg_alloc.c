@@ -91,9 +91,6 @@ volatile msg_t *oldest_msg = NULL;            /*!< The oldest message among all 
 volatile msg_t *used_msg   = NULL;            /*!< Message curently used by luos loop. */
 volatile uint8_t mem_clear_needed;            /*!< A flag allowing to spot some msg space cleaning operations to do. */
 
-// Allocator task stack
-volatile header_t *copy_task_pointer = NULL; /*!< This pointer is used to perform a header copy from the end of the msg_buffer to the begin of the msg_buffer. If this pointer if different than NULL there is a copy to make. */
-
 // msg interpretation task stack
 volatile msg_t *msg_tasks[MAX_MSG_NB]; /*!< ready message table. */
 volatile uint16_t msg_tasks_stack_id;  /*!< Next writen msg_tasks id. */
@@ -160,10 +157,9 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     memset((void *)luos_tasks, 0, sizeof(luos_tasks));
     tx_tasks_stack_id = 0;
     memset((void *)tx_tasks, 0, sizeof(tx_tasks));
-    copy_task_pointer = NULL;
-    used_msg          = NULL;
-    oldest_msg        = (msg_t *)INT_MAX;
-    mem_clear_needed  = false;
+    used_msg         = NULL;
+    oldest_msg       = (msg_t *)INT_MAX;
+    mem_clear_needed = false;
     if (memory_stats != NULL)
     {
         mem_stat = memory_stats;
@@ -214,29 +210,6 @@ void MsgAlloc_loop(void)
  ******************************************************************************/
 _CRITICAL void MsgAlloc_ValidDataIntegrity(void)
 {
-    // Check if we have to make a header copy from the end to the begin of msg_buffer.
-    if (copy_task_pointer != NULL)
-    {
-        // copy_task_pointer point to a header to copy at the begin of msg_buffer
-        // Copy the header at the begining of msg_buffer
-        //
-        //        msg_buffer init state
-        //        +--------------------------------------------------------+
-        //        |-------------------------------|  Header  | Datas to be received |
-        //        +------------------------------------------^-------------+        ^
-        //                                                   |                      |
-        //                             Need to copy to buffer beginning    data_end_estimation
-        //                             as an overflows will occur
-        //
-        //        msg_buffer ending state
-        //        +--------------------------------------------------------+
-        //        |Header|-------------------------------------------------|
-        //        +--------------------------------------------------------+
-        //
-        memcpy((void *)&msg_buffer[0], (void *)copy_task_pointer, sizeof(header_t));
-        // reset copy_task_pointer status
-        copy_task_pointer = NULL;
-    }
     // Do we have to check data dropping?
     LuosHAL_SetIrqState(false);
     if (mem_clear_needed == true)
@@ -440,10 +413,6 @@ _CRITICAL void MsgAlloc_InvalidMsg(void)
     data_ptr            = (uint8_t *)current_msg;
     data_end_estimation = (uint8_t *)(&current_msg->stream[sizeof(header_t) + CRC_SIZE]);
     LUOS_ASSERT((uintptr_t)data_end_estimation < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]);
-    if (current_msg == (volatile msg_t *)&msg_buffer[0])
-    {
-        copy_task_pointer = NULL;
-    }
 }
 /******************************************************************************
  * @brief Valid the current message header by preparing the allocator to get the message data
@@ -472,13 +441,13 @@ _CRITICAL void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size)
             //
             //        msg_buffer ending state :
             //        +-------------------------------------------------------------+
-            //        |------------------------------------|  Header  | Datas to be received |
-            //        +----------^-------------------------^------------------------+
-            //        |          |                         |
-            //     current_msg  data_ptr             copy_task_pointer
+            //        |  Header  | Datas to be received |----------------------------
+            //        +----------^--------------------------------------------------+
+            //        |          |
+            //     current_msg  data_ptr
             //
-            // Create a task to copy the header at the begining of msg_buffer
-            copy_task_pointer = (header_t *)&current_msg->header;
+            // Copy the header at the begining of msg_buffer
+            memcpy((void *)&msg_buffer[0], (void *)&current_msg->header, sizeof(header_t));
             // Move current_msg to msg_buffer
             current_msg = (volatile msg_t *)&msg_buffer[0];
             // move data_ptr after the new location of the header
