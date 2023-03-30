@@ -61,15 +61,16 @@ void Luos_Detect(service_t *service);
 void Luos_ServicesClear(void);
 
 // ***************** Messaging management *****************
+
+void Luos_Flush(void);
+
 // *** Streaming management ***
 #include "streaming.h"
 void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
 error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 
-void Luos_Flush(void);
-
-// *** Timestamping management ***
+// *** Timestamping management (in file `timestamp.c`)***
 time_luos_t Luos_Timestamp(void);
 bool Luos_IsMsgTimstamped(msg_t *msg);
 time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
@@ -82,10 +83,6 @@ error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic);
 // *** Big data management ***
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
 int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
-
-// *** Pub/Sub management (in file `pub_sub.c`)***
-error_return_t PubSub_Subscribe(service_t *service, uint16_t topic);
-error_return_t PubSub_Unsubscribe(service_t *service, uint16_t topic);
 
 // *** Basic transmission management ***
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
