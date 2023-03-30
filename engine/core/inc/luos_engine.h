@@ -12,7 +12,6 @@
 #include "routing_table.h"
 #include "luos_od.h"
 #include "streaming.h"
-#include "timestamp.h"
 
 /*******************************************************************************
  * Definitions
@@ -39,9 +38,6 @@ typedef struct __attribute__((__packed__))
         uint8_t unmap[sizeof(luos_stats_t) + sizeof(service_stats_t)]; /*!< streamable form. */
     };
 } general_stats_t;
-/*******************************************************************************
- * Variables
- ******************************************************************************/
 
 /*******************************************************************************
  * Function
@@ -67,6 +63,11 @@ void Luos_ServicesClear(void);
 
 // ***************** Messaging management *****************
 void Luos_Flush(void);
+
+// *** Timestamping
+time_luos_t Luos_Timestamp(void);
+bool Luos_IsMsgTimstamped(msg_t *msg);
+time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
 
 // *** Send
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg);

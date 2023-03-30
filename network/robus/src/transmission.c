@@ -51,7 +51,7 @@
 #include "reception.h"
 #include "msg_alloc.h"
 #include "_timestamp.h"
-#include "timestamp.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions
@@ -166,7 +166,7 @@ _CRITICAL void Transmit_Process()
             ctx.tx.data = data;
 
             // Put timestamping on data here
-            if (Timestamp_IsTimestampMsg((msg_t *)data) && (!nbrRetry))
+            if (Luos_IsMsgTimstamped((msg_t *)data) && (!nbrRetry))
             {
                 // Convert date to latency
                 Timestamp_ConvertToLatency((msg_t *)data);

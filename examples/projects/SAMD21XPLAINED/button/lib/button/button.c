@@ -55,7 +55,7 @@ static void Button_MsgHandler(service_t *service, msg_t *msg)
         pub_msg.header.target      = msg->header.source;
         pub_msg.header.size        = sizeof(char);
         pub_msg.data[0]            = (((PORT->Group[BTN_PORT].IN.reg >> BTN_PIN)) & 0x01);
-        time_luos_t timestamp      = Timestamp_now();
+        time_luos_t timestamp      = Luos_Timestamp();
 
         Luos_SendTimestampMsg(service, &pub_msg, timestamp);
         return;

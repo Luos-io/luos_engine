@@ -150,7 +150,7 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
             {
                 data_size = current_msg->header.size;
                 // we need to check if we have a timestamped message and increase the data size if yes
-                if (Timestamp_IsTimestampMsg((msg_t *)current_msg) == true)
+                if (Luos_IsMsgTimstamped((msg_t *)current_msg) == true)
                 {
                     data_size += sizeof(time_luos_t);
                 }
@@ -201,7 +201,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
             }
             MsgAlloc_ValidDataIntegrity();
             // If message is timestamped, convert the latency to date
-            if (Timestamp_IsTimestampMsg((msg_t *)current_msg))
+            if (Luos_IsMsgTimstamped((msg_t *)current_msg))
             {
                 // This conversion also remove the timestamp from the message size.
                 Timestamp_ConvertToDate((msg_t *)current_msg, ll_rx_timestamp);

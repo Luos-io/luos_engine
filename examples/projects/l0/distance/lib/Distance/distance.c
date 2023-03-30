@@ -7,7 +7,6 @@
 #include "vl53l0x_drv.h"
 
 #include "distance.h"
-#include "timestamp.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -48,7 +47,7 @@ void Distance_Loop(void)
     if (vl53l0x_DrvRead(&dist) == SUCCEED)
     {
         new_data_ready     = true;
-        distance_timestamp = Timestamp_now();
+        distance_timestamp = Luos_Timestamp();
     }
 }
 /******************************************************************************

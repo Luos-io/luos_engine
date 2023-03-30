@@ -7,7 +7,6 @@
 #include "main.h"
 #include "light_sensor.h"
 #include "string.h"
-#include "timestamp.h"
 
 /*******************************************************************************
  * Definitions
@@ -46,7 +45,7 @@ void LightSensor_Loop(void)
 {
     // read and store the value that captured by the sensor
     lux           = LightSensorDrv_Read();
-    lux_timestamp = Timestamp_now();
+    lux_timestamp = Luos_Timestamp();
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service

@@ -3642,11 +3642,11 @@ LOAD data_init
                 0x000086fc        0xc build/luos_bootloader/production/_ext/1000620745/msg_alloc.o
                 0x000086fc                MsgAlloc_UsedMsgEnd
 
-.text.Timestamp_IsTimestampMsg%271
+.text.Luos_IsMsgTimstamped%271
                 0x00008708        0xc
- .text.Timestamp_IsTimestampMsg
+ .text.Luos_IsMsgTimstamped
                 0x00008708        0xc build/luos_bootloader/production/_ext/1000620745/timestamp.o
-                0x00008708                Timestamp_IsTimestampMsg
+                0x00008708                Luos_IsMsgTimstamped
 
 .text.__sclose%272
                 0x00008714        0xc

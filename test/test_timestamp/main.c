@@ -28,13 +28,13 @@ void unittest_Timestamp()
         time_luos_t event_b_timestamp;
 
         // Save event A
-        event_a_timestamp = Timestamp_now();
+        event_a_timestamp = Luos_Timestamp();
         // wait for 1.2 seconds
         uint32_t start_timer = Luos_GetSystick();
         while (Luos_GetSystick() - start_timer < 1200)
             ;
         // Save event B
-        event_b_timestamp = Timestamp_now();
+        event_b_timestamp = Luos_Timestamp();
         // check the time elapsed between the two events
         time_luos_t time_elapsed = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(event_b_timestamp) - TimeOD_TimeTo_s(event_a_timestamp));
 
@@ -64,7 +64,7 @@ void unittest_Timestamp()
         rx_msg = &default_sc.App_2.last_rx_msg;
         uint64_t low_level_rx_timestamp;
         // Get back the 1st timestamp
-        time_luos_t rx_event_a_timestamp = Timestamp_GetTimestamp(rx_msg);
+        time_luos_t rx_event_a_timestamp = Luos_GetMsgTimestamp(rx_msg);
         // Send the 2nd message to receiver with both the 2nd timestamp
         msg.header.size = 1;
         TEST_ASSERT_EQUAL(SUCCEED, Luos_SendTimestampMsg(default_sc.App_1.app, &msg, event_b_timestamp));
@@ -73,7 +73,7 @@ void unittest_Timestamp()
         // Get the message received
         rx_msg = &default_sc.App_2.last_rx_msg;
         // Get back the 2nd timestamp
-        time_luos_t rx_event_b_timestamp = Timestamp_GetTimestamp(rx_msg);
+        time_luos_t rx_event_b_timestamp = Luos_GetMsgTimestamp(rx_msg);
 
         // check the time elapsed between the two events
         time_elapsed = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(rx_event_b_timestamp) - TimeOD_TimeTo_s(rx_event_a_timestamp));

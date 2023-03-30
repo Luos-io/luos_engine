@@ -6,7 +6,6 @@
  ******************************************************************************/
 #include "main.h"
 #include "potentiometer.h"
-#include "timestamp.h"
 
 /*******************************************************************************
  * Definitions
@@ -46,7 +45,7 @@ void Potentiometer_Loop(void)
 {
     // read and save the angular position value
     angle           = PotentiometerDrv_Read();
-    angle_timestamp = Timestamp_now();
+    angle_timestamp = Luos_Timestamp();
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service

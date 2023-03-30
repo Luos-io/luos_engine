@@ -17,7 +17,7 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
-#include "timestamp.h"
+#include "luos_engine.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -213,7 +213,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
 
     uint16_t crc_max_index = full_size;
 
-    if (Timestamp_IsTimestampMsg(msg) == true)
+    if (Luos_IsMsgTimstamped(msg) == true)
     {
         full_size += sizeof(time_luos_t);
     }

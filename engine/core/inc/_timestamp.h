@@ -7,11 +7,7 @@
 #ifndef __TIMESTAMP_H_
 #define __TIMESTAMP_H_
 
-#include "service_structs.h"
-#include "luos_list.h"
-#include "luos_utils.h"
-#include "od_time.h"
-#include "timestamp.h"
+#include "luos_engine.h"
 
 /*******************************************************************************
  * Function

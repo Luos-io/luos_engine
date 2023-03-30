@@ -12,7 +12,7 @@
  *
  * Timestamp is a mechanism which enables to track events in the system. To use it users have to get and save a timestamp in
  * a time_luos_t variable.
- * You can get a timestamp by calling the Timestamp_now() function. Then you can deal with the returned value as you want, allowing
+ * You can get a timestamp by calling the Luos_Timestamp() function. Then you can deal with the returned value as you want, allowing
  * you to tag a date in the past or in the future.
  *
  * Then you can send a message with a data and it's associated timestamp, luos can handle this by slighly modifiyng its
@@ -58,7 +58,7 @@
  * @param msg None
  * @return time_luos_t
  ******************************************************************************/
-time_luos_t Timestamp_now(void)
+time_luos_t Luos_Timestamp(void)
 {
     return TimeOD_TimeFrom_ns((double)LuosHAL_GetTimestamp());
 }
@@ -67,7 +67,7 @@ time_luos_t Timestamp_now(void)
  * @param msg : Message to check
  * @return boolean it "True" if message is timestamped
  ******************************************************************************/
-_CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
+_CRITICAL inline bool Luos_IsMsgTimstamped(msg_t *msg)
 {
     return (msg->header.config == TIMESTAMP_PROTOCOL);
 }
@@ -76,10 +76,10 @@ _CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
  * @param msg : Message to get the timestamp from
  * @return time_luos_t
  ******************************************************************************/
-time_luos_t Timestamp_GetTimestamp(msg_t *msg)
+time_luos_t Luos_GetMsgTimestamp(msg_t *msg)
 {
     time_luos_t timestamp = {0.0f};
-    if (Timestamp_IsTimestampMsg(msg))
+    if (Luos_IsMsgTimstamped(msg))
     {
         // Timestamp is at the end of the message
         memcpy(&timestamp, (msg->data + msg->header.size), sizeof(time_luos_t));
@@ -120,7 +120,7 @@ _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
         last_msg = msg;
     }
     // Compute the latency from date
-    time_luos_t latency = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(timestamp_date) - TimeOD_TimeTo_s(Timestamp_now()));
+    time_luos_t latency = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(timestamp_date) - TimeOD_TimeTo_s(Luos_Timestamp()));
     // Write latency on the message
     memcpy(&msg->data[msg->header.size], &latency, sizeof(time_luos_t));
 }
