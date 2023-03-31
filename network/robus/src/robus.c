@@ -35,7 +35,7 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
-#define NETWORK_TIMEOUT 3000 // timeout to detect a failed detection
+#define NETWORK_TIMEOUT 10000 // timeout to detect a failed detection
 
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
