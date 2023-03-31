@@ -220,7 +220,6 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
                 Node_SetState(EXTERNAL_DETECTION);
-                Robus_SetVerboseMode(false);
                 PortMng_Init();
             }
             else
@@ -476,16 +475,7 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             // Check all ll_service id
             if (Recep_ServiceIDCompare(header->target) == SUCCEED)
             {
-                return ctx.verbose;
-            }
-            if (ctx.filter_state == false)
-            {
-                // check if it is message comes from service that demanded the filter desactivation
-                if (ctx.filter_id != header->source)
-                {
-                    // if there is a service that deactivated the filtering occupy the message
-                    return MULTIHOST;
-                }
+                return LOCALHOST;
             }
             break;
         case TYPE:
@@ -494,15 +484,6 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             {
                 if (header->target == ctx.ll_service_table[i].type)
                 {
-                    return MULTIHOST;
-                }
-            }
-            if (ctx.filter_state == false)
-            {
-                // check if it is message comes from service that demanded the filter desactivation
-                if (ctx.filter_id != header->source)
-                {
-                    // if there is a service that deactivated the filtering occupy the message
                     return MULTIHOST;
                 }
             }
@@ -518,27 +499,18 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
         case NODEID:
             if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
             {
-                return ctx.verbose; // discard message if ID = 0 and no Port activ
+                return LOCALHOST; // discard message if ID = 0 and no Port activ
             }
             else
             {
                 if ((header->target == Node_Get()->node_id) && ((header->target != 0)))
                 {
-                    return ctx.verbose;
-                }
-                else if (ctx.filter_state == false)
-                {
-                    // check if it is message comes from service that demanded the filter desactivation
-                    if (ctx.filter_id != header->source)
-                    {
-                        // if there is a service that deactivated the filtering occupy the message
-                        return MULTIHOST;
-                    }
+                    return LOCALHOST;
                 }
             }
             break;
         case TOPIC:
-            if ((Recep_TopicCompare(header->target) == SUCCEED) || (ctx.filter_state == false))
+            if (Recep_TopicCompare(header->target) == SUCCEED)
             {
                 return MULTIHOST;
             }
@@ -548,47 +520,6 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             break;
     }
     return EXTERNALHOST;
-}
-/******************************************************************************
- * @brief Double Allocate msg_task in case of desactivated filter
- * @param msg pointer
- * @return None
- ******************************************************************************/
-static inline void Recep_DoubleAlloc(msg_t *msg)
-{
-    // if there is a service that deactivated the filter we also allocate a message for it
-    if (ctx.filter_state == false)
-    {
-        // find the position of this service in the node
-        uint16_t idx = Recep_CtxIndexFromID(ctx.filter_id);
-        // check if it is message for the same service that demanded the filter desactivation
-        switch (msg->header.target_mode)
-        {
-            case (SERVICEID):
-                if (ctx.filter_id != msg->header.target)
-                {
-                    // store the message if it is not so that we dont have double messages in memory
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
-                }
-                break;
-            case (TYPE):
-                if (ctx.ll_service_table[idx].type != msg->header.target)
-                {
-                    // store the message if it is not so that we dont have double messages in memory
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
-                }
-                break;
-            case (TOPIC):
-                if (PubSub_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[idx], msg->header.target) == false)
-                {
-                    // store the message if it is not so that we dont have double messages in memory
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
-                }
-                break;
-            default:
-                break;
-        }
-    }
 }
 /******************************************************************************
  * @brief Parse msg to find all services concerned and create
@@ -613,8 +544,6 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                     break;
                 }
             }
-            // check if we need to double allocate msg_task
-            Recep_DoubleAlloc(msg);
             return;
             break;
         case TYPE:
@@ -626,8 +555,6 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                 }
             }
-            // check if we need to double allocate msg_task
-            Recep_DoubleAlloc(msg);
             return;
             break;
         case BROADCAST:
@@ -646,8 +573,6 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                 }
             }
-            // check if we need to double allocate msg_task
-            Recep_DoubleAlloc(msg);
             return;
             break;
         case NODEIDACK:
@@ -665,8 +590,6 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                     MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
                 }
             }
-            // check if we need to double allocate msg_task
-            Recep_DoubleAlloc(msg);
             return;
             break;
         default:

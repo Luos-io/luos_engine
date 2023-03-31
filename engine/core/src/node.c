@@ -140,7 +140,8 @@ bool Luos_IsDetected(void)
  ******************************************************************************/
 void Luos_SetFilterState(uint8_t state, service_t *service)
 {
-    Robus_SetFilterState(state, service->ll_service);
+    // Enable or disable the filter for a given service
+    // This function have been disabled since 3.0.0
 }
 
 /******************************************************************************
@@ -150,5 +151,6 @@ void Luos_SetFilterState(uint8_t state, service_t *service)
  ******************************************************************************/
 void Luos_SetVerboseMode(uint8_t mode)
 {
-    Robus_SetVerboseMode(mode);
+    // Enable or disable the verbose mode
+    // This function have been disabled since 3.0.0
 }

@@ -211,7 +211,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     // Check the localhost situation
     luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
+    if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID))))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
         ack = ctx.rx.status.unmap;
@@ -501,26 +501,4 @@ void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
         tempo = (((service_id - 1) + i) - (8 * ctx.IDShiftMask));
         ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
     }
-}
-
-/******************************************************************************
- * @brief Function that changes the filter value
- * @param uint8_t value, 1 if we want to disable, 0 to enable
- * @return None
- ******************************************************************************/
-void Robus_SetFilterState(uint8_t state, ll_service_t *service)
-{
-    ctx.filter_state = state;
-    ctx.filter_id    = service->id;
-}
-/******************************************************************************
- * @brief Set verbose mode
- * @param mode true or false
- * @return None
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL void Robus_SetVerboseMode(uint8_t mode)
-{
-    // verbose is localhost or multihost
-    ctx.verbose = mode + 1;
 }
