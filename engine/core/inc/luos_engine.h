@@ -50,7 +50,6 @@ void Luos_Init(void);
 void Luos_Loop(void);
 
 // ***************** Node management *****************
-uint32_t Luos_GetSystick(void);
 void Luos_ResetStatistic(void);
 bool Luos_IsNodeDetected(void);
 void Luos_SetVerboseMode(uint8_t mode);
