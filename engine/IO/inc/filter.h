@@ -7,6 +7,8 @@
 #ifndef _FILTER_H_
 #define _FILTER_H_
 
+#include "io_struct.h"
+#include <stdbool.h>
 
 /*******************************************************************************
  * Definitions
@@ -21,7 +23,12 @@
  ******************************************************************************/
 
 // generic functions
-void Filter_Init(void);
-
+void Filter_IdInit(void);
+void Filter_TopicInit(void);
+void Filter_AddServiceId(uint16_t service_id, uint16_t service_number);
+void Filter_AddTopic(uint16_t topic_id);
+void Filter_RmTopic(uint16_t topic_id);
+bool Filter_ServiceID(uint16_t service_id);
+bool Filter_Topic(uint16_t topic_id);
 
 #endif /* _FILTER_H_ */

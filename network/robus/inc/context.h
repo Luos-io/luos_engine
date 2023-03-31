@@ -28,10 +28,6 @@ typedef struct
     ll_service_t ll_service_table[MAX_SERVICE_NUMBER]; /*!< Low level Service table. */
     uint16_t ll_service_number;                        /*!< Low level Service number. */
 
-    uint8_t IDMask[ID_MASK_SIZE];
-    uint16_t IDShiftMask;
-    uint8_t TopicMask[TOPIC_MASK_SIZE]; /*!< multicast target bank. */
-
 } context_t;
 
 /*******************************************************************************

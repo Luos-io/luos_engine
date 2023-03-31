@@ -17,6 +17,7 @@
 #include "msg_alloc.h"
 #include "luos_utils.h"
 #include "luos_engine.h"
+#include "filter.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -67,14 +68,9 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.status = TX_DISABLE;
     // Save luos baudrate
     baudrate = DEFAULTBAUDRATE;
-    // mask
-    Robus_MaskInit();
-
-    // multicast mask init
-    for (uint16_t i = 0; i < TOPIC_MASK_SIZE; i++)
-    {
-        ctx.TopicMask[i] = 0;
-    }
+    // Filters init
+    Filter_IdInit();
+    Filter_TopicInit();
 
     // Init reception
     Recep_Init();
@@ -93,19 +89,6 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.rx.status.identifier = 0xF;
 
     Node_SetState(NO_DETECTION);
-}
-/******************************************************************************
- * @brief Reset Masks
- * @param None
- * @return None
- ******************************************************************************/
-void Robus_MaskInit(void)
-{
-    ctx.IDShiftMask = 0;
-    for (uint16_t i = 0; i < ID_MASK_SIZE; i++)
-    {
-        ctx.IDMask[i] = 0;
-    }
 }
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
@@ -477,28 +460,4 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             break;
     }
     return FAILED;
-}
-/******************************************************************************
- * @brief ID Mask calculation
- * @param ID and Number of service
- * @return None
- ******************************************************************************/
-void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
-{
-    // 4096 bit address 512 byte possible
-    // Create a mask of only possibility in the node
-    //--------------------------->|__________|
-    //	Shift byte		            byte Mask of bit address
-
-    LUOS_ASSERT(service_id > 0);
-    LUOS_ASSERT(service_id <= 4096 - MAX_SERVICE_NUMBER);
-    uint16_t tempo  = 0;
-    ctx.IDShiftMask = (service_id - 1) / 8; // aligned to byte
-
-    // create a mask of bit corresponding to ID number in the node
-    for (uint16_t i = 0; i < service_number; i++)
-    {
-        tempo = (((service_id - 1) + i) - (8 * ctx.IDShiftMask));
-        ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
-    }
 }

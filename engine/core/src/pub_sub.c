@@ -8,6 +8,7 @@
 #include "luos_engine.h"
 #include <stdbool.h>
 #include <string.h>
+#include "filter.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -48,8 +49,8 @@ error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
     // Assert if we add a topic that is greater than the max topic value
     LUOS_ASSERT(topic <= LAST_TOPIC);
 
-    // Add 1 to the bit corresponding to the topic in multicast mask
-    ctx.TopicMask[(topic / 8)] |= 1 << (topic - ((int)(topic / 8)) * 8);
+    // Put this topic in the multicast bank
+    Filter_AddTopic(topic);
 
     // add multicast this topic to the service
     ll_service_t *ll_service = (ll_service_t *)&ctx.ll_service_table[0];
@@ -109,8 +110,8 @@ error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
                 return err;
             }
         }
-        // calculate mask after topic deletion
-        ctx.TopicMask[(topic / 8)] -= 1 << (topic - ((int)(topic / 8)) * 8);
+        // Remove topic from multicast mask
+        Filter_RmTopic(topic);
     }
     return err;
 }

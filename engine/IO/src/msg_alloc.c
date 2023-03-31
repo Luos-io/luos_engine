@@ -50,6 +50,7 @@
 #include "luos_hal.h"
 #include "luos_utils.h"
 #include "node.h"
+#include "filter.h"
 
 #include "context.h"
 
@@ -165,7 +166,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     {
         mem_stat = memory_stats;
     }
-    Robus_MaskInit(); // Mask filter for service ID
+    Filter_IdInit(); // Mask filter for service ID
     // Reset have been made
     reset_needed = false;
 }

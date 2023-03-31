@@ -53,6 +53,7 @@
 #include "_timestamp.h"
 #include "robus.h"
 #include "bootloader_core.h"
+#include "filter.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -408,55 +409,6 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL static inline error_return_t Recep_ServiceIDCompare(uint16_t service_id)
-{
-    //--------------------------->|__________|
-    //	      Shift byte		  byte Mask of bit address
-    // In an node, service ID are consecutive
-    // MaskID is byte field wich have the size of MAX_SERVICE_NUMBER
-    // Shift depend od ID of first service in Node (shift = NodeID/8)
-
-    uint16_t compare = 0;
-
-    if ((service_id > (8 * ctx.IDShiftMask))) // IDMask aligned byte
-    {
-        // Calcul ID mask for ID receive
-        compare = ((service_id - 1) - ((8 * ctx.IDShiftMask)));
-        // check if compare and internal mask match
-        if ((ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
-        {
-            return SUCCEED;
-        }
-    }
-    return FAILED;
-}
-/******************************************************************************
- * @brief Parse multicast mask to find if target exists
- * @param target of message
- * @return None
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
-{
-    uint8_t compare = 0;
-    // make sure there is a topic that can be received by the node
-    if (topic_id <= LAST_TOPIC)
-    {
-        compare = topic_id - ((topic_id / 8) * 8);
-        // search if topic exists in mask
-        if ((ctx.TopicMask[(topic_id / 8)] & (1 << compare)) != 0)
-        {
-            return SUCCEED;
-        }
-    }
-    return FAILED;
-}
-/******************************************************************************
- * @brief Parse msg to find a service concerne
- * @param header of message
- * @return None
  * warning : this function can be redefined only for mock testing purpose
  * _CRITICAL function call in IRQ
  ******************************************************************************/
@@ -473,7 +425,7 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             ctx.rx.status.rx_error = false;
         case SERVICEID:
             // Check all ll_service id
-            if (Recep_ServiceIDCompare(header->target) == SUCCEED)
+            if (Filter_ServiceID(header->target))
             {
                 return LOCALHOST;
             }
@@ -510,7 +462,7 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             }
             break;
         case TOPIC:
-            if (Recep_TopicCompare(header->target) == SUCCEED)
+            if (Filter_Topic(header->target))
             {
                 return MULTIHOST;
             }
@@ -605,7 +557,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
 _CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
 {
     // check the mode of the message received
-    if ((current_msg->header.target_mode == SERVICEIDACK) && (Recep_ServiceIDCompare(current_msg->header.target) == SUCCEED))
+    if ((current_msg->header.target_mode == SERVICEIDACK) && (Filter_ServiceID(current_msg->header.target)))
     {
         // when it is a serviceidack and this message is destined to the node send an ack
         return 1;
