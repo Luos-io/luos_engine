@@ -40,7 +40,7 @@ void PipeLink_Send(service_t *service, void *data, uint32_t size)
     {
         // We have a localhost pipe
         // Copy the data directly into the local streaming channel without passing by Luos.
-        Stream_PutSample(PipeDirectPutSample, data, size);
+        Streaming_PutSample(PipeDirectPutSample, data, size);
         // Send a void set_cmd to strat data transmission on pipe.
         msg.header.size = 0;
         Luos_SendMsg(service, &msg);

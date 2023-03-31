@@ -32,8 +32,8 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Pipe_Init(void)
 {
-    rx_StreamChannel = Stream_CreateStreamingChannel(rx_Buffer, PIPE_RX_BUFFER_SIZE, 1);
-    tx_StreamChannel = Stream_CreateStreamingChannel(tx_Buffer, PIPE_TX_BUFFER_SIZE, 1);
+    rx_StreamChannel = Streaming_CreateChannel(rx_Buffer, PIPE_RX_BUFFER_SIZE, 1);
+    tx_StreamChannel = Streaming_CreateChannel(tx_Buffer, PIPE_TX_BUFFER_SIZE, 1);
     PipeCom_Init();
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Pipe_MsgHandler, PIPE_TYPE, "Pipe", revision);
@@ -113,7 +113,7 @@ void node_assert(char *file, uint32_t line)
     // manage self crashing scenario
     char json[512];
     sprintf(json, "{\"assert\":{\"node_id\":1,\"file\":\"%s\",\"line\":%d}}\n", file, (unsigned int)line);
-    Stream_PutSample(&tx_StreamChannel, json, strlen(json));
+    Streaming_PutSample(&tx_StreamChannel, json, strlen(json));
 
     // Send the message
     PipeCom_Send();

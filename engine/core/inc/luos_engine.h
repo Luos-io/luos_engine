@@ -11,7 +11,6 @@
 #include "service_structs.h"
 #include "routing_table.h"
 #include "luos_od.h"
-#include "streaming.h"
 
 /*******************************************************************************
  * Definitions
@@ -62,6 +61,12 @@ void Luos_Detect(service_t *service);
 void Luos_ServicesClear(void);
 
 // ***************** Messaging management *****************
+// *** Streaming management ***
+#include "streaming.h"
+void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
+void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
+error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
+
 void Luos_Flush(void);
 
 // *** Timestamping management ***
@@ -77,11 +82,6 @@ error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic);
 // *** Big data management ***
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
 int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data);
-
-// *** Streaming management ***
-void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
-void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
-error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
 
 // *** Pub/Sub management (in file `pub_sub.c`)***
 error_return_t PubSub_Subscribe(service_t *service, uint16_t topic);

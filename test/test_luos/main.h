@@ -2,6 +2,6 @@
 #define MAIN_H
 
 // Sreaming functions
-void unittest_Streaming_SendStreamingSize(void);
+void unittest_Luos_SendStreamingStreamingSize(void);
 
 #endif //MAIN_H

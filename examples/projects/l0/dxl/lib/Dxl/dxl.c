@@ -96,19 +96,19 @@ void Dxl_Loop(void)
         // ****** trajectory management *********
         if (dxl[index].dxl_motor.control.flux == STOP)
         {
-            Stream_ResetStreamingChannel(&dxl[index].dxl_motor.trajectory);
+            Streaming_ResetChannel(&dxl[index].dxl_motor.trajectory);
         }
-        if ((Stream_GetAvailableSampleNB(&dxl[index].dxl_motor.trajectory) > 0) && ((Luos_GetSystick() - last_sample[index]) >= TimeOD_TimeTo_ms(dxl[index].dxl_motor.sampling_period)) && (dxl[index].dxl_motor.control.flux == PLAY))
+        if ((Streaming_GetAvailableSampleNB(&dxl[index].dxl_motor.trajectory) > 0) && ((Luos_GetSystick() - last_sample[index]) >= TimeOD_TimeTo_ms(dxl[index].dxl_motor.sampling_period)) && (dxl[index].dxl_motor.control.flux == PLAY))
         {
             if (dxl[index].dxl_motor.mode.mode_linear_position == 1)
             {
                 linear_position_t linear_position_tmp;
-                Stream_GetSample(&dxl[index].dxl_motor.trajectory, &linear_position_tmp, 1);
+                Streaming_GetSample(&dxl[index].dxl_motor.trajectory, &linear_position_tmp, 1);
                 dxl[index].dxl_motor.target_angular_position = AngularOD_PositionFrom_deg((LinearOD_PositionTo_m(linear_position_tmp) * 360.0) / (3.141592653589793 * LinearOD_PositionTo_m(dxl[index].dxl_motor.wheel_diameter)));
             }
             else
             {
-                Stream_GetSample(&dxl[index].dxl_motor.trajectory, (angular_position_t *)&dxl[index].dxl_motor.target_angular_position, 1);
+                Streaming_GetSample(&dxl[index].dxl_motor.trajectory, (angular_position_t *)&dxl[index].dxl_motor.target_angular_position, 1);
             }
             last_sample[index] = Luos_GetSystick();
 
@@ -475,8 +475,8 @@ static void discover_dxl(void)
     uint32_t nb_samples_in_frame = ceil(BUFFER_SIZE / dxl_index);
     for (int i = 0; i < dxl_index; i++)
     {
-        dxl[i].dxl_motor.trajectory  = Stream_CreateStreamingChannel((float *)&trajectory_buf[nb_samples_in_frame * i], nb_samples_in_frame, sizeof(float));
-        dxl[i].dxl_motor.measurement = Stream_CreateStreamingChannel((float *)&measurement_buf[nb_samples_in_frame * i], nb_samples_in_frame, sizeof(float));
+        dxl[i].dxl_motor.trajectory  = Streaming_CreateChannel((float *)&trajectory_buf[nb_samples_in_frame * i], nb_samples_in_frame, sizeof(float));
+        dxl[i].dxl_motor.measurement = Streaming_CreateChannel((float *)&measurement_buf[nb_samples_in_frame * i], nb_samples_in_frame, sizeof(float));
     }
 
     HAL_NVIC_DisableIRQ(USART3_4_IRQn);

@@ -106,8 +106,8 @@ void ControllerMotor_Init(void)
     servo_motor.control.unmap = 0; // PLAY and no REC
 
     // Init streaming channels
-    servo_motor.trajectory  = Stream_CreateStreamingChannel((float *)trajectory_buf, BUFFER_SIZE, sizeof(float));
-    servo_motor.measurement = Stream_CreateStreamingChannel((float *)measurement_buf, BUFFER_SIZE, sizeof(float));
+    servo_motor.trajectory  = Streaming_CreateChannel((float *)trajectory_buf, BUFFER_SIZE, sizeof(float));
+    servo_motor.measurement = Streaming_CreateChannel((float *)measurement_buf, BUFFER_SIZE, sizeof(float));
 
     last_position = AngularOD_PositionFrom_deg(0.0);
 
@@ -312,26 +312,26 @@ void HAL_SYSTICK_Motor_Callback(void)
     if (servo_motor.control.rec && ((Luos_GetSystick() - last_rec_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)))
     {
         // We have to save a sample of current position
-        Stream_PutSample(&servo_motor.measurement, (angular_position_t *)&servo_motor.angular_position, 1);
+        Streaming_PutSample(&servo_motor.measurement, (angular_position_t *)&servo_motor.angular_position, 1);
         last_rec_systick = Luos_GetSystick();
     }
     // ****** trajectory management *********
     static uint32_t last_systick = 0;
     if (servo_motor.control.flux == STOP)
     {
-        Stream_ResetStreamingChannel(&servo_motor.trajectory);
+        Streaming_ResetChannel(&servo_motor.trajectory);
     }
-    if ((Stream_GetAvailableSampleNB(&servo_motor.trajectory) > 0) && ((Luos_GetSystick() - last_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)) && (servo_motor.control.flux == PLAY))
+    if ((Streaming_GetAvailableSampleNB(&servo_motor.trajectory) > 0) && ((Luos_GetSystick() - last_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)) && (servo_motor.control.flux == PLAY))
     {
         if (servo_motor.mode.mode_linear_position == 1)
         {
             linear_position_t linear_position_tmp;
-            Stream_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
+            Streaming_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
             servo_motor.target_angular_position = AngularOD_PositionFrom_deg((LinearOD_PositionTo_m(linear_position_tmp) * 360.0) / (3.141592653589793 * LinearOD_PositionTo_m(servo_motor.wheel_diameter)));
         }
         else
         {
-            Stream_GetSample(&servo_motor.trajectory, (angular_position_t *)&servo_motor.target_angular_position, 1);
+            Streaming_GetSample(&servo_motor.trajectory, (angular_position_t *)&servo_motor.target_angular_position, 1);
         }
         last_systick = Luos_GetSystick();
     }

@@ -41,7 +41,7 @@ static inline void SerialProtocol_Init(void)
         SERIAL_HEADER,
         0,
     };
-    Stream_PutSample(serialTx_StreamChannel, &SerialHeader, sizeof(SerialHeader_t));
+    Streaming_PutSample(serialTx_StreamChannel, &SerialHeader, sizeof(SerialHeader_t));
     // Keep size to update, size are the last 2 bytes of the StreamChannel
     size_to_update = (uint8_t *)((int)serialTx_StreamChannel->data_ptr - 2);
     // Now we are ready to get data
@@ -50,7 +50,7 @@ static inline void SerialProtocol_Init(void)
 static inline void SerialProtocol_CreateTxMsg(void)
 {
     // Evaluate size
-    uint16_t size = (Stream_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t));
+    uint16_t size = (Streaming_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t));
     // Update size
     if ((size_to_update + 2) > (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer))
     {
@@ -72,7 +72,7 @@ static inline void SerialProtocol_CreateTxMsg(void)
         {SERIAL_HEADER,
          0} // Size will be updated on the next call of SerialProtocol_CreateTxMsg()
     };
-    Stream_PutSample(serialTx_StreamChannel, &SerialProtocol, sizeof(SerialProtocol_t));
+    Streaming_PutSample(serialTx_StreamChannel, &SerialProtocol, sizeof(SerialProtocol_t));
 
     // Keep size to update, size are the last 2 bytes of the StreamChannel
     if (serialTx_StreamChannel->data_ptr == serialTx_StreamChannel->ring_buffer)
@@ -91,13 +91,13 @@ static inline void SerialProtocol_CreateTxMsg(void)
 
 static inline uint16_t SerialProtocol_GetSizeToSend(void)
 {
-    if ((Stream_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t)) > Stream_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel))
+    if ((Streaming_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t)) > Streaming_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel))
     {
-        return Stream_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel);
+        return Streaming_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel);
     }
     else
     {
-        return Stream_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t);
+        return Streaming_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t);
     }
 }
 
@@ -109,7 +109,7 @@ static inline char *SerialProtocol_GetDataToSend(void)
 static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
 {
     streaming_channel_t *serialRx_StreamChannel = Pipe_GetRxStreamChannel();
-    uint16_t TotalSize                          = Stream_GetAvailableSampleNB(serialRx_StreamChannel);
+    uint16_t TotalSize                          = Streaming_GetAvailableSampleNB(serialRx_StreamChannel);
     uint16_t SizeUntilEnd                       = 0;
 
     if (TotalSize > 4)
@@ -123,7 +123,7 @@ static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
                 // Make TotalSize fit the size of remaining datas.
                 TotalSize    = TotalSize - i;
                 i            = 0;
-                SizeUntilEnd = Stream_GetAvailableSampleNBUntilEndBuffer(serialRx_StreamChannel);
+                SizeUntilEnd = Streaming_GetAvailableSampleNBUntilEndBuffer(serialRx_StreamChannel);
                 // Make size pointer point to the size data (1 byte after the SERIAL_HEADER 16bits length)
                 if (SizeUntilEnd > 1)
                 {
@@ -152,7 +152,7 @@ static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
                         if (*((uint8_t *)((int)serialRx_StreamChannel->sample_ptr + (*size + 3))) == SERIAL_FOOTER)
                         {
                             // This is a good message remove the header and size from the available sample keeping only the data
-                            Stream_RmvAvailableSampleNB(serialRx_StreamChannel, 3);
+                            Streaming_RmvAvailableSampleNB(serialRx_StreamChannel, 3);
                             return true;
                         }
                         // Else this is not really a massage begin, so we have to remove the fake SERIAL_HEADER byte an dcontinue looking for it.
@@ -163,7 +163,7 @@ static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
                         if (*((uint8_t *)((int)serialRx_StreamChannel->ring_buffer + ((*size + 3) - SizeUntilEnd))) == SERIAL_FOOTER)
                         {
                             // This is a good message remove the header and size from the available sample keeping only the data
-                            Stream_RmvAvailableSampleNB(serialRx_StreamChannel, 3);
+                            Streaming_RmvAvailableSampleNB(serialRx_StreamChannel, 3);
                             return true;
                         }
                         // Else this is not really a massage begin, so we have to remove the fake SERIAL_HEADER byte an dcontinue looking for it.
@@ -181,7 +181,7 @@ static inline uint8_t SerialProtocol_IsMsgComplete(uint16_t *size)
                 }
             }
             // The first byte is not a good header remove the byte
-            Stream_RmvAvailableSampleNB(serialRx_StreamChannel, 1);
+            Streaming_RmvAvailableSampleNB(serialRx_StreamChannel, 1);
         }
     }
     return false;

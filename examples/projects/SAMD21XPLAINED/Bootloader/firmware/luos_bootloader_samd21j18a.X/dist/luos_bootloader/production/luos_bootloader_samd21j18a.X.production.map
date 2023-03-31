@@ -587,7 +587,7 @@ Discarded input sections
  .bss           0x00000000        0x0 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
  .text.Luos_ServicesClear
                 0x00000000       0x14 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
- .text.Luos_ReceiveStreaming
+ .text.Streaming_Receive
                 0x00000000       0x3c build/luos_bootloader/production/_ext/1555399743/luos_engine.o
  .text.Luos_SendBaudrate
                 0x00000000       0x5a build/luos_bootloader/production/_ext/1555399743/luos_engine.o
@@ -601,9 +601,9 @@ Discarded input sections
                 0x00000000        0x8 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
  .text.Luos_Flush
                 0x00000000        0x8 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
- .text.Luos_SendStreamingSize
+ .text.Streaming_SendSize
                 0x00000000       0xb8 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
- .text.Luos_SendStreaming
+ .text.Streaming_Send
                 0x00000000       0x1c build/luos_bootloader/production/_ext/1555399743/luos_engine.o
  .text.Luos_ReadMsg
                 0x00000000       0x44 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
@@ -689,21 +689,21 @@ Discarded input sections
  .text          0x00000000        0x0 build/luos_bootloader/production/_ext/1555399743/streaming.o
  .data          0x00000000        0x0 build/luos_bootloader/production/_ext/1555399743/streaming.o
  .bss           0x00000000        0x0 build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_CreateStreamingChannel
+ .text.Streaming_CreateChannel
                 0x00000000       0x38 build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_ResetStreamingChannel
+ .text.Streaming_ResetChannel
                 0x00000000        0x8 build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_GetAvailableSampleNB
+ .text.Streaming_GetAvailableSampleNB
                 0x00000000       0x48 build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_PutSample
+ .text.Streaming_PutSample
                 0x00000000       0x8c build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_GetSample
+ .text.Streaming_GetSample
                 0x00000000       0x70 build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_GetAvailableSampleNBUntilEndBuffer
+ .text.Streaming_GetAvailableSampleNBUntilEndBuffer
                 0x00000000       0x3c build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_AddAvailableSampleNB
+ .text.Streaming_AddAvailableSampleNB
                 0x00000000       0x4c build/luos_bootloader/production/_ext/1555399743/streaming.o
- .text.Stream_RmvAvailableSampleNB
+ .text.Streaming_RmvAvailableSampleNB
                 0x00000000       0x34 build/luos_bootloader/production/_ext/1555399743/streaming.o
  .rodata        0x00000000       0x30 build/luos_bootloader/production/_ext/1555399743/streaming.o
  .debug_info    0x00000000     0x15eb build/luos_bootloader/production/_ext/1555399743/streaming.o
