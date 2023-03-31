@@ -228,7 +228,7 @@ _CRITICAL void Transmit_End(void)
         // A tx_task failed
         nbrRetry++;
         // compute a delay before retry
-        RobusHAL_ResetTimeout(20 * nbrRetry * (ctx.node.node_id + 1));
+        RobusHAL_ResetTimeout(20 * nbrRetry * (Node_Get()->node_id + 1));
         // Lock the trasmission to be sure no one can send something from this node.
         ctx.tx.lock   = true;
         ctx.tx.status = TX_DISABLE;

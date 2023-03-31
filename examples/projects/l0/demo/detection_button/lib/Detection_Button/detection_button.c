@@ -48,7 +48,7 @@ void DetectionButton_Loop(void)
 
     // ********** hot plug management ************
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected() == false)
+    if (Luos_IsDetected() == false)
     {
         // We don't have any ID, meaning no detection occure or detection is occuring.
         if (previous_id == -1)

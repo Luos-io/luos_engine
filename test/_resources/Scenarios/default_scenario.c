@@ -72,7 +72,7 @@ static void Detection(service_t *service)
     do
     {
         Luos_Loop();
-    } while (!Luos_IsNodeDetected());
+    } while (!Luos_IsDetected());
 
     RTFilter_Reset(&result);
     printf("[INFO] %d services are active\n", result.result_nbr);

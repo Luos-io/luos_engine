@@ -70,7 +70,7 @@ void BiometricSecurity_Loop(void)
     static uint8_t system_init     = 0;
     search_result_t result;
 
-    if (Luos_IsNodeDetected() && !system_init)
+    if (Luos_IsDetected() && !system_init)
     {
         RTFilter_Alias(RTFilter_Reset(&result), "btn_");
 

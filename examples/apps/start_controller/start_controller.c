@@ -61,7 +61,7 @@ void StartController_Loop(void)
     search_result_t result;
     // ********** hot plug management ************
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         // Make services configurations
         if (end_detection)

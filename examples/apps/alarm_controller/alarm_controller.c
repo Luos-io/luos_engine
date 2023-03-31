@@ -51,7 +51,7 @@ void AlarmController_Loop(void)
 
     // ********** hot plug management ************
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         if (end_detection)
         {

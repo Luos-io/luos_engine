@@ -49,6 +49,7 @@
 #include "msg_alloc.h"
 #include "luos_hal.h"
 #include "luos_utils.h"
+#include "node.h"
 
 #include "context.h"
 
@@ -703,9 +704,9 @@ error_return_t MsgAlloc_IsReseted(void)
     // Check if we need to reset everything due to detection reset
     if (reset_needed)
     {
-        if (ctx.node.node_id != 0)
+        if (Node_Get()->node_id != 0)
         {
-            ctx.node.node_id = 0;
+            Node_Get()->node_id = 0;
             // We need to reset MsgAlloc
             MsgAlloc_Init(NULL);
         }

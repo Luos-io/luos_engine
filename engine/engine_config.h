@@ -10,10 +10,11 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define BOOT_TIMEOUT      1000
-#define DEFAULTID         0x00
-#define PROTOCOL_REVISION 0
-#define BROADCAST_VAL     0x0FFF
+#define DETECTION_TIMEOUT_MS 10000 // Timeout used to detect a failed detection
+#define BOOT_TIMEOUT         1000
+#define DEFAULTID            0x00
+#define PROTOCOL_REVISION    0
+#define BROADCAST_VAL        0x0FFF
 
 #define MAX_ALIAS_SIZE    16
 #define MAX_DATA_MSG_SIZE 128

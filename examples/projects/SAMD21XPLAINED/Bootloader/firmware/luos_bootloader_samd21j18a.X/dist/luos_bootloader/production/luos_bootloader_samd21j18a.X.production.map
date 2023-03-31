@@ -360,7 +360,7 @@ section                    address  length [bytes]      (dec)  Description
 .text.Luos_SetVerboseMo     0x8740            0x8           8   
 .text.RoutingTB_Get         0x8748            0x8           8   
 .text.LuosHAL_GetMode       0x8750            0x8           8   
-.text.Robus_GetNode         0x8758            0x8           8   
+.text.Node_Get         0x8758            0x8           8   
 .text._close                0x8760            0x8           8   
 .text._fstat                0x8768            0x8           8   
 .text._isatty               0x8770            0x8           8   
@@ -609,7 +609,7 @@ Discarded input sections
                 0x00000000       0x44 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
  .text.Luos_ReadFromService
                 0x00000000       0xa0 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
- .text.Luos_IsNodeDetected
+ .text.Luos_IsDetected
                 0x00000000       0x10 build/luos_bootloader/production/_ext/1555399743/luos_engine.o
  .text.Luos_SetFilterState
                 0x00000000       0x1c build/luos_bootloader/production/_ext/1555399743/luos_engine.o
@@ -3127,11 +3127,11 @@ LOAD data_init
                 0x000078c0       0x44 build/luos_bootloader/production/_ext/1857845632/robus_hal.o
                 0x000078c0                RobusHAL_ResetTimeout
 
-.text.Robus_SetNodeDetected%176
+.text.Node_SetState%176
                 0x00007904       0x44
- .text.Robus_SetNodeDetected
+ .text.Node_SetState
                 0x00007904       0x44 build/luos_bootloader/production/_ext/1000620745/robus.o
-                0x00007904                Robus_SetNodeDetected
+                0x00007904                Node_SetState
 
 .text._fwalk_reent%177
                 0x00007948       0x42
@@ -3569,11 +3569,11 @@ LOAD data_init
                 0x00008644       0x10 build/luos_bootloader/production/_ext/1234256160/luos_hal.o
                 0x00008644                LuosHAL_FlashReadLuosMemoryInfo
 
-.text.Robus_IsNodeDetected%258
+.text.Node_GetState%258
                 0x00008654       0x10
- .text.Robus_IsNodeDetected
+ .text.Node_GetState
                 0x00008654       0x10 build/luos_bootloader/production/_ext/1000620745/robus.o
-                0x00008654                Robus_IsNodeDetected
+                0x00008654                Node_GetState
 
 .text.Robus_SetVerboseMode%259
                 0x00008664       0x10
@@ -3686,11 +3686,11 @@ LOAD data_init
                 0x00008750        0x8 build/luos_bootloader/production/_ext/1234256160/luos_hal.o
                 0x00008750                LuosHAL_GetMode
 
-.text.Robus_GetNode%279
+.text.Node_Get%279
                 0x00008758        0x8
- .text.Robus_GetNode
+ .text.Node_Get
                 0x00008758        0x8 build/luos_bootloader/production/_ext/1000620745/robus.o
-                0x00008758                Robus_GetNode
+                0x00008758                Node_Get
 
 .text._close%280
                 0x00008760        0x8

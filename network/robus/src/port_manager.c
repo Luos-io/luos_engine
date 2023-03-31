@@ -39,6 +39,7 @@
 #include "context.h"
 #include "robus_hal.h"
 #include "luos_hal.h"
+#include "node.h"
 
 /*******************************************************************************
  * Definitions
@@ -67,7 +68,7 @@ _CRITICAL void PortMng_Init(void)
     // Reinit port table
     for (uint8_t port = 0; port < NBR_PORT; port++)
     {
-        ctx.node.port_table[port] = 0;
+        Node_Get()->port_table[port] = 0;
     }
 }
 /******************************************************************************
@@ -85,7 +86,7 @@ _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
         // Check if every line have been poked and poke it if not
         for (uint8_t port = 0; port < NBR_PORT; port++)
         {
-            if (ctx.node.port_table[port] == 0)
+            if (Node_Get()->port_table[port] == 0)
             {
                 return;
             }
@@ -117,7 +118,7 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     while (LuosHAL_GetSystick() - start_tick < 3)
         ;
     // Save port as empty by default
-    ctx.node.port_table[PortNbr] = 0xFFFF;
+    Node_Get()->port_table[PortNbr] = 0xFFFF;
     // read the line state
     if (RobusHAL_GetPTPState(PortNbr))
     {
@@ -139,11 +140,11 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
  ******************************************************************************/
 error_return_t PortMng_PokeNextPort(void)
 {
-    if ((ctx.port.activ != NBR_PORT) || (ctx.node.node_id == 1))
+    if ((ctx.port.activ != NBR_PORT) || (Node_Get()->node_id == 1))
     {
         for (uint8_t port = 0; port < NBR_PORT; port++)
         {
-            if (ctx.node.port_table[port] == 0)
+            if (Node_Get()->port_table[port] == 0)
             {
                 // this port have not been poked
                 if (PortMng_PokePort(port))
@@ -153,7 +154,7 @@ error_return_t PortMng_PokeNextPort(void)
                 else
                 {
                     // nobody is here
-                    ctx.node.port_table[port] = 0xFFFF;
+                    Node_Get()->port_table[port] = 0xFFFF;
                 }
             }
         }

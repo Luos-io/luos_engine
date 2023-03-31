@@ -219,7 +219,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
             {
                 MsgAlloc_Reset();
                 ctx.tx.status = TX_DISABLE;
-                Robus_SetNodeDetected(EXTERNAL_DETECTION);
+                Node_SetState(EXTERNAL_DETECTION);
                 Robus_SetVerboseMode(false);
                 PortMng_Init();
             }
@@ -522,7 +522,7 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             }
             else
             {
-                if ((header->target == ctx.node.node_id) && ((header->target != 0)))
+                if ((header->target == Node_Get()->node_id) && ((header->target != 0)))
                 {
                     return ctx.verbose;
                 }
@@ -658,7 +658,7 @@ void Recep_InterpretMsgProtocol(msg_t *msg)
                 return;
             }
             // check if the message is really for the node or it is a service that has no filter
-            if (msg->header.target == ctx.node.node_id)
+            if (msg->header.target == Node_Get()->node_id)
             {
                 for (i = 0; i < ctx.ll_service_number; i++)
                 {
@@ -687,7 +687,7 @@ _CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
         // when it is a serviceidack and this message is destined to the node send an ack
         return 1;
     }
-    else if ((current_msg->header.target_mode == NODEIDACK) && (ctx.node.node_id == current_msg->header.target))
+    else if ((current_msg->header.target_mode == NODEIDACK) && (Node_Get()->node_id == current_msg->header.target))
     {
         // when it is nodeidack and this message is destined to the node send an ack
         return 1;

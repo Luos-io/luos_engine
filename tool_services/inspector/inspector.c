@@ -44,7 +44,7 @@ void Inspector_Init(void)
 void Inspector_Loop(void)
 {
     // check if the network is detected
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         if (Luos_NbrAvailableMsg() > 0)
         {

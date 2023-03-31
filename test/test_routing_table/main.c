@@ -109,7 +109,7 @@ void unittest_RTFilter_Type(void)
         do
         {
             Luos_Loop();
-        } while (!Luos_IsNodeDetected());
+        } while (!Luos_IsDetected());
         //  Init variables
         search_result_t result;
 
@@ -234,7 +234,7 @@ void unittest_RTFilter_Alias()
         do
         {
             Luos_Loop();
-        } while (!Luos_IsNodeDetected());
+        } while (!Luos_IsDetected());
         //  Init variables
         ExpectedServiceNB = 3;
         search_result_t result;

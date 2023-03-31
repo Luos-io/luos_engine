@@ -78,7 +78,7 @@ void LedStripPosition_Loop(void)
     static uint32_t lastframe_time_ms = 0;
     search_result_t result;
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         if (end_detection)
         {

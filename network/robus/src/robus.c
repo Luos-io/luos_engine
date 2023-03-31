@@ -34,12 +34,9 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
-#define NETWORK_TIMEOUT 10000 // timeout to detect a failed detection
-
 static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
 static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
-static void Robus_RunNetworkTimeout(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -61,15 +58,7 @@ void Robus_Init(memory_stats_t *memory_stats)
 {
     // Init the number of created  virtual service.
     ctx.ll_service_number = 0;
-    // Set default service id. This id is a void id used if no service is created.
-    ctx.node.node_id = DEFAULTID;
-    // By default node are not certified.
-    ctx.node.certified = false;
-    // set node_info value
-    ctx.node.node_info = 0;
-#ifdef NO_RTB
-    ctx.node.node_info |= 1 << 0;
-#endif
+    Node_Init();
     // no transmission lock
     ctx.tx.lock = false;
     // Init collision state
@@ -103,7 +92,7 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.rx.status.unmap      = 0;
     ctx.rx.status.identifier = 0xF;
 
-    Robus_SetNodeDetected(NO_DETECTION);
+    Node_SetState(NO_DETECTION);
 }
 /******************************************************************************
  * @brief Reset Masks
@@ -126,7 +115,7 @@ void Robus_MaskInit(void)
 void Robus_Loop(void)
 {
     // Network timeout management
-    Robus_RunNetworkTimeout();
+    Node_Loop();
     // Execute message allocation tasks
     MsgAlloc_loop();
     // Interpreat received messages and create luos task for it.
@@ -193,7 +182,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     // ***************************************************
     // don't send luos messages if network is down
     // ***************************************************
-    if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Robus_IsNodeDetected() != DETECTION_OK))
+    if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Node_GetState() != DETECTION_OK))
     {
         return PROHIBITED;
     }
@@ -260,7 +249,7 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
     }
     else
     {
-        msg->header.source = ctx.node.node_id;
+        msg->header.source = Node_Get()->node_id;
     }
     if (Robus_SetTxTask(ll_service, msg) == FAILED)
     {
@@ -280,7 +269,7 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
 
     // if a detection is in progress,
     // Don't do an another detection and return 0
-    if (Robus_IsNodeDetected() >= LOCAL_DETECTION)
+    if (Node_GetState() >= LOCAL_DETECTION)
     {
         return 0;
     }
@@ -292,13 +281,13 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
         // Reset all detection state of services on the network
         Robus_ResetNetworkDetection(ll_service);
         // Make sure that the detection is not interrupted
-        if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+        if (Node_GetState() == EXTERNAL_DETECTION)
         {
             return 0;
         }
         // setup local node
-        ctx.node.node_id = 1;
-        last_node        = 1;
+        Node_Get()->node_id = 1;
+        last_node           = 1;
         // setup sending ll_service
         ll_service->id = 1;
 
@@ -334,7 +323,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
     {
         // if a detection is in progress,
         // Don't do an another detection and return 0
-        if (Robus_IsNodeDetected() >= LOCAL_DETECTION)
+        if (Node_GetState() >= LOCAL_DETECTION)
         {
             return 0;
         }
@@ -353,11 +342,11 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
         try_nbr++;
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
 
-    ctx.node.node_id = 0;
+    Node_Get()->node_id = 0;
     PortMng_Init();
     if (try_nbr < 5)
     {
-        Robus_SetNodeDetected(LOCAL_DETECTION);
+        Node_SetState(LOCAL_DETECTION);
         return SUCCEED;
     }
 
@@ -392,9 +381,9 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         {
             // Message transmission failure
             // Consider this port unconnected
-            ctx.node.port_table[ctx.port.activ] = 0xFFFF;
-            ctx.port.activ                      = NBR_PORT;
-            ctx.port.keepLine                   = false;
+            Node_Get()->port_table[ctx.port.activ] = 0xFFFF;
+            ctx.port.activ                         = NBR_PORT;
+            ctx.port.keepLine                      = false;
             continue;
         }
 
@@ -404,7 +393,7 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         while (ctx.port.keepLine)
         {
             Robus_Loop();
-            if (LuosHAL_GetSystick() - start_tick > NETWORK_TIMEOUT)
+            if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)
             {
                 // topology detection is too long, we should abort it and restart
                 return FAILED;
@@ -446,10 +435,10 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     // This is a reply to our request to generate the next node id.
                     // This node_id is the one after the currently poked branch.
                     // We need to save this ID as a connection on a port
-                    memcpy((void *)&ctx.node.port_table[ctx.port.activ], (void *)&input->data[0], sizeof(uint16_t));
+                    memcpy((void *)&Node_Get()->port_table[ctx.port.activ], (void *)&input->data[0], sizeof(uint16_t));
                     // Now we can send it to the next node
                     memcpy((void *)&node_bootstrap.nodeid, (void *)&input->data[0], sizeof(uint16_t));
-                    node_bootstrap.prev_nodeid    = ctx.node.node_id;
+                    node_bootstrap.prev_nodeid    = Node_Get()->node_id;
                     output_msg.header.config      = BASE_PROTOCOL;
                     output_msg.header.cmd         = WRITE_NODE_ID;
                     output_msg.header.size        = sizeof(node_bootstrap_t);
@@ -459,15 +448,15 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     Robus_SendMsg(ll_service, &output_msg);
                     break;
                 case sizeof(node_bootstrap_t):
-                    if (ctx.node.node_id != 0)
+                    if (Node_Get()->node_id != 0)
                     {
-                        ctx.node.node_id = 0;
+                        Node_Get()->node_id = 0;
                         MsgAlloc_Init(NULL);
                     }
                     // This is a node bootstrap information.
                     memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
-                    ctx.node.node_id                    = node_bootstrap.nodeid;
-                    ctx.node.port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
+                    Node_Get()->node_id                    = node_bootstrap.nodeid;
+                    Node_Get()->port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
                     // Continue the topology detection on our other ports.
                     Robus_DetectNextNodes(ll_service);
                 default:
@@ -480,7 +469,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             break;
         case END_DETECTION:
             // Detect end of detection
-            Robus_SetNodeDetected(DETECTION_OK);
+            Node_SetState(DETECTION_OK);
             return FAILED;
             break;
         default:
@@ -488,15 +477,6 @@ static error_return_t Robus_MsgHandler(msg_t *input)
             break;
     }
     return FAILED;
-}
-/******************************************************************************
- * @brief get node structure
- * @param None
- * @return Node pointer
- ******************************************************************************/
-node_t *Robus_GetNode(void)
-{
-    return (node_t *)&ctx.node;
 }
 /******************************************************************************
  * @brief ID Mask calculation
@@ -521,62 +501,6 @@ void Robus_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
         tempo = (((service_id - 1) + i) - (8 * ctx.IDShiftMask));
         ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
     }
-}
-
-/******************************************************************************
- * @brief set node_connected variable
- * @param state
- * @return None
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL inline void Robus_SetNodeDetected(network_state_t state)
-{
-    switch (state)
-    {
-        case NO_DETECTION:
-            ctx.node_connected.timeout_run = false;
-            ctx.node_connected.timeout     = 0;
-            break;
-        case LOCAL_DETECTION:
-        case EXTERNAL_DETECTION:
-            ctx.node_connected.timeout_run = true;
-            ctx.node_connected.timeout     = LuosHAL_GetSystick();
-            break;
-        case DETECTION_OK:
-            ctx.node_connected.timeout_run = false;
-            ctx.node_connected.timeout     = 0;
-            break;
-        default:
-            break;
-    }
-    ctx.node_connected.state = state;
-}
-
-/******************************************************************************
- * @brief manage network timeout
- * @param None
- * @return None
- ******************************************************************************/
-void Robus_RunNetworkTimeout(void)
-{
-    if (ctx.node_connected.timeout_run)
-    {
-        // if timeout is reached, go back to link-down state
-        if (LuosHAL_GetSystick() - ctx.node_connected.timeout > NETWORK_TIMEOUT)
-        {
-            Robus_SetNodeDetected(NO_DETECTION);
-        }
-    }
-}
-
-/******************************************************************************
- * @brief get node_connected value
- * @param None
- * @return state
- ******************************************************************************/
-network_state_t Robus_IsNodeDetected(void)
-{
-    return ctx.node_connected.state;
 }
 
 /******************************************************************************

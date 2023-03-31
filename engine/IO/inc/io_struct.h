@@ -126,28 +126,6 @@ typedef enum
     FAILED = 0xFF /*!< function fail. */
 } error_return_t;
 
-/******************************************************************************
- * @struct node_t
- * @brief node informations structure
- ******************************************************************************/
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            struct __attribute__((__packed__))
-            {
-                uint16_t node_id : 12;  /*!< Node id */
-                uint16_t certified : 4; /*!< True if the node have a certificate */
-                uint8_t node_info;
-            };
-            uint16_t port_table[NBR_PORT]; /*!< Phisical port connections */
-        };
-        uint8_t unmap[NBR_PORT + 3]; /*!< Uncmaped form. */
-    };
-} node_t;
-
 typedef enum
 {
     // protocol level command

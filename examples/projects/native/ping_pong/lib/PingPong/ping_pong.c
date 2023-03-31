@@ -208,7 +208,7 @@ void game_service()
                 return;
             }
         }
-        if (!Luos_IsNodeDetected())
+        if (!Luos_IsDetected())
         {
             // Someone relaunch a detection
             game_state = game_loading;
@@ -222,7 +222,7 @@ void game_over()
     char c;
     score_increase(player, last_id);
     set_screen_to(gameOver_view);
-    while (Luos_IsNodeDetected())
+    while (Luos_IsDetected())
     {
         if ((kbhit()))
         {
@@ -241,7 +241,7 @@ void game_start()
     char c;
     set_screen_to(start_view);
     // Game is not running
-    while (!Luos_IsNodeDetected())
+    while (!Luos_IsDetected())
     {
         // This is the initialization
         if ((kbhit()))
@@ -282,7 +282,7 @@ void game_alone()
             get_service  = true;
             game_state   = game_loading;
             update_alone = true;
-            while (Luos_IsNodeDetected())
+            while (Luos_IsDetected())
             {
             }
             return;
@@ -293,7 +293,7 @@ void game_alone()
 void game_loading()
 {
     set_screen_to(wait_view);
-    while (!Luos_IsNodeDetected())
+    while (!Luos_IsDetected())
     {
     }
     if (get_service)
@@ -311,7 +311,7 @@ void game_running()
     static ball_t last_ball = LEFT;
     static uint32_t empty_date;
     uint8_t c;
-    if (!Luos_IsNodeDetected())
+    if (!Luos_IsDetected())
     {
         // Someone relaunch a detection
         game_state = game_loading;

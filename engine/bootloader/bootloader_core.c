@@ -72,7 +72,7 @@ void LuosBootloader_JumpToBootloader(void)
     LuosHAL_SetMode((uint8_t)APP_RELOAD_MODE);
 
     // Save node id in flash
-    node_t *node     = Robus_GetNode();
+    node_t *node     = Node_Get();
     uint16_t node_id = node->node_id;
 
     LuosHAL_SaveNodeID(node_id);
@@ -155,7 +155,7 @@ void LuosBootloader_JumpToApp(void)
 void LuosBootloader_SetNodeID(void)
 {
     uint16_t node_id = LuosHAL_GetNodeID();
-    node_t *node     = Robus_GetNode();
+    node_t *node     = Node_Get();
 
     node->node_id = node_id;
 }
@@ -324,7 +324,7 @@ void LuosBootloader_SendCrc(bootloader_cmd_t response, uint8_t data)
     ready_msg.header.size        = 2 * sizeof(uint8_t);
     ready_msg.data[0]            = response;
     ready_msg.data[1]            = data;
-    node_t *node                 = Robus_GetNode();
+    node_t *node                 = Node_Get();
     uint32_t tick                = LuosHAL_GetSystick();
     while (LuosHAL_GetSystick() - tick < node->node_id)
         ;
@@ -344,7 +344,7 @@ void LuosBootloader_SendResponse(bootloader_cmd_t response)
     ready_msg.header.target      = source_id;
     ready_msg.header.size        = sizeof(uint8_t);
     ready_msg.data[0]            = response;
-    node_t *node                 = Robus_GetNode();
+    node_t *node                 = Node_Get();
     uint32_t tick                = LuosHAL_GetSystick();
     while (LuosHAL_GetSystick() - tick < node->node_id)
         ;

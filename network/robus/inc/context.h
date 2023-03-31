@@ -18,16 +18,8 @@
 
 typedef struct
 {
-    network_state_t state;
-    bool timeout_run;
-    uint32_t timeout;
-} network_lock_t;
-
-typedef struct
-{
 
     // Variables
-    node_t node;    /*!< Node informations. */
     RxCom_t rx;     /*!< Receiver informations. */
     TxCom_t tx;     /*!< Transmitter informations. */
     PortMng_t port; /*!< Port informations. */
@@ -37,9 +29,6 @@ typedef struct
     uint16_t ll_service_number;                        /*!< Low level Service number. */
     uint8_t IDMask[ID_MASK_SIZE];
     uint16_t IDShiftMask;
-
-    // network management
-    network_lock_t node_connected;
 
     uint8_t filter_state;
     uint16_t filter_id;

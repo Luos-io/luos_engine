@@ -53,7 +53,7 @@ void MotorCopy_Loop(void)
 {
 
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         if (end_detection)
         {

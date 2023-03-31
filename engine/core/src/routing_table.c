@@ -302,7 +302,7 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
 static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 {
     // Make sure that the detection is not interrupted
-    if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+    if (Node_GetState() == EXTERNAL_DETECTION)
     {
         return;
     }
@@ -339,7 +339,7 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 void RoutingTB_SendEndDetection(service_t *service)
 {
     // Make sure that the detection is not interrupted
-    if (Robus_IsNodeDetected() == EXTERNAL_DETECTION)
+    if (Node_GetState() == EXTERNAL_DETECTION)
     {
         return;
     }

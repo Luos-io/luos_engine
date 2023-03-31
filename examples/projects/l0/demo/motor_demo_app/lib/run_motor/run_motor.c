@@ -72,7 +72,7 @@ void RunMotor_Init(void)
 void RunMotor_Loop(void)
 {
     // Check if we the node is detected
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         // check if we need to change the selected motor
         // if new target has been received, update selected motor

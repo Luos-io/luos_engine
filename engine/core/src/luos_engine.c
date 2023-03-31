@@ -176,6 +176,19 @@ void Luos_Loop(void)
     }
 }
 /******************************************************************************
+ * @brief Luos clear statistic
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_ResetStatistic(void)
+{
+    memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
+    for (uint16_t i = 0; i < service_number; i++)
+    {
+        service_table[i].statistics.max_retry = 0;
+    }
+}
+/******************************************************************************
  * @brief Check if this command concern luos
  * @param service : Pointer to the service
  * @param cmd : The command value
@@ -344,7 +357,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
         case ASK_DETECTION:
             if (input->header.size == 0)
             {
-                if (Robus_IsNodeDetected() < LOCAL_DETECTION)
+                if (Node_GetState() < LOCAL_DETECTION)
                 {
                     Flag_DetectServices = 1;
                 }
@@ -439,7 +452,7 @@ static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_ms
     routing_table_t local_routing_table[service_number + 1];
 
     // start by saving node entry
-    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Robus_GetNode());
+    RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Node_Get());
     entry_nb++;
     // save services entry
     for (uint16_t i = 0; i < service_number; i++)
@@ -495,7 +508,7 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        if (Robus_IsNodeDetected() == DETECTION_OK)
+                        if (Node_GetState() == DETECTION_OK)
                         {
                             // directly transmit the message in Localhost
                             Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
@@ -892,15 +905,6 @@ uint16_t Luos_NbrAvailableMsg(void)
     return MsgAlloc_LuosTasksNbr();
 }
 /******************************************************************************
- * @brief Get tick number
- * @param None
- * @return Tick
- ******************************************************************************/
-uint32_t Luos_GetSystick(void)
-{
-    return LuosHAL_GetSystick();
-}
-/******************************************************************************
  * @brief Check if all Tx message are complete
  * @param None
  * @return SUCCEED : If Tx message are complete
@@ -908,55 +912,6 @@ uint32_t Luos_GetSystick(void)
 error_return_t Luos_TxComplete(void)
 {
     return MsgAlloc_TxAllComplete();
-}
-/******************************************************************************
- * @brief Luos clear statistic
- * @param None
- * @return None
- ******************************************************************************/
-void Luos_ResetStatistic(void)
-{
-    memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
-    for (uint16_t i = 0; i < service_number; i++)
-    {
-        service_table[i].statistics.max_retry = 0;
-    }
-}
-/******************************************************************************
- * @brief Check if the node is connected to the network
- * @param None
- * @return TRUE if the node is connected to the network
- ******************************************************************************/
-bool Luos_IsNodeDetected(void)
-{
-    if (Robus_IsNodeDetected() == DETECTION_OK)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/******************************************************************************
- * @brief Function that changes the filter value
- * @param state : Put to "1" if we want to disable the filter , "0" to enable
- * @param service
- * @return None
- ******************************************************************************/
-void Luos_SetFilterState(uint8_t state, service_t *service)
-{
-    Robus_SetFilterState(state, service->ll_service);
-}
-/******************************************************************************
- * @brief Function that changes the verbose mode
- * @param mode : Put to "1" if we want to enable the verbose mode, "0" to disable
- * @return None
- ******************************************************************************/
-void Luos_SetVerboseMode(uint8_t mode)
-{
-    Robus_SetVerboseMode(mode);
 }
 /******************************************************************************
  * @brief Register a new package
@@ -1072,7 +1027,7 @@ void Luos_Detect(service_t *service)
 {
     msg_t detect_msg;
 
-    if (Robus_IsNodeDetected() < LOCAL_DETECTION)
+    if (Node_GetState() < LOCAL_DETECTION)
     {
         // set the detection launcher id to 1
         Luos_SetID(service, 1);
