@@ -454,7 +454,7 @@ uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
         // Wait for the server to acknowledge the PTP update
         while (ptp_update == false)
         {
-            msleep(10);
+            msleep(80);
         }
         return ptpb;
     }
