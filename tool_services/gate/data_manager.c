@@ -74,7 +74,7 @@ void DataManager_Run(service_t *service)
 #endif
     DataManager_Format(service);
 }
-// This function manage only commande incoming from pipe
+// This function manage only commands incoming from pipe
 void DataManager_RunPipeOnly(service_t *service)
 {
     msg_t *data_msg;

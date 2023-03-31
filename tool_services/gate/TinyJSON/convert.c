@@ -59,7 +59,7 @@ const char *Convert_Float(float value)
 }
 
 /*******************************************************************************
- * Luos Json data to Luos messages convertion
+ * Luos Json data to Luos messages conversion
  ******************************************************************************/
 // Convert a Json into messages
 void Convert_DataToLuos(service_t *service, char *data)
