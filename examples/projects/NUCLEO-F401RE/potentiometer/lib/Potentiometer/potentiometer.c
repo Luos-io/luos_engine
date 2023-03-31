@@ -15,7 +15,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-angular_position_t angle = 0.0;
+angular_position_t angle;
 time_luos_t angle_timestamp;
 
 /*******************************************************************************
@@ -30,6 +30,7 @@ static void Potentiometer_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Potentiometer_Init(void)
 {
+    angle               = AngularOD_PositionFrom_deg(0.0f);
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // potentiometer driver init
     PotentiometerDrv_Init();

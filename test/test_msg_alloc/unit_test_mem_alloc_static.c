@@ -298,7 +298,7 @@ void unittest_BufferAvailableSpaceComputation(void)
             //---------------
             current_msg         = (msg_t *)&msg_buffer[i];
             data_end_estimation = (uint8_t *)&msg_buffer[i + 1];
-            for (uint8_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
+            for (uint32_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
             {
                 // Test is launched only if "data_end_estimation" doesn't overflows "msg_buffer" size
                 if (data_end_estimation < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
@@ -514,12 +514,9 @@ void unittest_OldestMsgCandidate(void)
 
 void unittest_ValidDataIntegrity(void)
 {
-    NEW_TEST_CASE("No copy needed");
+    NEW_TEST_CASE("Check data integrity");
     MsgAlloc_Init(NULL);
     {
-        // copy_task_pointer is NULL :
-        // So there is no need to copy header to begin of msg_buffer
-        //
         //        msg_buffer init state
         //        +-------------------------------------------------------------+
         //        |-------|Header|----------------------------------------------|
@@ -533,7 +530,6 @@ void unittest_ValidDataIntegrity(void)
 
         uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
         mem_clear_needed = 0;
-        copy_task_pointer == NULL;
 
         memset((void *)&msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
         memset((void *)&expected_msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
@@ -544,46 +540,6 @@ void unittest_ValidDataIntegrity(void)
         TEST_ASSERT_FALSE(IS_ASSERT());
         NEW_STEP("Check message buffered has not been modified");
         TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, MSG_BUFFER_SIZE);
-    }
-
-    NEW_TEST_CASE("Copy header to begin of message buffer");
-    MsgAlloc_Init(NULL);
-    {
-        // Tx message size is greater than Rx size currently received.
-        // Tx message doesn't fit in msg buffer.
-        // There is already a Task , function should return FAILED
-        //
-        //        msg_buffer init state
-        //        +-------------------------------------------------------------+
-        //        |-------|Header|----------------------------------------------|
-        //        +-------------------------------------------------------------+
-        //
-        //
-        //        msg_buffer ending state
-        //        +-------------------------------------------------------------+
-        //        |Header|------------------------------------------------------|
-        //        +-------------------------------------------------------------+
-        //
-
-        uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
-        mem_clear_needed  = 0;
-        copy_task_pointer = (header_t *)&msg_buffer[sizeof(msg_t)];
-
-        memset((void *)&msg_buffer[0], 0, MSG_BUFFER_SIZE);
-        memset((void *)&expected_msg_buffer[0], 0, MSG_BUFFER_SIZE);
-        memset((void *)&msg_buffer[sizeof(msg_t)], 1, sizeof(header_t));
-        memset((void *)&expected_msg_buffer[0], 1, sizeof(header_t));
-
-        RESET_ASSERT();
-        MsgAlloc_ValidDataIntegrity();
-
-        NEW_STEP("Check NO assert has occured");
-        TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP("Check \"copy task pointer\" is NULL");
-        TEST_ASSERT_NULL(copy_task_pointer);
-        // TEST_ASSERT_EQUAL(copy_task_pointer, NULL);
-        NEW_STEP("Check header is copied to beginning of buffer");
-        TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, sizeof(header_t));
     }
 
     NEW_TEST_CASE("Verify memory cleaning");
@@ -750,8 +706,8 @@ void unittest_ClearMsgSpace(void)
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
         NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, luos_tasks_stack_id);
-        NEW_STEP("Check that 8 messages has been dropped");
-        TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
+        NEW_STEP("Check that MAX_MSG_NB - 2 messages has been dropped");
+        TEST_ASSERT_EQUAL(MAX_MSG_NB - 2, memory_stats.msg_drop_number);
         NEW_STEP("Check Luos Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
@@ -834,8 +790,8 @@ void unittest_ClearMsgSpace(void)
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
         NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, msg_tasks_stack_id);
-        NEW_STEP("Check that 8 messages has been dropped");
-        TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
+        NEW_STEP("Check that MAX_MSG_NB - 2 messages has been dropped");
+        TEST_ASSERT_EQUAL(MAX_MSG_NB - 2, memory_stats.msg_drop_number);
         NEW_STEP("Check Message Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
@@ -918,8 +874,8 @@ void unittest_ClearMsgSpace(void)
         TEST_ASSERT_EQUAL(100, memory_stats.buffer_occupation_ratio);
         NEW_STEP("Check \"luos tasks stack id\" equals 2");
         TEST_ASSERT_EQUAL(2, tx_tasks_stack_id);
-        NEW_STEP("Check that 8 messages has been dropped");
-        TEST_ASSERT_EQUAL(8, memory_stats.msg_drop_number);
+        NEW_STEP("Check that MAX_MSG_NB - 2 messages has been dropped");
+        TEST_ASSERT_EQUAL(MAX_MSG_NB - 2, memory_stats.msg_drop_number);
         NEW_STEP("Check Tx Tasks are all reseted");
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
@@ -1065,8 +1021,6 @@ void unittest_ClearLuosTask(void)
 
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
 
-        ASSERT_ACTIVATION(0);
-
         NEW_STEP("Check Luos Task is cleared in all cases");
         for (uint16_t task_id = 0; task_id < MAX_MSG_NB; task_id++)
         {
@@ -1112,6 +1066,5 @@ void unittest_ClearLuosTask(void)
                 }
             }
         }
-        ASSERT_ACTIVATION(1);
     }
 }

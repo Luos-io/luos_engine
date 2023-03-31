@@ -27,12 +27,13 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-revision_t luos_version = {.major = 2, .minor = 8, .build = 0};
+revision_t luos_version = {.major = 2, .minor = 9, .build = 0};
 package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
 service_t service_table[MAX_SERVICE_NUMBER];
 uint16_t service_number = 0;
 service_t *detection_service;
+uint8_t Flag_DetectServices = 0;
 
 luos_stats_t luos_stats;
 general_stats_t general_stats;
@@ -110,6 +111,7 @@ void Luos_Loop(void)
     }
     Robus_Loop();
     // look at all received messages
+    LUOS_MUTEX_LOCK
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)
     {
         // There is a message available find the service linked to it
@@ -169,12 +171,20 @@ void Luos_Loop(void)
             }
         }
     }
+    LUOS_MUTEX_UNLOCK
     // finish msg used
     MsgAlloc_UsedMsgEnd();
     // manage timed auto update
     Luos_AutoUpdateManager();
     // save loop date
     last_loop_date = LuosHAL_GetSystick();
+
+    if (Flag_DetectServices == 1)
+    {
+        Flag_DetectServices++;
+        RoutingTB_DetectServices(detection_service);
+        Flag_DetectServices = 0;
+    }
 }
 /******************************************************************************
  * @brief Check if this command concern luos
@@ -348,7 +358,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             {
                 if (Robus_IsNodeDetected() < LOCAL_DETECTION)
                 {
-                    RoutingTB_DetectServices(detection_service);
+                    Flag_DetectServices = 1;
                 }
             }
             consume = SUCCEED;
@@ -629,6 +639,7 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
 error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg)
 {
     error_return_t error = SUCCEED;
+    LUOS_MUTEX_LOCK
     while (error == SUCCEED)
     {
         error = MsgAlloc_PullMsg(service->ll_service, returned_msg);
@@ -637,12 +648,14 @@ error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg)
         {
             if (Luos_MsgHandler(service, *returned_msg) == FAILED)
             {
+                LUOS_MUTEX_UNLOCK
                 // This message is for the user, pass it to the user.
                 return SUCCEED;
             }
         }
         MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
     }
+    LUOS_MUTEX_UNLOCK
     return FAILED;
 }
 /******************************************************************************
@@ -657,6 +670,7 @@ error_return_t Luos_ReadFromService(service_t *service, short id, msg_t **return
     uint16_t remaining_msg_number   = 0;
     ll_service_t *oldest_ll_service = NULL;
     error_return_t error            = SUCCEED;
+    LUOS_MUTEX_LOCK
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)
     {
         // Check if this message is for us
@@ -677,6 +691,7 @@ error_return_t Luos_ReadFromService(service_t *service, short id, msg_t **return
                 if ((Luos_MsgHandler(service, *returned_msg) == FAILED) & (error == SUCCEED))
                 {
                     // This message is for the user, pass it to the user.
+                    LUOS_MUTEX_UNLOCK
                     return SUCCEED;
                 }
                 MsgAlloc_ClearMsgFromLuosTasks(*returned_msg);
@@ -691,6 +706,7 @@ error_return_t Luos_ReadFromService(service_t *service, short id, msg_t **return
             remaining_msg_number++;
         }
     }
+    LUOS_MUTEX_UNLOCK
     return FAILED;
 }
 /******************************************************************************

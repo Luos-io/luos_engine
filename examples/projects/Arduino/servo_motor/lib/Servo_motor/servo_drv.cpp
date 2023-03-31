@@ -45,12 +45,12 @@ void ServoDrv_Init(void)
 
     servo_parameters_t param;
 
-    param.max_angle      = 180.0;
+    param.max_angle      = AngularOD_PositionFrom_deg(180.0);
     param.max_pulse_time = 1.5 / 1000;
     param.min_pulse_time = 0.5 / 1000;
 
     servo.param = param;
-    servo.angle = 0.0;
+    servo.angle = AngularOD_PositionFrom_deg(0.0);
 }
 
 /******************************************************************************
@@ -62,11 +62,11 @@ uint8_t ServoDrv_SetPosition(angular_position_t angle)
 {
     servo.angle = angle;
     // limit angle value
-    if (servo.angle < 0.0)
+    if (AngularOD_PositionTo_deg(servo.angle) < 0.0)
     {
-        servo.angle = 0.0;
+        servo.angle = AngularOD_PositionFrom_deg(0.0);
     }
-    else if (servo.angle > servo.param.max_angle)
+    else if (AngularOD_PositionTo_deg(servo.angle) > AngularOD_PositionTo_deg(servo.param.max_angle))
     {
         servo.angle = servo.param.max_angle;
     }

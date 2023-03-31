@@ -28,8 +28,8 @@
 service_t *app;
 uint8_t position = 0;
 // distance occupied from sensor variables
-linear_position_t distance     = -0.001;
-linear_position_t raw_distance = -0.001;
+linear_position_t distance;
+linear_position_t raw_distance;
 // image variables
 volatile color_t image[LED_NUMBER];
 // Display modes
@@ -60,6 +60,8 @@ static void motor_copy_display(int led_strip_id);
  ******************************************************************************/
 void LedStripPosition_Init(void)
 {
+    distance            = LinearOD_PositionFrom_mm(-1);
+    raw_distance        = LinearOD_PositionFrom_mm(-1);
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     // Create App
     app = Luos_CreateService(LedStripPosition_MsgHandler, LEDSTRIP_POSITION_APP, "ledstrip_pos", revision);
@@ -158,10 +160,10 @@ static void LedStripPosition_MsgHandler(service_t *service, msg_t *msg)
         {
             // receive the distance sensor value
             LinearOD_PositionFromMsg(&raw_distance, msg);
-            raw_distance = raw_distance - DIST_OFFSET;
-            if ((raw_distance > STRIP_LENGTH) || (raw_distance < 0))
+            raw_distance = LinearOD_PositionFrom_m(LinearOD_PositionTo_m(raw_distance) - DIST_OFFSET);
+            if ((LinearOD_PositionTo_m(raw_distance) > STRIP_LENGTH) || (LinearOD_PositionTo_m(raw_distance) < 0))
             {
-                raw_distance = -0.001;
+                raw_distance = LinearOD_PositionFrom_mm(-1);
             }
             return;
         }
@@ -212,14 +214,14 @@ void distance_filtering(void)
     const float max_speed          = 0.3;
 
     // Filtering variables
-    static linear_position_t prev_distance  = 0.0;
-    static linear_position_t inertial_force = 0.0;
+    static linear_position_t prev_distance  = {0.0};
+    static linear_position_t inertial_force = {0.0};
 
     // Clear filter when hand is removed
-    if (raw_distance < 0.001)
+    if (LinearOD_PositionTo_mm(raw_distance) < 1.0)
     {
         distance       = prev_distance;
-        inertial_force = 0.0;
+        inertial_force = LinearOD_PositionFrom_m(0.0);
         // Glowing fade out
         glowing_fade(0.0);
     }
@@ -237,18 +239,18 @@ void distance_filtering(void)
         glowing_fade(MAXRADIUS);
 
         // Compute the error between the light and the real hand position
-        float position_err = raw_distance - prev_distance;
+        float position_err = LinearOD_PositionTo_m(raw_distance) - LinearOD_PositionTo_m(prev_distance);
 
         // Compute inertial delta force (integral)
-        inertial_force += position_err;
+        inertial_force = LinearOD_PositionFrom_m(LinearOD_PositionTo_m(inertial_force) + position_err);
         // Inertia clamping
-        if (inertial_force < -max_speed)
-            inertial_force = -max_speed;
-        if (inertial_force > max_speed)
-            inertial_force = max_speed;
+        if (LinearOD_PositionTo_m(inertial_force) < -max_speed)
+            inertial_force = LinearOD_PositionFrom_m(-max_speed);
+        if (LinearOD_PositionTo_m(inertial_force) > max_speed)
+            inertial_force = LinearOD_PositionFrom_m(max_speed);
 
         // Then filter the position to give an inertia effect
-        distance = prev_distance + (filtering_strength * position_err) + (inertia_strength * inertial_force);
+        distance = LinearOD_PositionFrom_m(LinearOD_PositionTo_m(prev_distance) + (filtering_strength * position_err) + (inertia_strength * LinearOD_PositionTo_m(inertial_force)));
     }
     prev_distance = distance;
 }
@@ -278,7 +280,7 @@ void glowing_fade(float target)
     if (radius < 0.0)
     {
         radius   = 0.0;
-        distance = -0.01;
+        distance = LinearOD_PositionFrom_m(-0.01);
     }
 }
 
@@ -287,7 +289,7 @@ void distance_frame_compute(void)
     // memset((void *)&image[(uint16_t)(distance / SPACE_BETWEEN_LEDS)], 200, sizeof(color_t));
     const uint16_t radius_led_number = (uint16_t)round((radius) / SPACE_BETWEEN_LEDS) + 1;
     const int max_intensity          = 200;
-    uint16_t middle_led              = (uint16_t)(distance / SPACE_BETWEEN_LEDS);
+    uint16_t middle_led              = (uint16_t)(LinearOD_PositionTo_m(distance) / SPACE_BETWEEN_LEDS);
     for (int i = (middle_led - radius_led_number); i < (middle_led + radius_led_number); i++)
     {
         // Conpute the real position in mm of this led
@@ -295,7 +297,7 @@ void distance_frame_compute(void)
         // Parabolic
         // int intensity = max_intensity * (1 - ((real_position - distance) * (real_position - distance) / (radius * radius)));
         // Linear
-        int intensity = max_intensity * (1 - (fabs(real_position - distance) / (radius)));
+        int intensity = max_intensity * (1 - (fabs(real_position - LinearOD_PositionTo_m(distance)) / (radius)));
         if ((intensity > 0) && (i < LED_NUMBER) && (i > 0))
         {
             image[i].b = (uint8_t)intensity;
@@ -320,22 +322,22 @@ void distance_frame_compute(void)
 void distance_based_display(int led_strip_id)
 {
     // Check if the distance is in the led strip length
-    if ((distance > 0) && (distance < STRIP_LENGTH))
+    if ((LinearOD_PositionTo_m(distance) > 0.0) && (LinearOD_PositionTo_m(distance) < STRIP_LENGTH))
     {
         // Image to light the region of the object detected
         // Compute a frame
         distance_frame_compute();
 
         // Check in which region there is an object
-        if (distance <= (STRIP_LENGTH / 3.0))
+        if (LinearOD_PositionTo_m(distance) <= (STRIP_LENGTH / 3.0))
         {
             position = MOTOR_1_POSITION;
         }
-        else if (distance <= 2 * (STRIP_LENGTH / 3.0))
+        else if (LinearOD_PositionTo_m(distance) <= 2 * (STRIP_LENGTH / 3.0))
         {
             position = MOTOR_2_POSITION;
         }
-        else if (distance <= STRIP_LENGTH)
+        else if (LinearOD_PositionTo_m(distance) <= STRIP_LENGTH)
         {
             position = MOTOR_3_POSITION;
         }
@@ -360,16 +362,16 @@ bool detection_display(int led_strip_id)
     const float start_speed            = 3.0;
     const float minimal_speed          = 0.5;
     const float speed_evolution_factor = 0.95;
-    const linear_position_t trail_size = 0.2;
+    const linear_position_t trail_size = {0.2};
     const int max_intensity            = 200;
 
-    static linear_speed_t speed = start_speed;
+    static linear_speed_t speed = {3.0};
     static float light_position = 0.0;
 
     if (led_strip_id == 0)
     {
         // This is not a good value just reset state
-        speed          = start_speed;
+        speed          = LinearOD_SpeedFrom_m_s(start_speed);
         light_position = 0.0;
         return false;
     }
@@ -377,22 +379,22 @@ bool detection_display(int led_strip_id)
     // Compute the new light _position based on the current speed
     light_position = light_position + (LinearOD_SpeedTo_m_s(speed) * ((float)FRAMERATE_MS / 1000.0));
     // Compute new speed
-    speed = speed * speed_evolution_factor;
+    speed = LinearOD_SpeedFrom_m_s(LinearOD_SpeedTo_m_s(speed) * speed_evolution_factor);
     // Speed clamping
-    if (speed < minimal_speed)
+    if (LinearOD_SpeedTo_m_s(speed) < minimal_speed)
     {
-        speed = minimal_speed;
+        speed = LinearOD_SpeedFrom_m_s(minimal_speed);
     }
 
     const uint16_t led_position = (uint16_t)(light_position / SPACE_BETWEEN_LEDS);
 
     // Compute the image
-    for (int i = 0; i < (trail_size / SPACE_BETWEEN_LEDS); i++)
+    for (int i = 0; i < (LinearOD_PositionTo_m(trail_size) / SPACE_BETWEEN_LEDS); i++)
     {
         // Compute the real position in mm of this led
         float real_position = (led_position - i) * SPACE_BETWEEN_LEDS;
         // Linear
-        int intensity = max_intensity * (1 - (fabs(real_position - light_position) / (trail_size)));
+        int intensity = max_intensity * (1 - (fabs(real_position - light_position) / LinearOD_PositionTo_m(trail_size)));
         if ((intensity > 0) && ((led_position - i) < LED_NUMBER) && ((led_position - i) > 0))
         {
             image[led_position - i].b = (uint8_t)intensity;
@@ -409,7 +411,7 @@ bool detection_display(int led_strip_id)
     // reinitialize the image so that the led_strip is not lighted by default
     memset((void *)image, 0, LED_NUMBER * sizeof(color_t));
 
-    if ((light_position - trail_size) > STRIP_LENGTH)
+    if ((light_position - LinearOD_PositionTo_m(trail_size)) > STRIP_LENGTH)
     {
         // This is the end of this animation
         // reset values

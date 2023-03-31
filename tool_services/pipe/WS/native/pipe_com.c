@@ -6,17 +6,21 @@
  ******************************************************************************/
 #include <stdbool.h>
 #include "pipe_com.h"
+#include "luos_engine.h"
 #include "luos_utils.h"
 #include <mongoose.h>
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifndef PIPE_WS_SERVER_ADDR
+    #define PIPE_WS_SERVER_ADDR "ws://localhost:9342"
+#endif
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static const char *s_listen_on = "ws://localhost:9342";
+static const char *s_listen_on = PIPE_WS_SERVER_ADDR;
 static struct mg_mgr mgr;                          // Event manager
 static struct mg_connection *ws_connection = NULL; // Websocket connection
 /*******************************************************************************
@@ -62,6 +66,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
     }
     else if (ev == MG_EV_CLOSE)
     {
+        ws_connection = NULL;
         printf("Websocket is disconnected \n");
     }
     (void)fn_data;
@@ -105,6 +110,7 @@ uint16_t PipeCom_GetSizeToSend(void)
  ******************************************************************************/
 void PipeCom_Send(void)
 {
+    uint32_t start_tick;
     if (ws_connection != NULL)
     {
         uint16_t size = PipeCom_GetSizeToSend();
@@ -112,7 +118,10 @@ void PipeCom_Send(void)
         {
             mg_ws_send(ws_connection, (const char *)Pipe_GetTxStreamChannel()->sample_ptr, size, WEBSOCKET_OP_BINARY);
             Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
-            size = PipeCom_GetSizeToSend();
+            size       = PipeCom_GetSizeToSend();
+            start_tick = Luos_GetSystick();
+            while (Luos_GetSystick() - start_tick < 2)
+                ;
         }
     }
 }
@@ -135,5 +144,5 @@ uint8_t PipeCom_Receive(uint16_t *size)
  ******************************************************************************/
 void PipeCom_Loop(void)
 {
-    mg_mgr_poll(&mgr, 1000); // Infinite event loop
+    mg_mgr_poll(&mgr, 10); // Infinite event loop
 }

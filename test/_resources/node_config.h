@@ -29,12 +29,6 @@
 #define _NODE_CONFIG_H_
 
 /*******************************************************************************
- * PROJECT DEFINITION
- *******************************************************************************/
-// Tell the linker to replace _WEAKED functions by mocked functions
-#define _WEAKED __attribute__((weak))
-
-/*******************************************************************************
  * LUOS LIBRARY DEFINITION
  *******************************************************************************
  *    Define                | Default Value              | Description

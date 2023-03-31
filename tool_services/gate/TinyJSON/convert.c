@@ -59,7 +59,7 @@ const char *Convert_Float(float value)
 }
 
 /*******************************************************************************
- * Luos Json data to Luos messages convertion
+ * Luos Json data to Luos messages conversion
  ******************************************************************************/
 // Convert a Json into messages
 void Convert_DataToLuos(service_t *service, char *data)
@@ -141,7 +141,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     // ratio
     if ((property && !strcmp(property, "power_ratio")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        ratio_t ratio = (ratio_t)json_getReal(jobj);
+        ratio_t ratio = RatioOD_RatioFrom_Percent(json_getReal(jobj));
         RatioOD_RatioToMsg(&ratio, msg);
         while (Luos_SendMsg(service, msg) == FAILED)
         {
@@ -229,9 +229,9 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     {
         linear_speed_t limits[2];
         json_t const *item = json_getChild(jobj);
-        limits[0]          = LinearOD_Speedfrom_mm_s(json_getReal(item));
+        limits[0]          = LinearOD_SpeedFrom_mm_s(json_getReal(item));
         item               = json_getSibling(item);
-        limits[1]          = LinearOD_Speedfrom_mm_s(json_getReal(item));
+        limits[1]          = LinearOD_SpeedFrom_mm_s(json_getReal(item));
         memcpy(&msg->data[0], limits, 2 * sizeof(linear_speed_t));
         msg->header.cmd  = LINEAR_SPEED_LIMIT;
         msg->header.size = 2 * sizeof(linear_speed_t);
@@ -241,7 +241,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     // Limit ratio
     if ((property && !strcmp(property, "limit_power")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        ratio_t ratio = RatioOD_RatioFromPercent((float)json_getReal(jobj));
+        ratio_t ratio = RatioOD_RatioFrom_Percent((float)json_getReal(jobj));
         RatioOD_RatioToMsg(&ratio, msg);
         msg->header.cmd = RATIO_LIMIT;
         Luos_SendMsg(service, msg);
@@ -326,7 +326,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     // target Linear speed
     if ((property && !strcmp(property, "target_trans_speed")) && ((property_type == JSON_REAL) || (property_type == JSON_INTEGER)))
     {
-        linear_speed_t linear_speed = LinearOD_Speedfrom_mm_s((float)json_getReal(jobj));
+        linear_speed_t linear_speed = LinearOD_SpeedFrom_mm_s((float)json_getReal(jobj));
         LinearOD_SpeedToMsg(&linear_speed, msg);
         Luos_SendMsg(service, msg);
         return;
@@ -934,15 +934,6 @@ void Convert_ExcludedServiceData(service_t *service)
     sprintf(json, "{\"dead_service\":\"%s\"}\n", result.result_table[0]->alias);
     // Send the message to pipe
     PipeLink_Send(service, json, strlen(json));
-}
-// This function is directly called by Luos_utils in case of curent node assert. DO NOT RENAME IT
-void node_assert(char *file, uint32_t line)
-{
-    // manage self crashing scenario
-    char json[512];
-    sprintf(json, "{\"assert\":{\"node_id\":1,\"file\":\"%s\",\"line\":%d}}\n", file, (unsigned int)line);
-    // Send the message to pipe
-    PipeLink_Send(0, json, strlen(json));
 }
 
 /*******************************************************************************

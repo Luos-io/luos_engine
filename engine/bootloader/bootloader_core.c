@@ -282,10 +282,10 @@ uint8_t compute_crc(void)
     uint8_t data  = 0x00;
     uint16_t poly = 0x0007;
 
-    uint32_t data_counter  = 0;
-    uint8_t data_index     = 0;
-    uint32_t *data_address = (uint32_t *)APP_START_ADDRESS;
-    uint32_t data_flash    = 0;
+    uint32_t data_counter   = 0;
+    uint8_t data_index      = 0;
+    uintptr_t *data_address = (uintptr_t *)APP_START_ADDRESS;
+    uintptr_t data_flash    = 0;
 
     while (data_counter < nb_bytes)
     {

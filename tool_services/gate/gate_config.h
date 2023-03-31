@@ -28,6 +28,9 @@
     #define INIT_TIME 150
 #endif
 
-#define GATE_REFRESH_TIME_S 0.05f
+#ifndef GATE_REFRESH_TIME_S
+    #define GATE_REFRESH_TIME_S 0.05f
+    #define GATE_REFRESH_AUTOSCALE
+#endif
 
 #endif /* GATE_CONFIG_H */

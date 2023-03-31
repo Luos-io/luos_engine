@@ -368,6 +368,7 @@ _CRITICAL void Recep_CatchAck(volatile uint8_t *data)
 ll_service_t *Recep_GetConcernedLLService(header_t *header)
 {
     uint16_t i = 0;
+    LUOS_ASSERT(header);
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
@@ -460,7 +461,7 @@ _CRITICAL static inline error_return_t Recep_TopicCompare(uint16_t topic_id)
  * warning : this function can be redefined only for mock testing purpose
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_WEAKED luos_localhost_t Recep_NodeConcerned(header_t *header)
+_CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
     uint16_t i = 0;
 

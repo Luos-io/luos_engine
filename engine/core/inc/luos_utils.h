@@ -19,7 +19,7 @@
         if (!(expr))          \
         Luos_assert((char *)__FILE__, __LINE__)
 #else
-    #define LUOS_ASSERT(expr) ()
+    #define LUOS_ASSERT(expr)
 #endif
 
 /* This structure is used to manage node assertion informations

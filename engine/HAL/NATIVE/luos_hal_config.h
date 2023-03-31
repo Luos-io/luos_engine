@@ -27,6 +27,26 @@ static uint32_t stub_flash_x86[FLASH_PAGE_NUMBER][FLASH_PAGE_SIZE];
 static uint32_t *last_page_stub_flash_x86 = &stub_flash_x86[FLASH_PAGE_NUMBER - 1][FLASH_PAGE_SIZE];
 
 /*******************************************************************************
+ * DEFINE THREAD MUTEX LOCKING AND UNLOCKING FUNCTIONS
+ ******************************************************************************/
+#include <pthread.h>
+extern pthread_mutex_t mutex_msg_alloc;
+extern pthread_mutex_t mutex_luos;
+
+#ifndef MSGALLOC_MUTEX_LOCK
+    #define MSGALLOC_MUTEX_LOCK pthread_mutex_lock(&mutex_msg_alloc);
+#endif
+#ifndef MSGALLOC_MUTEX_UNLOCK
+    #define MSGALLOC_MUTEX_UNLOCK pthread_mutex_unlock(&mutex_msg_alloc);
+#endif
+
+#ifndef LUOS_MUTEX_LOCK
+    #define LUOS_MUTEX_LOCK pthread_mutex_lock(&mutex_luos);
+#endif
+#ifndef LUOS_MUTEX_UNLOCK
+    #define LUOS_MUTEX_UNLOCK pthread_mutex_unlock(&mutex_luos);
+#endif
+/*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
 #ifndef PAGE_SIZE

@@ -85,7 +85,7 @@ uint8_t vl53l0x_DrvRead(linear_position_t *distance)
         }
         else
         {
-            *distance = -0.001;
+            *distance = LinearOD_PositionFrom_mm(-1);
         }
         mesure_pending = false;
         result         = SUCCEED;

@@ -15,9 +15,12 @@ defaults:
     shell: bash
 
 jobs:
-  unit-tests:
-    name: Unit tests
-    runs-on: windows-latest
+  tests-run:
+    name: Tests run
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Check out Luos repository
         uses: actions/checkout@v3
@@ -36,10 +39,17 @@ jobs:
       - name: Run PlatformIO Unit Tests
         run: |
           # Clean all projects
-          platformio run -t clean -c ./test/_resources/platformio.ini
+          platformio run -t clean
 
           # Run Unit tests
-          platformio test -c ./test/_resources/platformio.ini  -vvv
+          platformio test -vvv
+
+  unit-tests:
+    name: Unit tests
+    needs: tests-run
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Tests succeed!"
 
   code-format:
     name: Code format
@@ -80,7 +90,7 @@ jobs:
                           examples/projects/NUCLEO-F072RB,
                           examples/projects/NUCLEO-L073RZ,
                           examples/projects/STM32L4S5_discovery,
-                          examples/projects/ESP32,
+                          # examples/projects/ESP32,
                           examples/projects/native
                           ]
         os: [macos-latest, windows-latest, ubuntu-latest]

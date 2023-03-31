@@ -31,7 +31,6 @@ extern volatile uint8_t *data_end_estimation;
 extern volatile msg_t *oldest_msg;
 extern volatile msg_t *used_msg;
 extern volatile uint8_t mem_clear_needed;
-extern volatile header_t *copy_task_pointer;
 extern volatile msg_t *msg_tasks[MAX_MSG_NB];
 extern volatile uint16_t msg_tasks_stack_id;
 extern volatile luos_task_t luos_tasks[MAX_MSG_NB];
@@ -244,18 +243,17 @@ void unittest_MsgAlloc_ValidHeader()
         //
         //        msg_buffer ending state :
         //        +-------------------------------------------------------------+
-        //        |------------------------------------|  Header  | Datas to be received |
-        //        +----------^-------------------------^------------------------+
-        //        |          |                         |
-        //     current_msg  data_ptr             copy_task_pointer
+        //        ||  Header  | Datas to be received |--------------------------
+        //        +----------^--------------------------------------------------+
+        //        |          |
+        //     current_msg  data_ptr
         //
 
-        uint8_t valid                        = true;
-        uint16_t data_size                   = DATA_SIZE;
-        current_msg                          = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - 1];
-        header_t *expected_copy_task_pointer = (header_t *)current_msg;
-        uint8_t *expected_data_ptr           = (uint8_t *)&msg_buffer[0] + sizeof(header_t);
-        uint8_t *expected_data_end           = expected_data_ptr + data_size + CRC_SIZE;
+        uint8_t valid              = true;
+        uint16_t data_size         = DATA_SIZE;
+        current_msg                = (msg_t *)&msg_buffer[MSG_BUFFER_SIZE - 1];
+        uint8_t *expected_data_ptr = (uint8_t *)&msg_buffer[0] + sizeof(header_t);
+        uint8_t *expected_data_end = expected_data_ptr + data_size + CRC_SIZE;
 
         MsgAlloc_ValidHeader(valid, data_size);
         NEW_STEP("Check mem cleared flag is raised");
@@ -264,8 +262,6 @@ void unittest_MsgAlloc_ValidHeader()
         TEST_ASSERT_EQUAL(expected_data_ptr, data_ptr);
         NEW_STEP("Check \"data end estimation\" has been computed");
         TEST_ASSERT_EQUAL(expected_data_end, data_end_estimation);
-        NEW_STEP("Check \"copy task pointer\" points to message to copy");
-        TEST_ASSERT_EQUAL(expected_copy_task_pointer, copy_task_pointer);
     }
 
     NEW_TEST_CASE("There is enough space : save the end position and raise the clear flag");
@@ -405,14 +401,11 @@ void unittest_MsgAlloc_InvalidMsg()
         TEST_ASSERT_EQUAL(current_msg, data_ptr);
         NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(data_end_estimation, ((uint8_t *)current_msg + DATA_END));
-        NEW_STEP("Check no copy is needed : \"copy task pointer\" is reseted");
-        TEST_ASSERT_NULL(copy_task_pointer);
 
         // Init variables
         //---------------
-        current_msg       = (msg_t *)&msg_buffer[100];
-        data_ptr          = &msg_buffer[110];
-        copy_task_pointer = (header_t *)data_ptr;
+        current_msg = (msg_t *)&msg_buffer[100];
+        data_ptr    = &msg_buffer[110];
 
         // Call function
         //---------------
@@ -424,8 +417,6 @@ void unittest_MsgAlloc_InvalidMsg()
         TEST_ASSERT_EQUAL(current_msg, data_ptr);
         NEW_STEP("Check \"data end estimation\" is correctly computed");
         TEST_ASSERT_EQUAL(data_end_estimation, ((uint8_t *)current_msg + DATA_END));
-        NEW_STEP("Check \"copy task pointer\" is not cleared");
-        TEST_ASSERT_NOT_NULL(copy_task_pointer);
     }
 
     NEW_TEST_CASE("Clean memory");
@@ -932,9 +923,9 @@ void unittest_MsgAlloc_PullMsgToInterpret()
             msg_tasks[i]        = (msg_t *)&msg_buffer[i];
         }
 
+        msg_tasks_stack_id = MAX_MSG_NB;
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
-            msg_tasks_stack_id = MAX_MSG_NB;
             RESET_ASSERT();
             result = MsgAlloc_PullMsgToInterpret(&returned_msg);
             NEW_STEP_IN_LOOP("Check NO assert has occured", i);
@@ -1033,7 +1024,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
             // Init variables
             luos_tasks_stack_id          = i;
             expected_luos_tasks_stack_id = i + 1;
-            expected_mem_stat            = (i + 1) * 10;
+            expected_mem_stat            = ((i + 1) * 100 / MAX_MSG_NB);
             message                      = (msg_t *)&msg_buffer[0];
             service_concerned            = (ll_service_t *)&msg_buffer[0];
 
@@ -1101,7 +1092,7 @@ void unittest_MsgAlloc_PullMsg()
 
         // Init variables
         luos_tasks_stack_id = MAX_MSG_NB - 1;
-        for (uint32_t i = 0; i < MAX_MSG_NB; i++)
+        for (uintptr_t i = 0; i < MAX_MSG_NB; i++)
         {
             luos_tasks[i].ll_service_pt = (ll_service_t *)i;
         }
@@ -1329,7 +1320,7 @@ void unittest_MsgAlloc_LookAtLuosTask()
         ll_service_t *oldest_ll_service = NULL;
         luos_tasks_stack_id             = MAX_MSG_NB;
 
-        for (uint32_t i = 0; i < MAX_MSG_NB; i++)
+        for (uintptr_t i = 0; i < MAX_MSG_NB; i++)
         {
             luos_tasks[i].ll_service_pt = (ll_service_t *)i;
         }
@@ -1788,7 +1779,7 @@ void unittest_MsgAlloc_PullMsgFromTxTask()
 
         for (uint8_t i = 0; i < MAX_MSG_NB; i++)
         {
-            tx_tasks[i].data_pt = &msg_buffer[i];
+            tx_tasks[i].data_pt = (uint8_t *)&msg_buffer[i];
             tx_tasks[i].size    = i;
         }
 
@@ -1888,9 +1879,10 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
 
         // Init variables
         //---------------
-        tx_tasks_stack_id = 10;
+        const int task_number = 10;
+        tx_tasks_stack_id     = task_number;
 
-        for (uint16_t i = 0; i < MAX_MSG_NB; i++)
+        for (uint16_t i = 0; i < task_number; i++)
         {
             msg_tasks[i]                = (msg_t *)&msg_buffer[i * 20];
             msg_tasks[i]->header.target = i + 1;
@@ -1905,13 +1897,13 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
 
         expected_tx_tasks[0].data_pt = tx_tasks[1].data_pt;
         expected_tx_tasks[1].data_pt = tx_tasks[3].data_pt;
-        for (uint16_t i = 2; i < MAX_MSG_NB - 3; i++)
+        for (uint16_t i = 2; i < task_number - 3; i++)
         {
             expected_tx_tasks[i].data_pt = tx_tasks[i + 3].data_pt;
         }
-        expected_tx_tasks[MAX_MSG_NB - 1].data_pt = 0;
-        expected_tx_tasks[MAX_MSG_NB - 2].data_pt = 0;
-        expected_tx_tasks[MAX_MSG_NB - 3].data_pt = 0;
+        expected_tx_tasks[task_number - 1].data_pt = 0;
+        expected_tx_tasks[task_number - 2].data_pt = 0;
+        expected_tx_tasks[task_number - 3].data_pt = 0;
 
         // Call function
         //---------------
@@ -1919,7 +1911,7 @@ void unittest_MsgAlloc_PullServiceFromTxTask()
 
         // Verify
         //---------------
-        for (uint16_t i = 0; i < MAX_MSG_NB; i++)
+        for (uint16_t i = 0; i < task_number; i++)
         {
             NEW_STEP_IN_LOOP("Check Tx task message pointer are correctly allocated after pulling expected service tx task", i);
             TEST_ASSERT_EQUAL(expected_tx_tasks[i].data_pt, tx_tasks[i].data_pt);

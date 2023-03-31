@@ -183,10 +183,10 @@ uint8_t ll_analog_read(void *profile)
 {
     profile_voltage_t *analog = (profile_voltage_t *)profile;
 
-    analog[P1].voltage = ((float)analog_input.p1 / 4096.0f) * 3.3f;
-    analog[P7].voltage = ((float)analog_input.p7 / 4096.0f) * 3.3f;
-    analog[P8].voltage = ((float)analog_input.p8 / 4096.0f) * 3.3f;
-    analog[P9].voltage = ((float)analog_input.p9 / 4096.0f) * 3.3f;
+    analog[P1].voltage = ElectricOD_VoltageFrom_V(((float)analog_input.p1 / 4096.0f) * 3.3f);
+    analog[P7].voltage = ElectricOD_VoltageFrom_V(((float)analog_input.p7 / 4096.0f) * 3.3f);
+    analog[P8].voltage = ElectricOD_VoltageFrom_V(((float)analog_input.p8 / 4096.0f) * 3.3f);
+    analog[P9].voltage = ElectricOD_VoltageFrom_V(((float)analog_input.p9 / 4096.0f) * 3.3f);
 
     return true;
 }
