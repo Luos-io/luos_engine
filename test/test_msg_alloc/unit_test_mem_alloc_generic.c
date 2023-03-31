@@ -923,9 +923,9 @@ void unittest_MsgAlloc_PullMsgToInterpret()
             msg_tasks[i]        = (msg_t *)&msg_buffer[i];
         }
 
+        msg_tasks_stack_id = MAX_MSG_NB;
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
-            msg_tasks_stack_id = MAX_MSG_NB;
             RESET_ASSERT();
             result = MsgAlloc_PullMsgToInterpret(&returned_msg);
             NEW_STEP_IN_LOOP("Check NO assert has occured", i);

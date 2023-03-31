@@ -1,11 +1,11 @@
 /******************************************************************************
- * @file button
+ * @file ping_pong
  * @brief driver example a simple button
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef BUTTON_H
-#define BUTTON_H
+#ifndef PINGPONG_H
+#define PINGPONG_H
 
 /*******************************************************************************
  * Definitions
@@ -18,7 +18,7 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Button_Init(void);
-void Button_Loop(void);
+void PingPong_Init(void);
+void PingPong_Loop(void);
 
-#endif /* BUTTON_H */
+#endif /* PINGPONG_H */

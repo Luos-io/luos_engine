@@ -63,6 +63,7 @@ sources = ["+<*.c>",
 
 # private library flags
 find_HAL = False
+env.Replace(SRC_FILTER=sources)
 for item in env.get("CPPDEFINES", []):
     if (isinstance(item, tuple) and item[0] == "LUOSHAL") and (find_HAL == False):
         find_HAL = True
@@ -71,13 +72,22 @@ for item in env.get("CPPDEFINES", []):
                 click.secho(
                     "\t* %s HAL selected for Luos and Robus." % item[1], fg="green")
                 luos_telemetry["luos_hal"] = item[1]
+                if (path.exists("network/robus/HAL/" + item[1] + "/hal_script.py")):
+                    # This is an extra script dedicated to this HAL, run it
+                    hal_script_path = realpath(
+                        "network/robus/HAL/" + item[1] + "/hal_script.py")
+                    env.SConscript(hal_script_path, exports="env")
+                if (path.exists("engine/HAL/" + item[1] + "/hal_script.py")):
+                    # This is an extra script dedicated to this HAL, run it
+                    hal_script_path = realpath(
+                        "engine/HAL/" + item[1] + "/hal_script.py")
+                    env.SConscript(hal_script_path, exports="env")
         else:
             if not visited_key in global_env:
                 click.secho("\t* %s HAL not found" % item[1], fg="red")
                 luos_telemetry["luos_hal"] = "invalid" + str(item[1])
         env.Append(CPPPATH=[realpath("network/robus/HAL/" + item[1])])
         env.Append(CPPPATH=[realpath("engine/HAL/" + item[1])])
-        env.Replace(SRC_FILTER=sources)
         env.Append(
             SRC_FILTER=["+<../../../network/robus/HAL/%s/*.c>" % item[1]])
         env.Append(SRC_FILTER=["+<../../HAL/%s/*.c>" % item[1]])
@@ -108,7 +118,6 @@ for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
         current_os = pf.system()
         click.secho("\t* Native Mock HAL for %s is selected for Luos and Robus." %
                     current_os, fg="green")
-
         env.Append(SRC_FILTER=["+<../../../test/_resources/*>"])
         for resources in scandir(getcwd() + "/test/_resources"):
             if resources.is_dir():
