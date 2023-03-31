@@ -1,3 +1,5 @@
+
+
 /******************************************************************************
  * @file node_config.h
  * @brief This file allow you to use standard preprocessor definitions to
@@ -45,7 +47,7 @@
  ******************************************************************************/
 #define MAX_SERVICE_NUMBER 2
 #define MAX_PROFILE_NUMBER 1
-#define MAX_MSG_NB         30
+#define MAX_MSG_NB         200
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -104,9 +106,9 @@
  *    INIT_TIME                 |              150           | Wait init time before first detection
  ******************************************************************************/
 #define MAX_RTB_ENTRY       40
-#define GATE_BUFF_SIZE      1024
-#define PIPE_RX_BUFFER_SIZE 1024
-#define PIPE_TX_BUFFER_SIZE 2048
+#define GATE_BUFF_SIZE      65000
+#define PIPE_RX_BUFFER_SIZE 65000
+#define PIPE_TX_BUFFER_SIZE 65000
 #define INIT_TIME           150
 #define GATE_REFRESH_TIME_S 0.05f
 
