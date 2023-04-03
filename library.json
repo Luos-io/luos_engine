@@ -2,7 +2,7 @@
     "name": "luos_engine",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST,luos engine",
     "description": "Luos engine turns your embedded system into services like microservices architecture does it in software.",
-    "version":"3.0.0",
+    "version": "3.0.0",
     "authors": {
         "name": "Luos",
         "url": "https://luos.io"
@@ -17,6 +17,7 @@
             "-I network/robus/selftest",
             "-I engine/OD",
             "-I engine/core/inc",
+            "-I engine/IO/inc",
             "-I engine/profiles/state",
             "-I engine/profiles/motor",
             "-I engine/profiles/servo_motor",
