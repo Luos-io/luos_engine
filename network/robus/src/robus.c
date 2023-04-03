@@ -316,6 +316,13 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
         while (MsgAlloc_TxAllComplete() != SUCCEED)
             ;
 
+        // Reinit ll_service id
+        for (uint8_t i = 0; i < ctx.ll_service_number; i++)
+        {
+            ctx.ll_service_table[i].id = DEFAULTID;
+        }
+
+        // Reinit msg alloc
         MsgAlloc_Init(NULL);
 
         // wait for some 2ms to be sure all previous messages are received and treated
@@ -434,6 +441,11 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     if (Node_Get()->node_id != 0)
                     {
                         Node_Get()->node_id = 0;
+                        // Reinit ll_service id
+                        for (uint8_t i = 0; i < ctx.ll_service_number; i++)
+                        {
+                            ctx.ll_service_table[i].id = DEFAULTID;
+                        }
                         MsgAlloc_Init(NULL);
                     }
                     // This is a node bootstrap information.

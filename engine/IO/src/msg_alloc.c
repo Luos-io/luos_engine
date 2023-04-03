@@ -52,8 +52,6 @@
 #include "node.h"
 #include "filter.h"
 
-#include "context.h"
-
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -145,11 +143,6 @@ _CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void);
 void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
-    // Reinit ll_service id
-    for (uint8_t i = 0; i < ctx.ll_service_number; i++)
-    {
-        ctx.ll_service_table[i].id = DEFAULTID;
-    }
     current_msg         = (msg_t *)&msg_buffer[0];
     data_ptr            = (uint8_t *)&msg_buffer[0];
     data_end_estimation = (uint8_t *)&current_msg->data[CRC_SIZE];

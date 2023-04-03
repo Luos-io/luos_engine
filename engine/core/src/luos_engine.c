@@ -13,6 +13,7 @@
 #include "bootloader_core.h"
 #include "_timestamp.h"
 #include "filter.h"
+#include "context.h"
 
 /*******************************************************************************
  * Variables
@@ -96,6 +97,12 @@ void Luos_Loop(void)
     if (MsgAlloc_IsReseted() == SUCCEED)
     {
         // We receive a reset detection
+        // Reset services ID
+        // Reinit ll_service id
+        for (uint8_t i = 0; i < ctx.ll_service_number; i++)
+        {
+            ctx.ll_service_table[i].id = DEFAULTID;
+        }
         // Reset the data reception context
         Luos_ReceiveData(NULL, NULL, NULL);
     }
