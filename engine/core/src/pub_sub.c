@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "filter.h"
+#include "service.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -103,7 +104,7 @@ error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
     // Recompute multicast mask if needed
     if (err == SUCCEED)
     {
-        for (uint16_t i = 0; i < ctx.ll_service_number; i++)
+        for (uint16_t i = 0; i < Service_GetNumber(); i++)
         {
             if (PubSub_IsTopicSubscribed((ll_service_t *)(&ctx.ll_service_table[i]), topic) == true)
             {

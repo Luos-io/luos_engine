@@ -18,6 +18,7 @@
 #include "luos_utils.h"
 #include "luos_engine.h"
 #include "filter.h"
+#include "service.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -57,8 +58,6 @@ volatile uint16_t last_node = 0;
  ******************************************************************************/
 void Robus_Init(memory_stats_t *memory_stats)
 {
-    // Init the number of created  virtual service.
-    ctx.ll_service_number = 0;
     Node_Init();
     // no transmission lock
     ctx.tx.lock = false;
@@ -108,35 +107,19 @@ void Robus_Loop(void)
         // Check if this message is a protocol one
         if (Robus_MsgHandler(msg) == FAILED)
         {
-            // If not create luos tasks.
-            Recep_InterpretMsgProtocol(msg);
+            // If not create luos tasks for all services.
+            Service_AllocMsg(msg);
         }
     }
     RobusHAL_Loop();
 }
 /******************************************************************************
- * @brief create a service add in local route table
- * @param type of service create
+ * @brief return the ll_service list
  * @return None
  ******************************************************************************/
-ll_service_t *Robus_ServiceCreate(uint16_t type)
+ll_service_t *Robus_GetLlServiceList(void)
 {
-    // Set the service type
-    ctx.ll_service_table[ctx.ll_service_number].type = type;
-    // Initialise the service id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
-    ctx.ll_service_table[ctx.ll_service_number].id = DEFAULTID;
-    // Initialize dead service detection
-    ctx.ll_service_table[ctx.ll_service_number].dead_service_spotted = 0;
-    // Clear stats
-    ctx.ll_service_table[ctx.ll_service_number].ll_stat.max_retry = 0;
-    // Clear topic number
-    ctx.ll_service_table[ctx.ll_service_number].last_topic_position = 0;
-    for (uint16_t i = 0; i < LAST_TOPIC; i++)
-    {
-        ctx.ll_service_table[ctx.ll_service_number].topic_list[i] = 0;
-    }
-    // Return the freshly initialized ll_service pointer.
-    return (ll_service_t *)&ctx.ll_service_table[ctx.ll_service_number++];
+    return (ll_service_t *)ctx.ll_service_table;
 }
 /******************************************************************************
  * @brief clear service list in route table
@@ -147,8 +130,6 @@ void Robus_ServicesClear(void)
 {
     // Clear ll_service table
     memset((void *)ctx.ll_service_table, 0, sizeof(ll_service_t) * MAX_SERVICE_NUMBER);
-    // Reset the number of created services
-    ctx.ll_service_number = 0;
 }
 /******************************************************************************
  * @brief Formalize message Set tx task and send
@@ -317,10 +298,7 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
             ;
 
         // Reinit ll_service id
-        for (uint8_t i = 0; i < ctx.ll_service_number; i++)
-        {
-            ctx.ll_service_table[i].id = DEFAULTID;
-        }
+        Service_ClearId();
 
         // Reinit msg alloc
         MsgAlloc_Init(NULL);
@@ -401,7 +379,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
 {
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
-    ll_service_t *ll_service = Recep_GetConcernedLLService(&input->header);
+    ll_service_t *ll_service = Service_GetConcerned(&input->header);
     switch (input->header.cmd)
     {
         case WRITE_NODE_ID:
@@ -442,10 +420,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     {
                         Node_Get()->node_id = 0;
                         // Reinit ll_service id
-                        for (uint8_t i = 0; i < ctx.ll_service_number; i++)
-                        {
-                            ctx.ll_service_table[i].id = DEFAULTID;
-                        }
+                        Service_ClearId();
                         MsgAlloc_Init(NULL);
                     }
                     // This is a node bootstrap information.

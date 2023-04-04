@@ -11,6 +11,8 @@
 #include "node.h"
 #include "luos_utils.h"
 #include "luos_hal.h"
+#include "msg_alloc.h"
+#include "pub_sub.h"
 
 /*******************************************************************************
  * Definitions
@@ -95,6 +97,18 @@ void Service_GenerateId(uint16_t base_id)
         {
             service_ctx.list[i].ll_service->id = base_id++;
         }
+    }
+}
+
+/******************************************************************************
+ * @brief Clear all service ID
+ * @return None
+ ******************************************************************************/
+void Service_ClearId(void)
+{
+    for (uint16_t i = 0; i < service_ctx.number; i++)
+    {
+        service_ctx.list[i].ll_service->id = DEFAULTID;
     }
 }
 
@@ -193,6 +207,128 @@ void Service_AutoUpdateManager(void)
 }
 
 /******************************************************************************
+ * @brief Parse msg to find a service concerned
+ * @param header of message
+ * @return ll_service pointer
+ ******************************************************************************/
+ll_service_t *Service_GetConcerned(header_t *header)
+{
+    uint16_t i = 0;
+    LUOS_ASSERT(header);
+    // Find if we are concerned by this message.
+    switch (header->target_mode)
+    {
+        case SERVICEIDACK:
+        case SERVICEID:
+            // Check all ll_service id
+            for (i = 0; i < service_ctx.number; i++)
+            {
+                if (header->target == service_ctx.list[i].ll_service->id)
+                {
+                    return service_ctx.list[i].ll_service;
+                }
+            }
+            break;
+        case TYPE:
+            // Check all ll_service type
+            for (i = 0; i < service_ctx.number; i++)
+            {
+                if (header->target == service_ctx.list[i].ll_service->type)
+                {
+                    return service_ctx.list[i].ll_service;
+                }
+            }
+            break;
+        case BROADCAST:
+        case NODEIDACK:
+        case NODEID:
+            return service_ctx.list[0].ll_service;
+            break;
+        case TOPIC:
+        default:
+            return NULL;
+            break;
+    }
+    return NULL;
+}
+
+/******************************************************************************
+ * @brief Parse msg to find all services concerned and allocate them
+ * @param msg pointer
+ * @return None
+ ******************************************************************************/
+void Service_AllocMsg(msg_t *msg)
+{
+    uint16_t i = 0;
+
+    // Find if we are concerned by this message.
+    switch (msg->header.target_mode)
+    {
+        case SERVICEIDACK:
+        case SERVICEID:
+            // Check all ll_service id
+            for (i = 0; i < service_ctx.number; i++)
+            {
+                if (msg->header.target == service_ctx.list[i].ll_service->id)
+                {
+                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                    break;
+                }
+            }
+            return;
+            break;
+        case TYPE:
+            // Check all ll_service type
+            for (i = 0; i < service_ctx.number; i++)
+            {
+                if (msg->header.target == service_ctx.list[i].ll_service->type)
+                {
+                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                }
+            }
+            return;
+            break;
+        case BROADCAST:
+            for (i = 0; i < service_ctx.number; i++)
+            {
+                MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+            }
+            return;
+            break;
+        case TOPIC:
+            for (i = 0; i < service_ctx.number; i++)
+            {
+                if (PubSub_IsTopicSubscribed(service_ctx.list[i].ll_service, msg->header.target))
+                {
+                    // TODO manage multiple slave concerned
+                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                }
+            }
+            return;
+            break;
+        case NODEIDACK:
+        case NODEID:
+            if (msg->header.target == DEFAULTID) // on default ID it's always a luos command create only one task
+            {
+                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
+                return;
+            }
+            // check if the message is really for the node or it is a service that has no filter
+            if (msg->header.target == Node_Get()->node_id)
+            {
+                for (i = 0; i < service_ctx.number; i++)
+                {
+                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                }
+            }
+            return;
+            break;
+        default:
+            break;
+    }
+}
+
+/******************************************************************************
  * @brief API to Create a service
  * @param service_cb : Callback msg handler for the service
  * @param type of service corresponding to object dictionnary
@@ -204,7 +340,22 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 {
     uint8_t i           = 0;
     service_t *service  = &service_ctx.list[service_ctx.number];
-    service->ll_service = Robus_ServiceCreate(type);
+    service->ll_service = &Robus_GetLlServiceList()[service_ctx.number];
+
+    // Set the service type
+    service->ll_service->type = type;
+    // Initialise the service id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
+    service->ll_service->id = DEFAULTID;
+    // Initialize dead service detection
+    service->ll_service->dead_service_spotted = 0;
+    // Clear stats
+    service->ll_service->ll_stat.max_retry = 0;
+    // Clear topic number
+    service->ll_service->last_topic_position = 0;
+    for (uint16_t i = 0; i < LAST_TOPIC; i++)
+    {
+        service->ll_service->topic_list[i] = 0;
+    }
 
     // Link the service to his callback
     service->service_cb = service_cb;

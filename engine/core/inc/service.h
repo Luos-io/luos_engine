@@ -17,7 +17,13 @@ service_t *Service_GetTable(void);
 uint16_t Service_GetNumber(void);
 void Service_ResetStatistics(void);
 void Service_GenerateId(uint16_t base_id);
+void Service_ClearId(void);
 service_t *Service_GetService(ll_service_t *ll_service);
 uint16_t Service_GetIndex(service_t *service);
 void Service_AutoUpdateManager(void);
+
+// IO related functions
+ll_service_t *Service_GetConcerned(header_t *header);
+void Service_AllocMsg(msg_t *msg);
+
 #endif /* _SERVICE_H_ */

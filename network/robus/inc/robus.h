@@ -19,8 +19,10 @@
  ******************************************************************************/
 void Robus_Init(memory_stats_t *memory_stats);
 void Robus_Loop(void);
-ll_service_t *Robus_ServiceCreate(uint16_t type);
+
 void Robus_ServicesClear(void);
+ll_service_t *Robus_GetLlServiceList(void);
+
 error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg);
 error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg);
 uint16_t Robus_TopologyDetection(ll_service_t *ll_service);

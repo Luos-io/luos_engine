@@ -361,51 +361,6 @@ _CRITICAL void Recep_CatchAck(volatile uint8_t *data)
     }
 }
 /******************************************************************************
- * @brief Parse msg to find a service concerned
- * @param header of message
- * @return ll_service pointer
- ******************************************************************************/
-ll_service_t *Recep_GetConcernedLLService(header_t *header)
-{
-    uint16_t i = 0;
-    LUOS_ASSERT(header);
-    // Find if we are concerned by this message.
-    switch (header->target_mode)
-    {
-        case SERVICEIDACK:
-        case SERVICEID:
-            // Check all ll_service id
-            for (i = 0; i < ctx.ll_service_number; i++)
-            {
-                if (header->target == ctx.ll_service_table[i].id)
-                {
-                    return (ll_service_t *)&ctx.ll_service_table[i];
-                }
-            }
-            break;
-        case TYPE:
-            // Check all ll_service type
-            for (i = 0; i < ctx.ll_service_number; i++)
-            {
-                if (header->target == ctx.ll_service_table[i].type)
-                {
-                    return (ll_service_t *)&ctx.ll_service_table[i];
-                }
-            }
-            break;
-        case BROADCAST:
-        case NODEIDACK:
-        case NODEID:
-            return (ll_service_t *)&ctx.ll_service_table[0];
-            break;
-        case TOPIC:
-        default:
-            return NULL;
-            break;
-    }
-    return NULL;
-}
-/******************************************************************************
  * @brief Parse msg to find a service concerne
  * @param header of message
  * @return None
@@ -414,8 +369,6 @@ ll_service_t *Recep_GetConcernedLLService(header_t *header)
  ******************************************************************************/
 _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
 {
-    uint16_t i = 0;
-
     // Find if we are concerned by this message.
     // check if we need to filter all the messages
 
@@ -470,81 +423,7 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
     }
     return EXTERNALHOST;
 }
-/******************************************************************************
- * @brief Parse msg to find all services concerned and create
- * @param msg pointer
- * @return None
- ******************************************************************************/
-void Recep_InterpretMsgProtocol(msg_t *msg)
-{
-    uint16_t i = 0;
 
-    // Find if we are concerned by this message.
-    switch (msg->header.target_mode)
-    {
-        case SERVICEIDACK:
-        case SERVICEID:
-            // Check all ll_service id
-            for (i = 0; i < ctx.ll_service_number; i++)
-            {
-                if (msg->header.target == ctx.ll_service_table[i].id)
-                {
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                    break;
-                }
-            }
-            return;
-            break;
-        case TYPE:
-            // Check all ll_service type
-            for (i = 0; i < ctx.ll_service_number; i++)
-            {
-                if (msg->header.target == ctx.ll_service_table[i].type)
-                {
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                }
-            }
-            return;
-            break;
-        case BROADCAST:
-            for (i = 0; i < ctx.ll_service_number; i++)
-            {
-                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-            }
-            return;
-            break;
-        case TOPIC:
-            for (i = 0; i < ctx.ll_service_number; i++)
-            {
-                if (PubSub_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
-                {
-                    // TODO manage multiple slave concerned
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                }
-            }
-            return;
-            break;
-        case NODEIDACK:
-        case NODEID:
-            if (msg->header.target == DEFAULTID) // on default ID it's always a luos command create only one task
-            {
-                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
-                return;
-            }
-            // check if the message is really for the node or it is a service that has no filter
-            if (msg->header.target == Node_Get()->node_id)
-            {
-                for (i = 0; i < ctx.ll_service_number; i++)
-                {
-                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
-                }
-            }
-            return;
-            break;
-        default:
-            break;
-    }
-}
 /******************************************************************************
  * @brief Check if we need to send an ack
  * @param None
