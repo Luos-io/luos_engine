@@ -35,7 +35,6 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input);
 static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
 static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t size);
 static error_return_t Luos_Send(service_t *service, msg_t *msg);
-static inline void Luos_EmptyNode(void);
 static inline void Luos_PackageInit(void);
 static inline void Luos_PackageLoop(void);
 
@@ -705,16 +704,6 @@ void Luos_AddPackage(void (*Init)(void), void (*Loop)(void))
 }
 
 /******************************************************************************
- * @brief Create a service to signal an empty node
- * @param None
- * @return None
- ******************************************************************************/
-void Luos_EmptyNode(void)
-{
-    Luos_CreateService(0, VOID_TYPE, "empty_node", luos_version);
-}
-
-/******************************************************************************
  * @brief Run each package Init()
  * @param None
  * @return None
@@ -732,7 +721,8 @@ void Luos_PackageInit(void)
     }
     else
     {
-        Luos_EmptyNode();
+        // Create an emply node service
+        Luos_CreateService(0, VOID_TYPE, "empty_node", luos_version);
     }
 }
 
