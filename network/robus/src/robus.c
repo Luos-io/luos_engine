@@ -44,7 +44,6 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
  ******************************************************************************/
 // Creation of the robus context. This variable is used in all files of this lib.
 volatile context_t ctx;
-uint32_t baudrate; /*!< System current baudrate. */
 volatile uint16_t last_node = 0;
 
 /*******************************************************************************
@@ -65,8 +64,6 @@ void Robus_Init(memory_stats_t *memory_stats)
     ctx.tx.collision = false;
     // Init Tx status
     ctx.tx.status = TX_DISABLE;
-    // Save luos baudrate
-    baudrate = DEFAULTBAUDRATE;
     // Filters init
     Filter_IdInit();
     Filter_TopicInit();
