@@ -368,15 +368,15 @@ void RoutingTB_DetectServices(service_t *service)
     uint16_t nb_node = Robus_TopologyDetection(service->ll_service);
     // Clear data reception state
     Luos_ReceiveData(NULL, NULL, NULL);
-    // clear the routing table.
+    // Clear the routing table.
     RoutingTB_Erase();
     // Generate the routing_table
     RoutingTB_Generate(service, nb_node);
     // We have a complete routing table now share it with others.
     RoutingTB_Share(service, nb_node);
-    // send a message to indicate the end of the detection
+    // Send a message to indicate the end of the detection
     RoutingTB_SendEndDetection(service);
-    // clear statistic of node who start the detction
+    // Clear statistic of node who start the detction
     Luos_ResetStatistic();
 }
 /******************************************************************************

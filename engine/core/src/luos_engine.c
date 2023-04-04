@@ -174,7 +174,6 @@ void Luos_Loop(void)
 
     if (Flag_DetectServices == 1)
     {
-        Flag_DetectServices++;
         RoutingTB_DetectServices(detection_service);
         Flag_DetectServices = 0;
     }
