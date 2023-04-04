@@ -31,4 +31,7 @@
 /examples/projects/SAMD21XPLAINED/bootloader/firmware/luos_bootloader_samd21j18a.X/build/
 /examples/projects/SAMD21XPLAINED/bootloader/firmware/luos_bootloader_samd21j18a.X/.generated_files/
 /examples/projects/SAMD21XPLAINED/bootloader/firmware/luos_bootloader_samd21j18a.X/dist/
+examples/projects/ESP32/button/sdkconfig.esp32dev
+examples/projects/ESP32/led/sdkconfig.esp32dev
+tool_services/pipe/WS/ARDUINO/arduinoWebSockets/
 mongoose/
