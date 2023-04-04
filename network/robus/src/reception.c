@@ -431,13 +431,10 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
             }
             break;
         case TYPE:
-            // Check all ll_service type
-            for (i = 0; i < ctx.ll_service_number; i++)
+
+            if (Filter_Type(header->target))
             {
-                if (header->target == ctx.ll_service_table[i].type)
-                {
-                    return MULTIHOST;
-                }
+                return MULTIHOST;
             }
             break;
         case BROADCAST:

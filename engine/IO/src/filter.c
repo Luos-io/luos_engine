@@ -8,6 +8,7 @@
 #include "filter.h"
 #include "luos_utils.h"
 #include "luos_hal.h"
+#include "service.h"
 
 /*******************************************************************************
  * Definitions
@@ -132,8 +133,8 @@ _CRITICAL bool Filter_ServiceID(uint16_t service_id)
 
 /******************************************************************************
  * @brief Parse multicast mask to find if target exists
- * @param target of message
- * @return None
+ * @param topic_id of message
+ * @return bool true if there is one false if not
  * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL bool Filter_Topic(uint16_t topic_id)
@@ -145,6 +146,25 @@ _CRITICAL bool Filter_Topic(uint16_t topic_id)
         compare = topic_id - ((topic_id / 8) * 8);
         // Search if topic exists in mask
         if ((filter_ctx.TopicMask[(topic_id / 8)] & (1 << compare)) != 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/******************************************************************************
+ * @brief Parse all services type to find if target exists
+ * @param type_id of message
+ * @return bool true if there is one false if not
+ * _CRITICAL function call in IRQ
+ ******************************************************************************/
+_CRITICAL bool Filter_Type(uint16_t type_id)
+{
+    // Check all ll_service type
+    for (int i = 0; i < Service_GetNumber(); i++)
+    {
+        if (type_id == Service_GetTable()[i].ll_service->type)
         {
             return true;
         }
