@@ -7,7 +7,7 @@
 #ifndef _TRANSMISSION_H_
 #define _TRANSMISSION_H_
 
-#include "io_struct.h"
+#include "struct_io.h"
 #include <stdint.h>
 /*******************************************************************************
  * Definitions

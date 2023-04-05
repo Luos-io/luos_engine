@@ -57,7 +57,7 @@ uint16_t PipeLink_Find(service_t *service)
     search_result_t result;
     uint8_t localhost = false;
     // search a pipe type in localhost
-    RTFilter_Node(RTFilter_Type(RTFilter_Reset(&result), PIPE_TYPE), RoutingTB_NodeIDFromID(service->ll_service->id));
+    RTFilter_Node(RTFilter_Type(RTFilter_Reset(&result), PIPE_TYPE), RoutingTB_NodeIDFromID(service->id));
 
     if (result.result_nbr > 0)
     {

@@ -13,6 +13,7 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "pub_sub.h"
+#include "robus.h"
 
 /*******************************************************************************
  * Definitions
@@ -93,9 +94,9 @@ void Service_GenerateId(uint16_t base_id)
     }
     for (uint16_t i = 0; i < service_ctx.number; i++)
     {
-        if (service_ctx.list[i].ll_service->id != 1)
+        if (service_ctx.list[i].id != 1)
         {
-            service_ctx.list[i].ll_service->id = base_id++;
+            service_ctx.list[i].id = base_id++;
         }
     }
 }
@@ -108,25 +109,8 @@ void Service_ClearId(void)
 {
     for (uint16_t i = 0; i < service_ctx.number; i++)
     {
-        service_ctx.list[i].ll_service->id = DEFAULTID;
+        service_ctx.list[i].id = DEFAULTID;
     }
-}
-
-/******************************************************************************
- * @brief Get pointer to a service based on ll_service
- * @param ll_service : low level service
- * @return Service from list
- ******************************************************************************/
-service_t *Service_GetService(ll_service_t *ll_service)
-{
-    for (uint16_t i = 0; i < service_ctx.number; i++)
-    {
-        if (ll_service == service_ctx.list[i].ll_service)
-        {
-            return &service_ctx.list[i];
-        }
-    }
-    return 0;
 }
 
 /******************************************************************************
@@ -157,7 +141,7 @@ void Service_AutoUpdateManager(void)
     for (uint16_t i = 0; i < service_ctx.number; i++)
     {
         // check if services have an actual ID. If not, we are in detection mode and should reset the auto refresh
-        if (service_ctx.list[i].ll_service->id == DEFAULTID)
+        if (service_ctx.list[i].id == DEFAULTID)
         {
             // this service have not been detected or is in detection mode. remove auto_refresh parameters
             service_ctx.list[i].auto_refresh.target      = 0;
@@ -169,7 +153,7 @@ void Service_AutoUpdateManager(void)
             // check if there is a timed update setted and if it's time to update it.
             if (service_ctx.list[i].auto_refresh.time_ms)
             {
-                if (service_ctx.list[i].ll_service->dead_service_spotted == service_ctx.list[i].auto_refresh.target)
+                if (service_ctx.list[i].dead_service_spotted == service_ctx.list[i].auto_refresh.target)
                 {
                     service_ctx.list[i].auto_refresh.target      = 0;
                     service_ctx.list[i].auto_refresh.time_ms     = 0;
@@ -182,7 +166,7 @@ void Service_AutoUpdateManager(void)
                     // Create a fake message for it from the service asking for update
                     msg_t updt_msg;
                     updt_msg.header.config      = BASE_PROTOCOL;
-                    updt_msg.header.target      = service_ctx.list[i].ll_service->id;
+                    updt_msg.header.target      = service_ctx.list[i].id;
                     updt_msg.header.source      = service_ctx.list[i].auto_refresh.target;
                     updt_msg.header.target_mode = SERVICEIDACK;
                     updt_msg.header.cmd         = GET_CMD;
@@ -195,8 +179,8 @@ void Service_AutoUpdateManager(void)
                     {
                         if (Node_GetState() == DETECTION_OK)
                         {
-                            // directly transmit the message in Localhost
-                            Robus_SetTxTask(service_ctx.list[i].ll_service, &updt_msg);
+                            // Directly transmit the message in Localhost
+                            Robus_SetTxTask(&service_ctx.list[i], &updt_msg);
                         }
                     }
                     service_ctx.list[i].auto_refresh.last_update = LuosHAL_GetSystick();
@@ -209,9 +193,9 @@ void Service_AutoUpdateManager(void)
 /******************************************************************************
  * @brief Parse msg to find a service concerned
  * @param header of message
- * @return ll_service pointer
+ * @return service pointer
  ******************************************************************************/
-ll_service_t *Service_GetConcerned(header_t *header)
+service_t *Service_GetConcerned(header_t *header)
 {
     uint16_t i = 0;
     LUOS_ASSERT(header);
@@ -220,29 +204,29 @@ ll_service_t *Service_GetConcerned(header_t *header)
     {
         case SERVICEIDACK:
         case SERVICEID:
-            // Check all ll_service id
+            // Check all service id
             for (i = 0; i < service_ctx.number; i++)
             {
-                if (header->target == service_ctx.list[i].ll_service->id)
+                if (header->target == service_ctx.list[i].id)
                 {
-                    return service_ctx.list[i].ll_service;
+                    return &service_ctx.list[i];
                 }
             }
             break;
         case TYPE:
-            // Check all ll_service type
+            // Check all service type
             for (i = 0; i < service_ctx.number; i++)
             {
-                if (header->target == service_ctx.list[i].ll_service->type)
+                if (header->target == service_ctx.list[i].type)
                 {
-                    return service_ctx.list[i].ll_service;
+                    return &service_ctx.list[i];
                 }
             }
             break;
         case BROADCAST:
         case NODEIDACK:
         case NODEID:
-            return service_ctx.list[0].ll_service;
+            return &service_ctx.list[0];
             break;
         case TOPIC:
         default:
@@ -266,24 +250,24 @@ void Service_AllocMsg(msg_t *msg)
     {
         case SERVICEIDACK:
         case SERVICEID:
-            // Check all ll_service id
+            // Check all service id
             for (i = 0; i < service_ctx.number; i++)
             {
-                if (msg->header.target == service_ctx.list[i].ll_service->id)
+                if (msg->header.target == service_ctx.list[i].id)
                 {
-                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                    MsgAlloc_LuosTaskAlloc(&service_ctx.list[i], msg);
                     break;
                 }
             }
             return;
             break;
         case TYPE:
-            // Check all ll_service type
+            // Check all service type
             for (i = 0; i < service_ctx.number; i++)
             {
-                if (msg->header.target == service_ctx.list[i].ll_service->type)
+                if (msg->header.target == service_ctx.list[i].type)
                 {
-                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                    MsgAlloc_LuosTaskAlloc(&service_ctx.list[i], msg);
                 }
             }
             return;
@@ -291,17 +275,17 @@ void Service_AllocMsg(msg_t *msg)
         case BROADCAST:
             for (i = 0; i < service_ctx.number; i++)
             {
-                MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                MsgAlloc_LuosTaskAlloc(&service_ctx.list[i], msg);
             }
             return;
             break;
         case TOPIC:
             for (i = 0; i < service_ctx.number; i++)
             {
-                if (PubSub_IsTopicSubscribed(service_ctx.list[i].ll_service, msg->header.target))
+                if (PubSub_IsTopicSubscribed(&service_ctx.list[i], msg->header.target))
                 {
                     // TODO manage multiple slave concerned
-                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                    MsgAlloc_LuosTaskAlloc(&service_ctx.list[i], msg);
                 }
             }
             return;
@@ -310,7 +294,7 @@ void Service_AllocMsg(msg_t *msg)
         case NODEID:
             if (msg->header.target == DEFAULTID) // on default ID it's always a luos command create only one task
             {
-                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
+                MsgAlloc_LuosTaskAlloc(&service_ctx.list[0], msg);
                 return;
             }
             // check if the message is really for the node or it is a service that has no filter
@@ -318,7 +302,7 @@ void Service_AllocMsg(msg_t *msg)
             {
                 for (i = 0; i < service_ctx.number; i++)
                 {
-                    MsgAlloc_LuosTaskAlloc(service_ctx.list[i].ll_service, msg);
+                    MsgAlloc_LuosTaskAlloc(&service_ctx.list[i], msg);
                 }
             }
             return;
@@ -338,23 +322,22 @@ void Service_AllocMsg(msg_t *msg)
  ******************************************************************************/
 service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *alias, revision_t revision)
 {
-    uint8_t i           = 0;
-    service_t *service  = &service_ctx.list[service_ctx.number];
-    service->ll_service = &Robus_GetLlServiceList()[service_ctx.number];
+    uint8_t i          = 0;
+    service_t *service = &service_ctx.list[service_ctx.number];
 
     // Set the service type
-    service->ll_service->type = type;
+    service->type = type;
     // Initialise the service id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
-    service->ll_service->id = DEFAULTID;
+    service->id = DEFAULTID;
     // Initialize dead service detection
-    service->ll_service->dead_service_spotted = 0;
+    service->dead_service_spotted = 0;
     // Clear stats
-    service->ll_service->ll_stat.max_retry = 0;
+    service->statistics.max_retry = 0;
     // Clear topic number
-    service->ll_service->last_topic_position = 0;
+    service->last_topic_position = 0;
     for (uint16_t i = 0; i < LAST_TOPIC; i++)
     {
-        service->ll_service->topic_list[i] = 0;
+        service->topic_list[i] = 0;
     }
 
     // Link the service to his callback
@@ -381,9 +364,6 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
     {
         service->revision.unmap[i] = revision.unmap[i];
     }
-
-    // initiate service statistics
-    service->ll_service->ll_stat.max_retry = &service->statistics.max_retry;
 
     service_ctx.number++;
     LUOS_ASSERT(service_ctx.number <= MAX_SERVICE_NUMBER);
@@ -449,5 +429,7 @@ error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t 
 void Luos_ServicesClear(void)
 {
     service_ctx.number = 0;
-    Robus_ServicesClear();
+
+    // Clear service table
+    memset((void *)service_ctx.list, 0, sizeof(service_t) * MAX_SERVICE_NUMBER);
 }

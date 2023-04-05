@@ -28,12 +28,12 @@
  * @param multicast bank
  * @return Error
  ******************************************************************************/
-uint8_t PubSub_IsTopicSubscribed(ll_service_t *ll_service, uint16_t topic_id)
+uint8_t PubSub_IsTopicSubscribed(service_t *service, uint16_t topic_id)
 {
     unsigned char i;
-    for (i = 0; i < ll_service->last_topic_position; i++)
+    for (i = 0; i < service->last_topic_position; i++)
     {
-        if (ll_service->topic_list[i] == topic_id)
+        if (service->topic_list[i] == topic_id)
             return true;
     }
     return false;
@@ -49,22 +49,16 @@ error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
 {
     // Assert if we add a topic that is greater than the max topic value
     LUOS_ASSERT(topic <= LAST_TOPIC);
+    LUOS_ASSERT(service != 0);
 
     // Put this topic in the multicast bank
     Filter_AddTopic(topic);
 
-    // add multicast this topic to the service
-    ll_service_t *ll_service = (ll_service_t *)&ctx.ll_service_table[0];
-    if (service != 0)
-    {
-        ll_service = service->ll_service;
-    }
-
     // Check if target exists or if we reached the maximum topics number
-    if ((PubSub_IsTopicSubscribed(ll_service, topic) == false) && (ll_service->last_topic_position < LAST_TOPIC))
+    if ((PubSub_IsTopicSubscribed(service, topic) == false) && (service->last_topic_position < LAST_TOPIC))
     {
-        ll_service->topic_list[ll_service->last_topic_position] = topic;
-        ll_service->last_topic_position++;
+        service->topic_list[service->last_topic_position] = topic;
+        service->last_topic_position++;
         return SUCCEED;
     }
     return FAILED;
@@ -78,24 +72,21 @@ error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
  ******************************************************************************/
 error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
 {
-    error_return_t err       = FAILED;
-    ll_service_t *ll_service = (ll_service_t *)&ctx.ll_service_table[0];
-    unsigned char i;
-    if (service != 0)
-    {
-        ll_service = service->ll_service;
-    }
+    LUOS_ASSERT(topic <= LAST_TOPIC);
+    LUOS_ASSERT(service != 0);
+
+    error_return_t err = FAILED;
     // Delete topic from service list
-    for (i = 0; i < ll_service->last_topic_position; i++)
+    for (uint16_t i = 0; i < service->last_topic_position; i++)
     {
-        if (ll_service->topic_list[i] == topic)
+        if (service->topic_list[i] == topic)
         {
-            if (ll_service->last_topic_position >= LAST_TOPIC)
+            if (service->last_topic_position >= LAST_TOPIC)
             {
                 break;
             }
-            memcpy(&ll_service->topic_list[i], &ll_service->topic_list[i + 1], ll_service->last_topic_position - i);
-            ll_service->last_topic_position--;
+            memcpy(&service->topic_list[i], &service->topic_list[i + 1], service->last_topic_position - i);
+            service->last_topic_position--;
             err = SUCCEED;
             break;
         }
@@ -106,7 +97,7 @@ error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
     {
         for (uint16_t i = 0; i < Service_GetNumber(); i++)
         {
-            if (PubSub_IsTopicSubscribed((ll_service_t *)(&ctx.ll_service_table[i]), topic) == true)
+            if (PubSub_IsTopicSubscribed(&Service_GetTable()[i], topic) == true)
             {
                 return err;
             }

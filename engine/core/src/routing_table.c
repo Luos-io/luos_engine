@@ -11,7 +11,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "luos_hal.h"
-#include "context.h"
+#include "luos_engine.h"
+#include "struct_engine.h"
+#include "robus.h"
 
 /*******************************************************************************
  * Definitions
@@ -365,7 +367,7 @@ void RoutingTB_DetectServices(service_t *service)
     // Desactivate verbose mode
     Luos_SetVerboseMode(false);
     // Starts the topology detection.
-    uint16_t nb_node = Robus_TopologyDetection(service->ll_service);
+    uint16_t nb_node = Robus_TopologyDetection(service);
     // Clear data reception state
     Luos_ReceiveData(NULL, NULL, NULL);
     // Clear the routing table.
@@ -401,8 +403,8 @@ void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
  ******************************************************************************/
 void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service)
 {
-    entry->type = service->ll_service->type;
-    entry->id   = service->ll_service->id;
+    entry->type = service->type;
+    entry->id   = service->id;
     entry->mode = SERVICE;
     for (uint8_t i = 0; i < MAX_ALIAS_SIZE; i++)
     {
@@ -680,7 +682,7 @@ search_result_t *RTFilter_Service(search_result_t *result, service_t *service)
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted type
-        if (result->result_table[entry_nbr]->id != service->ll_service->id)
+        if (result->result_table[entry_nbr]->id != service->id)
         {
             // if we find an other id, erase it from the research table
             memcpy(&result->result_table[entry_nbr], &result->result_table[entry_nbr + 1], sizeof(routing_table_t *) * (result->result_nbr - entry_nbr));

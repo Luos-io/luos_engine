@@ -118,24 +118,24 @@ _CRITICAL void Transmit_Process()
     uint8_t *data = 0;
     uint16_t size;
     uint8_t localhost;
-    ll_service_t *ll_service_pt;
-    if ((MsgAlloc_GetTxTask(&ll_service_pt, &data, &size, &localhost) == SUCCEED) && (Transmit_GetLockStatus() == false))
+    service_t *service_pt;
+    if ((MsgAlloc_GetTxTask(&service_pt, &data, &size, &localhost) == SUCCEED) && (Transmit_GetLockStatus() == false))
     {
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
-        if ((*ll_service_pt->ll_stat.max_retry < nbrRetry) || (nbrRetry >= NBR_RETRY))
+        if ((service_pt->statistics.max_retry < nbrRetry) || (nbrRetry >= NBR_RETRY))
         {
-            *ll_service_pt->ll_stat.max_retry = nbrRetry;
+            service_pt->statistics.max_retry = nbrRetry;
             if (nbrRetry >= NBR_RETRY)
             {
                 // We failed to transmit this message. We can't allow it, there is a issue on this target.
-                ll_service_pt->dead_service_spotted = (uint16_t)(((msg_t *)data)->header.target);
-                nbrRetry                            = 0;
-                ctx.tx.collision                    = false;
+                service_pt->dead_service_spotted = (uint16_t)(((msg_t *)data)->header.target);
+                nbrRetry                         = 0;
+                ctx.tx.collision                 = false;
                 // Remove all transmist messages of this specific target
                 MsgAlloc_PullServiceFromTxTask((uint16_t)(((msg_t *)data)->header.target));
                 // Try to get a tx_task for another service
-                if (MsgAlloc_GetTxTask(&ll_service_pt, &data, &size, &localhost) == FAILED)
+                if (MsgAlloc_GetTxTask(&service_pt, &data, &size, &localhost) == FAILED)
                 {
                     // Nothing to transmit anymore, just exit.
                     return;

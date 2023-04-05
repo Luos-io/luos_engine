@@ -7,8 +7,8 @@
 #ifndef _FILTER_H_
 #define _FILTER_H_
 
-#include "io_struct.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 /*******************************************************************************
  * Definitions

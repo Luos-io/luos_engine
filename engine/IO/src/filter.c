@@ -9,6 +9,7 @@
 #include "luos_utils.h"
 #include "luos_hal.h"
 #include "service.h"
+#include "struct_luos.h"
 
 /*******************************************************************************
  * Definitions
@@ -161,10 +162,10 @@ _CRITICAL bool Filter_Topic(uint16_t topic_id)
  ******************************************************************************/
 _CRITICAL bool Filter_Type(uint16_t type_id)
 {
-    // Check all ll_service type
+    // Check all service type
     for (int i = 0; i < Service_GetNumber(); i++)
     {
-        if (type_id == Service_GetTable()[i].ll_service->type)
+        if (type_id == Service_GetTable()[i].type)
         {
             return true;
         }

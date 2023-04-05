@@ -13,8 +13,8 @@
 #include "bootloader_core.h"
 #include "_timestamp.h"
 #include "filter.h"
-#include "context.h"
 #include "service.h"
+#include "struct_engine.h"
 
 /*******************************************************************************
  * Variables
@@ -68,9 +68,9 @@ void Luos_Init(void)
 void Luos_Loop(void)
 {
     static uint32_t last_loop_date;
-    uint16_t remaining_msg_number   = 0;
-    ll_service_t *oldest_ll_service = NULL;
-    msg_t *returned_msg             = NULL;
+    uint16_t remaining_msg_number = 0;
+    service_t *oldest_service     = NULL;
+    msg_t *returned_msg           = NULL;
 
 #ifdef WITH_BOOTLOADER
     // After 3 Luos_Loop, consider this application as safe and write a flag to let the booloader know it can jump to the application safely.
@@ -94,22 +94,16 @@ void Luos_Loop(void)
     {
         // We receive a reset detection
         // Reset services ID
-        // Reinit ll_service id
-        for (uint8_t i = 0; i < ctx.ll_service_number; i++)
-        {
-            ctx.ll_service_table[i].id = DEFAULTID;
-        }
+        Service_ClearId();
         // Reset the data reception context
         Luos_ReceiveData(NULL, NULL, NULL);
     }
     Robus_Loop();
     // look at all received messages
     LUOS_MUTEX_LOCK
-    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)
+    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_service) != FAILED)
     {
-        // There is a message available find the service linked to it
-        service_t *service = Service_GetService(oldest_ll_service);
-        // check if this is a Luos Command
+        // There is a message available, check if this is a Luos Command
         uint8_t cmd   = 0;
         uint16_t size = 0;
         // There is a possibility to receive in IT a START_DETECTION so check task before doing any treatement
@@ -118,12 +112,12 @@ void Luos_Loop(void)
             break;
         }
         // check if this msg cmd should be consumed by Luos_MsgHandler
-        if (Luos_IsALuosCmd(service, cmd, size) == SUCCEED)
+        if (Luos_IsALuosCmd(oldest_service, cmd, size) == SUCCEED)
         {
             if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
             {
                 // be sure the content of this message need to be managed by Luos and do it if it is.
-                if (Luos_MsgHandler((service_t *)service, returned_msg) == SUCCEED)
+                if (Luos_MsgHandler((service_t *)oldest_service, returned_msg) == SUCCEED)
                 {
                     // Luos CMD are generic for all services and have to be executed only once
                     // Clear all luos tasks related to this message (in case of multicast message)
@@ -132,9 +126,9 @@ void Luos_Loop(void)
                 else
                 {
                     // Here we should not have polling services.
-                    LUOS_ASSERT(service->service_cb != 0);
+                    LUOS_ASSERT(oldest_service->service_cb != 0);
                     // This message is for the user, pass it to the user.
-                    service->service_cb(service, returned_msg);
+                    oldest_service->service_cb(oldest_service, returned_msg);
                 }
             }
         }
@@ -142,13 +136,13 @@ void Luos_Loop(void)
         {
             // This message is for a service
             // check if this service have a callback?
-            if (service->service_cb != 0)
+            if (oldest_service->service_cb != 0)
             {
                 // This service have a callback pull the message
                 if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
                 {
                     // This message is for the user, pass it to the user.
-                    service->service_cb(service, returned_msg);
+                    oldest_service->service_cb(oldest_service, returned_msg);
                 }
             }
             else
@@ -259,7 +253,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
     time_luos_t time;
     uint16_t base_id = 0;
 
-    if (((input->header.target_mode == SERVICEIDACK) || (input->header.target_mode == SERVICEID)) && (input->header.target != service->ll_service->id))
+    if (((input->header.target_mode == SERVICEIDACK) || (input->header.target_mode == SERVICEID)) && (input->header.target != service->id))
     {
         return FAILED;
     }
@@ -448,13 +442,13 @@ static error_return_t Luos_Send(service_t *service, msg_t *msg)
         // There is no service specified here, take the first one
         service = &Service_GetTable()[0];
     }
-    if ((service->ll_service->id == 0) && (msg->header.cmd >= LUOS_LAST_RESERVED_CMD))
+    if ((service->id == 0) && (msg->header.cmd >= LUOS_LAST_RESERVED_CMD))
     {
         // We are in detection mode and this command come from user
         // We can't send it
         return PROHIBITED;
     }
-    return Robus_SendMsg(service->ll_service, msg);
+    return Robus_SendMsg(service, msg);
 }
 
 /******************************************************************************
@@ -469,7 +463,7 @@ error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg)
     LUOS_MUTEX_LOCK
     while (error == SUCCEED)
     {
-        error = MsgAlloc_PullMsg(service->ll_service, returned_msg);
+        error = MsgAlloc_PullMsg(service, returned_msg);
         // check if the content of this message need to be managed by Luos and do it if it is.
         if (error == SUCCEED)
         {
@@ -494,14 +488,14 @@ error_return_t Luos_ReadMsg(service_t *service, msg_t **returned_msg)
  ******************************************************************************/
 error_return_t Luos_ReadFromService(service_t *service, short id, msg_t **returned_msg)
 {
-    uint16_t remaining_msg_number   = 0;
-    ll_service_t *oldest_ll_service = NULL;
-    error_return_t error            = SUCCEED;
+    uint16_t remaining_msg_number = 0;
+    service_t *oldest_service     = NULL;
+    error_return_t error          = SUCCEED;
     LUOS_MUTEX_LOCK
-    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)
+    while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_service) != FAILED)
     {
         // Check if this message is for us
-        if (oldest_ll_service == service->ll_service)
+        if (oldest_service == service)
         {
             // Check the source id
             uint16_t source = 0;
@@ -783,7 +777,7 @@ void Luos_Detect(service_t *service)
     {
         Filter_IdInit();
         // Set the detection launcher id to 1
-        service->ll_service->id = 1;
+        service->id = 1;
         // Update the filter just to accept our detector id
         Filter_AddServiceId(1, 1);
 

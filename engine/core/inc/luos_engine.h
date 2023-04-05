@@ -6,9 +6,11 @@
 #ifndef LUOS_ENGINE_H
 #define LUOS_ENGINE_H
 
+#include <stdint.h>
+#include <stdbool.h>
 #include "luos_utils.h"
 #include "luos_list.h"
-#include "service_structs.h"
+#include "struct_luos.h"
 #include "routing_table.h"
 #include "luos_od.h"
 

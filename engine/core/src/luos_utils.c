@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file robus_utils
+ * @file luos_utils
  * @brief Some tools used to debug
  * @author Luos
  * @version 0.0.0
@@ -10,7 +10,7 @@
 #include "string.h"
 #include "luos_hal.h"
 #include "msg_alloc.h"
-#include "stdbool.h"
+#include <stdbool.h>
 #ifdef WITH_BOOTLOADER
     #include "bootloader_core.h"
 #endif

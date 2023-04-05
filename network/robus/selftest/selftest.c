@@ -9,6 +9,7 @@
 #include "context.h"
 #include "stdbool.h"
 #include "robus_hal.h"
+#include "struct_engine.h"
 
 /*******************************************************************************
  * Definitions

@@ -10,11 +10,13 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define DETECTION_TIMEOUT_MS 10000 // Timeout used to detect a failed detection
-#define BOOT_TIMEOUT         1000
-#define DEFAULTID            0x00
-#define PROTOCOL_REVISION    0
-#define BROADCAST_VAL        0x0FFF
+#define LUOS_LAST_RESERVED_CMD 42    // Last Luos reserved command
+#define ROBUS_PROTOCOL_NB      13    // Number of Robus protocol command
+#define DETECTION_TIMEOUT_MS   10000 // Timeout used to detect a failed detection
+#define BOOT_TIMEOUT           1000
+#define DEFAULTID              0x00
+#define PROTOCOL_REVISION      0
+#define BROADCAST_VAL          0x0FFF
 
 #define MAX_ALIAS_SIZE    16
 #define MAX_DATA_MSG_SIZE 128

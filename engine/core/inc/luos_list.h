@@ -7,7 +7,7 @@
 #ifndef LUOS_LIST_H
 #define LUOS_LIST_H
 
-#include "service_structs.h"
+#include "engine_config.h"
 
 /*******************************************************************************
  * Definitions

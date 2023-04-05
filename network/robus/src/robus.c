@@ -37,8 +37,8 @@ typedef struct __attribute__((__packed__))
 } node_bootstrap_t;
 
 static error_return_t Robus_MsgHandler(msg_t *input);
-static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
-static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
+static error_return_t Robus_DetectNextNodes(service_t *service);
+static error_return_t Robus_ResetNetworkDetection(service_t *service);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -83,8 +83,6 @@ void Robus_Init(memory_stats_t *memory_stats)
     // Initialize the robus service status
     ctx.rx.status.unmap      = 0;
     ctx.rx.status.identifier = 0xF;
-
-    Node_SetState(NO_DETECTION);
 }
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
@@ -110,31 +108,14 @@ void Robus_Loop(void)
     }
     RobusHAL_Loop();
 }
-/******************************************************************************
- * @brief return the ll_service list
- * @return None
- ******************************************************************************/
-ll_service_t *Robus_GetLlServiceList(void)
-{
-    return (ll_service_t *)ctx.ll_service_table;
-}
-/******************************************************************************
- * @brief clear service list in route table
- * @param None
- * @return None
- ******************************************************************************/
-void Robus_ServicesClear(void)
-{
-    // Clear ll_service table
-    memset((void *)ctx.ll_service_table, 0, sizeof(ll_service_t) * MAX_SERVICE_NUMBER);
-}
+
 /******************************************************************************
  * @brief Formalize message Set tx task and send
  * @param service to send
  * @param msg to send
  * @return error_return_t
  ******************************************************************************/
-error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
+error_return_t Robus_SetTxTask(service_t *service, msg_t *msg)
 {
     error_return_t error = SUCCEED;
     uint8_t ack          = 0;
@@ -180,7 +161,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     }
 
     // ********** Allocate the message ********************
-    if (MsgAlloc_SetTxTask(ll_service, (uint8_t *)msg->stream, crc_val, full_size, localhost, ack) == FAILED)
+    if (MsgAlloc_SetTxTask(service, (uint8_t *)msg->stream, crc_val, full_size, localhost, ack) == FAILED)
     {
         error = FAILED;
     }
@@ -201,18 +182,18 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
  * @param msg to send
  * @return none
  ******************************************************************************/
-error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
+error_return_t Robus_SendMsg(service_t *service, msg_t *msg)
 {
     // ********** Prepare the message ********************
-    if (ll_service->id != 0)
+    if (service->id != 0)
     {
-        msg->header.source = ll_service->id;
+        msg->header.source = service->id;
     }
     else
     {
         msg->header.source = Node_Get()->node_id;
     }
-    if (Robus_SetTxTask(ll_service, msg) == FAILED)
+    if (Robus_SetTxTask(service, msg) == FAILED)
     {
         return FAILED;
     }
@@ -220,10 +201,10 @@ error_return_t Robus_SendMsg(ll_service_t *ll_service, msg_t *msg)
 }
 /******************************************************************************
  * @brief Start a topology detection procedure
- * @param ll_service pointer to the detecting ll_service
+ * @param service pointer to the detecting service
  * @return The number of detected node.
  ******************************************************************************/
-uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
+uint16_t Robus_TopologyDetection(service_t *service)
 {
     uint8_t redetect_nb = 0;
     bool detect_enabled = true;
@@ -240,7 +221,7 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
         detect_enabled = false;
 
         // Reset all detection state of services on the network
-        Robus_ResetNetworkDetection(ll_service);
+        Robus_ResetNetworkDetection(service);
         // Make sure that the detection is not interrupted
         if (Node_GetState() == EXTERNAL_DETECTION)
         {
@@ -249,10 +230,10 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
         // setup local node
         Node_Get()->node_id = 1;
         last_node           = 1;
-        // setup sending ll_service
-        ll_service->id = 1;
+        // setup sending service
+        service->id = 1;
 
-        if (Robus_DetectNextNodes(ll_service) == FAILED)
+        if (Robus_DetectNextNodes(service) == FAILED)
         {
             // check the number of retry we made
             LUOS_ASSERT((redetect_nb <= 4));
@@ -266,10 +247,10 @@ uint16_t Robus_TopologyDetection(ll_service_t *ll_service)
 }
 /******************************************************************************
  * @brief reset all service port states
- * @param ll_service pointer to the detecting ll_service
+ * @param service pointer to the detecting service
  * @return The number of detected node.
  ******************************************************************************/
-static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
+static error_return_t Robus_ResetNetworkDetection(service_t *service)
 {
     msg_t msg;
     uint8_t try_nbr = 0;
@@ -289,12 +270,12 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
             return 0;
         }
         // msg send not blocking
-        Robus_SendMsg(ll_service, &msg);
+        Robus_SendMsg(service, &msg);
         // need to wait until tx msg before clear msg alloc
         while (MsgAlloc_TxAllComplete() != SUCCEED)
             ;
 
-        // Reinit ll_service id
+        // Reinit service id
         Service_ClearId();
 
         // Reinit msg alloc
@@ -319,17 +300,17 @@ static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service)
 }
 /******************************************************************************
  * @brief run the procedure allowing to detect the next nodes on the next port
- * @param ll_service pointer to the detecting ll_service
+ * @param service pointer to the detecting service
  * @return None.
  ******************************************************************************/
-static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
+static error_return_t Robus_DetectNextNodes(service_t *service)
 {
     // Lets try to poke other nodes
     while (PortMng_PokeNextPort() == SUCCEED)
     {
         // There is someone here
         // Clear spotted dead service detection
-        ll_service->dead_service_spotted = 0;
+        service->dead_service_spotted = 0;
         // Ask an ID  to the detector service.
         msg_t msg;
         msg.header.config      = BASE_PROTOCOL;
@@ -337,12 +318,12 @@ static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service)
         msg.header.target      = 1;
         msg.header.cmd         = WRITE_NODE_ID;
         msg.header.size        = 0;
-        Robus_SendMsg(ll_service, &msg);
+        Robus_SendMsg(service, &msg);
         // Wait the end of transmission
         while (MsgAlloc_TxAllComplete() == FAILED)
             ;
         // Check if there is a failure on transmission
-        if (ll_service->dead_service_spotted != 0)
+        if (service->dead_service_spotted != 0)
         {
             // Message transmission failure
             // Consider this port unconnected
@@ -376,7 +357,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
 {
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
-    ll_service_t *ll_service = Service_GetConcerned(&input->header);
+    service_t *service = Service_GetConcerned(&input->header);
     switch (input->header.cmd)
     {
         case WRITE_NODE_ID:
@@ -393,7 +374,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     output_msg.header.target      = input->header.source;
                     output_msg.header.target_mode = NODEIDACK;
                     memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
-                    Robus_SendMsg(ll_service, &output_msg);
+                    Robus_SendMsg(service, &output_msg);
                     break;
                 case 2:
                     // This is a node id for the next node.
@@ -410,13 +391,13 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     output_msg.header.target      = 0;
                     output_msg.header.target_mode = NODEIDACK;
                     memcpy((void *)&output_msg.data[0], (void *)&node_bootstrap.unmap[0], sizeof(node_bootstrap_t));
-                    Robus_SendMsg(ll_service, &output_msg);
+                    Robus_SendMsg(service, &output_msg);
                     break;
                 case sizeof(node_bootstrap_t):
                     if (Node_Get()->node_id != 0)
                     {
                         Node_Get()->node_id = 0;
-                        // Reinit ll_service id
+                        // Reinit service id
                         Service_ClearId();
                         MsgAlloc_Init(NULL);
                     }
@@ -425,7 +406,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
                     Node_Get()->node_id                    = node_bootstrap.nodeid;
                     Node_Get()->port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
                     // Continue the topology detection on our other ports.
-                    Robus_DetectNextNodes(ll_service);
+                    Robus_DetectNextNodes(service);
                 default:
                     break;
             }

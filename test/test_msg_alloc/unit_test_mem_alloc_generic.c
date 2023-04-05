@@ -7,16 +7,16 @@
  ******************************************************************************/
 typedef struct __attribute__((__packed__))
 {
-    msg_t *msg_pt;               /*!< Start pointer of the msg on msg_buffer. */
-    ll_service_t *ll_service_pt; /*!< Pointer to the concerned ll_service. */
+    msg_t *msg_pt;         /*!< Start pointer of the msg on msg_buffer. */
+    service_t *service_pt; /*!< Pointer to the concerned service. */
 } luos_task_t;
 
 typedef struct
 {
-    uint8_t *data_pt;            /*!< Start pointer of the data on msg_buffer. */
-    uint16_t size;               /*!< size of the data. */
-    ll_service_t *ll_service_pt; /*!< Pointer to the transmitting ll_service. */
-    uint8_t localhost;           /*!< is this message a localhost one? */
+    uint8_t *data_pt;      /*!< Start pointer of the data on msg_buffer. */
+    uint16_t size;         /*!< size of the data. */
+    service_t *service_pt; /*!< Pointer to the transmitting service. */
+    uint8_t localhost;     /*!< is this message a localhost one? */
 } tx_task_t;
 
 /*******************************************************************************
@@ -957,7 +957,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
         //
 
         luos_task_t expected_luos_task;
-        ll_service_t service;
+        service_t service;
 
         // Init variables
         memory_stats_t memory_stats = {.rx_msg_stack_ratio      = 0,
@@ -995,18 +995,18 @@ void unittest_MsgAlloc_LuosTaskAlloc()
         //         luos_tasks init state                           luos_tasks end state
         //
         //             +---------+<--luos_tasks_stack_id              +---------+
-        //             |    0    |                                    |   D 1   | (msg_pt & ll_service_pt are allocated)
+        //             |    0    |                                    |   D 1   | (msg_pt & service_pt are allocated)
         //             |---------|                                    |---------|
-        //             |    0    |                                    |   D 2   | (msg_pt & ll_service_pt are allocated)
+        //             |    0    |                                    |   D 2   | (msg_pt & service_pt are allocated)
         //             |---------|                                    |---------|
         //             |  etc... |                                    |  etc... |
         //             |---------|                                    |---------|
-        //             |    0    |                                    |  Last   | (msg_pt & ll_service_pt are allocated)
+        //             |    0    |                                    |  Last   | (msg_pt & service_pt are allocated)
         //             +---------+              luos_tasks_stack_id-->+---------+
         //
 
         msg_t *message;
-        ll_service_t *service_concerned;
+        service_t *service_concerned;
         uint16_t expected_luos_tasks_stack_id;
         uint8_t expected_mem_stat;
 
@@ -1026,7 +1026,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
             expected_luos_tasks_stack_id = i + 1;
             expected_mem_stat            = ((i + 1) * 100 / MAX_MSG_NB);
             message                      = (msg_t *)&msg_buffer[0];
-            service_concerned            = (ll_service_t *)&msg_buffer[0];
+            service_concerned            = (service_t *)&msg_buffer[0];
 
             // Launch Test
             MsgAlloc_LuosTaskAlloc(service_concerned, message);
@@ -1035,7 +1035,7 @@ void unittest_MsgAlloc_LuosTaskAlloc()
             NEW_STEP_IN_LOOP("Check message pointer is allocated", i);
             TEST_ASSERT_EQUAL(message, luos_tasks[i].msg_pt);
             NEW_STEP_IN_LOOP("Check service pointer is allocated", i);
-            TEST_ASSERT_EQUAL(service_concerned, luos_tasks[i].ll_service_pt);
+            TEST_ASSERT_EQUAL(service_concerned, luos_tasks[i].service_pt);
             NEW_STEP_IN_LOOP("Check \"luos tasks stack id\" is updated", i);
             TEST_ASSERT_EQUAL(expected_luos_tasks_stack_id, luos_tasks_stack_id);
             NEW_STEP_IN_LOOP("Check \"oldest message\" points to first luos task", i);
@@ -1088,13 +1088,13 @@ void unittest_MsgAlloc_PullMsg()
         //
 
         msg_t *returned_message;
-        ll_service_t *service = (ll_service_t *)0xFFFF;
+        service_t *service = (service_t *)0xFFFF;
 
         // Init variables
         luos_tasks_stack_id = MAX_MSG_NB - 1;
         for (uintptr_t i = 0; i < MAX_MSG_NB; i++)
         {
-            luos_tasks[i].ll_service_pt = (ll_service_t *)i;
+            luos_tasks[i].service_pt = (service_t *)i;
         }
 
         // Launch Test & Verify
@@ -1135,7 +1135,7 @@ void unittest_MsgAlloc_PullMsg()
 
         msg_t *returned_message;
         msg_t *msg_to_clear;
-        ll_service_t *service;
+        service_t *service;
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
 
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
@@ -1146,11 +1146,11 @@ void unittest_MsgAlloc_PullMsg()
             luos_tasks_stack_id = MAX_MSG_NB;
             for (uint16_t j = 0; j < MAX_MSG_NB; j++)
             {
-                luos_tasks[j].ll_service_pt   = (ll_service_t *)&msg_buffer[j];
+                luos_tasks[j].service_pt      = (service_t *)&msg_buffer[j];
                 luos_tasks[j].msg_pt          = (msg_t *)(&msg_buffer[0] + MAX_MSG_NB + j);
                 expected_luos_tasks[j].msg_pt = (msg_t *)(&msg_buffer[0] + MAX_MSG_NB + j);
             }
-            service      = luos_tasks[i].ll_service_pt;
+            service      = luos_tasks[i].service_pt;
             msg_to_clear = luos_tasks[i].msg_pt;
 
             // Launch Test & Verify
@@ -1229,7 +1229,7 @@ void unittest_MsgAlloc_PullMsgFromLuosTask()
         uint16_t task_id;
         msg_t *returned_message;
         msg_t *msg_to_clear;
-        ll_service_t *service;
+        service_t *service;
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
 
         for (uint16_t task_id = 0; task_id < MAX_MSG_NB; task_id++)
@@ -1282,7 +1282,7 @@ void unittest_MsgAlloc_LookAtLuosTask()
         //
 
         uint16_t task_id;
-        ll_service_t **allocated_service;
+        service_t **allocated_service;
 
         // Init variables
         luos_tasks_stack_id = 0;
@@ -1317,21 +1317,21 @@ void unittest_MsgAlloc_LookAtLuosTask()
         //
 
         // Init variables
-        ll_service_t *oldest_ll_service = NULL;
-        luos_tasks_stack_id             = MAX_MSG_NB;
+        service_t *oldest_service = NULL;
+        luos_tasks_stack_id       = MAX_MSG_NB;
 
         for (uintptr_t i = 0; i < MAX_MSG_NB; i++)
         {
-            luos_tasks[i].ll_service_pt = (ll_service_t *)i;
+            luos_tasks[i].service_pt = (service_t *)i;
         }
 
         // Call function & Verify
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
             NEW_STEP_IN_LOOP("Check function returns SUCCEED", i);
-            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_LookAtLuosTask(i, &oldest_ll_service));
+            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_LookAtLuosTask(i, &oldest_service));
             NEW_STEP_IN_LOOP("Check if function return the service concerned by the oldest message", i);
-            TEST_ASSERT_EQUAL(i, oldest_ll_service);
+            TEST_ASSERT_EQUAL(i, oldest_service);
         }
     }
 }
@@ -1567,23 +1567,23 @@ void unittest_MsgAlloc_ClearMsgFromLuosTasks()
 
         luos_task_t expected_luos_tasks[MAX_MSG_NB];
         msg_t message;
-        ll_service_t service;
+        service_t service;
 
         // Init variables
         luos_tasks_stack_id = 0;
         for (uint16_t i = 0; i < MAX_MSG_NB; i++)
         {
-            luos_tasks[i].msg_pt                 = &message;
-            luos_tasks[i].ll_service_pt          = &service;
-            expected_luos_tasks[i].msg_pt        = &message;
-            expected_luos_tasks[i].ll_service_pt = &service;
+            luos_tasks[i].msg_pt              = &message;
+            luos_tasks[i].service_pt          = &service;
+            expected_luos_tasks[i].msg_pt     = &message;
+            expected_luos_tasks[i].service_pt = &service;
             // Call function
             MsgAlloc_ClearMsgFromLuosTasks(luos_tasks[i].msg_pt);
 
             NEW_STEP_IN_LOOP("Check luos message pointer is not cleared", i);
             TEST_ASSERT_EQUAL(expected_luos_tasks[i].msg_pt, luos_tasks[i].msg_pt);
             NEW_STEP_IN_LOOP("Check luos service pointer is not cleared", i);
-            TEST_ASSERT_EQUAL(expected_luos_tasks[i].ll_service_pt, luos_tasks[i].ll_service_pt);
+            TEST_ASSERT_EQUAL(expected_luos_tasks[i].service_pt, luos_tasks[i].service_pt);
         }
     }
 
@@ -1946,21 +1946,21 @@ void unittest_MsgAlloc_GetTxTask()
 
             // Init variables
             //---------------
-            ll_service_t *ll_service;
+            service_t *service;
             uint8_t *data;
             uint16_t size     = 128;
             uint8_t localhost = 1;
 
-            tx_tasks[0].data_pt       = (uint8_t *)16;
-            tx_tasks[0].ll_service_pt = (ll_service_t *)32;
-            tx_tasks[0].size          = 128;
-            tx_tasks[0].localhost     = 1;
+            tx_tasks[0].data_pt    = (uint8_t *)16;
+            tx_tasks[0].service_pt = (service_t *)32;
+            tx_tasks[0].size       = 128;
+            tx_tasks[0].localhost  = 1;
 
             tx_tasks_stack_id = MAX_MSG_NB + i;
 
             // Call function
             //---------------
-            MsgAlloc_GetTxTask(&ll_service, &data, &size, &localhost);
+            MsgAlloc_GetTxTask(&service, &data, &size, &localhost);
 
             // Verify
             //---------------
@@ -1969,7 +1969,7 @@ void unittest_MsgAlloc_GetTxTask()
 
             // Call function
             //---------------
-            MsgAlloc_GetTxTask(&ll_service, &data, &size, &localhost);
+            MsgAlloc_GetTxTask(&service, &data, &size, &localhost);
 
             // Verify
             //---------------
@@ -1995,7 +1995,7 @@ void unittest_MsgAlloc_GetTxTask()
         //             +---------+
         //
 
-        ll_service_t *ll_service;
+        service_t *service;
         uint8_t *data;
         uint16_t *size;
         uint8_t *localhost;
@@ -2007,7 +2007,7 @@ void unittest_MsgAlloc_GetTxTask()
         // Call function & Verify
         //--------------------------
         NEW_STEP("Check function returns FAILED when tx task is empty");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_GetTxTask(&ll_service, &data, size, localhost));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_GetTxTask(&service, &data, size, localhost));
     }
 
     NEW_TEST_CASE("Verify there is a message");
@@ -2026,7 +2026,7 @@ void unittest_MsgAlloc_GetTxTask()
         //             +---------+
         //
 
-        ll_service_t *ll_service;
+        service_t *service;
         uint8_t *data;
         uint16_t size;
         uint8_t localhost;
@@ -2035,17 +2035,17 @@ void unittest_MsgAlloc_GetTxTask()
         //---------------
         tx_tasks_stack_id = 1;
 
-        tx_tasks[0].data_pt       = (uint8_t *)16;
-        tx_tasks[0].ll_service_pt = (ll_service_t *)32;
-        tx_tasks[0].size          = 128;
-        tx_tasks[0].localhost     = 1;
+        tx_tasks[0].data_pt    = (uint8_t *)16;
+        tx_tasks[0].service_pt = (service_t *)32;
+        tx_tasks[0].size       = 128;
+        tx_tasks[0].localhost  = 1;
 
         // Call function & Verify
         //--------------------------
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_GetTxTask(&ll_service, &data, &size, &localhost));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_GetTxTask(&service, &data, &size, &localhost));
         NEW_STEP("Check function returns expected service pointer");
-        TEST_ASSERT_EQUAL(tx_tasks[0].ll_service_pt, ll_service);
+        TEST_ASSERT_EQUAL(tx_tasks[0].service_pt, service);
         NEW_STEP("Check function returns expected data");
         TEST_ASSERT_EQUAL(tx_tasks[0].data_pt, data);
         NEW_STEP("Check function returns expected size");

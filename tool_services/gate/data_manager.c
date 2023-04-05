@@ -62,12 +62,12 @@ void DataManager_collect(service_t *service)
 void DataManager_Run(service_t *service)
 {
     // Check if there is a dead service.
-    if (service->ll_service->dead_service_spotted)
+    if (service->dead_service_spotted)
     {
         Convert_ExcludedServiceData(service);
-        RoutingTB_RemoveOnRoutingTable(service->ll_service->dead_service_spotted);
+        RoutingTB_RemoveOnRoutingTable(service->dead_service_spotted);
         // Reset spotted dead service
-        service->ll_service->dead_service_spotted = 0;
+        service->dead_service_spotted = 0;
     }
 #ifdef GATE_POLLING
     DataManager_collect(service);

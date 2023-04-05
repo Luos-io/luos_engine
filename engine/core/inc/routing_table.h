@@ -7,7 +7,8 @@
 #ifndef TABLE
 #define TABLE
 
-#include "luos_engine.h"
+#include "struct_luos.h"
+#include "luos_list.h"
 #include "node.h"
 /*******************************************************************************
  * Definitions

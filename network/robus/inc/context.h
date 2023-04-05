@@ -23,9 +23,6 @@ typedef struct
     RxCom_t rx;     /*!< Receiver informations. */
     TxCom_t tx;     /*!< Transmitter informations. */
     PortMng_t port; /*!< Port informations. */
-
-    // Low level service management
-    ll_service_t ll_service_table[MAX_SERVICE_NUMBER]; /*!< Low level Service table. */
 } context_t;
 
 /*******************************************************************************

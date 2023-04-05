@@ -64,7 +64,7 @@ uint16_t last_id      = 0;
 
 void Player_MsgHandler(service_t *service, msg_t *msg)
 {
-    if ((msg->header.target_mode == TOPIC) & (msg->header.target = SCORE_TOPIC) & (msg->header.source != service->ll_service->id))
+    if ((msg->header.target_mode == TOPIC) & (msg->header.target = SCORE_TOPIC) & (msg->header.source != service->id))
     {
         score_update(msg);
         set_screen_to(score_view);
@@ -168,7 +168,7 @@ bool send_random()
     do
     {
         target = rand() % target_list.result_nbr;
-    } while (target_list.result_table[target]->id == player->ll_service->id);
+    } while (target_list.result_table[target]->id == player->id);
 
     // Our target is OK, Send the message
     msg_t msg;

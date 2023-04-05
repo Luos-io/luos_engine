@@ -691,8 +691,8 @@ void unittest_ClearMsgSpace(void)
 
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
-            luos_tasks[i].msg_pt        = (msg_t *)&msg_buffer[i + 2];
-            luos_tasks[i].ll_service_pt = (ll_service_t *)&msg_buffer[i + 2];
+            luos_tasks[i].msg_pt     = (msg_t *)&msg_buffer[i + 2];
+            luos_tasks[i].service_pt = (service_t *)&msg_buffer[i + 2];
         }
         used_msg            = (msg_t *)&msg_buffer[0];
         oldest_msg          = (msg_t *)&msg_buffer[2];
@@ -712,7 +712,7 @@ void unittest_ClearMsgSpace(void)
         for (uint16_t i = 0; i < MAX_MSG_NB - 2; i++)
         {
             TEST_ASSERT_EQUAL(0, luos_tasks[i].msg_pt);
-            TEST_ASSERT_EQUAL(0, luos_tasks[i].ll_service_pt);
+            TEST_ASSERT_EQUAL(0, luos_tasks[i].service_pt);
         }
     }
 
@@ -1033,24 +1033,24 @@ void unittest_ClearLuosTask(void)
                 for (uint16_t pt_value = 0; pt_value < MAX_MSG_NB; pt_value++)
                 {
                     // Init luos_tasks pointers
-                    luos_tasks[pt_value].msg_pt        = (msg_t *)(&msg_buffer[0] + pt_value);
-                    luos_tasks[pt_value].ll_service_pt = (ll_service_t *)(&msg_buffer[0] + pt_value);
+                    luos_tasks[pt_value].msg_pt     = (msg_t *)(&msg_buffer[0] + pt_value);
+                    luos_tasks[pt_value].service_pt = (service_t *)(&msg_buffer[0] + pt_value);
 
                     // Init expected pointers
                     if (pt_value == (tasks_stack_id - 1))
                     {
-                        expected_luos_tasks[pt_value].msg_pt        = 0;
-                        expected_luos_tasks[pt_value].ll_service_pt = 0;
+                        expected_luos_tasks[pt_value].msg_pt     = 0;
+                        expected_luos_tasks[pt_value].service_pt = 0;
                     }
                     else if (pt_value < task_id)
                     {
-                        expected_luos_tasks[pt_value].msg_pt        = (msg_t *)(&msg_buffer[0] + pt_value);
-                        expected_luos_tasks[pt_value].ll_service_pt = (ll_service_t *)(&msg_buffer[0] + pt_value);
+                        expected_luos_tasks[pt_value].msg_pt     = (msg_t *)(&msg_buffer[0] + pt_value);
+                        expected_luos_tasks[pt_value].service_pt = (service_t *)(&msg_buffer[0] + pt_value);
                     }
                     else
                     {
-                        expected_luos_tasks[pt_value].msg_pt        = (msg_t *)(&msg_buffer[0] + pt_value + 1);
-                        expected_luos_tasks[pt_value].ll_service_pt = (ll_service_t *)(&msg_buffer[0] + pt_value + 1);
+                        expected_luos_tasks[pt_value].msg_pt     = (msg_t *)(&msg_buffer[0] + pt_value + 1);
+                        expected_luos_tasks[pt_value].service_pt = (service_t *)(&msg_buffer[0] + pt_value + 1);
                     }
                 }
 
@@ -1062,7 +1062,7 @@ void unittest_ClearLuosTask(void)
                 for (uint8_t i = 0; i < tasks_stack_id; i++)
                 {
                     TEST_ASSERT_EQUAL(expected_luos_tasks[i].msg_pt, luos_tasks[i].msg_pt);
-                    TEST_ASSERT_EQUAL(expected_luos_tasks[i].ll_service_pt, luos_tasks[i].ll_service_pt);
+                    TEST_ASSERT_EQUAL(expected_luos_tasks[i].service_pt, luos_tasks[i].service_pt);
                 }
             }
         }

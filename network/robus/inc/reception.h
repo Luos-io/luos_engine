@@ -7,7 +7,8 @@
 #ifndef _RECEPTION_H_
 #define _RECEPTION_H_
 
-#include <robus.h>
+#include "robus.h"
+#include "struct_io.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -55,6 +56,5 @@ void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);
 luos_localhost_t Recep_NodeConcerned(header_t *header);
-ll_service_t *Recep_GetConcernedLLService(header_t *header);
 
 #endif /* _RECEPTION_H_ */

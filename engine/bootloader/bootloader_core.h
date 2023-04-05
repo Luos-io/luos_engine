@@ -7,7 +7,7 @@
 #ifndef BOOTLOADER_H
 #define BOOTLOADER_H
 
-#include "io_struct.h"
+#include "struct_luos.h"
 
 /*******************************************************************************
  * Definitions

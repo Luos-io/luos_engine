@@ -64,6 +64,7 @@ void Node_Init(void)
 #ifdef NO_RTB
     node_ctx.node_info |= 1 << 0;
 #endif
+    Node_SetState(NO_DETECTION);
 }
 
 /******************************************************************************

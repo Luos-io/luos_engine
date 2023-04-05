@@ -32,7 +32,7 @@
  *              tasks at this space in memory and clear the memory space use by
  *              msg_tasks or Luos_tasks. Also we have to prepare the reception of
  *              the next header.
- *  - Event C : This event represent robus_loop and it is executed outside of IT.
+ *  - Event C : This event represent phy_loop and it is executed outside of IT.
  *              This event pull msg_tasks tasks and interpret all messages to
  *              create one or more Luos_tasks.
  *  - Task D  : This is all msg trait by Luos Library interpret in Luos_loop. Msg can be
@@ -45,12 +45,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <limits.h>
-#include "robus_config.h"
 #include "msg_alloc.h"
 #include "luos_hal.h"
 #include "luos_utils.h"
 #include "node.h"
 #include "filter.h"
+#include "struct_luos.h"
 
 /*******************************************************************************
  * Definitions
@@ -65,16 +65,16 @@
  ******************************************************************************/
 typedef struct
 {
-    msg_t *msg_pt;               /*!< Start pointer of the msg on msg_buffer. */
-    ll_service_t *ll_service_pt; /*!< Pointer to the concerned ll_service. */
+    msg_t *msg_pt;         /*!< Start pointer of the msg on msg_buffer. */
+    service_t *service_pt; /*!< Pointer to the concerned service. */
 } luos_task_t;
 
 typedef struct
 {
-    uint8_t *data_pt;            /*!< Start pointer of the data on msg_buffer. */
-    uint16_t size;               /*!< size of the data. */
-    ll_service_t *ll_service_pt; /*!< Pointer to the transmitting ll_service. */
-    uint8_t localhost;           /*!< is this message a localhost one? */
+    uint8_t *data_pt;      /*!< Start pointer of the data on msg_buffer. */
+    uint16_t size;         /*!< size of the data. */
+    service_t *service_pt; /*!< Pointer to the transmitting service. */
+    uint8_t localhost;     /*!< is this message a localhost one? */
 } tx_task_t;
 /*******************************************************************************
  * Variables
@@ -851,7 +851,7 @@ _CRITICAL static inline void MsgAlloc_ClearMsgTask(void)
     MsgAlloc_FindNewOldestMsg();
 }
 /******************************************************************************
- * @brief Pull a message that is not interpreted by robus yet
+ * @brief Pull a message that is not interpreted by the phy yet
  * @param returned_msg : The message pointer.
  * @return error_return_t
  ******************************************************************************/
@@ -934,8 +934,8 @@ _CRITICAL static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
     if (luos_tasks_stack_id != 0)
     {
         luos_tasks_stack_id--;
-        luos_tasks[luos_tasks_stack_id].msg_pt        = 0;
-        luos_tasks[luos_tasks_stack_id].ll_service_pt = 0;
+        luos_tasks[luos_tasks_stack_id].msg_pt     = 0;
+        luos_tasks[luos_tasks_stack_id].service_pt = 0;
     }
     LuosHAL_SetIrqState(true);
     MSGALLOC_MUTEX_UNLOCK
@@ -947,7 +947,7 @@ _CRITICAL static inline void MsgAlloc_ClearLuosTask(uint16_t luos_task_id)
  * @param service_concerned_by_current_msg concerned msg
  * @return None
  ******************************************************************************/
-void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_t *concerned_msg)
+void MsgAlloc_LuosTaskAlloc(service_t *service_concerned_by_current_msg, msg_t *concerned_msg)
 {
     // Find a free slot
     if (luos_tasks_stack_id == MAX_MSG_NB)
@@ -964,8 +964,8 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
     MSGALLOC_MUTEX_LOCK
     LuosHAL_SetIrqState(false);
     LUOS_ASSERT(luos_tasks_stack_id < MAX_MSG_NB);
-    luos_tasks[luos_tasks_stack_id].msg_pt        = concerned_msg;
-    luos_tasks[luos_tasks_stack_id].ll_service_pt = service_concerned_by_current_msg;
+    luos_tasks[luos_tasks_stack_id].msg_pt     = concerned_msg;
+    luos_tasks[luos_tasks_stack_id].service_pt = service_concerned_by_current_msg;
     if (luos_tasks_stack_id == 0)
     {
         // This is the first message in the stack, so it could be the oldest one.
@@ -992,7 +992,7 @@ void MsgAlloc_LuosTaskAlloc(ll_service_t *service_concerned_by_current_msg, msg_
  * @param returned_msg : The message pointer.
  * @return error_return_t
  ******************************************************************************/
-error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_msg)
+error_return_t MsgAlloc_PullMsg(service_t *target_service, msg_t **returned_msg)
 {
     MsgAlloc_ValidDataIntegrity();
     //
@@ -1030,7 +1030,7 @@ error_return_t MsgAlloc_PullMsg(ll_service_t *target_service, msg_t **returned_m
     // find the oldest message allocated to this service
     for (uint16_t i = 0; i < luos_tasks_stack_id; i++)
     {
-        if (luos_tasks[i].ll_service_pt == target_service)
+        if (luos_tasks[i].service_pt == target_service)
         {
             *returned_msg = luos_tasks[i].msg_pt;
             // Clear the slot by sliding others to the left on it
@@ -1120,7 +1120,7 @@ error_return_t MsgAlloc_PullMsgFromLuosTask(uint16_t luos_task_id, msg_t **retur
  * @param luos_task_id : Id of the allocator slot
  * @return error_return_t : Fail is there is no more message available.
  ******************************************************************************/
-error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **allocated_service)
+error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, service_t **allocated_service)
 {
     MsgAlloc_ValidDataIntegrity();
     //
@@ -1142,7 +1142,7 @@ error_return_t MsgAlloc_LookAtLuosTask(uint16_t luos_task_id, ll_service_t **all
     MSGALLOC_MUTEX_LOCK
     if (luos_task_id < luos_tasks_stack_id)
     {
-        *allocated_service = luos_tasks[luos_task_id].ll_service_pt;
+        *allocated_service = luos_tasks[luos_task_id].service_pt;
         MSGALLOC_MUTEX_UNLOCK
         return SUCCEED;
     }
@@ -1375,7 +1375,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg)
  * @param size of the data to transmit
  * @return None
  ******************************************************************************/
-error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, uint16_t crc, uint16_t size, luos_localhost_t localhost, uint8_t ack)
+error_return_t MsgAlloc_SetTxTask(service_t *service_pt, uint8_t *data, uint16_t crc, uint16_t size, luos_localhost_t localhost, uint8_t ack)
 {
     LUOS_ASSERT((tx_tasks_stack_id >= 0) && (tx_tasks_stack_id < MAX_MSG_NB) && ((uintptr_t)data > 0) && ((uintptr_t)current_msg < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]) && ((uintptr_t)current_msg >= (uintptr_t)&msg_buffer[0]));
     void *rx_msg_bkp          = 0;
@@ -1641,10 +1641,10 @@ error_return_t MsgAlloc_SetTxTask(ll_service_t *ll_service_pt, uint8_t *data, ui
         //
         // Now we are ready to transmit, we can create the tx task
         LuosHAL_SetIrqState(false);
-        tx_tasks[tx_tasks_stack_id].size          = size;
-        tx_tasks[tx_tasks_stack_id].data_pt       = (uint8_t *)tx_msg;
-        tx_tasks[tx_tasks_stack_id].ll_service_pt = ll_service_pt;
-        tx_tasks[tx_tasks_stack_id].localhost     = (localhost != EXTERNALHOST);
+        tx_tasks[tx_tasks_stack_id].size       = size;
+        tx_tasks[tx_tasks_stack_id].data_pt    = (uint8_t *)tx_msg;
+        tx_tasks[tx_tasks_stack_id].service_pt = service_pt;
+        tx_tasks[tx_tasks_stack_id].localhost  = (localhost != EXTERNALHOST);
         tx_tasks_stack_id++;
         LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
         LuosHAL_SetIrqState(true);
@@ -1810,14 +1810,14 @@ void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
 }
 /******************************************************************************
  * @brief return a message to transmit
- * @param ll_service_pt service sending this data
+ * @param service_pt service sending this data
  * @param data to send
  * @param size of the data to send
  * @param localhost is this message a localhost one
  * @return error_return_t : Fail is there is no more message available.
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
+_CRITICAL error_return_t MsgAlloc_GetTxTask(service_t **service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
     MsgAlloc_ValidDataIntegrity();
@@ -1838,10 +1838,10 @@ _CRITICAL error_return_t MsgAlloc_GetTxTask(ll_service_t **ll_service_pt, uint8_
     LuosHAL_SetIrqState(false);
     if (tx_tasks_stack_id > 0)
     {
-        *data          = tx_tasks[0].data_pt;
-        *size          = tx_tasks[0].size;
-        *ll_service_pt = tx_tasks[0].ll_service_pt;
-        *localhost     = tx_tasks[0].localhost;
+        *data       = tx_tasks[0].data_pt;
+        *size       = tx_tasks[0].size;
+        *service_pt = tx_tasks[0].service_pt;
+        *localhost  = tx_tasks[0].localhost;
         LuosHAL_SetIrqState(true);
         return SUCCEED;
     }

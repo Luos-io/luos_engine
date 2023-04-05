@@ -930,7 +930,7 @@ void Convert_ExcludedServiceData(service_t *service)
 {
     char json[300];
     search_result_t result;
-    RTFilter_ID(RTFilter_Reset(&result), service->ll_service->dead_service_spotted);
+    RTFilter_ID(RTFilter_Reset(&result), service->dead_service_spotted);
     sprintf(json, "{\"dead_service\":\"%s\"}\n", result.result_table[0]->alias);
     // Send the message to pipe
     PipeLink_Send(service, json, strlen(json));

@@ -7,7 +7,7 @@
 #ifndef OD_OD_LINEAR_H_
 #define OD_OD_LINEAR_H_
 
-#include "io_struct.h"
+#include "struct_io.h"
 #include "string.h"
 
 /*******************************************************************************

@@ -54,6 +54,8 @@
 #include "robus.h"
 #include "bootloader_core.h"
 #include "filter.h"
+#include "struct_engine.h"
+#include "context.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -80,7 +82,6 @@ static int64_t ll_rx_timestamp = 0;
  * Function
  ******************************************************************************/
 static inline uint8_t Recep_IsAckNeeded(void);
-static inline uint16_t Recep_CtxIndexFromID(uint16_t id);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -377,7 +378,7 @@ _CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
         case SERVICEIDACK:
             ctx.rx.status.rx_error = false;
         case SERVICEID:
-            // Check all ll_service id
+            // Check all service id
             if (Filter_ServiceID(header->target))
             {
                 return LOCALHOST;
@@ -445,14 +446,4 @@ _CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
     }
     // if not failed
     return 0;
-}
-
-/******************************************************************************
- * @brief returns the index in context table from the service id
- * @param id
- * @return index
- ******************************************************************************/
-static inline uint16_t Recep_CtxIndexFromID(uint16_t id)
-{
-    return (id - ctx.ll_service_table[0].id);
 }
