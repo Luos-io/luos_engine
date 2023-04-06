@@ -59,12 +59,6 @@ void LuosIO_Init(memory_stats_t *memory_stats)
     Filter_IdInit();
     Filter_TopicInit();
 
-    // Init transmission
-    Transmit_Init();
-
-    // Init reception
-    Recep_Init();
-
     // Clear message allocation buffer table
     MsgAlloc_Init(memory_stats);
 

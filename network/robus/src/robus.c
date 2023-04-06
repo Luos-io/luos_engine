@@ -43,8 +43,13 @@ void Robus_Init(void)
     // Init hal
     RobusHAL_Init();
 
-    // Init detection structure
+    // Init port structure
     PortMng_Init();
+
+    // Init transmission
+    Transmit_Init();
+    // Init reception
+    Recep_Init();
 }
 
 /******************************************************************************
