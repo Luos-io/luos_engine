@@ -47,7 +47,6 @@
 #include "robus_hal.h"
 #include "luos_hal.h"
 #include "pub_sub.h"
-#include "transmission.h"
 #include "msg_alloc.h"
 #include "luos_utils.h"
 #include "_timestamp.h"
@@ -56,6 +55,7 @@
 #include "filter.h"
 #include "struct_engine.h"
 #include "context.h"
+#include "phy.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -73,10 +73,10 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint16_t data_count            = 0;
-uint16_t data_size             = 0;
-uint16_t crc_val               = 0;
-static int64_t ll_rx_timestamp = 0;
+uint16_t data_count = 0;
+uint16_t data_size  = 0;
+uint16_t crc_val    = 0;
+phy_t phy;
 
 /*******************************************************************************
  * Function
@@ -93,6 +93,7 @@ void Recep_Init(void)
     ctx.rx.status.unmap      = 0;
     ctx.rx.callback          = Recep_GetHeader;
     ctx.rx.status.identifier = 0xF;
+    phy.rx_timestamp         = 0;
 }
 /******************************************************************************
  * @brief Callback to get a complete header
@@ -112,7 +113,7 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
         case 1: // reset CRC computation
             // when we catch the first byte we timestamp the msg
             //  -8 : time to transmit 8 bits at 1 us/bit
-            ll_rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+            phy.rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
 
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
@@ -207,7 +208,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
             if (Luos_IsMsgTimstamped((msg_t *)current_msg))
             {
                 // This conversion also remove the timestamp from the message size.
-                Timestamp_ConvertToDate((msg_t *)current_msg, ll_rx_timestamp);
+                Timestamp_ConvertToDate((msg_t *)current_msg, phy.rx_timestamp);
             }
 
             // Make an exception for bootloader command
