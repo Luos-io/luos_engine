@@ -226,7 +226,7 @@ void LUOS_COM_IRQHANDLER()
      *      1. Reset the timeout with the default value each time this function is call
      *
      *      2. Check if IRQ flag Rx is active (this means that this IRAQ have been raised because we receive a byte)
-     *          Read the received byte and pass it to ctx.rx.callback(byte).
+     *          Read the received byte and pass it to Recep_data(byte).
      *          This function is the Robus reception state machine allowing to check and decode Luos frames.
      *
      *      3. Check framing error
@@ -247,7 +247,7 @@ void LUOS_COM_IRQHANDLER()
     if ("Reception buffer not empty interrupt is true and enable")
     {
         // Get data from register
-        ctx.rx.callback(&data); // Send received byte to the Robus state machine
+        Recep_data(&data); // Send received byte to the Robus state machine
         if (data_size_to_transmit == 0)
         {
             // Clear error IT

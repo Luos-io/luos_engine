@@ -7,8 +7,8 @@
 #ifndef _ROBUS_H_
 #define _ROBUS_H_
 
-#include "luos_io.h"
 #include <stdbool.h>
+#include "luos_io.h"
 
 /*******************************************************************************
  * Function

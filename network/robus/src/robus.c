@@ -28,6 +28,7 @@
  ******************************************************************************/
 // Creation of the robus context. This variable is used in all files of this lib.
 volatile context_t ctx;
+luos_phy_t *phy_robus;
 
 /*******************************************************************************
  * Function
@@ -48,8 +49,13 @@ void Robus_Init(void)
 
     // Init transmission
     Transmit_Init();
+
+    // Instantiate the phy struct
+    phy_robus = Phy_Create();
+    LUOS_ASSERT(phy_robus);
+
     // Init reception
-    Recep_Init();
+    Recep_Init(phy_robus);
 }
 
 /******************************************************************************
@@ -168,4 +174,14 @@ bool Robus_Busy(void)
 error_return_t Robus_FindNeighbour(void)
 {
     return PortMng_PokeNextPort();
+}
+
+/******************************************************************************
+ * @brief add the phy pointer to the callback
+ * @param pointer to the received data
+ * @return None
+ ******************************************************************************/
+_CRITICAL void Recep_data(volatile uint8_t *data)
+{
+    ctx.rx.callback(phy_robus, data);
 }

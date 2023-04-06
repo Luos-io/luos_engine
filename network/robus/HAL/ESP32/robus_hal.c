@@ -275,7 +275,7 @@ _CRITICAL void RobusHAL_ComIrqHandler(void *arg)
         uart_hal_clr_intsts_mask(&uart_hal_context, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
         if (RxEn == true)
         {
-            ctx.rx.callback(&data[size - 1]);
+            Recep_data(&data[size - 1]);
         }
         else
         {

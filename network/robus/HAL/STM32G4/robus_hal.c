@@ -202,7 +202,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
     {
         // We receive a byte
         uint8_t data = LL_USART_ReceiveData8(LUOS_COM);
-        ctx.rx.callback(&data); // send reception byte to state machine
+        Recep_data(&data); // send reception byte to state machine
         if (data_size_to_transmit == 0)
         {
             LUOS_COM->ICR = 0xFFFFFFFF;

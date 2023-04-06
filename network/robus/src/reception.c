@@ -19,7 +19,7 @@
  *                         v                             |      |             |
  *                   Header complete                     |      |  source ID  |yes
  *                         +                             |      |   received  +------>Disable Rx
- *                         | yes                            |      |      +      |           +
+ *                         | yes                         |      |      +      |           +
  *                         v                             |      |      |no    |           |
  *                  +------+------+   +-------------+    |    no|      v      |           v
  *                  |  Get        |   |  Get        |    +------+  Collision  |       Wait End
@@ -41,9 +41,9 @@
  *                  +-------------+                             +-----------------+
  ***********************************************************************************************/
 
-#include "reception.h"
 #include <string.h>
 #include <stdbool.h>
+#include "reception.h"
 #include "robus_hal.h"
 #include "luos_hal.h"
 #include "pub_sub.h"
@@ -55,7 +55,6 @@
 #include "filter.h"
 #include "struct_engine.h"
 #include "context.h"
-#include "phy.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -76,7 +75,6 @@
 uint16_t data_count = 0;
 uint16_t data_size  = 0;
 uint16_t crc_val    = 0;
-phy_t phy;
 
 /*******************************************************************************
  * Function
@@ -87,13 +85,13 @@ static inline uint8_t Recep_IsAckNeeded(void);
  * @param None
  * @return None
  ******************************************************************************/
-void Recep_Init(void)
+void Recep_Init(luos_phy_t *phy_robus)
 {
     // Initialize the reception state machine
     ctx.rx.status.unmap      = 0;
     ctx.rx.callback          = Recep_GetHeader;
     ctx.rx.status.identifier = 0xF;
-    phy.rx_timestamp         = 0;
+    phy_robus->rx_timestamp  = 0;
 }
 /******************************************************************************
  * @brief Callback to get a complete header
@@ -101,7 +99,7 @@ void Recep_Init(void)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL void Recep_GetHeader(volatile uint8_t *data)
+_CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
     // Catch a byte.
     MsgAlloc_SetData(*data);
@@ -113,7 +111,7 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
         case 1: // reset CRC computation
             // when we catch the first byte we timestamp the msg
             //  -8 : time to transmit 8 bits at 1 us/bit
-            phy.rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+            phy_robus->rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
 
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
@@ -186,7 +184,7 @@ _CRITICAL void Recep_GetHeader(volatile uint8_t *data)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL void Recep_GetData(volatile uint8_t *data)
+_CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
     MsgAlloc_SetData(*data);
     if (data_count < data_size)
@@ -208,7 +206,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
             if (Luos_IsMsgTimstamped((msg_t *)current_msg))
             {
                 // This conversion also remove the timestamp from the message size.
-                Timestamp_ConvertToDate((msg_t *)current_msg, phy.rx_timestamp);
+                Timestamp_ConvertToDate((msg_t *)current_msg, phy_robus->rx_timestamp);
             }
 
             // Make an exception for bootloader command
@@ -251,7 +249,7 @@ _CRITICAL void Recep_GetData(volatile uint8_t *data)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL void Recep_GetCollision(volatile uint8_t *data)
+_CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
     // Check data integrity
     if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
@@ -286,17 +284,17 @@ _CRITICAL void Recep_GetCollision(volatile uint8_t *data)
 #ifdef SELFTEST
             selftest_SetRxFlag();
 #endif
-            // collision detection end
+            // Collision detection end
             RobusHAL_SetRxState(false);
             RobusHAL_ResetTimeout(0);
             if (ctx.tx.status == TX_NOK)
             {
-                // switch to catch Ack.
+                // Switch to catch Ack.
                 ctx.rx.callback = Recep_CatchAck;
             }
             else
             {
-                // switch to get header.
+                // Switch to get header.
                 ctx.rx.callback = Recep_GetHeader;
             }
             return;
@@ -310,7 +308,7 @@ _CRITICAL void Recep_GetCollision(volatile uint8_t *data)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL void Recep_Drop(volatile uint8_t *data)
+_CRITICAL void Recep_Drop(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
     return;
 }
@@ -350,7 +348,7 @@ _CRITICAL void Recep_Reset(void)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL void Recep_CatchAck(volatile uint8_t *data)
+_CRITICAL void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
     volatile status_t status;
     status.unmap = *data;

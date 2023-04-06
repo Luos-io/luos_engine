@@ -213,7 +213,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
     {
         // clean start bit detection
         uint8_t data = LUOS_COM->USART.DATA.reg;
-        ctx.rx.callback(&data);
+        Recep_data(&data);
         if (data_size_to_transmit == 0)
         {
             LUOS_COM->USART.STATUS.reg      = SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF;

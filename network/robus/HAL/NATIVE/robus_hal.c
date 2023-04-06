@@ -209,7 +209,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 #endif
             for (uint16_t i = 0; i < (int)wm->data.len; i++)
             {
-                ctx.rx.callback((volatile uint8_t *)&wm->data.ptr[i]);
+                Recep_data((volatile uint8_t *)&wm->data.ptr[i]);
             }
 #ifdef WS_PRINT
             printf("\n");

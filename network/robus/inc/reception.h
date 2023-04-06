@@ -7,12 +7,13 @@
 #ifndef _RECEPTION_H_
 #define _RECEPTION_H_
 
-#include "robus.h"
+#include "luos_phy.h"
 #include "struct_io.h"
+#include "luos_io.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-typedef void (*DATA_CB)(volatile uint8_t *data);
+typedef void (*DATA_CB)(luos_phy_t *phy, volatile uint8_t *data);
 
 typedef struct __attribute__((__packed__))
 {
@@ -36,22 +37,21 @@ typedef struct
 } RxCom_t;
 
 /*******************************************************************************
- * Variables
- ******************************************************************************/
-
-/*******************************************************************************
  * Function
  ******************************************************************************/
+
+void Recep_data(volatile uint8_t *data);
+
 // Callbacks reception
-void Recep_GetHeader(volatile uint8_t *data);
-void Recep_GetData(volatile uint8_t *data);
-void Recep_GetCollision(volatile uint8_t *data);
-void Recep_Drop(volatile uint8_t *data);
+void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data);
+void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data);
+void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data);
+void Recep_Drop(luos_phy_t *phy_robus, volatile uint8_t *data);
 
 // Callbacks send
-void Recep_CatchAck(volatile uint8_t *data);
+void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data);
 
-void Recep_Init(void);
+void Recep_Init(luos_phy_t *phy_robus);
 void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);
