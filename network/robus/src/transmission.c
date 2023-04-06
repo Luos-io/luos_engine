@@ -68,6 +68,20 @@ volatile uint8_t nbrRetry = 0;
 _CRITICAL static uint8_t Transmit_GetLockStatus(void);
 
 /******************************************************************************
+ * @brief Transmit_Init
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Transmit_Init(void)
+{
+    // no transmission lock
+    ctx.tx.lock = false;
+    // Init collision state
+    ctx.tx.collision = false;
+    // Init Tx status
+    ctx.tx.status = TX_DISABLE;
+}
+/******************************************************************************
  * @brief Transmit an ACK
  * @param None
  * @return None

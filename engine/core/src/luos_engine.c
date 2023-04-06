@@ -46,9 +46,10 @@ static inline void Luos_PackageLoop(void);
 void Luos_Init(void)
 {
     Service_Init();
+    Node_Init();
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     LuosHAL_Init();
-    Robus_Init(&luos_stats.memory);
+    LuosIO_Init(&luos_stats.memory);
 
 #ifdef WITH_BOOTLOADER
     if (APP_START_ADDRESS == (uint32_t)FLASH_BASE)
@@ -98,7 +99,8 @@ void Luos_Loop(void)
         // Reset the data reception context
         Luos_ReceiveData(NULL, NULL, NULL);
     }
-    Robus_Loop();
+    Node_Loop();
+    LuosIO_Loop();
     // look at all received messages
     LUOS_MUTEX_LOCK
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_service) != FAILED)
@@ -764,6 +766,7 @@ void Luos_Run(void)
 #endif
     }
 }
+
 /******************************************************************************
  * @brief Demand a detection
  * @param service : Service that launched the detection
@@ -775,13 +778,14 @@ void Luos_Detect(service_t *service)
 
     if (Node_GetState() < LOCAL_DETECTION)
     {
+        // Reset filters
         Filter_IdInit();
         // Set the detection launcher id to 1
         service->id = 1;
         // Update the filter just to accept our detector id
         Filter_AddServiceId(1, 1);
 
-        //  send ask detection message
+        // Send ask detection message
         detection_service             = service;
         detect_msg.header.target_mode = SERVICEIDACK;
         detect_msg.header.cmd         = ASK_DETECTION;

@@ -7,6 +7,7 @@
 #ifndef _LUOSIO_H_
 #define _LUOSIO_H_
 
+#include "struct_luos.h"
 
 /*******************************************************************************
  * Definitions
@@ -21,7 +22,7 @@
  ******************************************************************************/
 
 // generic functions
-void LuosIO_Init(void);
-
+void LuosIO_Init(memory_stats_t *memory_stats);
+void LuosIO_Loop(void);
 
 #endif /* _LUOSIO_H_ */

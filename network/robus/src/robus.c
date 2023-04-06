@@ -36,7 +36,6 @@ typedef struct __attribute__((__packed__))
     };
 } node_bootstrap_t;
 
-static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(service_t *service);
 static error_return_t Robus_ResetNetworkDetection(service_t *service);
 /*******************************************************************************
@@ -55,35 +54,15 @@ volatile uint16_t last_node = 0;
  * @param None
  * @return None
  ******************************************************************************/
-void Robus_Init(memory_stats_t *memory_stats)
+void Robus_Init(void)
 {
-    Node_Init();
-    // no transmission lock
-    ctx.tx.lock = false;
-    // Init collision state
-    ctx.tx.collision = false;
-    // Init Tx status
-    ctx.tx.status = TX_DISABLE;
-    // Filters init
-    Filter_IdInit();
-    Filter_TopicInit();
-
-    // Init reception
-    Recep_Init();
-
-    // Clear message allocation buffer table
-    MsgAlloc_Init(memory_stats);
-
     // Init hal
     RobusHAL_Init();
 
     // init detection structure
     PortMng_Init();
-
-    // Initialize the robus service status
-    ctx.rx.status.unmap      = 0;
-    ctx.rx.status.identifier = 0xF;
 }
+
 /******************************************************************************
  * @brief Loop of the Robus communication protocole
  * @param None
@@ -91,21 +70,6 @@ void Robus_Init(memory_stats_t *memory_stats)
  ******************************************************************************/
 void Robus_Loop(void)
 {
-    // Network timeout management
-    Node_Loop();
-    // Execute message allocation tasks
-    MsgAlloc_loop();
-    // Interpreat received messages and create luos task for it.
-    msg_t *msg = NULL;
-    while (MsgAlloc_PullMsgToInterpret(&msg) == SUCCEED)
-    {
-        // Check if this message is a protocol one
-        if (Robus_MsgHandler(msg) == FAILED)
-        {
-            // If not create luos tasks for all services.
-            Service_AllocMsg(msg);
-        }
-    }
     RobusHAL_Loop();
 }
 
@@ -338,7 +302,7 @@ static error_return_t Robus_DetectNextNodes(service_t *service)
         uint32_t start_tick = LuosHAL_GetSystick();
         while (ctx.port.keepLine)
         {
-            Robus_Loop();
+            LuosIO_Loop();
             if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)
             {
                 // topology detection is too long, we should abort it and restart
@@ -353,7 +317,7 @@ static error_return_t Robus_DetectNextNodes(service_t *service)
  * @param msg pointer to the reeived message
  * @return error_return_t SUCCEED if the message have been consumed.
  ******************************************************************************/
-static error_return_t Robus_MsgHandler(msg_t *input)
+error_return_t Robus_MsgHandler(msg_t *input)
 {
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;

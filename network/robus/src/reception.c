@@ -90,8 +90,9 @@ static inline uint8_t Recep_IsAckNeeded(void);
 void Recep_Init(void)
 {
     // Initialize the reception state machine
-    ctx.rx.status.unmap = 0;
-    ctx.rx.callback     = Recep_GetHeader;
+    ctx.rx.status.unmap      = 0;
+    ctx.rx.callback          = Recep_GetHeader;
+    ctx.rx.status.identifier = 0xF;
 }
 /******************************************************************************
  * @brief Callback to get a complete header

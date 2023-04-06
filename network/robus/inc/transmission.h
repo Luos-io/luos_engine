@@ -34,6 +34,7 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
+void Transmit_Init(void);
 uint16_t ll_crc_compute(uint8_t *, uint16_t, uint16_t);
 void Transmit_SendAck(void);
 void Transmit_Process(void);
