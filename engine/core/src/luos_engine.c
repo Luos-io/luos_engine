@@ -14,6 +14,7 @@
 #include "_timestamp.h"
 #include "filter.h"
 #include "context.h"
+#include "service.h"
 
 /*******************************************************************************
  * Variables
@@ -21,8 +22,6 @@
 revision_t luos_version = {.major = 3, .minor = 0, .build = 0};
 package_t package_table[MAX_SERVICE_NUMBER];
 uint16_t package_number = 0;
-service_t service_table[MAX_SERVICE_NUMBER];
-uint16_t service_number = 0;
 service_t *detection_service;
 uint8_t Flag_DetectServices = 0;
 
@@ -33,11 +32,9 @@ general_stats_t general_stats;
  * Function
  ******************************************************************************/
 static error_return_t Luos_MsgHandler(service_t *service, msg_t *input);
-static service_t *Luos_GetService(ll_service_t *ll_service);
-static uint16_t Luos_GetServiceIndex(service_t *service);
 static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
-static void Luos_AutoUpdateManager(void);
 static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t size);
+static error_return_t Luos_Send(service_t *service, msg_t *msg);
 static inline void Luos_EmptyNode(void);
 static inline void Luos_PackageInit(void);
 static inline void Luos_PackageLoop(void);
@@ -49,7 +46,7 @@ static inline void Luos_PackageLoop(void);
  ******************************************************************************/
 void Luos_Init(void)
 {
-    service_number = 0;
+    Service_Init();
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
     LuosHAL_Init();
     Robus_Init(&luos_stats.memory);
@@ -112,7 +109,7 @@ void Luos_Loop(void)
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)
     {
         // There is a message available find the service linked to it
-        service_t *service = Luos_GetService(oldest_ll_service);
+        service_t *service = Service_GetService(oldest_ll_service);
         // check if this is a Luos Command
         uint8_t cmd   = 0;
         uint16_t size = 0;
@@ -172,7 +169,7 @@ void Luos_Loop(void)
     // finish msg used
     MsgAlloc_UsedMsgEnd();
     // manage timed auto update
-    Luos_AutoUpdateManager();
+    Service_AutoUpdateManager();
     // save loop date
     last_loop_date = LuosHAL_GetSystick();
 
@@ -191,10 +188,7 @@ void Luos_Loop(void)
 void Luos_ResetStatistic(void)
 {
     memset(&luos_stats.unmap[0], 0, sizeof(luos_stats_t));
-    for (uint16_t i = 0; i < service_number; i++)
-    {
-        service_table[i].statistics.max_retry = 0;
-    }
+    void Service_ResetStatistics(void);
 }
 /******************************************************************************
  * @brief Check if this command concern luos
@@ -290,30 +284,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                     // generate local ID
                     RoutingTB_Erase();
                     memcpy(&base_id, &input->data[0], sizeof(uint16_t));
-                    if (base_id == 1)
-                    {
-                        // set service Id based on received data except for the detector one.
-                        base_id   = 2;
-                        int index = 0;
-                        for (uint16_t i = 0; i < service_number; i++)
-                        {
-                            if (service_table[i].ll_service->id != 1)
-                            {
-                                service_table[i].ll_service->id = base_id + index;
-                                index++;
-                            }
-                        }
-                        Filter_AddServiceId(1, service_number);
-                    }
-                    else
-                    {
-                        // set service Id based on received data
-                        for (uint16_t i = 0; i < service_number; i++)
-                        {
-                            service_table[i].ll_service->id = base_id + i;
-                        }
-                        Filter_AddServiceId(base_id, service_number);
-                    }
+                    Service_GenerateId(base_id);
                 case 0:
                     // send back a local routing table
                     output_msg.header.cmd         = RTB;
@@ -417,38 +388,6 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
     return consume;
 }
 /******************************************************************************
- * @brief Get pointer to a service in route table
- * @param ll_service : low level service
- * @return Service from list
- ******************************************************************************/
-static service_t *Luos_GetService(ll_service_t *ll_service)
-{
-    for (uint16_t i = 0; i < service_number; i++)
-    {
-        if (ll_service == service_table[i].ll_service)
-        {
-            return &service_table[i];
-        }
-    }
-    return 0;
-}
-/******************************************************************************
- * @brief Get this index of the service
- * @param Service
- * @return Service from list
- ******************************************************************************/
-static uint16_t Luos_GetServiceIndex(service_t *service)
-{
-    for (uint16_t i = 0; i < service_number; i++)
-    {
-        if (service == &service_table[i])
-        {
-            return i;
-        }
-    }
-    return 0xFFFF;
-}
-/******************************************************************************
  * @brief Transmit local RTB to network
  * @param service
  * @param routeTB_msg : Loca RTB message to transmit
@@ -457,134 +396,19 @@ static uint16_t Luos_GetServiceIndex(service_t *service)
 static void Luos_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg)
 {
     uint16_t entry_nb = 0;
-    routing_table_t local_routing_table[service_number + 1];
+    routing_table_t local_routing_table[Service_GetNumber() + 1];
 
     // start by saving node entry
     RoutingTB_ConvertNodeToRoutingTable(&local_routing_table[entry_nb], Node_Get());
     entry_nb++;
     // save services entry
-    for (uint16_t i = 0; i < service_number; i++)
+    for (uint16_t i = 0; i < Service_GetNumber(); i++)
     {
-        RoutingTB_ConvertServiceToRoutingTable((routing_table_t *)&local_routing_table[entry_nb++], &service_table[i]);
+        RoutingTB_ConvertServiceToRoutingTable((routing_table_t *)&local_routing_table[entry_nb++], &Service_GetTable()[i]);
     }
     Luos_SendData(service, routeTB_msg, (void *)local_routing_table, (entry_nb * sizeof(routing_table_t)));
 }
-/******************************************************************************
- * @brief Auto update publication for service
- * @param none
- * @return none
- ******************************************************************************/
-static void Luos_AutoUpdateManager(void)
-{
-    // check all services timed_update_t contexts
-    for (uint16_t i = 0; i < service_number; i++)
-    {
-        // check if services have an actual ID. If not, we are in detection mode and should reset the auto refresh
-        if (service_table[i].ll_service->id == DEFAULTID)
-        {
-            // this service have not been detected or is in detection mode. remove auto_refresh parameters
-            service_table[i].auto_refresh.target      = 0;
-            service_table[i].auto_refresh.time_ms     = 0;
-            service_table[i].auto_refresh.last_update = 0;
-        }
-        else
-        {
-            // check if there is a timed update setted and if it's time to update it.
-            if (service_table[i].auto_refresh.time_ms)
-            {
-                if (service_table[i].ll_service->dead_service_spotted == service_table[i].auto_refresh.target)
-                {
-                    service_table[i].auto_refresh.target      = 0;
-                    service_table[i].auto_refresh.time_ms     = 0;
-                    service_table[i].auto_refresh.last_update = 0;
-                    continue;
-                }
-                if ((LuosHAL_GetSystick() - service_table[i].auto_refresh.last_update) >= service_table[i].auto_refresh.time_ms)
-                {
-                    // This service need to send an update
-                    // Create a fake message for it from the service asking for update
-                    msg_t updt_msg;
-                    updt_msg.header.config      = BASE_PROTOCOL;
-                    updt_msg.header.target      = service_table[i].ll_service->id;
-                    updt_msg.header.source      = service_table[i].auto_refresh.target;
-                    updt_msg.header.target_mode = SERVICEIDACK;
-                    updt_msg.header.cmd         = GET_CMD;
-                    updt_msg.header.size        = 0;
-                    if ((service_table[i].service_cb != 0))
-                    {
-                        service_table[i].service_cb(&service_table[i], &updt_msg);
-                    }
-                    else
-                    {
-                        if (Node_GetState() == DETECTION_OK)
-                        {
-                            // directly transmit the message in Localhost
-                            Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
-                        }
-                    }
-                    service_table[i].auto_refresh.last_update = LuosHAL_GetSystick();
-                }
-            }
-        }
-    }
-}
-/******************************************************************************
- * @brief Clear list of service
- * @param none
- * @return none
- ******************************************************************************/
-void Luos_ServicesClear(void)
-{
-    service_number = 0;
-    Robus_ServicesClear();
-}
-/******************************************************************************
- * @brief API to Create a service
- * @param service_cb : Callback msg handler for the service
- * @param type of service corresponding to object dictionnary
- * @param alias for the service string (15 caracters max).
- * @param version FW for the service (tab[MajorVersion,MinorVersion,Patch])
- * @return Service object pointer.
- ******************************************************************************/
-service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *alias, revision_t revision)
-{
-    uint8_t i           = 0;
-    service_t *service  = &service_table[service_number];
-    service->ll_service = Robus_ServiceCreate(type);
 
-    // Link the service to his callback
-    service->service_cb = service_cb;
-
-    // Initialise the service aliases to 0
-    memset((void *)service->default_alias, 0, MAX_ALIAS_SIZE);
-    memset((void *)service->alias, 0, MAX_ALIAS_SIZE);
-    // Save aliases
-    for (i = 0; i < MAX_ALIAS_SIZE - 1; i++)
-    {
-        service->default_alias[i] = alias[i];
-        service->alias[i]         = alias[i];
-        if (service->default_alias[i] == '\0')
-            break;
-    }
-    service->default_alias[i] = '\0';
-    service->alias[i]         = '\0';
-
-    // Initialise the service revision to 0
-    memset((void *)service->revision.unmap, 0, sizeof(revision_t));
-    // Save firmware version
-    for (i = 0; i < sizeof(revision_t); i++)
-    {
-        service->revision.unmap[i] = revision.unmap[i];
-    }
-
-    // initiate service statistics
-    service->node_statistics               = &luos_stats;
-    service->ll_service->ll_stat.max_retry = &service->statistics.max_retry;
-
-    service_number++;
-    LUOS_ASSERT(service_number <= MAX_SERVICE_NUMBER);
-    return service;
-}
 /******************************************************************************
  * @brief Send msg through network
  * @param Service : Who send
@@ -595,19 +419,7 @@ error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 {
     // set protocol version
     msg->header.config = BASE_PROTOCOL;
-
-    if (service == 0)
-    {
-        // There is no service specified here, take the first one
-        service = &service_table[0];
-    }
-    if ((service->ll_service->id == 0) && (msg->header.cmd >= LUOS_LAST_RESERVED_CMD))
-    {
-        // We are in detection mode and this command come from user
-        // We can't send it
-        return PROHIBITED;
-    }
-    return Robus_SendMsg(service->ll_service, msg);
+    return Luos_Send(service, msg);
 }
 
 /******************************************************************************
@@ -621,10 +433,22 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
 {
     // set timestamp in message
     Timestamp_EncodeMsg(msg, timestamp);
+    return Luos_Send(service, msg);
+}
+
+/******************************************************************************
+ * @brief Send msg through network
+ * @param service : Who send
+ * @param msg : Message to send
+ * @param timestamp
+ * @return SUCCEED : If the message is sent, else FAILED or PROHIBITED
+ ******************************************************************************/
+static error_return_t Luos_Send(service_t *service, msg_t *msg)
+{
     if (service == 0)
     {
         // There is no service specified here, take the first one
-        service = &service_table[0];
+        service = &Service_GetTable()[0];
     }
     if ((service->ll_service->id == 0) && (msg->header.cmd >= LUOS_LAST_RESERVED_CMD))
     {
@@ -632,11 +456,7 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
         // We can't send it
         return PROHIBITED;
     }
-    if (Robus_SendMsg(service->ll_service, msg) == FAILED)
-    {
-        return FAILED;
-    }
-    return SUCCEED;
+    return Robus_SendMsg(service->ll_service, msg);
 }
 
 /******************************************************************************
@@ -794,7 +614,7 @@ int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
     LUOS_ASSERT(msg != 0);
     LUOS_ASSERT(bin_data != 0);
 
-    uint16_t id = Luos_GetServiceIndex(service);
+    uint16_t id = Service_GetIndex(service);
     // check good service index
     if (id == 0xFFFF)
     {
@@ -851,57 +671,6 @@ int Luos_ReceiveData(service_t *service, msg_t *msg, void *bin_data)
         return backup;
     }
     return 0;
-}
-/******************************************************************************
- * @brief Store alias name service in flash
- * @param service : Service to store
- * @param alias : Alias to store
- * @return SUCCEED : If the alias is correctly updated
- ******************************************************************************/
-error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size)
-{
-
-    if ((size == 0) || (alias[0] == '\0'))
-    {
-        // This is a void alias just replace it with the default alias, write it
-        memcpy(service->alias, service->default_alias, MAX_ALIAS_SIZE);
-        return SUCCEED;
-    }
-    // Be sure to have a size including \0
-    if (alias[size - 1] != '\0')
-    {
-        size++;
-    }
-    // Clip size
-    if (size > MAX_ALIAS_SIZE)
-    {
-        size = MAX_ALIAS_SIZE;
-    }
-    char clean_alias[MAX_ALIAS_SIZE] = {0};
-    // Replace any ' '' character by a '_' character, FAIL at any special character.
-    for (uint8_t i = 0; i < size - 1; i++)
-    {
-        switch (alias[i])
-        {
-            case 'A' ... 'Z':
-            case 'a' ... 'z':
-            case '0' ... '9':
-            case '_':
-                // This is good
-                clean_alias[i] = alias[i];
-                break;
-            case ' ':
-                clean_alias[i] = '_';
-                break;
-            default:
-                // This is a wrong character, don't do anything and return FAILED
-                return FAILED;
-                break;
-        }
-    }
-    // We are ready to save this new alias, write it
-    memcpy(service->alias, clean_alias, MAX_ALIAS_SIZE);
-    return SUCCEED;
 }
 /******************************************************************************
  * @brief Return the number of messages available
@@ -1013,20 +782,6 @@ void Luos_Run(void)
     }
 }
 /******************************************************************************
- * @brief Set a local id
- * @param service : Service that we want to set id
- * @param id : Id value
- * @return None
- ******************************************************************************/
-void Luos_SetID(service_t *service, uint16_t id)
-{
-    Filter_IdInit();
-    // set id
-    service->ll_service->id = 1;
-    // change filter mask
-    Filter_AddServiceId(id, service_number);
-}
-/******************************************************************************
  * @brief Demand a detection
  * @param service : Service that launched the detection
  * @return None
@@ -1037,8 +792,12 @@ void Luos_Detect(service_t *service)
 
     if (Node_GetState() < LOCAL_DETECTION)
     {
-        // set the detection launcher id to 1
-        Luos_SetID(service, 1);
+        Filter_IdInit();
+        // Set the detection launcher id to 1
+        service->ll_service->id = 1;
+        // Update the filter just to accept our detector id
+        Filter_AddServiceId(1, 1);
+
         //  send ask detection message
         detection_service             = service;
         detect_msg.header.target_mode = SERVICEIDACK;

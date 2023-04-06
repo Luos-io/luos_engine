@@ -127,7 +127,6 @@ typedef struct __attribute__((__packed__)) service_t
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< service alias. */
     timed_update_t auto_refresh;           /*!< service auto refresh context. */
     revision_t revision;                   /*!< service firmware version. */
-    luos_stats_t *node_statistics;         /*!< Node level statistics. */
     service_stats_t statistics;            /*!< service level statistics. */
     access_t access;                       /*!< service read write access. */
     void *profile_context;                 /*!< Pointer to the profile context. */
