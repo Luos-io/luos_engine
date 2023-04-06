@@ -24,5 +24,6 @@
 // generic functions
 void LuosIO_Init(memory_stats_t *memory_stats);
 void LuosIO_Loop(void);
+uint16_t LuosIO_TopologyDetection(service_t *service);
 
 #endif /* _LUOSIO_H_ */

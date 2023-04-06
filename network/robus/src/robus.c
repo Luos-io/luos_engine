@@ -23,27 +23,11 @@
  * Definitions
  ******************************************************************************/
 
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            uint16_t prev_nodeid;
-            uint16_t nodeid;
-        };
-        uint8_t unmap[sizeof(uint16_t) * 2];
-    };
-} node_bootstrap_t;
-
-static error_return_t Robus_DetectNextNodes(service_t *service);
-static error_return_t Robus_ResetNetworkDetection(service_t *service);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
 // Creation of the robus context. This variable is used in all files of this lib.
 volatile context_t ctx;
-volatile uint16_t last_node = 0;
 
 /*******************************************************************************
  * Function
@@ -59,7 +43,7 @@ void Robus_Init(void)
     // Init hal
     RobusHAL_Init();
 
-    // init detection structure
+    // Init detection structure
     PortMng_Init();
 }
 
@@ -140,253 +124,43 @@ error_return_t Robus_SetTxTask(service_t *service, msg_t *msg)
 #endif
     return error;
 }
+
 /******************************************************************************
- * @brief Send Msg to a service
- * @param service to send
- * @param msg to send
- * @return none
- ******************************************************************************/
-error_return_t Robus_SendMsg(service_t *service, msg_t *msg)
-{
-    // ********** Prepare the message ********************
-    if (service->id != 0)
-    {
-        msg->header.source = service->id;
-    }
-    else
-    {
-        msg->header.source = Node_Get()->node_id;
-    }
-    if (Robus_SetTxTask(service, msg) == FAILED)
-    {
-        return FAILED;
-    }
-    return SUCCEED;
-}
-/******************************************************************************
- * @brief Start a topology detection procedure
- * @param service pointer to the detecting service
- * @return The number of detected node.
- ******************************************************************************/
-uint16_t Robus_TopologyDetection(service_t *service)
-{
-    uint8_t redetect_nb = 0;
-    bool detect_enabled = true;
-
-    // if a detection is in progress,
-    // Don't do an another detection and return 0
-    if (Node_GetState() >= LOCAL_DETECTION)
-    {
-        return 0;
-    }
-
-    while (detect_enabled)
-    {
-        detect_enabled = false;
-
-        // Reset all detection state of services on the network
-        Robus_ResetNetworkDetection(service);
-        // Make sure that the detection is not interrupted
-        if (Node_GetState() == EXTERNAL_DETECTION)
-        {
-            return 0;
-        }
-        // setup local node
-        Node_Get()->node_id = 1;
-        last_node           = 1;
-        // setup sending service
-        service->id = 1;
-
-        if (Robus_DetectNextNodes(service) == FAILED)
-        {
-            // check the number of retry we made
-            LUOS_ASSERT((redetect_nb <= 4));
-            // Detection fail, restart it
-            redetect_nb++;
-            detect_enabled = true;
-        }
-    }
-
-    return last_node;
-}
-/******************************************************************************
- * @brief reset all service port states
- * @param service pointer to the detecting service
- * @return The number of detected node.
- ******************************************************************************/
-static error_return_t Robus_ResetNetworkDetection(service_t *service)
-{
-    msg_t msg;
-    uint8_t try_nbr = 0;
-
-    msg.header.config      = BASE_PROTOCOL;
-    msg.header.target      = BROADCAST_VAL;
-    msg.header.target_mode = BROADCAST;
-    msg.header.cmd         = START_DETECTION;
-    msg.header.size        = 0;
-
-    do
-    {
-        // if a detection is in progress,
-        // Don't do an another detection and return 0
-        if (Node_GetState() >= LOCAL_DETECTION)
-        {
-            return 0;
-        }
-        // msg send not blocking
-        Robus_SendMsg(service, &msg);
-        // need to wait until tx msg before clear msg alloc
-        while (MsgAlloc_TxAllComplete() != SUCCEED)
-            ;
-
-        // Reinit service id
-        Service_ClearId();
-
-        // Reinit msg alloc
-        MsgAlloc_Init(NULL);
-
-        // wait for some 2ms to be sure all previous messages are received and treated
-        uint32_t start_tick = LuosHAL_GetSystick();
-        while (LuosHAL_GetSystick() - start_tick < 2)
-            ;
-        try_nbr++;
-    } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
-
-    Node_Get()->node_id = 0;
-    PortMng_Init();
-    if (try_nbr < 5)
-    {
-        Node_SetState(LOCAL_DETECTION);
-        return SUCCEED;
-    }
-
-    return FAILED;
-}
-/******************************************************************************
- * @brief run the procedure allowing to detect the next nodes on the next port
- * @param service pointer to the detecting service
+ * @brief Save a node id in the port table
+ * @param nodeid to save
  * @return None.
  ******************************************************************************/
-static error_return_t Robus_DetectNextNodes(service_t *service)
+void Robus_SaveNodeID(uint16_t nodeid)
 {
-    // Lets try to poke other nodes
-    while (PortMng_PokeNextPort() == SUCCEED)
-    {
-        // There is someone here
-        // Clear spotted dead service detection
-        service->dead_service_spotted = 0;
-        // Ask an ID  to the detector service.
-        msg_t msg;
-        msg.header.config      = BASE_PROTOCOL;
-        msg.header.target_mode = NODEIDACK;
-        msg.header.target      = 1;
-        msg.header.cmd         = WRITE_NODE_ID;
-        msg.header.size        = 0;
-        Robus_SendMsg(service, &msg);
-        // Wait the end of transmission
-        while (MsgAlloc_TxAllComplete() == FAILED)
-            ;
-        // Check if there is a failure on transmission
-        if (service->dead_service_spotted != 0)
-        {
-            // Message transmission failure
-            // Consider this port unconnected
-            Node_Get()->port_table[ctx.port.activ] = 0xFFFF;
-            ctx.port.activ                         = NBR_PORT;
-            ctx.port.keepLine                      = false;
-            continue;
-        }
-
-        // when Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
-        // We just have to wait the end of the treatment of the entire branch
-        uint32_t start_tick = LuosHAL_GetSystick();
-        while (ctx.port.keepLine)
-        {
-            LuosIO_Loop();
-            if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)
-            {
-                // topology detection is too long, we should abort it and restart
-                return FAILED;
-            }
-        }
-    }
-    return SUCCEED;
+    PortMng_SaveNodeID(nodeid);
 }
+
 /******************************************************************************
- * @brief check if received messages are protocols one and manage it if it is.
- * @param msg pointer to the reeived message
- * @return error_return_t SUCCEED if the message have been consumed.
+ * @brief Reset the node id of the port table
+ * @param None
+ * @return None.
  ******************************************************************************/
-error_return_t Robus_MsgHandler(msg_t *input)
+void Robus_ResetNodeID(void)
 {
-    msg_t output_msg;
-    node_bootstrap_t node_bootstrap;
-    service_t *service = Service_GetConcerned(&input->header);
-    switch (input->header.cmd)
-    {
-        case WRITE_NODE_ID:
-            // Depending on the size of the received data we have to do different things
-            switch (input->header.size)
-            {
-                case 0:
-                    // Someone asking us a new node id (we are the detecting service)
-                    // Increase the number of node_nb and send it back
-                    last_node++;
-                    output_msg.header.config      = BASE_PROTOCOL;
-                    output_msg.header.cmd         = WRITE_NODE_ID;
-                    output_msg.header.size        = sizeof(uint16_t);
-                    output_msg.header.target      = input->header.source;
-                    output_msg.header.target_mode = NODEIDACK;
-                    memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
-                    Robus_SendMsg(service, &output_msg);
-                    break;
-                case 2:
-                    // This is a node id for the next node.
-                    // This is a reply to our request to generate the next node id.
-                    // This node_id is the one after the currently poked branch.
-                    // We need to save this ID as a connection on a port
-                    memcpy((void *)&Node_Get()->port_table[ctx.port.activ], (void *)&input->data[0], sizeof(uint16_t));
-                    // Now we can send it to the next node
-                    memcpy((void *)&node_bootstrap.nodeid, (void *)&input->data[0], sizeof(uint16_t));
-                    node_bootstrap.prev_nodeid    = Node_Get()->node_id;
-                    output_msg.header.config      = BASE_PROTOCOL;
-                    output_msg.header.cmd         = WRITE_NODE_ID;
-                    output_msg.header.size        = sizeof(node_bootstrap_t);
-                    output_msg.header.target      = 0;
-                    output_msg.header.target_mode = NODEIDACK;
-                    memcpy((void *)&output_msg.data[0], (void *)&node_bootstrap.unmap[0], sizeof(node_bootstrap_t));
-                    Robus_SendMsg(service, &output_msg);
-                    break;
-                case sizeof(node_bootstrap_t):
-                    if (Node_Get()->node_id != 0)
-                    {
-                        Node_Get()->node_id = 0;
-                        // Reinit service id
-                        Service_ClearId();
-                        MsgAlloc_Init(NULL);
-                    }
-                    // This is a node bootstrap information.
-                    memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
-                    Node_Get()->node_id                    = node_bootstrap.nodeid;
-                    Node_Get()->port_table[ctx.port.activ] = node_bootstrap.prev_nodeid;
-                    // Continue the topology detection on our other ports.
-                    Robus_DetectNextNodes(service);
-                default:
-                    break;
-            }
-            return SUCCEED;
-            break;
-        case START_DETECTION:
-            return SUCCEED;
-            break;
-        case END_DETECTION:
-            // Detect end of detection
-            Node_SetState(DETECTION_OK);
-            return FAILED;
-            break;
-        default:
-            return FAILED;
-            break;
-    }
-    return FAILED;
+    PortMng_Init();
+}
+
+/******************************************************************************
+ * @brief Is Robus busy
+ * @param None
+ * @return nodeid.
+ ******************************************************************************/
+bool Robus_Busy(void)
+{
+    return PortMng_Busy();
+}
+
+/******************************************************************************
+ * @brief Find the next neighbour on this phy
+ * @param None
+ * @return error_return_t
+ ******************************************************************************/
+error_return_t Robus_FindNeighbour(void)
+{
+    return PortMng_PokeNextPort();
 }

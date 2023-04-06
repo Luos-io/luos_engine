@@ -8,6 +8,7 @@
 #define _ROBUS_H_
 
 #include "luos_io.h"
+#include <stdbool.h>
 
 /*******************************************************************************
  * Function
@@ -16,8 +17,10 @@ void Robus_Init(void);
 void Robus_Loop(void);
 
 error_return_t Robus_SetTxTask(service_t *service, msg_t *msg);
-error_return_t Robus_SendMsg(service_t *service, msg_t *msg);
-uint16_t Robus_TopologyDetection(service_t *service);
-error_return_t Robus_MsgHandler(msg_t *input);
+
+void Robus_SaveNodeID(uint16_t nodeid);
+void Robus_ResetNodeID(void);
+bool Robus_Busy(void);
+error_return_t Robus_FindNeighbour(void);
 
 #endif /* _ROBUS_H_ */

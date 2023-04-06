@@ -179,3 +179,25 @@ _CRITICAL void PortMng_Reset(void)
         RobusHAL_SetPTPDefaultState(port);
     }
 }
+
+/******************************************************************************
+ * @brief save node id on the port table
+ * @param node id
+ * @return None
+ ******************************************************************************/
+void PortMng_SaveNodeID(uint16_t nodeid)
+{
+    Node_Get()->port_table[ctx.port.activ] = nodeid;
+    if (nodeid == 0xFFFF)
+    {
+        // This means no that we failed to reach the next node
+        // Consider this port unconnected
+        ctx.port.activ    = NBR_PORT;
+        ctx.port.keepLine = false;
+    }
+}
+
+bool PortMng_Busy(void)
+{
+    return ctx.port.keepLine;
+}

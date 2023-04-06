@@ -450,7 +450,21 @@ static error_return_t Luos_Send(service_t *service, msg_t *msg)
         // We can't send it
         return PROHIBITED;
     }
-    return Robus_SendMsg(service, msg);
+
+    // ********** Prepare the message ********************
+    if (service->id != 0)
+    {
+        msg->header.source = service->id;
+    }
+    else
+    {
+        msg->header.source = Node_Get()->node_id;
+    }
+    if (Robus_SetTxTask(service, msg) == FAILED)
+    {
+        return FAILED;
+    }
+    return SUCCEED;
 }
 
 /******************************************************************************

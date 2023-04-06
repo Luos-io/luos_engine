@@ -12,6 +12,7 @@
  ******************************************************************************/
 #define LUOS_LAST_RESERVED_CMD 42    // Last Luos reserved command
 #define ROBUS_PROTOCOL_NB      13    // Number of Robus protocol command
+#define ALIAS_SIZE             15    // Number of max char for service alias
 #define DETECTION_TIMEOUT_MS   10000 // Timeout used to detect a failed detection
 #define BOOT_TIMEOUT           1000
 #define DEFAULTID              0x00

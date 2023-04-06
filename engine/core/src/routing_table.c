@@ -13,12 +13,11 @@
 #include "luos_hal.h"
 #include "luos_engine.h"
 #include "struct_engine.h"
-#include "robus.h"
+#include "luos_io.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define ALIAS_SIZE 15
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -367,7 +366,7 @@ void RoutingTB_DetectServices(service_t *service)
     // Desactivate verbose mode
     Luos_SetVerboseMode(false);
     // Starts the topology detection.
-    uint16_t nb_node = Robus_TopologyDetection(service);
+    uint16_t nb_node = LuosIO_TopologyDetection(service);
     // Clear data reception state
     Luos_ReceiveData(NULL, NULL, NULL);
     // Clear the routing table.
