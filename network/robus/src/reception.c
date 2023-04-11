@@ -107,10 +107,12 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
     // Check if we have all we need.
     switch (data_count)
     {
-        case 1: // reset CRC computation
-            // when we catch the first byte we timestamp the msg
-            //  -8 : time to transmit 8 bits at 1 us/bit
-            phy_robus->rx_timestamp = LuosHAL_GetTimestamp() - BYTE_TRANSMIT_TIME;
+        case 1:
+            // Reset CRC computation
+            // When we catch the first byte we timestamp the msg
+            // We remove the time of the first byte to get the exact reception date.
+            // 1 byte is 10 bits and we convert it to nanoseconds
+            phy_robus->rx_timestamp = LuosHAL_GetTimestamp() - ((uint32_t)10 * (uint32_t)1000000000 / (uint32_t)DEFAULTBAUDRATE);
 
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
