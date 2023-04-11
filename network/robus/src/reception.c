@@ -42,7 +42,6 @@
  ***********************************************************************************************/
 
 #include <string.h>
-#include <stdbool.h>
 #include "reception.h"
 #include "robus_hal.h"
 #include "luos_hal.h"
@@ -364,65 +363,26 @@ _CRITICAL void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data)
 /******************************************************************************
  * @brief Parse msg to find a service concerne
  * @param header of message
- * @return None
+ * @return true or false
  * warning : this function can be redefined only for mock testing purpose
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL luos_localhost_t Recep_NodeConcerned(header_t *header)
+_CRITICAL bool Recep_NodeConcerned(header_t *header)
 {
     // Find if we are concerned by this message.
-    // check if we need to filter all the messages
-
-    switch (header->target_mode)
+    if ((header->target_mode == NODEIDACK) || (header->target_mode == SERVICEIDACK))
     {
-        case SERVICEIDACK:
-            ctx.rx.status.rx_error = false;
-        case SERVICEID:
-            // Check all service id
-            if (Filter_ServiceID(header->target))
-            {
-                return LOCALHOST;
-            }
-            break;
-        case TYPE:
-
-            if (Filter_Type(header->target))
-            {
-                return MULTIHOST;
-            }
-            break;
-        case BROADCAST:
-            if (header->target == BROADCAST_VAL)
-            {
-                return MULTIHOST;
-            }
-            break;
-        case NODEIDACK:
-            ctx.rx.status.rx_error = false;
-        case NODEID:
-            if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
-            {
-                return LOCALHOST; // discard message if ID = 0 and no Port activ
-            }
-            else
-            {
-                if ((header->target == Node_Get()->node_id) && ((header->target != 0)))
-                {
-                    return LOCALHOST;
-                }
-            }
-            break;
-        case TOPIC:
-            if (Filter_Topic(header->target))
-            {
-                return MULTIHOST;
-            }
-            break;
-        default:
-            return EXTERNALHOST;
-            break;
+        // In both of those cases we potentially need an ack.
+        ctx.rx.status.rx_error = false;
     }
-    return EXTERNALHOST;
+    if ((header->target_mode == NODEID) || (header->target_mode == NODEIDACK))
+    {
+        if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
+        {
+            return true; // Keep message if nodeID = 0 and a PTP is activ
+        }
+    }
+    return (Filter_GetLocalhost(header) != EXTERNALHOST);
 }
 
 /******************************************************************************

@@ -9,7 +9,7 @@
 #include "luos_utils.h"
 #include "luos_hal.h"
 #include "service.h"
-#include "struct_luos.h"
+#include "node.h"
 
 /*******************************************************************************
  * Definitions
@@ -171,4 +171,58 @@ _CRITICAL bool Filter_Type(uint16_t type_id)
         }
     }
     return false;
+}
+
+/******************************************************************************
+ * @brief Parse msg to find a service concerne
+ * @param header of message
+ * @return None
+ * _CRITICAL function call in IRQ
+ ******************************************************************************/
+_CRITICAL luos_localhost_t Filter_GetLocalhost(header_t *header)
+{
+    // Find if we are concerned by this message.
+    // check if we need to filter all the messages
+
+    switch (header->target_mode)
+    {
+        case SERVICEIDACK:
+        case SERVICEID:
+            // Check all service id
+            if (Filter_ServiceID(header->target))
+            {
+                return LOCALHOST;
+            }
+            break;
+        case TYPE:
+
+            if (Filter_Type(header->target))
+            {
+                return MULTIHOST;
+            }
+            break;
+        case BROADCAST:
+            if (header->target == BROADCAST_VAL)
+            {
+                return MULTIHOST;
+            }
+            break;
+        case NODEIDACK:
+        case NODEID:
+            if ((header->target == Node_Get()->node_id) && (header->target != DEFAULTID))
+            {
+                return LOCALHOST;
+            }
+            break;
+        case TOPIC:
+            if (Filter_Topic(header->target))
+            {
+                return MULTIHOST;
+            }
+            break;
+        default:
+            return EXTERNALHOST;
+            break;
+    }
+    return EXTERNALHOST;
 }

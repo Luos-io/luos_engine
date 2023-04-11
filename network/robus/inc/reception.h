@@ -7,6 +7,7 @@
 #ifndef _RECEPTION_H_
 #define _RECEPTION_H_
 
+#include <stdbool.h>
 #include "luos_phy.h"
 #include "struct_io.h"
 #include "luos_io.h"
@@ -55,6 +56,6 @@ void Recep_Init(luos_phy_t *phy_robus);
 void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);
-luos_localhost_t Recep_NodeConcerned(header_t *header);
+bool Recep_NodeConcerned(header_t *header);
 
 #endif /* _RECEPTION_H_ */

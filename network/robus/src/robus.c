@@ -14,11 +14,11 @@
 #include "context.h"
 #include "robus_hal.h"
 #include "luos_hal.h"
-#include "msg_alloc.h"
 #include "luos_utils.h"
+
+#include "msg_alloc.h"
 #include "luos_engine.h"
 #include "filter.h"
-#include "service.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -97,6 +97,9 @@ error_return_t Robus_SetTxTask(service_t *service, msg_t *msg)
     {
         data_size = msg->header.size;
     }
+
+    // Check the localhost situation
+    luos_localhost_t localhost = Filter_GetLocalhost(&msg->header);
     // Add the CRC to the total size of the message
     uint16_t full_size = sizeof(header_t) + data_size + CRC_SIZE;
 
@@ -109,10 +112,8 @@ error_return_t Robus_SetTxTask(service_t *service, msg_t *msg)
     // Compute the CRC
     crc_val = ll_crc_compute(&msg->stream[0], crc_max_index - CRC_SIZE, 0xFFFF);
 
-    // Check the localhost situation
-    luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
     // Check if ACK needed
-    if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID))))
+    if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && (localhost != EXTERNALHOST))
     {
         // This is a localhost message and we need to transmit a ack. Add it at the end of the data to transmit
         ack = ctx.rx.status.unmap;
