@@ -9,14 +9,10 @@ void unittest_OldestMsgCandidate(void);
 void unittest_ClearMsgTask(void);
 void unittest_ClearLuosTask(void);
 void unittest_ClearMsgSpace(void);
-void unittest_ValidDataIntegrity(void);
 
 // Generic functions
 void unittest_MsgAlloc_loop(void);
-void unittest_MsgAlloc_ValidHeader(void);
-void unittest_MsgAlloc_InvalidMsg(void);
-void unittest_MsgAlloc_EndMsg(void);
-void unittest_MsgAlloc_SetData(void);
+void unittest_MsgAlloc_Alloc(void);
 void unittest_MsgAlloc_IsEmpty(void);
 void unittest_MsgAlloc_UsedMsgEnd(void);
 void unittest_MsgAlloc_GetLuosTaskSourceId(void);
@@ -36,15 +32,10 @@ void unittest_MsgAlloc_GetTxTask(void);
 
 // Tx functions
 void unittest_SetTxTask_buffer_full(void);
-void unittest_SetTxTask_Tx_too_long_1(void);
-void unittest_SetTxTask_Tx_too_long_2(void);
-void unittest_SetTxTask_Tx_too_long_3(void);
-void unittest_SetTxTask_Rx_too_long_1(void);
-void unittest_SetTxTask_Rx_too_long_2(void);
-void unittest_SetTxTask_Rx_too_long_3(void);
-void unittest_SetTxTask_Rx_too_long_4(void);
+void unittest_SetTxTask_Tx_too_long(void);
+void unittest_SetTxTask_Tx_overflow(void);
+void unittest_SetTxTask_Tx_fit(void);
 void unittest_SetTxTask_Task_already_exists(void);
-void unittest_SetTxTask_copy_OK(void);
 void unittest_SetTxTask_ACK(void);
 void unittest_SetTxTask_internal_localhost(void);
 void unittest_SetTxTask_multihost(void);

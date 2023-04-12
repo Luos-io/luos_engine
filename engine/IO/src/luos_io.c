@@ -17,6 +17,7 @@
 #include "luos_utils.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
+#include "bootloader_core.h"
 
 /*******************************************************************************
  * Definitions
@@ -36,7 +37,6 @@ typedef struct __attribute__((__packed__))
 } node_bootstrap_t;
 
 static error_return_t LuosIO_StartTopologyDetection(service_t *service);
-static error_return_t LuosIO_MsgHandler(msg_t *input);
 static error_return_t LuosIO_DetectNextNodes(service_t *service);
 
 /*******************************************************************************
@@ -75,18 +75,7 @@ void LuosIO_Loop(void)
 {
     // Execute message allocation tasks
     MsgAlloc_loop();
-    // Interpreat received messages and create luos task for it.
-    msg_t *msg;
-    while (MsgAlloc_PullMsgToInterpret(&msg) == SUCCEED)
-    {
-        // Check if this message is a protocol one
-        if (LuosIO_MsgHandler(msg) == FAILED)
-        {
-            // If not create luos tasks for all services.
-            Service_AllocMsg(msg);
-        }
-    }
-    Robus_Loop();
+    Phy_Loop();
 }
 
 /******************************************************************************
@@ -164,6 +153,8 @@ static error_return_t LuosIO_StartTopologyDetection(service_t *service)
         Service_ClearId();
         // Reinit msg alloc
         MsgAlloc_Init(NULL);
+        // Reinit Phy
+        Phy_Init();
         // Wait 2ms to be sure all previous messages are received and treated by other nodes
         uint32_t start_tick = LuosHAL_GetSystick();
         while (LuosHAL_GetSystick() - start_tick < 2)
@@ -234,7 +225,10 @@ error_return_t LuosIO_MsgHandler(msg_t *input)
                         Node_Get()->node_id = 0;
                         // Reinit service id
                         Service_ClearId();
+                        // Reinit msg alloc
                         MsgAlloc_Init(NULL);
+                        // Reinit Phy
+                        Phy_Init();
                     }
                     // This is a node bootstrap information.
                     memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
@@ -247,7 +241,21 @@ error_return_t LuosIO_MsgHandler(msg_t *input)
             }
             return SUCCEED;
             break;
+        case BOOTLOADER_CMD:
+            if (input->data[0] == BOOTLOADER_RESET)
+            {
+                LuosHAL_SetMode((uint8_t)BOOT_MODE);
+                LuosHAL_Reboot();
+                // This message have been consumed
+                return SUCCEED;
+            }
+            return FAILED;
+            break;
         case START_DETECTION:
+            MsgAlloc_Reset();
+            Node_SetState(EXTERNAL_DETECTION);
+            Robus_ResetNodeID();
+            // This message have been consumed
             return SUCCEED;
             break;
         case END_DETECTION:

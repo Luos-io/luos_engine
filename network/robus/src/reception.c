@@ -50,9 +50,7 @@
 #include "luos_utils.h"
 #include "_timestamp.h"
 #include "robus.h"
-#include "bootloader_core.h"
 #include "filter.h"
-#include "struct_engine.h"
 #include "context.h"
 /*******************************************************************************
  * Definitions
@@ -66,19 +64,18 @@
 #endif
 
 #define COLLISION_DETECTION_NUMBER 4
-#define BYTE_TRANSMIT_TIME         8
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint16_t data_count = 0;
-uint16_t data_size  = 0;
-uint16_t crc_val    = 0;
+uint8_t data_rx[sizeof(msg_t)] = {0}; // Buffer to store the received data
+uint16_t crc_val               = 0;   // CRC value
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static inline uint8_t Recep_IsAckNeeded(void);
+static inline uint8_t Recep_IsAckNeeded(luos_phy_t *phy_robus);
+static inline bool Recep_IsARobusSpecialMsg(header_t *header);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -86,11 +83,16 @@ static inline uint8_t Recep_IsAckNeeded(void);
  ******************************************************************************/
 void Recep_Init(luos_phy_t *phy_robus)
 {
+    LUOS_ASSERT(phy_robus != NULL);
+    LUOS_ASSERT(phy_robus->rx_alloc_job == false);
     // Initialize the reception state machine
-    ctx.rx.status.unmap      = 0;
-    ctx.rx.callback          = Recep_GetHeader;
-    ctx.rx.status.identifier = 0xF;
-    phy_robus->rx_timestamp  = 0;
+    ctx.rx.status.unmap       = 0;
+    ctx.rx.callback           = Recep_GetHeader;
+    ctx.rx.status.identifier  = 0xF;
+    phy_robus->rx_timestamp   = 0;
+    phy_robus->rx_buffer_base = data_rx;
+    phy_robus->rx_data        = data_rx;
+    phy_robus->rx_keep        = true;
 }
 /******************************************************************************
  * @brief Callback to get a complete header
@@ -100,77 +102,49 @@ void Recep_Init(luos_phy_t *phy_robus)
  ******************************************************************************/
 _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
-    // Catch a byte.
-    MsgAlloc_SetData(*data);
-    data_count++;
+    // Catch the byte.
+    phy_robus->rx_data[phy_robus->received_data++] = *data;
 
     // Check if we have all we need.
-    switch (data_count)
+    switch (phy_robus->received_data)
     {
         case 1:
-            // Reset CRC computation
             // When we catch the first byte we timestamp the msg
             // We remove the time of the first byte to get the exact reception date.
             // 1 byte is 10 bits and we convert it to nanoseconds
             phy_robus->rx_timestamp = LuosHAL_GetTimestamp() - ((uint32_t)10 * (uint32_t)1000000000 / (uint32_t)DEFAULTBAUDRATE);
 
+            // Declare Robus as busy
             ctx.tx.lock = true;
             // Switch the transmit status to disable to be sure to not interpreat the end timeout as an end of transmission.
             ctx.tx.status = TX_DISABLE;
-            crc_val       = 0xFFFF;
+            // Reset CRC computation
+            crc_val = 0xFFFF;
             break;
 
-        case 3: // check if message is for the node
-            if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
-            {
-                MsgAlloc_ValidHeader(false, data_size);
-                ctx.rx.callback = Recep_Drop;
-                return;
-            }
-            break;
-
-        case (sizeof(header_t)): // Process at the header
+        case (sizeof(header_t)):
+            // Header finished
 #ifdef DEBUG
             printf("*******header data*******\n");
-            printf("protocol : 0x%04x\n", current_msg->header.config);         /*!< Protocol version. */
-            printf("target : 0x%04x\n", current_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-            printf("target_mode : 0x%04x\n", current_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-            printf("source : 0x%04x\n", current_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-            printf("cmd : 0x%04x\n", current_msg->header.cmd);                 /*!< msg definition. */
-            printf("size : 0x%04x\n", current_msg->header.size);               /*!< Size of the data field. */
+            printf("protocol : 0x%04x\n", phy_robus->rx_msg->header.config);         /*!< Protocol version. */
+            printf("target : 0x%04x\n", phy_robus->rx_msg->header.target);           /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("target_mode : 0x%04x\n", phy_robus->rx_msg->header.target_mode); /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+            printf("source : 0x%04x\n", phy_robus->rx_msg->header.source);           /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+            printf("cmd : 0x%04x\n", phy_robus->rx_msg->header.cmd);                 /*!< msg definition. */
+            printf("size : 0x%04x\n", phy_robus->rx_msg->header.size);               /*!< Size of the data field. */
 #endif
-            // Reset the catcher.
-            data_count = 0;
-
             // Switch state machine to data reception
             ctx.rx.callback = Recep_GetData;
-            // Cap size for big messages
-            if (current_msg->header.size > MAX_DATA_MSG_SIZE)
-            {
-                data_size = MAX_DATA_MSG_SIZE;
-            }
-            else
-            {
-                data_size = current_msg->header.size;
-                // we need to check if we have a timestamped message and increase the data size if yes
-                if (Luos_IsMsgTimstamped((msg_t *)current_msg) == true)
-                {
-                    data_size += sizeof(time_luos_t);
-                }
-            }
+            // Compute message size the result will be available in phy_robus->rx_size
+            Phy_ComputeMsgSize(phy_robus);
 
             if (ctx.rx.status.rx_framing_error == false)
             {
-                if (data_size)
+                if (Recep_IsARobusSpecialMsg((header_t *)data_rx) == false)
                 {
-                    MsgAlloc_ValidHeader(true, data_size);
+                    // Put a flag to tell that we need to alloc this message
+                    phy_robus->rx_alloc_job = true;
                 }
-            }
-            else
-            {
-                MsgAlloc_ValidHeader(false, data_size);
-                ctx.rx.callback = Recep_Drop;
-                return;
             }
             break;
 
@@ -187,62 +161,48 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
  ******************************************************************************/
 _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
-    MsgAlloc_SetData(*data);
-    if (data_count < data_size)
+    static uint16_t crc;
+    if (phy_robus->received_data < phy_robus->rx_size)
     {
-        // Continue CRC computation until the end of data
+        // Catch the byte.
+        phy_robus->rx_data[phy_robus->received_data] = *data;
+        // Continue the CRC computation until the end of data
         RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
     }
-    else if (data_count > data_size)
+    else if (phy_robus->received_data > phy_robus->rx_size)
     {
-        uint16_t crc = ((uint16_t)current_msg->data[data_size]) | ((uint16_t)current_msg->data[data_size + 1] << 8);
+        crc = crc | ((uint16_t)(*data) << 8);
         if (crc == crc_val)
         {
-            if (Recep_IsAckNeeded())
+            // Message is OK
+            // Check if we need to send an ack
+            if (Recep_IsAckNeeded(phy_robus))
             {
+                // Send an Ack
                 Transmit_SendAck();
             }
-            MsgAlloc_ValidDataIntegrity();
-            // If message is timestamped, convert the latency to date
-            if (Luos_IsMsgTimstamped((msg_t *)current_msg))
-            {
-                // This conversion also remove the timestamp from the message size.
-                Timestamp_ConvertToDate((msg_t *)current_msg, phy_robus->rx_timestamp);
-            }
-
-            // Make an exception for bootloader command
-            if ((current_msg->header.cmd == BOOTLOADER_CMD) && (current_msg->data[0] == BOOTLOADER_RESET))
-            {
-                LuosHAL_SetMode((uint8_t)BOOT_MODE);
-                LuosHAL_Reboot();
-            }
-
-            // Make an exception for reset detection command
-            if (current_msg->header.cmd == START_DETECTION)
-            {
-                MsgAlloc_Reset();
-                ctx.tx.status = TX_DISABLE;
-                Node_SetState(EXTERNAL_DETECTION);
-                PortMng_Init();
-            }
-            else
-            {
-                MsgAlloc_EndMsg();
-            }
+            // Valid the message
+            Phy_ValidMsg(phy_robus);
         }
         else
         {
             ctx.rx.status.rx_error = true;
-            if (Recep_IsAckNeeded())
+            if (Recep_IsAckNeeded(phy_robus))
             {
                 Transmit_SendAck();
             }
-            MsgAlloc_InvalidMsg();
+            // We dont valid the message, this will fragment a little bit the memory but it will be faster than a full memory check
         }
+        // We will drop any data received between now and the timeout
         ctx.rx.callback = Recep_Drop;
         return;
     }
-    data_count++;
+    else
+    {
+        // This is the first byte of the CRC, store it
+        crc = (uint16_t)(*data);
+    }
+    phy_robus->received_data++;
 }
 /******************************************************************************
  * @brief Callback to get a collision beetween RX and Tx
@@ -252,6 +212,7 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
  ******************************************************************************/
 _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
+    static uint8_t data_count = 0;
     // Check data integrity
     if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
     {
@@ -262,21 +223,12 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
         // Save the received data into the allocator to be able to continue the reception
         for (uint8_t i = 0; i < data_count - 1; i++)
         {
-            MsgAlloc_SetData(*ctx.tx.data + i);
+            Recep_GetHeader(phy_robus, &ctx.tx.data[i]);
         }
-        MsgAlloc_SetData(*data);
+        Recep_GetHeader(phy_robus, data);
         // Switch to get header.
         ctx.rx.callback = Recep_GetHeader;
         ctx.tx.status   = TX_NOK;
-        if (data_count >= 3)
-        {
-            if (Recep_NodeConcerned((header_t *)&current_msg->header) == false)
-            {
-                MsgAlloc_ValidHeader(false, data_size);
-                ctx.rx.callback = Recep_Drop;
-                return;
-            }
-        }
     }
     else
     {
@@ -286,6 +238,7 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
             selftest_SetRxFlag();
 #endif
             // Collision detection end
+            data_count = 0;
             RobusHAL_SetRxState(false);
             RobusHAL_ResetTimeout(0);
             if (ctx.tx.status == TX_NOK)
@@ -301,7 +254,6 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
             return;
         }
     }
-    RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
 }
 /******************************************************************************
  * @brief Callback to drop received data wrong header, data, or collision
@@ -325,7 +277,6 @@ _CRITICAL void Recep_Timeout(void)
     {
         ctx.rx.status.rx_timeout = true;
     }
-    MsgAlloc_InvalidMsg();
     Recep_Reset();
     Transmit_End(); // This is possibly the end of a transmission, check it.
 }
@@ -337,10 +288,13 @@ _CRITICAL void Recep_Timeout(void)
  ******************************************************************************/
 _CRITICAL void Recep_Reset(void)
 {
-    data_count                     = 0;
+    luos_phy_t *phy_robus          = Robus_GetPhy();
+    phy_robus->received_data       = 0;
     crc_val                        = 0xFFFF;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.callback                = Recep_GetHeader;
+    phy_robus->rx_buffer_base      = data_rx;
+    phy_robus->rx_data             = data_rx;
     RobusHAL_SetRxDetecPin(true);
 }
 /******************************************************************************
@@ -369,7 +323,7 @@ _CRITICAL void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data)
  * warning : this function can be redefined only for mock testing purpose
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL bool Recep_NodeConcerned(header_t *header)
+_CRITICAL static inline bool Recep_IsARobusSpecialMsg(header_t *header)
 {
     // Find if we are concerned by this message.
     if ((header->target_mode == NODEIDACK) || (header->target_mode == SERVICEIDACK))
@@ -381,10 +335,10 @@ _CRITICAL bool Recep_NodeConcerned(header_t *header)
     {
         if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
         {
-            return true; // Keep message if nodeID = 0 and a PTP is activ
+            return true; // Message is specific to Robus if nodeID = 0 and a a PTP is activ
         }
     }
-    return (Filter_GetLocalhost(header) != EXTERNALHOST);
+    return false;
 }
 
 /******************************************************************************
@@ -393,19 +347,19 @@ _CRITICAL bool Recep_NodeConcerned(header_t *header)
  * @return true or false
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL static inline uint8_t Recep_IsAckNeeded(void)
+_CRITICAL static inline uint8_t Recep_IsAckNeeded(luos_phy_t *phy_robus)
 {
-    // check the mode of the message received
-    if ((current_msg->header.target_mode == SERVICEIDACK) && (Filter_ServiceID(current_msg->header.target)))
+    header_t *header = (header_t *)(phy_robus->rx_buffer_base);
+    // Check the mode of the message received
+    if ((header->target_mode == SERVICEIDACK) && (Filter_ServiceID(header->target)))
     {
-        // when it is a serviceidack and this message is destined to the node send an ack
+        // When it is a serviceidack and this message is destined to the node send an ack
         return 1;
     }
-    else if ((current_msg->header.target_mode == NODEIDACK) && (Node_Get()->node_id == current_msg->header.target))
+    else if ((header->target_mode == NODEIDACK) && (Node_Get()->node_id == header->target))
     {
-        // when it is nodeidack and this message is destined to the node send an ack
+        // When it is nodeidack and this message is destined to the node send an ack
         return 1;
     }
-    // if not failed
     return 0;
 }

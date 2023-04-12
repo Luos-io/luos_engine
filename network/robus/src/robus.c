@@ -186,3 +186,12 @@ _CRITICAL void Recep_data(volatile uint8_t *data)
 {
     ctx.rx.callback(phy_robus, data);
 }
+
+/******************************************************************************
+ * @brief Get the phy pointer
+ * @return luos_phy_t*
+ ******************************************************************************/
+luos_phy_t *Robus_GetPhy(void)
+{
+    return phy_robus;
+}

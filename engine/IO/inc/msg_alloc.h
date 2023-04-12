@@ -18,7 +18,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-extern volatile msg_t *current_msg;
+
 /*******************************************************************************
  * Functions
  ******************************************************************************/
@@ -28,15 +28,12 @@ void MsgAlloc_Init(memory_stats_t *memory_stats);
 void MsgAlloc_loop(void);
 
 // msg buffering functions
-void MsgAlloc_ValidHeader(uint8_t valid, uint16_t data_size);
-void MsgAlloc_InvalidMsg(void);
-void MsgAlloc_EndMsg(void);
-void MsgAlloc_SetData(uint8_t data);
+uint8_t *MsgAlloc_Alloc(uint16_t data_size);
+
 error_return_t MsgAlloc_IsEmpty(void);
 void MsgAlloc_UsedMsgEnd(void);
 void MsgAlloc_Reset(void);
 error_return_t MsgAlloc_IsReseted(void);
-void MsgAlloc_ValidDataIntegrity(void);
 
 // msg interpretation task stack
 error_return_t MsgAlloc_PullMsgToInterpret(msg_t **returned_msg);

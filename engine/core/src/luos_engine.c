@@ -15,6 +15,7 @@
 #include "filter.h"
 #include "service.h"
 #include "struct_engine.h"
+#include "luos_io.h"
 
 /*******************************************************************************
  * Variables

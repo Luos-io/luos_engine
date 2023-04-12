@@ -283,29 +283,24 @@ void unittest_BufferAvailableSpaceComputation(void)
         }
     }
 
-    NEW_TEST_CASE("No task is availabled");
+    NEW_TEST_CASE("No task is available");
     MsgAlloc_Init(NULL);
     {
-        uint32_t remaining_datas;
-        uint32_t expected_size = 0;
-        uint32_t free_space    = 0;
-        oldest_msg             = (msg_t *)INT_MAX; // No oldest message
+        volatile uint32_t free_space = 0;
+        oldest_msg                   = (msg_t *)INT_MAX; // No oldest message
 
         NEW_STEP("Check remaining space computing for all message size cases");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 2; i++)
         {
             // Init variables
             //---------------
-            current_msg         = (msg_t *)&msg_buffer[i];
-            data_end_estimation = (uint8_t *)&msg_buffer[i + 1];
+            data_ptr = (uint8_t *)&msg_buffer[i + 1];
             for (uint32_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
             {
-                // Test is launched only if "data_end_estimation" doesn't overflows "msg_buffer" size
-                if (data_end_estimation < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
+                // Test is launched only if "data_ptr" doesn't overflows "msg_buffer" size
+                if (data_ptr < (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE])
                 {
                     RESET_ASSERT();
-                    remaining_datas = (uintptr_t)data_end_estimation - (uintptr_t)current_msg;
-                    expected_size   = MSG_BUFFER_SIZE - remaining_datas;
                     // Call function
                     //---------------
                     free_space = MsgAlloc_BufferAvailableSpaceComputation();
@@ -313,9 +308,9 @@ void unittest_BufferAvailableSpaceComputation(void)
                     // Verify
                     //---------------
                     TEST_ASSERT_FALSE(IS_ASSERT());
-                    TEST_ASSERT_EQUAL(expected_size, free_space);
+                    TEST_ASSERT_EQUAL(MSG_BUFFER_SIZE, free_space);
 
-                    data_end_estimation++;
+                    data_ptr++;
                 }
                 else
                 {
@@ -325,7 +320,7 @@ void unittest_BufferAvailableSpaceComputation(void)
         }
     }
 
-    NEW_TEST_CASE("Oldest task is between `data_end_estimation` and the end of message buffer");
+    NEW_TEST_CASE("Oldest task is between `data_ptr` and the end of message buffer");
     MsgAlloc_Init(NULL);
     {
         //        msg_buffer
@@ -335,12 +330,12 @@ void unittest_BufferAvailableSpaceComputation(void)
         //               |                     |
         //               |<-----Free space---->|
         //               |                     |
-        //               data_end_estimation    oldest_task
+        //               data_ptr              oldest_task
 
         uint32_t free_space    = 0;
         uint32_t expected_size = 0;
         oldest_msg             = (msg_t *)&msg_buffer[1];
-        data_end_estimation    = (uint8_t *)oldest_msg - 1;
+        data_ptr               = (uint8_t *)oldest_msg - 1;
 
         NEW_STEP("Check remaining space computing for all cases");
         for (uint16_t i = 0; i < MSG_BUFFER_SIZE - 1; i++)
@@ -349,10 +344,10 @@ void unittest_BufferAvailableSpaceComputation(void)
             // for (uint8_t j = 0; j < 2; j++)
             for (uint16_t j = i; j < MSG_BUFFER_SIZE - 1; j++)
             {
-                if ((uintptr_t)oldest_msg > (uintptr_t)data_end_estimation)
+                if ((uintptr_t)oldest_msg > (uintptr_t)data_ptr)
                 {
                     RESET_ASSERT();
-                    expected_size = (uintptr_t)oldest_msg - (uintptr_t)data_end_estimation;
+                    expected_size = (uintptr_t)oldest_msg - (uintptr_t)data_ptr;
                     free_space    = MsgAlloc_BufferAvailableSpaceComputation();
                     TEST_ASSERT_FALSE(IS_ASSERT());
                     TEST_ASSERT_EQUAL(expected_size, free_space);
@@ -360,7 +355,7 @@ void unittest_BufferAvailableSpaceComputation(void)
                 // oldest_msg++;
                 oldest_msg = (msg_t *)&msg_buffer[j + 1];
             }
-            data_end_estimation++;
+            data_ptr++;
         }
     }
 
@@ -370,17 +365,17 @@ void unittest_BufferAvailableSpaceComputation(void)
         //        msg_buffer
         //        +-------------------------------------------------------------+
         //        |-------------------------------------------------------------|
-        //        +-------------^--------------^------------------^-------------+
-        //                      |              |                  |
-        //        <-Free space->|              |                  |<-Free space->
-        //                      |              |                  |
-        //                      |              |                  |
-        //                      oldest_task     current_message   data_end_estimation
+        //        +-------------^---------------------------------^-------------+
+        //                      |                                 |
+        //        <-Free space->|                                 |<-Free space->
+        //                      |                                 |
+        //                      |                                 |
+        //                      oldest_task                       data_ptr
 
         uint32_t free_space    = 0;
         uint32_t expected_size = 0;
-        data_end_estimation    = (uint8_t *)&msg_buffer[1];
-        oldest_msg             = (msg_t *)data_end_estimation - 1;
+        data_ptr               = (uint8_t *)&msg_buffer[1];
+        oldest_msg             = (msg_t *)data_ptr - 1;
 
         NEW_STEP("Check remaining space computing for all cases");
         // Test remaining space computing for all cases
@@ -390,10 +385,10 @@ void unittest_BufferAvailableSpaceComputation(void)
             oldest_msg = (msg_t *)&msg_buffer[1];
             for (uint16_t j = 0; j < MSG_BUFFER_SIZE - 1; j++)
             {
-                if ((uintptr_t)oldest_msg < (uintptr_t)data_end_estimation)
+                if ((uintptr_t)oldest_msg < (uintptr_t)data_ptr)
                 {
                     RESET_ASSERT();
-                    expected_size = (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)data_end_estimation;
+                    expected_size = (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)data_ptr;
                     expected_size += (uintptr_t)oldest_msg - (uintptr_t)&msg_buffer[0];
                     free_space = MsgAlloc_BufferAvailableSpaceComputation();
 
@@ -402,7 +397,7 @@ void unittest_BufferAvailableSpaceComputation(void)
                 }
                 oldest_msg = (msg_t *)&msg_buffer[j + 1];
             }
-            data_end_estimation++;
+            data_ptr++;
         }
     }
 }
@@ -501,7 +496,7 @@ void unittest_OldestMsgCandidate(void)
 
         for (uint8_t i = 0; i < CASE; i++)
         {
-            current_msg         = (msg_t *)&msg_buffer[cases[i][0]];
+            data_ptr            = (uint8_t *)&msg_buffer[cases[i][0]];
             oldest_msg          = (msg_t *)&msg_buffer[cases[i][1]];
             oldest_stack_msg_pt = (msg_t *)&msg_buffer[cases[i][2]];
             expected_oldest_msg = (msg_t *)&msg_buffer[cases[i][3]];
@@ -509,53 +504,6 @@ void unittest_OldestMsgCandidate(void)
             NEW_STEP_IN_LOOP("Check all pointers cases", i);
             TEST_ASSERT_EQUAL(expected_oldest_msg, oldest_msg);
         }
-    }
-}
-
-void unittest_ValidDataIntegrity(void)
-{
-    NEW_TEST_CASE("Check data integrity");
-    MsgAlloc_Init(NULL);
-    {
-        //        msg_buffer init state
-        //        +-------------------------------------------------------------+
-        //        |-------|Header|----------------------------------------------|
-        //        +-------------------------------------------------------------+
-        //
-        //        msg_buffer ending state (idem init)
-        //        +-------------------------------------------------------------+
-        //        |-------|Header|----------------------------------------------|
-        //        +-------------------------------------------------------------+
-        //
-
-        uint8_t expected_msg_buffer[MSG_BUFFER_SIZE];
-        mem_clear_needed = 0;
-
-        memset((void *)&msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
-        memset((void *)&expected_msg_buffer[0], 0xAA, MSG_BUFFER_SIZE);
-        RESET_ASSERT();
-        MsgAlloc_ValidDataIntegrity();
-
-        NEW_STEP("Check NO assert has occured");
-        TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP("Check message buffered has not been modified");
-        TEST_ASSERT_EQUAL_MEMORY(expected_msg_buffer, msg_buffer, MSG_BUFFER_SIZE);
-    }
-
-    NEW_TEST_CASE("Verify memory cleaning");
-    MsgAlloc_Init(NULL);
-    {
-        mem_clear_needed    = 1;
-        current_msg         = (msg_t *)&msg_buffer[0];
-        data_end_estimation = (uint8_t *)(current_msg + 1);
-        RESET_ASSERT();
-        MsgAlloc_ValidDataIntegrity();
-
-        NEW_STEP("Check NO assert has occured");
-        TEST_ASSERT_FALSE(IS_ASSERT());
-        NEW_STEP("Check memory is cleared");
-        TEST_ASSERT_EQUAL(0, mem_clear_needed);
-        // No more TEST_ASSERT needed as MsgAlloc_ClearMsgSpace has already been tested
     }
 }
 

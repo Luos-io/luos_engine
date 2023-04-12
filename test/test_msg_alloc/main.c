@@ -14,15 +14,10 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_ClearMsgTask);
     UNIT_TEST_RUN(unittest_ClearLuosTask);
     UNIT_TEST_RUN(unittest_ClearMsgSpace);
-    UNIT_TEST_RUN(unittest_ValidDataIntegrity);
-    ////MsgAlloc_FindNewOldestMsg => this function doesn't need unit test
 
     // Generic functions
     UNIT_TEST_RUN(unittest_MsgAlloc_loop);
-    UNIT_TEST_RUN(unittest_MsgAlloc_ValidHeader);
-    UNIT_TEST_RUN(unittest_MsgAlloc_InvalidMsg);
-    UNIT_TEST_RUN(unittest_MsgAlloc_EndMsg);
-    UNIT_TEST_RUN(unittest_MsgAlloc_SetData);
+    UNIT_TEST_RUN(unittest_MsgAlloc_Alloc);
     UNIT_TEST_RUN(unittest_MsgAlloc_IsEmpty);
     UNIT_TEST_RUN(unittest_MsgAlloc_UsedMsgEnd);
     UNIT_TEST_RUN(unittest_MsgAlloc_GetLuosTaskSourceId);
@@ -39,19 +34,13 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_MsgAlloc_PullMsgFromTxTask);
     UNIT_TEST_RUN(unittest_MsgAlloc_PullServiceFromTxTask);
     UNIT_TEST_RUN(unittest_MsgAlloc_GetTxTask);
-    // MsgAlloc_Init         => this function doesn't need unit test
 
     // Tx functions
     UNIT_TEST_RUN(unittest_SetTxTask_buffer_full);
-    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_1);
-    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_2);
-    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long_3);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_1);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_2);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_3);
-    UNIT_TEST_RUN(unittest_SetTxTask_Rx_too_long_4);
+    UNIT_TEST_RUN(unittest_SetTxTask_Tx_too_long);
+    UNIT_TEST_RUN(unittest_SetTxTask_Tx_overflow);
+    UNIT_TEST_RUN(unittest_SetTxTask_Tx_fit);
     UNIT_TEST_RUN(unittest_SetTxTask_Task_already_exists);
-    UNIT_TEST_RUN(unittest_SetTxTask_copy_OK);
     UNIT_TEST_RUN(unittest_SetTxTask_ACK);
     UNIT_TEST_RUN(unittest_SetTxTask_internal_localhost);
     UNIT_TEST_RUN(unittest_SetTxTask_multihost);
