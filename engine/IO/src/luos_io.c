@@ -303,7 +303,7 @@ static error_return_t LuosIO_DetectNextNodes(service_t *service)
             continue;
         }
 
-        // when Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
+        // When Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
         // We just have to wait the end of the treatment of the entire branch
         uint32_t start_tick = LuosHAL_GetSystick();
         while (Robus_Busy())
@@ -311,7 +311,7 @@ static error_return_t LuosIO_DetectNextNodes(service_t *service)
             LuosIO_Loop();
             if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)
             {
-                // topology detection is too long, we should abort it and restart
+                // Topology detection is too long, we should abort it and restart
                 return FAILED;
             }
         }

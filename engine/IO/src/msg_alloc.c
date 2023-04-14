@@ -385,7 +385,11 @@ _CRITICAL uint8_t *MsgAlloc_Alloc(uint16_t data_size)
         returned_ptr = (uint8_t *)data_ptr;
     }
     // Check if we have space for the message, assert if we don't
-    LUOS_ASSERT(MsgAlloc_CheckMsgSpace((void *)returned_ptr, (void *)((uintptr_t)returned_ptr + data_size)) == SUCCEED);
+    if (MsgAlloc_CheckMsgSpace((void *)returned_ptr, (void *)((uintptr_t)returned_ptr + data_size)) != SUCCEED)
+    {
+        // We don't have the space to store the message, return NULL to indicate that there is no more space
+        return NULL;
+    }
 
     // We consider this space as occupied, move data to the next available space
     data_ptr = (uint8_t *)((uintptr_t)returned_ptr + data_size);
@@ -1126,6 +1130,11 @@ error_return_t MsgAlloc_SetTxTask(service_t *service_pt, uint8_t *data, uint16_t
     LuosHAL_SetIrqState(false);
     // Alloc the space for the message
     tx_msg = (void *)MsgAlloc_Alloc(size);
+    if (tx_msg == NULL)
+    {
+        MSGALLOC_MUTEX_UNLOCK
+        return FAILED;
+    }
     LuosHAL_SetIrqState(true);
 
     // Copy the tx msg into the buffer

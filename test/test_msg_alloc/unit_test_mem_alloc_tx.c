@@ -124,9 +124,8 @@ void unittest_SetTxTask_Tx_too_long()
         // Call function and Verify
         //---------------------------
         RESET_ASSERT();
-        MsgAlloc_SetTxTask(service_pt, data, crc, tx_size, localhost, ack);
         NEW_STEP("Check assert has occured");
-        TEST_ASSERT_TRUE(IS_ASSERT());
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_SetTxTask(service_pt, data, crc, tx_size, localhost, ack));
     }
 }
 void unittest_SetTxTask_Tx_overflow()
