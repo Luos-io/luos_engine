@@ -172,12 +172,12 @@ void Luos_Loop(void)
     if (Flag_DetectServices == 1)
     {
 
+        Flag_DetectServices = 0;
         // Set the detection launcher id to 1
         detection_service->id = 1;
         // Generate the filters
         Service_GenerateId(1);
         RoutingTB_DetectServices(detection_service);
-        Flag_DetectServices = 0;
     }
 }
 /******************************************************************************
