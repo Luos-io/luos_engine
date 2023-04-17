@@ -119,7 +119,7 @@ void Luos_Loop(void)
         {
             if (MsgAlloc_PullMsgFromLuosTask(remaining_msg_number, &returned_msg) == SUCCEED)
             {
-                // be sure the content of this message need to be managed by Luos and do it if it is.
+                // Be sure the content of this message need to be managed by Luos and do it if it is.
                 if (Luos_MsgHandler((service_t *)oldest_service, returned_msg) == SUCCEED)
                 {
                     // Luos CMD are generic for all services and have to be executed only once
@@ -171,6 +171,11 @@ void Luos_Loop(void)
 
     if (Flag_DetectServices == 1)
     {
+
+        // Set the detection launcher id to 1
+        detection_service->id = 1;
+        // Generate the filters
+        Service_GenerateId(1);
         RoutingTB_DetectServices(detection_service);
         Flag_DetectServices = 0;
     }
@@ -793,19 +798,23 @@ void Luos_Detect(service_t *service)
 
     if (Node_GetState() < LOCAL_DETECTION)
     {
-        // Reset filters
-        Filter_IdInit();
-        // Set the detection launcher id to 1
-        service->id = 1;
-        // Update the filter just to accept our detector id
-        Filter_AddServiceId(1, 1);
+        if (Node_GetState() == NO_DETECTION)
+        {
+            // We don't have any ID yet, let's create one at least for the detector
+            // Reset filters
+            Filter_IdInit();
+            // Set the detection launcher id to 1
+            service->id = 1;
+            // Update the filter just to accept our detector id
+            Filter_AddServiceId(1, 1);
+        }
 
         // Send ask detection message
         detection_service             = service;
         detect_msg.header.target_mode = SERVICEIDACK;
         detect_msg.header.cmd         = ASK_DETECTION;
         detect_msg.header.size        = 0;
-        detect_msg.header.target      = 1;
+        detect_msg.header.target      = service->id;
         Luos_SendMsg(service, &detect_msg);
     }
 }
