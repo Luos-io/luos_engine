@@ -128,21 +128,6 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
             msg.header.size        = 0;
             Luos_SendMsg(service, &msg);
             break;
-        case VERBOSE:
-            msg.header.target = (data_msg->data[1] << 4) + data_msg->data[0];
-            msg.header.cmd    = VERBOSE;
-            msg.header.size   = 1;
-            msg.data[0]       = data_msg->data[7];
-            if (msg.header.target == BROADCAST_VAL)
-            {
-                msg.header.target_mode = BROADCAST;
-            }
-            else
-            {
-                msg.header.target_mode = SERVICEIDACK;
-            }
-            Luos_SendMsg(service, &msg);
-            break;
         case ASSERT:
             if (((data_msg->data[6] << 8) + data_msg->data[5]) == 0)
             {

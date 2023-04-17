@@ -55,7 +55,7 @@ void MsgAlloc_ClearMsgFromLuosTasks(msg_t *msg);
 error_return_t MsgAlloc_SetTxTask(service_t *service_pt, uint8_t *data, uint16_t crc, uint16_t size, luos_localhost_t localhost, uint8_t ack);
 void MsgAlloc_PullMsgFromTxTask(void);
 void MsgAlloc_PullServiceFromTxTask(uint16_t service_id);
-error_return_t MsgAlloc_GetTxTask(service_t **service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost);
+error_return_t MsgAlloc_GetTxTask(service_t **service_pt, uint8_t **data, uint16_t *size);
 error_return_t MsgAlloc_TxAllComplete(void);
 
 #endif /* _MSGALLOC_H_ */

@@ -33,7 +33,6 @@ void Luos_ResetStatistic(void);
 // ***************** Node management *****************
 uint32_t Luos_GetSystick(void);
 bool Luos_IsDetected(void);
-void Luos_SetVerboseMode(uint8_t mode);
 void Luos_SetFilterState(uint8_t state, service_t *service);
 
 // ***************** Package management *****************

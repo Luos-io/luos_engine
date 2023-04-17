@@ -81,7 +81,7 @@ error_return_t Robus_SetTxTask(service_t *service, msg_t *msg)
     uint16_t data_size   = 0;
     uint16_t crc_val     = 0xFFFF;
     // ***************************************************
-    // don't send luos messages if network is down
+    // Don't send luos messages if network is down
     // ***************************************************
     if ((msg->header.cmd >= LUOS_LAST_RESERVED_CMD) && (Node_GetState() != DETECTION_OK))
     {

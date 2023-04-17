@@ -16,7 +16,6 @@ typedef struct
     uint8_t *data_pt;      /*!< Start pointer of the data on msg_buffer. */
     uint16_t size;         /*!< size of the data. */
     service_t *service_pt; /*!< Pointer to the transmitting service. */
-    uint8_t localhost;     /*!< is this message a localhost one? */
 } tx_task_t;
 
 /*******************************************************************************
@@ -1264,19 +1263,17 @@ void unittest_MsgAlloc_GetTxTask()
             //---------------
             service_t *service;
             uint8_t *data;
-            uint16_t size     = 128;
-            uint8_t localhost = 1;
+            uint16_t size = 128;
 
             tx_tasks[0].data_pt    = (uint8_t *)16;
             tx_tasks[0].service_pt = (service_t *)32;
             tx_tasks[0].size       = 128;
-            tx_tasks[0].localhost  = 1;
 
             tx_tasks_stack_id = MAX_MSG_NB + i;
 
             // Call function
             //---------------
-            MsgAlloc_GetTxTask(&service, &data, &size, &localhost);
+            MsgAlloc_GetTxTask(&service, &data, &size);
 
             // Verify
             //---------------
@@ -1285,7 +1282,7 @@ void unittest_MsgAlloc_GetTxTask()
 
             // Call function
             //---------------
-            MsgAlloc_GetTxTask(&service, &data, &size, &localhost);
+            MsgAlloc_GetTxTask(&service, &data, &size);
 
             // Verify
             //---------------
@@ -1314,7 +1311,6 @@ void unittest_MsgAlloc_GetTxTask()
         service_t *service;
         uint8_t *data;
         uint16_t *size;
-        uint8_t *localhost;
 
         // Init variables
         //---------------
@@ -1323,7 +1319,7 @@ void unittest_MsgAlloc_GetTxTask()
         // Call function & Verify
         //--------------------------
         NEW_STEP("Check function returns FAILED when tx task is empty");
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_GetTxTask(&service, &data, size, localhost));
+        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_GetTxTask(&service, &data, size));
     }
 
     NEW_TEST_CASE("Verify there is a message");
@@ -1333,7 +1329,7 @@ void unittest_MsgAlloc_GetTxTask()
         //             luos_tasks
         //             +---------+
         //             |   D 1   |
-        //             |---------|<--luos_tasks_stack_id  : tx_tasks[0] is filled with pointers (service, data, size & localhost)
+        //             |---------|<--luos_tasks_stack_id  : tx_tasks[0] is filled with pointers (service, data, size)
         //             |   D 2   |
         //             |---------|
         //             |  etc... |
@@ -1345,7 +1341,6 @@ void unittest_MsgAlloc_GetTxTask()
         service_t *service;
         uint8_t *data;
         uint16_t size;
-        uint8_t localhost;
 
         // Init variables
         //---------------
@@ -1354,20 +1349,17 @@ void unittest_MsgAlloc_GetTxTask()
         tx_tasks[0].data_pt    = (uint8_t *)16;
         tx_tasks[0].service_pt = (service_t *)32;
         tx_tasks[0].size       = 128;
-        tx_tasks[0].localhost  = 1;
 
         // Call function & Verify
         //--------------------------
         NEW_STEP("Check function returns SUCCEED");
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_GetTxTask(&service, &data, &size, &localhost));
+        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_GetTxTask(&service, &data, &size));
         NEW_STEP("Check function returns expected service pointer");
         TEST_ASSERT_EQUAL(tx_tasks[0].service_pt, service);
         NEW_STEP("Check function returns expected data");
         TEST_ASSERT_EQUAL(tx_tasks[0].data_pt, data);
         NEW_STEP("Check function returns expected size");
         TEST_ASSERT_EQUAL(tx_tasks[0].size, size);
-        NEW_STEP("Check function returns expected localhost");
-        TEST_ASSERT_EQUAL(tx_tasks[0].localhost, localhost);
     }
 }
 

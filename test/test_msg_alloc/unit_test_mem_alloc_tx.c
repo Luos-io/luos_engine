@@ -22,7 +22,6 @@ typedef struct
     uint8_t *data_pt;      /*!< Start pointer of the data on msg_buffer. */
     uint16_t size;         /*!< size of the data. */
     service_t *service_pt; /*!< Pointer to the transmitting service. */
-    uint8_t localhost;     /*!< is this message a localhost one? */
 } tx_task_t;
 
 /*******************************************************************************
@@ -160,7 +159,6 @@ void unittest_SetTxTask_Tx_overflow()
         uint16_t tx_size = 50;
         uint8_t tx_message[tx_size];
         ack               = 0;
-        localhost         = 0;
         service_pt        = (service_t *)msg_buffer;                                 // Fake service value
         data              = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - tx_size];       // Tx message = 50 bytes
         data_ptr          = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - (tx_size / 2)]; // There are only 25 bytes left in msg buffer
@@ -172,7 +170,6 @@ void unittest_SetTxTask_Tx_overflow()
         expected_tx_task.size       = tx_size;
         expected_tx_task.data_pt    = (uint8_t *)msg_buffer;
         expected_tx_task.service_pt = service_pt;
-        expected_tx_task.localhost  = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -200,8 +197,6 @@ void unittest_SetTxTask_Tx_overflow()
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
         NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(service_pt, tx_tasks[tx_tasks_stack_id].service_pt);
-        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
-        TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)msg_buffer, tx_tasks[tx_tasks_stack_id].data_pt);
 
@@ -284,7 +279,7 @@ void unittest_SetTxTask_Task_already_exists()
         //---------------
         uint16_t tx_size  = 50;
         ack               = 0;
-        localhost         = 0;
+        localhost         = LOCALHOST;
         service_pt        = (service_t *)msg_buffer;                           // Fake service value
         data              = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - tx_size]; // Tx message = 50 bytes
         data_ptr          = (uint8_t *)&msg_buffer[MSG_START];                 // msg buffer is almost empty
@@ -338,7 +333,6 @@ void unittest_SetTxTask_ACK()
         uint16_t tx_size = 50 + sizeof(ack);
         uint8_t tx_message[tx_size];
         ack               = 55;
-        localhost         = 0;
         service_pt        = (service_t *)msg_buffer;               // Fake service value
         data              = (uint8_t *)tx_message;                 // Tx message = 51 bytes
         data_ptr          = (uint8_t *)&msg_buffer[MSG_START];     // msg buffer is almost empty
@@ -350,7 +344,6 @@ void unittest_SetTxTask_ACK()
         expected_tx_task.size       = tx_size;
         expected_tx_task.data_pt    = (uint8_t *)data_ptr;
         expected_tx_task.service_pt = service_pt;
-        expected_tx_task.localhost  = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE - sizeof(ack); i++)
@@ -379,8 +372,6 @@ void unittest_SetTxTask_ACK()
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
         NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(service_pt, tx_tasks[tx_tasks_stack_id].service_pt);
-        NEW_STEP("Check Tx task \"localhost\" is correctly computed");
-        TEST_ASSERT_EQUAL(localhost, tx_tasks[tx_tasks_stack_id].localhost);
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
 
@@ -454,7 +445,6 @@ void unittest_SetTxTask_internal_localhost()
         expected_tx_task.size       = tx_size;
         expected_tx_task.data_pt    = (uint8_t *)data_ptr;
         expected_tx_task.service_pt = service_pt;
-        expected_tx_task.localhost  = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -487,8 +477,6 @@ void unittest_SetTxTask_internal_localhost()
         TEST_ASSERT_NULL(tx_tasks[tx_tasks_stack_id].data_pt);
         NEW_STEP("Check Tx task \"size\" = 0");
         TEST_ASSERT_EQUAL(0, tx_tasks[tx_tasks_stack_id].size);
-        NEW_STEP("Check \"localhost\" is not allocated");
-        TEST_ASSERT_EQUAL(0, tx_tasks[tx_tasks_stack_id].localhost);
 
         // Check Message Tasks
         NEW_STEP("Check \"message tasks\" points to expected message");
@@ -562,7 +550,6 @@ void unittest_SetTxTask_multihost()
         expected_tx_task.size       = tx_size;
         expected_tx_task.data_pt    = (uint8_t *)data_ptr;
         expected_tx_task.service_pt = service_pt;
-        expected_tx_task.localhost  = localhost;
 
         // Init Tx message
         for (size_t i = 0; i < tx_size - CRC_SIZE; i++)
@@ -593,8 +580,6 @@ void unittest_SetTxTask_multihost()
         TEST_ASSERT_EQUAL(tx_size, tx_tasks[tx_tasks_stack_id].size);
         NEW_STEP("Check Tx task \"service pointer\" is correctly computed");
         TEST_ASSERT_EQUAL(service_pt, tx_tasks[tx_tasks_stack_id].service_pt);
-        NEW_STEP("Check \"localhost\" value is set to LOCALHOST");
-        TEST_ASSERT_EQUAL(LOCALHOST, tx_tasks[tx_tasks_stack_id].localhost); // Mutlihost must be seen as localhost
         NEW_STEP("Check Tx task \"data pointer\" is correctly computed");
         TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[MSG_START], tx_tasks[tx_tasks_stack_id].data_pt);
         NEW_STEP("Check message task \"data pointer\" is correctly computed");

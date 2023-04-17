@@ -131,9 +131,8 @@ _CRITICAL void Transmit_Process()
 {
     uint8_t *data = 0;
     uint16_t size;
-    uint8_t localhost;
     service_t *service_pt;
-    if ((MsgAlloc_GetTxTask(&service_pt, &data, &size, &localhost) == SUCCEED) && (Transmit_GetLockStatus() == false))
+    if ((MsgAlloc_GetTxTask(&service_pt, &data, &size) == SUCCEED) && (Transmit_GetLockStatus() == false))
     {
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
@@ -149,7 +148,7 @@ _CRITICAL void Transmit_Process()
                 // Remove all transmist messages of this specific target
                 MsgAlloc_PullServiceFromTxTask((uint16_t)(((msg_t *)data)->header.target));
                 // Try to get a tx_task for another service
-                if (MsgAlloc_GetTxTask(&service_pt, &data, &size, &localhost) == FAILED)
+                if (MsgAlloc_GetTxTask(&service_pt, &data, &size) == FAILED)
                 {
                     // Nothing to transmit anymore, just exit.
                     return;
@@ -158,9 +157,9 @@ _CRITICAL void Transmit_Process()
         }
         // Check if we will need an ACK for this message and compute the transmit status we will need to manage it
         transmitStatus_t initial_transmit_status = TX_OK;
-        if (((((msg_t *)data)->header.target_mode == SERVICEIDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK)) && (!localhost || (((msg_t *)data)->header.target == DEFAULTID)))
+        if (((((msg_t *)data)->header.target_mode == SERVICEIDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK)))
         {
-            // We will need to validate the good reception of the ack.
+            // We will need to validate the good reception with a ack.
             // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
             initial_transmit_status = TX_NOK;
         }

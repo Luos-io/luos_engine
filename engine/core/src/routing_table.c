@@ -363,8 +363,6 @@ void RoutingTB_SendEndDetection(service_t *service)
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
 {
-    // Desactivate verbose mode
-    Luos_SetVerboseMode(false);
     // Starts the topology detection.
     uint16_t nb_node = LuosIO_TopologyDetection(service);
     // Clear data reception state

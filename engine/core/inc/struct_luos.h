@@ -37,8 +37,6 @@ typedef enum
     BOOTLOADER_CMD,
     BOOTLOADER_RESP,
 
-    // Verbose command
-    VERBOSE,
 
     // compatibility area
     // LUOS_LAST_RESERVED_CMD = 42

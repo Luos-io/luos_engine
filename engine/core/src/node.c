@@ -144,14 +144,3 @@ void Luos_SetFilterState(uint8_t state, service_t *service)
     // Enable or disable the filter for a given service
     // This function have been disabled since 3.0.0
 }
-
-/******************************************************************************
- * @brief Function that changes the verbose mode
- * @param mode : Put to "1" if we want to enable the verbose mode, "0" to disable
- * @return None
- ******************************************************************************/
-void Luos_SetVerboseMode(uint8_t mode)
-{
-    // Enable or disable the verbose mode
-    // This function have been disabled since 3.0.0
-}

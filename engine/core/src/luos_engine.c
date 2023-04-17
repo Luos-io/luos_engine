@@ -232,12 +232,6 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
                 return SUCCEED;
             }
             break;
-        case VERBOSE:
-            if (size == 1)
-            {
-                return SUCCEED;
-            }
-            break;
         case BOOTLOADER_CMD:
             return SUCCEED;
             break;
@@ -371,11 +365,6 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
             service->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
             service->auto_refresh.last_update = LuosHAL_GetSystick();
             consume                           = SUCCEED;
-            break;
-        case VERBOSE:
-            // this node should send messages to all the network
-            Luos_SetVerboseMode(input->data[0]);
-            consume = SUCCEED;
             break;
         case BOOTLOADER_CMD:
             // send data to the bootloader

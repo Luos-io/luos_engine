@@ -74,7 +74,6 @@ typedef struct
     uint8_t *data_pt;      /*!< Start pointer of the data on msg_buffer. */
     uint16_t size;         /*!< size of the data. */
     service_t *service_pt; /*!< Pointer to the transmitting service. */
-    uint8_t localhost;     /*!< is this message a localhost one? */
 } tx_task_t;
 /*******************************************************************************
  * Variables
@@ -1152,7 +1151,6 @@ error_return_t MsgAlloc_SetTxTask(service_t *service_pt, uint8_t *data, uint16_t
         tx_tasks[tx_tasks_stack_id].size       = size;
         tx_tasks[tx_tasks_stack_id].data_pt    = (uint8_t *)tx_msg;
         tx_tasks[tx_tasks_stack_id].service_pt = service_pt;
-        tx_tasks[tx_tasks_stack_id].localhost  = (localhost != EXTERNALHOST);
         tx_tasks_stack_id++;
         LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
         LuosHAL_SetIrqState(true);
@@ -1309,7 +1307,7 @@ void MsgAlloc_PullServiceFromTxTask(uint16_t service_id)
  * @return error_return_t : Fail is there is no more message available.
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL error_return_t MsgAlloc_GetTxTask(service_t **service_pt, uint8_t **data, uint16_t *size, uint8_t *localhost)
+_CRITICAL error_return_t MsgAlloc_GetTxTask(service_t **service_pt, uint8_t **data, uint16_t *size)
 {
     LUOS_ASSERT(tx_tasks_stack_id < MAX_MSG_NB);
 
@@ -1332,7 +1330,6 @@ _CRITICAL error_return_t MsgAlloc_GetTxTask(service_t **service_pt, uint8_t **da
         *data       = tx_tasks[0].data_pt;
         *size       = tx_tasks[0].size;
         *service_pt = tx_tasks[0].service_pt;
-        *localhost  = tx_tasks[0].localhost;
         LuosHAL_SetIrqState(true);
         return SUCCEED;
     }
