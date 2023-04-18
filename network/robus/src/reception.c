@@ -229,6 +229,7 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
         // Switch to get header.
         ctx.rx.callback = Recep_GetHeader;
         ctx.tx.status   = TX_NOK;
+        data_count      = 0;
     }
     else
     {
@@ -251,7 +252,6 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
                 // Switch to get header.
                 ctx.rx.callback = Recep_GetHeader;
             }
-            return;
         }
     }
 }
@@ -290,6 +290,9 @@ _CRITICAL void Recep_Reset(void)
 {
     luos_phy_t *phy_robus          = Robus_GetPhy();
     phy_robus->received_data       = 0;
+    phy_robus->rx_size             = 0;
+    phy_robus->rx_keep             = true;
+    phy_robus->rx_alloc_job        = false;
     crc_val                        = 0xFFFF;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.callback                = Recep_GetHeader;

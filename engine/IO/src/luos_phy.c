@@ -55,7 +55,8 @@ luos_phy_ctx_t phy_ctx;
 void Phy_Init(void)
 {
     // Put everything to 0
-    memset((void *)&phy_ctx, 0, sizeof(phy_ctx));
+    memset((void *)phy_ctx.phy_job, 0, sizeof(phy_ctx.phy_job));
+    phy_ctx.phy_job_nb = 0;
 }
 
 /******************************************************************************
