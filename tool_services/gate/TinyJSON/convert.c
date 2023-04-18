@@ -931,6 +931,11 @@ void Convert_ExcludedServiceData(service_t *service)
     char json[300];
     search_result_t result;
     RTFilter_ID(RTFilter_Reset(&result), service->dead_service_spotted);
+    if (result.result_nbr == 0)
+    {
+        // This can happen if a service is excluded during the detection.
+        return;
+    }
     sprintf(json, "{\"dead_service\":\"%s\"}\n", result.result_table[0]->alias);
     // Send the message to pipe
     PipeLink_Send(service, json, strlen(json));
