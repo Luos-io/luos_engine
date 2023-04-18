@@ -187,11 +187,13 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
         if (phy_ptr->rx_alloc_job)
         {
             uint16_t phy_stored_data_size = phy_ptr->received_data;
+            phy_ptr->rx_alloc_job         = false;
             // Now allocate it
-            phy_ptr->rx_data = MsgAlloc_Alloc(phy_ptr->rx_size);
-            rx_data          = (void *)phy_ptr->rx_data;
+            rx_data = MsgAlloc_Alloc(phy_ptr->rx_size);
+            // Assert if the allocation failed. We don't allow to loose a RX message.
+            LUOS_ASSERT(rx_data != NULL);
+            phy_ptr->rx_data = rx_data;
             // Job is done
-            phy_ptr->rx_alloc_job = false;
             LuosHAL_SetIrqState(true);
             phy_ptr->rx_keep       = true;
             phy_ptr->rx_phy_filter = phy_filter;
