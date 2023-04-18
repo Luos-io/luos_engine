@@ -37,7 +37,6 @@ typedef enum
     BOOTLOADER_CMD,
     BOOTLOADER_RESP,
 
-
     // compatibility area
     // LUOS_LAST_RESERVED_CMD = 42
 } reserved_luos_cmd_t;

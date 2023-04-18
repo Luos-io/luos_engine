@@ -140,15 +140,17 @@ _CRITICAL static inline void MsgAlloc_FindNewOldestMsg(void);
 void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
-    data_ptr           = (uint8_t *)&msg_buffer[0];
     msg_tasks_stack_id = 0;
     memset((void *)msg_tasks, 0, sizeof(msg_tasks));
     luos_tasks_stack_id = 0;
     memset((void *)luos_tasks, 0, sizeof(luos_tasks));
     tx_tasks_stack_id = 0;
     memset((void *)tx_tasks, 0, sizeof(tx_tasks));
+    LuosHAL_SetIrqState(false);
+    data_ptr   = (uint8_t *)&msg_buffer[0];
     used_msg   = NULL;
     oldest_msg = (msg_t *)INT_MAX;
+    LuosHAL_SetIrqState(true);
     if (memory_stats != NULL)
     {
         mem_stat = memory_stats;
