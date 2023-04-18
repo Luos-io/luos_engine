@@ -12,7 +12,7 @@
  * @param msg : The received message
  * @return None
  ******************************************************************************/
-void ProfileVoltage_Handler(service_t *service, msg_t *msg)
+void ProfileVoltage_Handler(service_t *service, const msg_t *msg)
 {
     profile_core_t *profile            = ProfileCore_GetFromService(service);
     profile_voltage_t *voltage_profile = (profile_voltage_t *)profile->profile_data;

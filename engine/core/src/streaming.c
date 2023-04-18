@@ -87,7 +87,7 @@ uint16_t Streaming_PutSample(streaming_channel_t *stream, const void *data, uint
  * @param stream : Streaming channel pointer
  * @param data : A pointer of data
  * @param size : data size
- * @return None
+ * @return Number of dample available in buffer
  ******************************************************************************/
 uint16_t Streaming_GetSample(streaming_channel_t *stream, void *data, uint16_t size)
 {
@@ -284,7 +284,7 @@ void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t 
  * @param stream : Streaming channel pointer
  * @return error
  ******************************************************************************/
-error_return_t Luos_ReceiveStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream)
+error_return_t Luos_ReceiveStreaming(service_t *service, const msg_t *msg, streaming_channel_t *stream)
 {
     // Get chunk size
     unsigned short chunk_size = 0;

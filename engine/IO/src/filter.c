@@ -4,7 +4,6 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-
 #include "filter.h"
 #include "luos_utils.h"
 #include "luos_hal.h"
@@ -121,7 +120,7 @@ _CRITICAL bool Filter_ServiceID(uint16_t service_id)
 
     if ((service_id > (8 * filter_ctx.IDShiftMask))) // IDMask aligned byte
     {
-        // Calcul ID mask for ID receive
+        // Calcul ID mask for ID received
         compare = ((service_id - 1) - ((8 * filter_ctx.IDShiftMask)));
         // Check if compare and internal mask match
         if ((filter_ctx.IDMask[compare / 8] & (1 << (compare % 8))) != 0)
@@ -179,7 +178,7 @@ _CRITICAL bool Filter_Type(uint16_t type_id)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL luos_localhost_t Filter_GetLocalhost(header_t *header)
+_CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
 {
     // Find if we are concerned by this message.
     // check if we need to filter all the messages
@@ -191,38 +190,45 @@ _CRITICAL luos_localhost_t Filter_GetLocalhost(header_t *header)
             // Check all service id
             if (Filter_ServiceID(header->target))
             {
-                return LOCALHOST;
+                // This concerns Luos phy only
+                return 0x01;
             }
             break;
         case TYPE:
 
             if (Filter_Type(header->target))
             {
-                return MULTIHOST;
+                // This concerns Luos phy and Robus
+                return 0x01 | (0x01 << 1);
             }
             break;
         case BROADCAST:
             if (header->target == BROADCAST_VAL)
             {
-                return MULTIHOST;
+                // This concerns Luos phy and Robus
+                return 0x01 | (0x01 << 1);
             }
             break;
         case NODEIDACK:
         case NODEID:
-            if ((header->target == Node_Get()->node_id))
+            if (header->target == Node_Get()->node_id)
             {
-                return LOCALHOST;
+                // This concerns Luos phy only
+                return 0x01;
             }
             break;
         case TOPIC:
             if (Filter_Topic(header->target))
             {
-                return MULTIHOST;
+                // This concerns Luos phy and Robus
+                return 0x01 | (0x01 << 1);
             }
             break;
         default:
-            return EXTERNALHOST;
+            // This concerns Robus only
+            return 0x01 << 1;
             break;
     }
-    return EXTERNALHOST;
+    // This concerns Robus only
+    return 0x01 << 1;
 }

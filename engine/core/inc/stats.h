@@ -1,20 +1,21 @@
 /******************************************************************************
- * @file timestamp feature
- * @brief time stamp data
+ * @file pub_sub.h
+ * @brief multicast referencing description
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef __TIMESTAMP_H_
-#define __TIMESTAMP_H_
+#ifndef _STATS_H_
+#define _STATS_H_
 
-#include "luos_engine.h"
+#include "struct_stat.h"
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
+void Stats_Init(void);
 
-void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp);
-time_luos_t Timestamp_ConvertToLatency(const msg_t *msg);
-void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date);
+general_stats_t *Stats_Get(void);
+memory_stats_t *Stats_GetMemory(void);
+luos_stats_t *Stats_GetLuos(void);
 
-#endif /* __TIMESTAMP_H_ */
+#endif /* _PUB_SUB_H_ */

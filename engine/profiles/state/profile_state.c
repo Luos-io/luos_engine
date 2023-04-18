@@ -12,7 +12,7 @@
  * @param msg : The received message
  * @return None
  ******************************************************************************/
-void ProfileState_Handler(service_t *service, msg_t *msg)
+void ProfileState_Handler(service_t *service, const msg_t *msg)
 {
     profile_core_t *profile        = ProfileCore_GetFromService(service);
     profile_state_t *profile_state = (profile_state_t *)profile->profile_data;

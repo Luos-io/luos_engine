@@ -17,7 +17,7 @@
 typedef struct profile_ops
 {
     void (*Init)(void *);
-    void (*Handler)(service_t *, msg_t *);
+    void (*Handler)(service_t *, const msg_t *);
     SERVICE_CB Callback;
 } profile_ops_t;
 

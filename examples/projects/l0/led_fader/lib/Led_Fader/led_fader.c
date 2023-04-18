@@ -32,7 +32,7 @@ volatile float coef[3] = {0.0};
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void LedFader_MsgHandler(service_t *service, msg_t *msg);
+static void LedFader_MsgHandler(service_t *service, const msg_t *msg);
 /******************************************************************************
  * @brief package init must be call in project init
  * @param None
@@ -89,7 +89,7 @@ void LedFader_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-void LedFader_MsgHandler(service_t *service, msg_t *msg)
+void LedFader_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == COLOR)
     {

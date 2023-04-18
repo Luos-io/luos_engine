@@ -76,7 +76,7 @@ void ProfileCore_OverrideConnectHandler(void)
  * @param msg : Messaged received
  * @return None
  ******************************************************************************/
-static void ProfileCore_Handler(service_t *service, msg_t *msg)
+static void ProfileCore_Handler(service_t *service, const msg_t *msg)
 {
     profile_core_t *head_profile = ProfileCore_GetFromService(service);
 

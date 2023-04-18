@@ -41,17 +41,12 @@
  *
  ************************************************************************************************************************************/
 
-#include <transmission.h>
-
-#include "robus_hal.h"
-#include "luos_hal.h"
 #include <string.h>
 #include <stdbool.h>
+#include "transmission.h"
+#include "robus_hal.h"
 #include "context.h"
 #include "reception.h"
-#include "msg_alloc.h"
-#include "_timestamp.h"
-#include "luos_engine.h"
 
 /*******************************************************************************
  * Definitions
@@ -61,12 +56,12 @@
  * Variables
  ******************************************************************************/
 volatile uint8_t nbrRetry = 0;
+robus_encaps_t *end       = NULL;
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
 _CRITICAL static uint8_t Transmit_GetLockStatus(void);
-
 /******************************************************************************
  * @brief Transmit_Init
  * @param None
@@ -104,7 +99,7 @@ _CRITICAL void Transmit_SendAck(void)
  * @param crc initialization value
  * @return crc
  ******************************************************************************/
-uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
+uint16_t ll_crc_compute(const uint8_t *data, uint16_t size, uint16_t crc_seed)
 {
     uint16_t crc_val = crc_seed;
     for (uint16_t i = 0; i < size; i++)
@@ -129,35 +124,33 @@ uint16_t ll_crc_compute(uint8_t *data, uint16_t size, uint16_t crc_seed)
  ******************************************************************************/
 _CRITICAL void Transmit_Process()
 {
-    uint8_t *data = 0;
-    uint16_t size;
-    service_t *service_pt;
-    if ((MsgAlloc_GetTxTask(&service_pt, &data, &size) == SUCCEED) && (Transmit_GetLockStatus() == false))
+    static uint16_t crc_val = 0;
+    luos_phy_t *robus_phy   = Robus_GetPhy();
+    phy_job_t *job          = Phy_GetJob(robus_phy);
+    static uint8_t tx_data[sizeof(msg_t) + sizeof(robus_encaps_t)];
+    // Get the message encapsulation
+    if ((job != NULL) && (Transmit_GetLockStatus() == false))
     {
+        robus_encaps_t *encaps = (robus_encaps_t *)job->phy_data;
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
-        if ((service_pt->statistics.max_retry < nbrRetry) || (nbrRetry >= NBR_RETRY))
+        if (nbrRetry >= NBR_RETRY)
         {
-            service_pt->statistics.max_retry = nbrRetry;
-            if (nbrRetry >= NBR_RETRY)
+            // We failed to transmit this message. We can't allow it, there is an issue on this target.
+            Phy_DeadTargetSpotted(robus_phy, job);
+            nbrRetry         = 0;
+            ctx.tx.collision = false;
+            // Try to get a new job
+            job = Phy_GetJob(robus_phy);
+            if (job == NULL)
             {
-                // We failed to transmit this message. We can't allow it, there is a issue on this target.
-                service_pt->dead_service_spotted = (uint16_t)(((msg_t *)data)->header.target);
-                nbrRetry                         = 0;
-                ctx.tx.collision                 = false;
-                // Remove all transmist messages of this specific target
-                MsgAlloc_PullServiceFromTxTask((uint16_t)(((msg_t *)data)->header.target));
-                // Try to get a tx_task for another service
-                if (MsgAlloc_GetTxTask(&service_pt, &data, &size) == FAILED)
-                {
-                    // Nothing to transmit anymore, just exit.
-                    return;
-                }
+                // Nothing to transmit anymore, just exit.
+                return;
             }
         }
-        // Check if we will need an ACK for this message and compute the transmit status we will need to manage it
+        // Check if we will need an ACK for this message and compute the transmit status we will need to manage
         transmitStatus_t initial_transmit_status = TX_OK;
-        if (((((msg_t *)data)->header.target_mode == SERVICEIDACK) || (((msg_t *)data)->header.target_mode == NODEIDACK)))
+        if (job->ack == true)
         {
             // We will need to validate the good reception with a ack.
             // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
@@ -167,7 +160,7 @@ _CRITICAL void Transmit_Process()
         if (Transmit_GetLockStatus() == false)
         {
             // We are free to transmit
-            // We will prepare to transmit something enable tx status with precomputed value if we need ACK
+            // We will prepare to transmit something enable tx status with precomputed value of the initial_transmit_status
             ctx.tx.status = initial_transmit_status;
             // Lock the bus
             ctx.tx.lock = true;
@@ -176,35 +169,38 @@ _CRITICAL void Transmit_Process()
             LuosHAL_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
             LuosHAL_SetIrqState(true);
-            ctx.tx.data = data;
+            ctx.tx.data = tx_data;
+
+            if (!nbrRetry)
+            {
+                // This is the first time we try to send this message, we need to backup the original crc value and the job data to the TX_data buffer
+                crc_val = encaps->crc;
+                memcpy(tx_data, job->data_pt, job->size);
+            }
 
             // Put timestamping on data here
-            if (Luos_IsMsgTimstamped((msg_t *)data) && (!nbrRetry))
+            if (job->timestamp)
             {
-                // Convert date to latency
-                Timestamp_ConvertToLatency((msg_t *)data);
 
-                // Complete the CRC computation with the latency
-                msg_t *msg                       = (msg_t *)data;
-                uint16_t full_size               = sizeof(header_t) + msg->header.size + sizeof(time_luos_t) + CRC_SIZE;
-                uint16_t index_without_timestamp = sizeof(header_t) + msg->header.size;
-                uint16_t crc_seed                = 0;
-                memcpy(&crc_seed, &msg->stream[full_size - CRC_SIZE], CRC_SIZE);
-                uint16_t crc_val = ll_crc_compute(&msg->stream[index_without_timestamp], full_size - CRC_SIZE - index_without_timestamp, crc_seed);
+                // Convert date to a sendable timestamp and put it on the encapsulation
+                encaps->timestamp = Phy_ComputeTimestamp(job);
 
-                // copy crc in message
-                memcpy(&msg->stream[full_size - CRC_SIZE], &crc_val, CRC_SIZE);
+                encaps->timestamped_crc = ll_crc_compute(encaps->unmaped, sizeof(time_luos_t), crc_val);
+                encaps->size            = sizeof(time_luos_t) + CRC_SIZE;
             }
 
             // Transmit data
-            if (MsgAlloc_TxAllComplete() == FAILED)
+            if (Phy_GetJobNbr(robus_phy) != 0)
             {
-                // There is no more task to send. the network have been reseted
-                RobusHAL_ComTransmit(data, size);
+                // Add the end of the message in the end of the buffer
+                memcpy(&tx_data[job->size], encaps->unmaped, encaps->size);
+                // We still have something to send, no reset occured
+                RobusHAL_ComTransmit(tx_data, (job->size + encaps->size));
             }
         }
     }
 }
+
 /******************************************************************************
  * @brief Send ID to others service on network
  * @param None
@@ -219,6 +215,7 @@ _CRITICAL static uint8_t Transmit_GetLockStatus(void)
     }
     return ctx.tx.lock;
 }
+
 /******************************************************************************
  * @brief finish transmit and try to launch a new one
  * @param None
@@ -229,19 +226,21 @@ _CRITICAL void Transmit_End(void)
 {
     if (ctx.tx.status == TX_OK)
     {
-        // A tx_task have been sucessfully transmitted
+        // A job have been sucessfully transmitted
         nbrRetry         = 0;
         ctx.tx.collision = false;
         ctx.tx.status    = TX_DISABLE;
-        // Remove the task
-        MsgAlloc_PullMsgFromTxTask();
+        // Remove the job
+        luos_phy_t *robus_phy = Robus_GetPhy();
+        phy_job_t *job        = Phy_GetJob(robus_phy);
+        Phy_RmJob(robus_phy, job);
     }
     else if (ctx.tx.status == TX_NOK)
     {
         // A tx_task failed
         nbrRetry++;
         // compute a delay before retry
-        RobusHAL_ResetTimeout(20 * nbrRetry * (Node_Get()->node_id + 1));
+        RobusHAL_ResetTimeout(20 * nbrRetry * (Phy_GetNodeId() + 1));
         // Lock the trasmission to be sure no one can send something from this node.
         ctx.tx.lock   = true;
         ctx.tx.status = TX_DISABLE;

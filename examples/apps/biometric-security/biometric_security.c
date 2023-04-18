@@ -8,7 +8,7 @@
  * @version 0.0.0
  ******************************************************************************/
 
-//#include "product_config.h" //if your are using it into a project you need to uncomment this line
+// #include "product_config.h" //if your are using it into a project you need to uncomment this line
 #include "biometric_security.h"
 
 /*******************************************************************************
@@ -38,7 +38,7 @@ uint8_t fingerprint_busy = 0;
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-void BiometricSecurity_MsgHandler(service_t *service, msg_t *msg);
+void BiometricSecurity_MsgHandler(service_t *service, const msg_t *msg);
 
 uint8_t BiometricSecurity_SetServoPosition(void);
 uint8_t BiometricSecurity_CheckFingerprint(void);
@@ -114,7 +114,7 @@ void BiometricSecurity_Loop(void)
  * @param msg
  * @return None
  ******************************************************************************/
-void BiometricSecurity_MsgHandler(service_t *service, msg_t *msg)
+void BiometricSecurity_MsgHandler(service_t *service, const msg_t *msg)
 {
     search_result_t result;
     RTFilter_Type(RTFilter_Reset(&result), STATE_TYPE);

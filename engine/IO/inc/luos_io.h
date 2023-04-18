@@ -8,6 +8,7 @@
 #define _LUOSIO_H_
 
 #include "struct_luos.h"
+#include "struct_phy.h"
 
 /*******************************************************************************
  * Definitions
@@ -22,8 +23,18 @@
  ******************************************************************************/
 
 // generic functions
-void LuosIO_Init(memory_stats_t *memory_stats);
+void LuosIO_Init(void);
 void LuosIO_Loop(void);
 uint16_t LuosIO_TopologyDetection(service_t *service);
+error_return_t LuosIO_Send(service_t *service, msg_t *msg);
+
+// Job management
+error_return_t LuosIO_TryToGetJob(uint16_t job_id, phy_job_t **job);
+void LuosIO_RmJob(phy_job_t *job);
+uint16_t LuosIO_GetJobNb(void);
+error_return_t LuosIO_TxAllComplete(void);
+
+// Specific phy treatment
+error_return_t Phy_TxAllComplete(void);
 
 #endif /* _LUOSIO_H_ */

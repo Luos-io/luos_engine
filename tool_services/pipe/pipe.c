@@ -24,7 +24,7 @@ uint8_t tx_Buffer[PIPE_TX_BUFFER_SIZE] = {0};
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Pipe_MsgHandler(service_t *service, msg_t *msg);
+static void Pipe_MsgHandler(service_t *service, const msg_t *msg);
 /******************************************************************************
  * @brief init must be call in project init
  * @param None
@@ -53,7 +53,7 @@ void Pipe_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Pipe_MsgHandler(service_t *service, msg_t *msg)
+static void Pipe_MsgHandler(service_t *service, const msg_t *msg)
 {
     uint16_t size = 0;
 

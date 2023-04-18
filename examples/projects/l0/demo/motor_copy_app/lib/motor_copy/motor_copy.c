@@ -28,7 +28,7 @@ bool end_detection = false;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void MotorCopy_EventHandler(service_t *service, msg_t *msg);
+static void MotorCopy_EventHandler(service_t *service, const msg_t *msg);
 static void Motor_init(uint16_t id);
 static void motor_set(uint8_t motor_target, angular_position_t position);
 static void sort_motors(void);
@@ -129,7 +129,7 @@ void MotorCopy_Loop(void)
     }
 }
 
-void MotorCopy_EventHandler(service_t *service, msg_t *msg)
+void MotorCopy_EventHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == ANGULAR_POSITION)
     {

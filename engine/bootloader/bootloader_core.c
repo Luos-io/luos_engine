@@ -366,7 +366,7 @@ void LuosBootloader_Loop(void)
  * @param input : Pointer to message received from luos network
  * @return None
  ******************************************************************************/
-void LuosBootloader_MsgHandler(msg_t *input)
+void LuosBootloader_MsgHandler(const msg_t *input)
 {
     bootloader_cmd = input->data[0];
 
@@ -467,6 +467,10 @@ void LuosBootloader_MsgHandler(msg_t *input)
             }
             break;
 #endif
+        case BOOTLOADER_RESET:
+            LuosHAL_SetMode((uint8_t)BOOT_MODE);
+            LuosHAL_Reboot();
+            break;
         default:
             break;
     }

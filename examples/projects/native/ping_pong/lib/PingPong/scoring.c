@@ -66,10 +66,10 @@ void score_increase(service_t *player, uint16_t winning_player_id)
     Luos_SendMsg(player, &msg);
 }
 
-void score_update(msg_t *msg)
+void score_update(const msg_t *msg)
 {
     score_t tmp_score[SCORE_TABLE_SIZE];
-    msg_score_t *msg_score = (msg_score_t *)msg->data;
+    const msg_score_t *msg_score = (const msg_score_t *)msg->data;
     // Transform the message value into a score table
     for (int i = 0; i < score_table.player_nb; i++)
     {

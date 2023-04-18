@@ -56,7 +56,7 @@ float velocity_tickstart      = 0.0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Motor_MsgHandler(service_t *service, msg_t *msg);
+static void Motor_MsgHandler(service_t *service, const msg_t *msg);
 void Motor_TrajectoryCallback(void);
 float Motor_getVelocity(void);
 /******************************************************************************
@@ -228,7 +228,7 @@ void Motor_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Motor_MsgHandler(service_t *service, msg_t *msg)
+static void Motor_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == PARAMETERS)
     {

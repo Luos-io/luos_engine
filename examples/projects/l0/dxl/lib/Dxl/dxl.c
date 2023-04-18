@@ -37,7 +37,7 @@ volatile float measurement_buf[BUFFER_SIZE];
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Dxl_MsgHandler(service_t *service, msg_t *msg);
+static void Dxl_MsgHandler(service_t *service, const msg_t *msg);
 static void discover_dxl(void);
 static int find_id(service_t *service);
 
@@ -137,7 +137,7 @@ void Dxl_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Dxl_MsgHandler(service_t *service, msg_t *msg)
+static void Dxl_MsgHandler(service_t *service, const msg_t *msg)
 {
     int index = find_id(service);
 

@@ -12,6 +12,7 @@
 
 #include "samd21.h"
 
+#define _CRITICAL
 #define DISABLE 0x00
 
 // If your MCU do not Have DMA for tx transmit #define USE_TX_IT

@@ -13,6 +13,7 @@
 // STUB Value for x86 stub only
 #define X86_STUB 0x00
 
+#define _CRITICAL
 #define DISABLE 0x00
 
 // If your MCU do not Have DMA for tx transmit define USE_TX_IT

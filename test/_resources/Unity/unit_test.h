@@ -9,7 +9,6 @@
 #include "robus_hal.h"
 #include "luos_engine.h"
 #include "luos_utils.h"
-#include "struct_io.h"
 #include <setjmp.h>
 
 /*******************************************************************************
@@ -35,6 +34,8 @@ extern bool try_state;
     if (!_SETJMP(err_ctx))
 
 #define CATCH else
+
+#define END_TRY try_state = false
 
 /*******************************************************************************
  * Function

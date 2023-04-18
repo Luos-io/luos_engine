@@ -4,16 +4,16 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#include <routing_table.h>
-
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "routing_table.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
 #include "struct_engine.h"
 #include "luos_io.h"
+#include "service.h"
 
 /*******************************************************************************
  * Definitions
@@ -428,7 +428,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
                 // We find our node remove all services
                 while (routing_table[i].mode == SERVICE)
                 {
-                    RoutingTB_RemoveOnRoutingTable(routing_table[i].id);
+                    RoutingTB_RemoveService(routing_table[i].id);
                 }
                 return;
             }
@@ -440,12 +440,13 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
  * @param id : Id of service
  * @return None
  ******************************************************************************/
-void RoutingTB_RemoveOnRoutingTable(uint16_t id)
+void RoutingTB_RemoveService(uint16_t serviceid)
 {
-    // find the service
+    Service_RmAutoUpdateTarget(serviceid);
+    // Find the service
     for (uint16_t i = 0; i < last_routing_table_entry; i++)
     {
-        if ((routing_table[i].mode == SERVICE) && (routing_table[i].id == id))
+        if ((routing_table[i].mode == SERVICE) && (routing_table[i].id == serviceid))
         {
             LUOS_ASSERT(i < last_routing_table_entry);
             memcpy(&routing_table[i], &routing_table[i + 1], sizeof(routing_table_t) * (last_routing_table_entry - (i + 1)));

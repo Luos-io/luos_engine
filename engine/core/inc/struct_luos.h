@@ -15,6 +15,13 @@
  * Definitions
  ******************************************************************************/
 
+typedef enum
+{
+    // Protocol version
+    BASE_PROTOCOL = PROTOCOL_REVISION,
+    TIMESTAMP_PROTOCOL,
+} protocol_t;
+
 /******************************************************************************
  * This enum list all CMD reserved to Luos
  * please refer to the documentation
@@ -22,11 +29,16 @@
 typedef enum
 {
     // Luos specific registers
-    LOCAL_RTB = ROBUS_PROTOCOL_NB, // Ask(size == 0), generate(size == 2) a local routing_table.
-    RTB,                           // Receive a routing_table.
-    WRITE_ALIAS,                   // Get and save a new given alias.
-    UPDATE_PUB,                    // Ask to update a sensor value each time duration to the sender
-    ASK_DETECTION,                 // Ask Luos to launch a detection
+    WRITE_NODE_ID,   // Get and save a new given node ID.
+    START_DETECTION, // Start a detection
+    END_DETECTION,   // Detect the end of a detection
+    LOCAL_RTB,       // Ask(size == 0), generate(size == 2) a local routing_table.
+    RTB,             // Receive a routing_table.
+    WRITE_ALIAS,     // Get and save a new given alias.
+    UPDATE_PUB,      // Ask to update a sensor value each time duration to the sender
+    ASK_DETECTION,   // Ask Luos to launch a detection
+    DEADTARGET,      // Send a dead target message
+    ASSERT,          // Node Assert message (only broadcast with a source as a node)
 
     // Revision management
     REVISION,        // service sends its firmware revision
@@ -101,12 +113,31 @@ typedef struct __attribute__((__packed__))
  * This structure is used to manage services timed auto update
  * please refer to the documentation
  ******************************************************************************/
-typedef struct __attribute__((__packed__)) timed_update_t
+typedef struct timed_update_t
 {
     uint32_t last_update;
     uint16_t time_ms;
     uint16_t target;
 } timed_update_t;
+
+/******************************************************************************
+ * This structure is used to manage dead target message
+ * Service_id or node_id can be set to 0 to ignore it.
+ * Only 1 of those 2 can have a value indicating if the dead target is a service or a node.
+ * please refer to the documentation
+ ******************************************************************************/
+typedef struct __attribute__((__packed__)) dead_target_t
+{
+    union
+    {
+        struct __attribute__((__packed__))
+        {
+            uint16_t service_id;
+            uint16_t node_id;
+        };
+        uint8_t unmap[4];
+    };
+} dead_target_t;
 
 /******************************************************************************
  * This structure is used to manage read or write access
@@ -151,10 +182,9 @@ typedef struct service_t
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< service alias. */
     revision_t revision;                   /*!< service firmware version. */
     access_t access;                       /*!< service read write access. */
-    uint16_t dead_service_spotted;         /*!< The ID of a service that don't reply to a lot of ACK msg */
 
     // Callback
-    void (*service_cb)(struct service_t *service, msg_t *msg);
+    void (*service_cb)(struct service_t *service, const msg_t *msg);
 
     // Statistics
     service_stats_t statistics; /*!< service level statistics. */
@@ -167,6 +197,6 @@ typedef struct service_t
 
 } service_t;
 
-typedef void (*SERVICE_CB)(service_t *service, msg_t *msg);
+typedef void (*SERVICE_CB)(service_t *service, const msg_t *msg);
 
 #endif /*__LUOS_STRUCT_H */

@@ -158,8 +158,12 @@ void unittest_Luos_ReceiveData()
         Init_Context();
         msg_t msg;
         uint32_t bin_data[64] = {0xDEADBEEF};
-        NEW_STEP("Verify if we return an error");
-        TEST_ASSERT_EQUAL(Luos_ReceiveData((service_t *)10, &msg, bin_data), -1);
+        TRY
+        {
+            NEW_STEP("Verify if we Assert");
+            Luos_ReceiveData((service_t *)10, &msg, bin_data);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
     }
 
     NEW_TEST_CASE("Test the regular usage");

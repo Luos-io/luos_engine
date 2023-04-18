@@ -16,9 +16,9 @@ default_scenario_t default_sc;
  * Function
  ******************************************************************************/
 static void Detection(service_t *service);
-static void App_1_MsgHandler(service_t *service, msg_t *msg);
-static void App_2_MsgHandler(service_t *service, msg_t *msg);
-static void App_3_MsgHandler(service_t *service, msg_t *msg);
+static void App_1_MsgHandler(service_t *service, const msg_t *msg);
+static void App_2_MsgHandler(service_t *service, const msg_t *msg);
+static void App_3_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief Init scenario
@@ -85,7 +85,7 @@ static void Detection(service_t *service)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void App_1_MsgHandler(service_t *service, msg_t *msg)
+static void App_1_MsgHandler(service_t *service, const msg_t *msg)
 {
     memcpy(&default_sc.App_1.last_rx_msg, msg, sizeof(msg_t));
 }
@@ -96,7 +96,7 @@ static void App_1_MsgHandler(service_t *service, msg_t *msg)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void App_2_MsgHandler(service_t *service, msg_t *msg)
+static void App_2_MsgHandler(service_t *service, const msg_t *msg)
 {
     memcpy(&default_sc.App_2.last_rx_msg, msg, sizeof(msg_t));
 }
@@ -107,7 +107,7 @@ static void App_2_MsgHandler(service_t *service, msg_t *msg)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void App_3_MsgHandler(service_t *service, msg_t *msg)
+static void App_3_MsgHandler(service_t *service, const msg_t *msg)
 {
     memcpy(&default_sc.App_3.last_rx_msg, msg, sizeof(msg_t));
 }

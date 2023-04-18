@@ -44,8 +44,6 @@
 #include <string.h>
 #include "reception.h"
 #include "robus_hal.h"
-#include "luos_hal.h"
-#include "luos_utils.h"
 #include "robus.h"
 #include "context.h"
 /*******************************************************************************
@@ -70,7 +68,6 @@ uint16_t crc_val               = 0;   // CRC value
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static inline bool Recep_IsAckNeeded(luos_phy_t *phy_robus);
 static inline bool Recep_RobusShouldDrop(header_t *header);
 /******************************************************************************
  * @brief Reception init.
@@ -142,7 +139,7 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
 
                 // We complete the header reception, we need to compute all the needed values.
                 // Compute message header size, keep, ... the result will be available in phy_robus->rx_size, ...
-                Phy_Computeheader(phy_robus);
+                Phy_ComputeHeader(phy_robus);
             }
             break;
 
@@ -179,7 +176,7 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
         {
             // Message is OK
             // Check if we need to send an ack
-            if (Recep_IsAckNeeded(phy_robus))
+            if ((phy_robus->rx_ack == true) && (phy_robus->rx_keep == true))
             {
                 // Send an Ack
                 Transmit_SendAck();
@@ -190,7 +187,7 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
         else
         {
             ctx.rx.status.rx_error = true;
-            if (Recep_IsAckNeeded(phy_robus))
+            if ((phy_robus->rx_ack == true) && (phy_robus->rx_keep == true))
             {
                 Transmit_SendAck();
             }
@@ -226,7 +223,7 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
         // Save the received data into the allocator to be able to continue the reception
         for (uint8_t i = 0; i < data_count - 1; i++)
         {
-            Recep_GetHeader(phy_robus, &ctx.tx.data[i]);
+            Recep_GetHeader(phy_robus, (volatile uint8_t *)&ctx.tx.data[i]);
         }
         Recep_GetHeader(phy_robus, data);
         // Switch to get header.
@@ -341,24 +338,6 @@ _CRITICAL static inline bool Recep_RobusShouldDrop(header_t *header)
             // If a no port is activ or we are waiting for a release of a PTP we drop node ID 1 message
             return true;
         }
-    }
-    return false;
-}
-
-/******************************************************************************
- * @brief Check if we need to send an ack
- * @param None
- * @return true or false
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL static inline bool Recep_IsAckNeeded(luos_phy_t *phy_robus)
-{
-    header_t *header = (header_t *)(phy_robus->rx_buffer_base);
-    // Check the mode of the message received
-    if (((header->target_mode == SERVICEIDACK) || (header->target_mode == NODEIDACK)) && (phy_robus->rx_keep == true))
-    {
-        // If the message is a serviceidack or nodeidack and we keep it we need to send an ack
-        return true;
     }
     return false;
 }

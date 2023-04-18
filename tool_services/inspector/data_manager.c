@@ -152,7 +152,7 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
 void DataManager_GetServiceMsg(service_t *service)
 {
     // loop into services.
-    msg_t *data_msg;
+    msg_t data_msg;
     search_result_t result;
     uint8_t i = 0;
 
@@ -163,21 +163,21 @@ void DataManager_GetServiceMsg(service_t *service)
         if (Luos_ReadFromService(service, result.result_table[i]->id, &data_msg) == SUCCEED)
         {
             // drop the messages that are destined to pipe
-            if (data_msg->header.target == PipeLink_GetId())
+            if (data_msg.header.target == PipeLink_GetId())
             {
                 i++;
                 continue;
             }
             // Check if this is a message from pipe
-            if (data_msg->header.source == PipeLink_GetId())
+            if (data_msg.header.source == PipeLink_GetId())
             {
                 // treat message from pipe
-                DataManager_GetPipeMsg(service, data_msg);
+                DataManager_GetPipeMsg(service, &data_msg);
                 i++;
                 continue;
             }
             // check if this is an assert
-            if ((data_msg->header.cmd == ASSERT) && (data_msg->header.size > 0))
+            if ((data_msg.header.cmd == ASSERT) && (data_msg.header.size > 0))
             {
                 if (assert_num >= MAX_ASSERT_NUMBER)
                 {
@@ -190,26 +190,26 @@ void DataManager_GetServiceMsg(service_t *service)
                     assert_num--;
                 }
                 // save the assert message to the assert messages buffer
-                memcpy(&assert_buf[assert_num][0], data_msg->stream, sizeof(header_t) + data_msg->header.size);
+                memcpy(&assert_buf[assert_num][0], data_msg.stream, sizeof(header_t) + data_msg.header.size);
                 // store the size of this message
-                assert_buf_size[assert_num] = sizeof(header_t) + data_msg->header.size;
+                assert_buf_size[assert_num] = sizeof(header_t) + data_msg.header.size;
                 assert_num++;
                 i++;
                 continue;
             }
-            if (data_msg->header.cmd == END_DETECTION)
+            if (data_msg.header.cmd == END_DETECTION)
             {
                 PipeLink_Find(service);
                 i++;
                 continue;
             }
-            if (data_msg->header.cmd == ASK_DETECTION)
+            if (data_msg.header.cmd == ASK_DETECTION)
             {
                 i++;
                 continue;
             }
             // send any other message to pipe
-            PipeLink_Send(service, data_msg->stream, (sizeof(uint8_t) * data_msg->header.size) + sizeof(header_t));
+            PipeLink_Send(service, data_msg.stream, (sizeof(uint8_t) * data_msg.header.size) + sizeof(header_t));
         }
         i++;
     }

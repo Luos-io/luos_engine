@@ -26,6 +26,7 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
  |      7     |         D7       |      PTPB     |
  +------------+------------------+---------------+
 */
+#define _CRITICAL
 #define DISABLE 0x00
 
 // If your MCU do not Have DMA for tx transmit #define USE_TX_IT

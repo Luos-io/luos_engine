@@ -32,7 +32,7 @@ uint8_t end_detection  = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void StartController_MsgHandler(service_t *service, msg_t *msg);
+static void StartController_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -242,7 +242,7 @@ void StartController_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void StartController_MsgHandler(service_t *service, msg_t *msg)
+static void StartController_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == IO_STATE)
     {

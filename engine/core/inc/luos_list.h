@@ -34,7 +34,7 @@ typedef enum
 
 typedef enum
 {
-    // Common register for all services
+    // Generic cmd
     UNKNOWN_CMD = LUOS_LAST_RESERVED_CMD, // set or get some undefined data (change size of msg to set or get)
     GET_CMD     = UNKNOWN_CMD,            // retrocompatibility
     SET_CMD,                              // retrocompatibility
@@ -53,6 +53,8 @@ typedef enum
     FORCE,       // force_t (Newton N)
     MOMENT,      // moment_t (Newton meter N.m)
     CONTROL,     // control_mode (control_mode_t)
+    TEXT,        // ASCII string
+    PRESSURE,    // pressure_t (Pa)
 
     // Configuration commands
     REGISTER,   // a register data [reg_add, data[]]
@@ -92,10 +94,6 @@ typedef enum
     // Specific register
     PARAMETERS, // depend on the service, can be : servo_parameters_t, imu_report_t, motor_mode_t
     ERROR_CMD,
-
-    // Retrocompatibility zone
-    TEXT,     // ASCII string
-    PRESSURE, // pressure_t (Pa)
 
     // compatibility area
     LUOS_LAST_STD_CMD = 128

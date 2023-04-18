@@ -16,8 +16,6 @@
 void Robus_Init(void);
 void Robus_Loop(void);
 
-error_return_t Robus_SetTxTask(service_t *service, msg_t *msg);
-
 void Robus_SaveNodeID(uint16_t nodeid);
 void Robus_ResetNodeID(void);
 bool Robus_Busy(void);

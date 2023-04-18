@@ -41,7 +41,7 @@ float trajectory[NB_POINT_IN_TRAJECTORY];
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void RunMotor_EventHandler(service_t *service, msg_t *msg);
+static void RunMotor_EventHandler(service_t *service, const msg_t *msg);
 static void motor_init(uint8_t motor_target);
 static void motor_SendTrajectory(uint8_t motor_target);
 static void motor_stream(uint8_t motor_target, control_type_t control);
@@ -106,7 +106,7 @@ void RunMotor_Loop(void)
     }
 }
 
-void RunMotor_EventHandler(service_t *service, msg_t *msg)
+void RunMotor_EventHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == SET_CMD)
     {

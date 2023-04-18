@@ -28,7 +28,7 @@ uint8_t Led_last_state = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Led_MsgHandler(service_t *service, msg_t *msg);
+static void Led_MsgHandler(service_t *service, const msg_t *msg);
 /******************************************************************************
  * @brief init must be call in project init
  * @param None
@@ -69,7 +69,7 @@ void Led_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Led_MsgHandler(service_t *service, msg_t *msg)
+static void Led_MsgHandler(service_t *service, const msg_t *msg)
 {
 #ifdef CONFIG_IDF_TARGET_ESP32
     if (msg->header.cmd == IO_STATE)

@@ -22,7 +22,7 @@ time_luos_t distance_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Distance_MsgHandler(service_t *service, msg_t *msg);
+static void Distance_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -56,7 +56,7 @@ void Distance_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Distance_MsgHandler(service_t *service, msg_t *msg)
+static void Distance_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {

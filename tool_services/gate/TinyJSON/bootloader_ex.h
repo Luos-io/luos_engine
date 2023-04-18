@@ -7,7 +7,6 @@
 #ifndef BOOTLOADER_EX_H
 #define BOOTLOADER_EX_H
 
-#include "struct_io.h"
 #include "luos_engine.h"
 #include "tiny-json.h"
 /*******************************************************************************

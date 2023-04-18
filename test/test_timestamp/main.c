@@ -5,7 +5,7 @@
 extern volatile uint8_t msg_buffer[MSG_BUFFER_SIZE];
 extern default_scenario_t default_sc;
 
-static void MessageHandler(service_t *service, msg_t *msg)
+static void MessageHandler(service_t *service, const msg_t *msg)
 {
     default_sc.App_1.last_rx_msg.header.config = msg->header.config;
     default_sc.App_1.last_rx_msg.header.size   = msg->header.size;

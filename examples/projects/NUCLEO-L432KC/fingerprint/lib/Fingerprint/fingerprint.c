@@ -32,7 +32,7 @@ static service_t *service_fingerprint;
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-void Fingerprint_MsgHandler(service_t *service, msg_t *msg);
+void Fingerprint_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -63,7 +63,7 @@ void Fingerprint_Loop(void)
  * @param msg
  * @return None
  ******************************************************************************/
-void Fingerprint_MsgHandler(service_t *service, msg_t *msg)
+void Fingerprint_MsgHandler(service_t *service, const msg_t *msg)
 {
     msg_t pub_msg;
     pub_msg.header.target      = msg->header.source;

@@ -8,7 +8,6 @@
 #define __ENGINE_STRUCT_H
 
 #include <stdint.h>
-#include "struct_io.h"
 
 /*******************************************************************************
  * Definitions

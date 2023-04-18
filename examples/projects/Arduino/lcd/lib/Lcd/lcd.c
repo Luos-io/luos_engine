@@ -27,7 +27,7 @@ uint8_t i = 0;
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-void Lcd_MsgHandler(service_t *service, msg_t *msg);
+void Lcd_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief Service init must be call in project init
@@ -75,7 +75,7 @@ void Lcd_Loop(void)
  * @param msg
  * @return None
  ******************************************************************************/
-void Lcd_MsgHandler(service_t *service, msg_t *msg)
+void Lcd_MsgHandler(service_t *service, const msg_t *msg)
 {
     switch (msg->header.cmd)
     {

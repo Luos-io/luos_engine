@@ -4,13 +4,14 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+#include <stdbool.h>
 #include "luos_utils.h"
 #include "luos_engine.h"
 #include "port_manager.h"
 #include "string.h"
 #include "luos_hal.h"
 #include "msg_alloc.h"
-#include <stdbool.h>
+#include "filter.h"
 #ifdef WITH_BOOTLOADER
     #include "bootloader_core.h"
 #endif
@@ -45,6 +46,7 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
     PortMng_Init();
     // completely reinit the allocator
     MsgAlloc_Init(NULL);
+    Filter_IdInit(); // Mask filter for service ID
     msg_t msg;
     msg.header.target_mode = BROADCAST;
     msg.header.target      = BROADCAST_VAL;
@@ -56,7 +58,7 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
         ;
     node_assert(file, line);
     // wait for the transmission to finish before killing IRQ
-    while (MsgAlloc_TxAllComplete() == FAILED)
+    while (Luos_TxComplete() == FAILED)
         ;
     #ifdef WITH_BOOTLOADER
     // We're in a failed app,

@@ -4,9 +4,9 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+#include <string.h>
 #include "_timestamp.h"
 #include "luos_hal.h"
-#include "string.h"
 #include "struct_luos.h"
 /******************************* Description of Timestamp process ************************************
  *
@@ -67,7 +67,7 @@ time_luos_t Luos_Timestamp(void)
  * @param msg : Message to check
  * @return boolean it "True" if message is timestamped
  ******************************************************************************/
-_CRITICAL inline bool Luos_IsMsgTimstamped(msg_t *msg)
+_CRITICAL inline bool Luos_IsMsgTimstamped(const msg_t *msg)
 {
     return (msg->header.config == TIMESTAMP_PROTOCOL);
 }
@@ -107,22 +107,14 @@ void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
  * @param msg : Message that will be sent
  * @return None
  ******************************************************************************/
-_CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
+_CRITICAL time_luos_t Timestamp_ConvertToLatency(const msg_t *msg)
 {
-    static time_luos_t timestamp_date = {0.0f};
-    static msg_t *last_msg            = NULL;
 
-    if (last_msg != msg)
-    {
-        // This is a new message, backup the timestamp date
-        memcpy(&timestamp_date, &msg->data[msg->header.size], sizeof(time_luos_t));
-        // Keep the message pointer to know if we already manage this one or not.
-        last_msg = msg;
-    }
+    time_luos_t timestamp_date;
+    memcpy(&timestamp_date, &msg->data[msg->header.size], sizeof(time_luos_t));
     // Compute the latency from date
     time_luos_t latency = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(timestamp_date) - TimeOD_TimeTo_s(Luos_Timestamp()));
-    // Write latency on the message
-    memcpy(&msg->data[msg->header.size], &latency, sizeof(time_luos_t));
+    return latency;
 }
 
 /******************************************************************************

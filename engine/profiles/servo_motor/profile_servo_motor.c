@@ -28,7 +28,7 @@ void ProfileServo_Init(void *handler)
  * @param msg : The received message
  * @return None
  ******************************************************************************/
-void ProfileServo_Handler(service_t *service, msg_t *msg)
+void ProfileServo_Handler(service_t *service, const msg_t *msg)
 {
     // get profile informations from service
     profile_core_t *profile                    = ProfileCore_GetFromService(service);

@@ -14,7 +14,8 @@
 #include "esp_attr.h"
 #include <soc/soc.h>
 
-#define DISABLE 0x00
+#define _CRITICAL IRAM_ATTR
+#define DISABLE   0x00
 
 #ifndef MCUFREQ
     #define MCUFREQ 80000000 // MCU frequence

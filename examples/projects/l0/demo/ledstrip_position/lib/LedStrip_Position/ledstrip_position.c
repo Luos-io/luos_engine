@@ -44,7 +44,7 @@ bool end_detection       = false;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void LedStripPosition_MsgHandler(service_t *service, msg_t *msg);
+static void LedStripPosition_MsgHandler(service_t *service, const msg_t *msg);
 static void distance_filtering(void);
 static void distance_frame_compute(void);
 static void glowing_fade(float target);
@@ -150,7 +150,7 @@ void LedStripPosition_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void LedStripPosition_MsgHandler(service_t *service, msg_t *msg)
+static void LedStripPosition_MsgHandler(service_t *service, const msg_t *msg)
 {
     search_result_t services_list;
     RTFilter_Reset(&services_list);

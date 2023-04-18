@@ -23,7 +23,7 @@ uint32_t last_detection_date_ms = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void DetectionButton_MsgHandler(service_t *service, msg_t *msg);
+static void DetectionButton_MsgHandler(service_t *service, const msg_t *msg);
 static void Setup_button(void);
 
 /******************************************************************************
@@ -72,7 +72,7 @@ void DetectionButton_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void DetectionButton_MsgHandler(service_t *service, msg_t *msg)
+static void DetectionButton_MsgHandler(service_t *service, const msg_t *msg)
 {
     static uint8_t last_btn_state = 0;
     if (msg->header.cmd == IO_STATE)

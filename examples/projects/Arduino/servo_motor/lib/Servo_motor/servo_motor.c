@@ -21,7 +21,7 @@ static service_t *service_servo;
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-static void Servo_MsgHandler(service_t *service, msg_t *msg);
+static void Servo_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -52,7 +52,7 @@ void Servo_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Servo_MsgHandler(service_t *service, msg_t *msg)
+static void Servo_MsgHandler(service_t *service, const msg_t *msg)
 {
     servo_motor_t servo;
     if (msg->header.cmd == ANGULAR_POSITION)

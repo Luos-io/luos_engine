@@ -77,7 +77,7 @@ void RoutingTB_DetectServices(service_t *service);
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
 void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service);
 void RoutingTB_RemoveNode(uint16_t nodeid);
-void RoutingTB_RemoveOnRoutingTable(uint16_t id);
+void RoutingTB_RemoveService(uint16_t id);
 void RoutingTB_Erase(void);
 routing_table_t *RoutingTB_Get(void);
 uint16_t RoutingTB_GetLastService(void);

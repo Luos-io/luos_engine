@@ -9,7 +9,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "struct_io.h"
 #include "struct_luos.h"
 
 /*******************************************************************************
@@ -33,6 +32,6 @@ void Filter_RmTopic(uint16_t topic_id);
 bool Filter_ServiceID(uint16_t service_id);
 bool Filter_Topic(uint16_t topic_id);
 bool Filter_Type(uint16_t type_id);
-luos_localhost_t Filter_GetLocalhost(header_t *header);
+uint8_t Filter_GetPhyTarget(header_t *header);
 
 #endif /* _FILTER_H_ */

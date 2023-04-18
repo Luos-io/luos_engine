@@ -62,9 +62,9 @@ uint16_t last_id      = 0;
  * Function
  ******************************************************************************/
 
-void Player_MsgHandler(service_t *service, msg_t *msg)
+void Player_MsgHandler(service_t *service, const msg_t *msg)
 {
-    if ((msg->header.target_mode == TOPIC) & (msg->header.target = SCORE_TOPIC) & (msg->header.source != service->id))
+    if ((msg->header.target_mode == TOPIC) & (msg->header.target == SCORE_TOPIC) & (msg->header.source != service->id))
     {
         score_update(msg);
         set_screen_to(score_view);
