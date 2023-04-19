@@ -107,19 +107,19 @@ _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
  ******************************************************************************/
 uint8_t PortMng_PokePort(uint8_t PortNbr)
 {
-    // push the ptp line
+    // Push the ptp line
     RobusHAL_PushPTP(PortNbr);
-    // wait a little just to be sure everyone can read it
+    // Wait a little just to be sure everyone can read it
     uint32_t start_tick = LuosHAL_GetSystick();
     while (LuosHAL_GetSystick() - start_tick < 2)
         ;
-    // release the ptp line
+    // Release the ptp line
     RobusHAL_SetPTPDefaultState(PortNbr);
     while (LuosHAL_GetSystick() - start_tick < 3)
         ;
     // Save port as empty by default
     Node_Get()->port_table[PortNbr] = 0xFFFF;
-    // read the line state
+    // Read the line state
     if (RobusHAL_GetPTPState(PortNbr))
     {
         // Someone reply, reverse the detection to wake up on line release

@@ -111,17 +111,20 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         // This can happen if we did not had the time to execute Phy_Loop function before the end of the message reception or if this phy get the complete mgs in one time.
         Phy_alloc(phy_ptr);
     }
-    // Now we can create a phy_job to dispatch the tx_job later
-    LUOS_ASSERT(phy_ctx.phy_job_nb < MAX_MSG_NB);
-    LuosHAL_SetIrqState(false);
-    phy_ctx.phy_job[phy_ctx.phy_job_nb].timestamp  = phy_ptr->rx_timestamp;
-    phy_ctx.phy_job[phy_ctx.phy_job_nb].alloc_msg  = (msg_t *)phy_ptr->rx_data;
-    phy_ctx.phy_job[phy_ctx.phy_job_nb].phy_filter = phy_ptr->rx_phy_filter;
-    phy_ctx.phy_job_nb++;
-    // Then reset the phy to receive the next message
-    phy_ptr->rx_data       = phy_ptr->rx_buffer_base;
-    phy_ptr->received_data = 0;
-    LuosHAL_SetIrqState(true);
+    if (phy_ptr->rx_keep == true)
+    {
+        // Now we can create a phy_job to dispatch the tx_job later
+        LUOS_ASSERT(phy_ctx.phy_job_nb < MAX_MSG_NB);
+        LuosHAL_SetIrqState(false);
+        phy_ctx.phy_job[phy_ctx.phy_job_nb].timestamp  = phy_ptr->rx_timestamp;
+        phy_ctx.phy_job[phy_ctx.phy_job_nb].alloc_msg  = (msg_t *)phy_ptr->rx_data;
+        phy_ctx.phy_job[phy_ctx.phy_job_nb].phy_filter = phy_ptr->rx_phy_filter;
+        phy_ctx.phy_job_nb++;
+        // Then reset the phy to receive the next message
+        phy_ptr->rx_data       = phy_ptr->rx_buffer_base;
+        phy_ptr->received_data = 0;
+        LuosHAL_SetIrqState(true);
+    }
 }
 
 /******************************************************************************
@@ -129,7 +132,7 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
  * @param phy_ptr Pointer to the phy concerned by this message
  * @return None
  ******************************************************************************/
-inline void Phy_ComputeMsgSize(luos_phy_t *phy_ptr)
+inline void Phy_Computeheader(luos_phy_t *phy_ptr)
 {
 
     // Compute the size of the data to allocate
@@ -146,6 +149,19 @@ inline void Phy_ComputeMsgSize(luos_phy_t *phy_ptr)
         {
             phy_ptr->rx_size += sizeof(time_luos_t);
         }
+    }
+
+    // Compute the phy concerned by this message
+    phy_ptr->rx_phy_filter = Filter_GetLocalhost((header_t *)phy_ptr->rx_buffer_base);
+    if (phy_ptr->rx_phy_filter != EXTERNALHOST)
+    {
+        phy_ptr->rx_keep      = true;
+        phy_ptr->rx_alloc_job = true;
+    }
+    else
+    {
+        phy_ptr->rx_keep      = false;
+        phy_ptr->rx_alloc_job = false;
     }
 }
 
@@ -172,14 +188,9 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
     LUOS_ASSERT(phy_ptr->rx_data == phy_ptr->rx_buffer_base);
     LuosHAL_SetIrqState(true);
 
-    // We need to allocate this phy received data
-    Phy_ComputeMsgSize(phy_ptr);
-
-    // Compute the phy concerned by this message
-    luos_localhost_t phy_filter = Filter_GetLocalhost((header_t *)phy_ptr->rx_buffer_base);
 
     // Now we can check if we need to store the received data
-    if (phy_filter != EXTERNALHOST)
+    if (phy_ptr->rx_keep)
     {
         // We need to store the received data.
         // Update the informations allowing reception to continue and directly copy the data into the allocated buffer
@@ -195,9 +206,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             phy_ptr->rx_data = rx_data;
             // Job is done
             LuosHAL_SetIrqState(true);
-            phy_ptr->rx_keep       = true;
-            phy_ptr->rx_phy_filter = phy_filter;
-            copy_from              = (void *)phy_ptr->rx_buffer_base;
+            copy_from = (void *)phy_ptr->rx_buffer_base;
 
             // Now we can copy the data already received
             memcpy(rx_data, copy_from, phy_stored_data_size);
@@ -213,8 +222,6 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             // Job is done
             phy_ptr->rx_alloc_job = false;
             LuosHAL_SetIrqState(true);
-            // We don't need to store the received data.
-            phy_ptr->rx_keep = false;
             return;
         }
         LuosHAL_SetIrqState(true);

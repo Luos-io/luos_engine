@@ -74,8 +74,8 @@ uint16_t crc_val               = 0;   // CRC value
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static inline uint8_t Recep_IsAckNeeded(luos_phy_t *phy_robus);
-static inline bool Recep_IsARobusSpecialMsg(header_t *header);
+static inline bool Recep_IsAckNeeded(luos_phy_t *phy_robus);
+static inline bool Recep_RobusShouldDrop(header_t *header);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -133,18 +133,21 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
             printf("cmd : 0x%04x\n", phy_robus->rx_msg->header.cmd);                 /*!< msg definition. */
             printf("size : 0x%04x\n", phy_robus->rx_msg->header.size);               /*!< Size of the data field. */
 #endif
+
             // Switch state machine to data reception
             ctx.rx.callback = Recep_GetData;
-            // Compute message size the result will be available in phy_robus->rx_size
-            Phy_ComputeMsgSize(phy_robus);
-
             if (ctx.rx.status.rx_framing_error == false)
             {
-                if (Recep_IsARobusSpecialMsg((header_t *)data_rx) == false)
+                if (Recep_RobusShouldDrop((header_t *)data_rx) == true)
                 {
-                    // Put a flag to tell that we need to alloc this message
-                    phy_robus->rx_alloc_job = true;
+                    ctx.rx.callback = Recep_Drop;
+                    return;
                 }
+
+
+                // We complete the header reception, we need to compute all the needed values.
+                // Compute message header size, keep, ... the result will be available in phy_robus->rx_size, ...
+                Phy_Computeheader(phy_robus);
             }
             break;
 
@@ -162,6 +165,11 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
 _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
     static uint16_t crc;
+    if (phy_robus->rx_keep == false)
+    {
+        ctx.rx.callback = Recep_Drop;
+        return;
+    }
     if (phy_robus->received_data < phy_robus->rx_size)
     {
         // Catch the byte.
@@ -295,6 +303,7 @@ _CRITICAL void Recep_Reset(void)
     phy_robus->rx_alloc_job        = false;
     crc_val                        = 0xFFFF;
     ctx.rx.status.rx_framing_error = false;
+    ctx.rx.status.rx_error         = false;
     ctx.rx.callback                = Recep_GetHeader;
     phy_robus->rx_buffer_base      = data_rx;
     phy_robus->rx_data             = data_rx;
@@ -320,25 +329,22 @@ _CRITICAL void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data)
     }
 }
 /******************************************************************************
- * @brief Parse msg to find a service concerne
+ * @brief Define if we should drop this message before Luos get it
  * @param header of message
  * @return true or false
  * warning : this function can be redefined only for mock testing purpose
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL static inline bool Recep_IsARobusSpecialMsg(header_t *header)
+_CRITICAL static inline bool Recep_RobusShouldDrop(header_t *header)
 {
-    // Find if we are concerned by this message.
-    if ((header->target_mode == NODEIDACK) || (header->target_mode == SERVICEIDACK))
+    // During detection we receive node ID messages, we need to keep them only if PTP allow us to keep them.
+    // Find if we should remove this message.
+    if (header->target_mode == NODEIDACK)
     {
-        // In both of those cases we potentially need an ack.
-        ctx.rx.status.rx_error = false;
-    }
-    if ((header->target_mode == NODEID) || (header->target_mode == NODEIDACK))
-    {
-        if ((header->target == 0) && (ctx.port.activ != NBR_PORT) && (ctx.port.keepLine == false))
+        if ((header->target == 0) && ((ctx.port.activ == NBR_PORT) || (PortMng_Busy() == true)))
         {
-            return true; // Message is specific to Robus if nodeID = 0 and a a PTP is activ
+            // If a no port is activ or we are waiting for a release of a PTP we drop node ID 1 message
+            return true;
         }
     }
     return false;
@@ -350,19 +356,14 @@ _CRITICAL static inline bool Recep_IsARobusSpecialMsg(header_t *header)
  * @return true or false
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL static inline uint8_t Recep_IsAckNeeded(luos_phy_t *phy_robus)
+_CRITICAL static inline bool Recep_IsAckNeeded(luos_phy_t *phy_robus)
 {
     header_t *header = (header_t *)(phy_robus->rx_buffer_base);
     // Check the mode of the message received
-    if ((header->target_mode == SERVICEIDACK) && (Filter_ServiceID(header->target)))
+    if (((header->target_mode == SERVICEIDACK) || (header->target_mode == NODEIDACK)) && (phy_robus->rx_keep == true))
     {
-        // When it is a serviceidack and this message is destined to the node send an ack
-        return 1;
+        // If the message is a serviceidack or nodeidack and we keep it we need to send an ack
+        return true;
     }
-    else if ((header->target_mode == NODEIDACK) && (Node_Get()->node_id == header->target))
-    {
-        // When it is nodeidack and this message is destined to the node send an ack
-        return 1;
-    }
-    return 0;
+    return false;
 }

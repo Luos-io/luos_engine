@@ -209,7 +209,7 @@ _CRITICAL luos_localhost_t Filter_GetLocalhost(header_t *header)
             break;
         case NODEIDACK:
         case NODEID:
-            if ((header->target == Node_Get()->node_id) && (header->target != DEFAULTID))
+            if ((header->target == Node_Get()->node_id))
             {
                 return LOCALHOST;
             }

@@ -62,7 +62,7 @@ void Phy_Loop(void);
 luos_phy_t *Phy_Create(void);
 
 void Phy_Send(luos_phy_t *phy_ptr, uint8_t *data, uint16_t size);
-void Phy_ComputeMsgSize(luos_phy_t *phy_ptr);
+void Phy_Computeheader(luos_phy_t *phy_ptr);
 void Phy_ValidMsg(luos_phy_t *phy_ptr);
 
 #endif /* _LUOS_PHY_H_ */
