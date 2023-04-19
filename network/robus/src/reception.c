@@ -5,52 +5,48 @@
  * @version 0.0.0
  ******************************************************************************/
 
-/******************************* Description of the RX process ***********************************
+/******************************* Description of the RX/TX process ***********************************
  *                                          Byte Received
- *                                                +
+ *                                                |
  *                                                |
  *                                        no      v      yes
- *                         +-----------------+Tx Enable+---------------+
+ *                         +------------------Tx Enable----------------+
  *                         |                                           |
- *  +------+     true      v                                           v
- *  | Drop | <--------+Drop state<-----------------------+      +------+------+
- *  | byte |               +                             |      |  Get        |
- *  +------+               | false                       |      |   Collision |
- *                         v                             |      |             |
- *                   Header complete                     |      |  source ID  |yes
- *                         +                             |      |   received  +------>Disable Rx
- *                         | yes                         |      |      +      |           +
- *                         v                             |      |      |no    |           |
- *                  +------+------+   +-------------+    |    no|      v      |           v
- *                  |  Get        |   |  Get        |    +------+  Collision  |       Wait End
- *                  |    Header   |   |     Data    |           +-------------+        Transmit
- *                  |             |   |             |                  |yes               +
- *                  | +---------+ |   |             |                  v                  |
- *                no| |   Node  | |   |  Message    |             Disable Tx       no     v
- *Drop = true <-------+Concerned| |   |    Complete |                           +----+Ack needed
- *     ^            | +---------+ |   |      +      |                           |         +
- *     |            |      |yes   |   |      |yes   |    Drop message           |         |yes
- *     |            |      v      |   |      v      |no   Send NACK             |         v
- *     |          no|    valid    |   |  Valid    +---->   if needed +--+       |     +---+----+
- *     +---------------+ Header   |   |       CRC   |                   |       |     | Get    |
- *                  |      +      |   +------+------+                   |       |     |    Ack |
- *                  |      |yes   |          |yes                       v       v     +---+----+
- *                  |      v      |          v                  +-------+-------+-+       |
- *                  |   Header    |    Store message            |     Timeout     |       |
- *                  |   Complete  |   Send ACK if needed+------>+  End reception  +<------+
- *                  +-------------+                             +-----------------+
+ *  +------+               |                                           v
+ *  | Drop |               |                                    +-------------+
+ *  | byte |               |                                    | Get Collision|
+ *  +------+               |                                    |      |       |
+ *     ^                   |                                    |      v       |
+ *     |                   |                                    |  source ID   |yes
+ *     |                   |                                    |  received----+----+->Disable Rx
+ *     |                   +------------------------------+     |      |       |    |     |
+ *     |                   v                              |     |      |no     |    |     |
+ *     |            +-------------+   +-------------+     |     |      v       |no  |     v
+ *     |            |  Get Header | +>|  Get Data   |<-+  |     |  Collision --+----+  Wait End
+ *     |            |      |      | | |     |       |  |  |     +------+-------+       Transmit
+ *     |            |      |      | | |     v    no |  |  |            |yes               |
+ *     |         yes|      v      | | |   Message---+--+  |            v                  |
+ *     +------------+-Should Drop | | |   Complete  |     +------ Disable Tx              v
+ *     |            |      |no    | | |      |yes   |                           +-----Ack needed
+ *     |            |      |      | | |      |      |                           | no      |
+ *     |            |      |      | | |      |      |                           |         |yes
+ *     |          no|      v      | | |      v      |no   Drop message          |         v
+ *     +------------+-valid header| | |  Valid CRC -+---->Send NACK +-----+     |     +--------+
+ *                  |      |yes   | | +------+------+     if needed       |     |     | Get ack|
+ *                  |      |      | |        |yes                         |     |     +---+----+
+ *                  |      +------+-+        |                            v     v         |
+ *                  |             |          v                  +-----------------+       |
+ *                  +-------------+    Send ACK if needed       |     Timeout     |       |
+ *                                     Valid message----------->|  End reception  |<------+
+ *                                                              +-----------------+
  ***********************************************************************************************/
 
 #include <string.h>
 #include "reception.h"
 #include "robus_hal.h"
 #include "luos_hal.h"
-#include "pub_sub.h"
-#include "msg_alloc.h"
 #include "luos_utils.h"
-#include "_timestamp.h"
 #include "robus.h"
-#include "filter.h"
 #include "context.h"
 /*******************************************************************************
  * Definitions
