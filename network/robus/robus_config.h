@@ -21,4 +21,6 @@
     #define NBR_RETRY 10
 #endif
 
+#define CRC_SIZE 2
+
 #endif /* _ROBUS_CONFIG_H_ */
