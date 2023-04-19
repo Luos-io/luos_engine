@@ -144,7 +144,6 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
                     return;
                 }
 
-
                 // We complete the header reception, we need to compute all the needed values.
                 // Compute message header size, keep, ... the result will be available in phy_robus->rx_size, ...
                 Phy_Computeheader(phy_robus);
@@ -154,7 +153,7 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
         default:
             break;
     }
-    RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
+    RobusHAL_ComputeCRC((uint8_t *)&phy_robus->rx_data[phy_robus->received_data - 1], (uint8_t *)&crc_val);
 }
 /******************************************************************************
  * @brief Callback to get a complete data
@@ -175,7 +174,7 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
         // Catch the byte.
         phy_robus->rx_data[phy_robus->received_data] = *data;
         // Continue the CRC computation until the end of data
-        RobusHAL_ComputeCRC((uint8_t *)data, (uint8_t *)&crc_val);
+        RobusHAL_ComputeCRC((uint8_t *)&phy_robus->rx_data[phy_robus->received_data], (uint8_t *)&crc_val);
     }
     else if (phy_robus->received_data > phy_robus->rx_size)
     {
