@@ -4,6 +4,7 @@
 #include "context.h"
 #include "unit_test.h"
 #include "default_scenario.h"
+#include "filter.h"
 
 extern default_scenario_t default_sc;
 

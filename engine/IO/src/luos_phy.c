@@ -139,11 +139,11 @@ void Phy_Loop(void)
     // This is only needed for Robus for now.
     if (phy_ctx.phy[1].rx_alloc_job)
     {
-        Phy_alloc(phy_ctx.phy);
+        Phy_alloc(&phy_ctx.phy[1]);
     }
+    Phy_ManageFailedJob();
     // Manage complete message received dispatching
     Phy_Dispatch();
-    Phy_ManageFailedJob();
     // Compute phy job statistics
     /*
     uint8_t stat = (uint8_t)((job nbr * 100) / (MAX_MSG_NB));
@@ -160,7 +160,6 @@ void Phy_Loop(void)
  ******************************************************************************/
 luos_phy_t *Phy_Create(PHY_CB phy_cb)
 {
-    LUOS_ASSERT((phy_ctx.phy_nb < PHY_NB) && (phy_ctx.phy_nb > 0));
     return Phy_Get(phy_ctx.phy_nb++, phy_cb);
 }
 
@@ -172,6 +171,8 @@ luos_phy_t *Phy_Create(PHY_CB phy_cb)
  ******************************************************************************/
 luos_phy_t *Phy_Get(uint8_t id, PHY_CB phy_cb)
 {
+    LUOS_ASSERT((id <= PHY_NB)
+                && (phy_cb != NULL));
     // Set the callback
     phy_ctx.phy[id].phy_cb = phy_cb;
     // Return the phy pointer
@@ -183,9 +184,9 @@ luos_phy_t *Phy_Get(uint8_t id, PHY_CB phy_cb)
  * @param phy_ptr Pointer to the phy concerned by this message
  * @return None
  ******************************************************************************/
-inline void Phy_ComputeHeader(luos_phy_t *phy_ptr)
+_CRITICAL void Phy_ComputeHeader(luos_phy_t *phy_ptr)
 {
-
+    LUOS_ASSERT(phy_ptr != NULL);
     // Compute the size of the data to allocate
     if (((header_t *)phy_ptr->rx_buffer_base)->size > MAX_DATA_MSG_SIZE)
     {
@@ -195,11 +196,11 @@ inline void Phy_ComputeHeader(luos_phy_t *phy_ptr)
     else
     {
         phy_ptr->rx_size = ((header_t *)phy_ptr->rx_buffer_base)->size + sizeof(header_t);
-        // We need to check if we have a timestamped message and increase the data size if yes
-        if (Luos_IsMsgTimstamped((msg_t *)(phy_ptr->rx_data)) == true)
-        {
-            phy_ptr->rx_size += sizeof(time_luos_t);
-        }
+    }
+    // We need to check if we have a timestamped message and increase the data size if yes
+    if (Luos_IsMsgTimstamped((msg_t *)(phy_ptr->rx_data)) == true)
+    {
+        phy_ptr->rx_size += sizeof(time_luos_t);
     }
 
     // Compute the phy concerned by this message
@@ -287,6 +288,7 @@ uint16_t Phy_GetNodeId(void)
  ******************************************************************************/
 _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
 {
+    LUOS_ASSERT(phy_ptr != NULL);
     void *rx_data;
     void *copy_from;
 
@@ -298,9 +300,10 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
         return;
     }
     // Check if we receive enougth data to be able to allocate the complete message
-    LUOS_ASSERT((phy_ptr->received_data >= sizeof(header_t)) && (phy_ptr->received_data <= MAX_DATA_MSG_SIZE + sizeof(header_t)));
-    // Check if their is a mistake on the buffer allocation. In this case, the phy.rx_data was not properly set to rx_buffer_base before the data reception.
-    LUOS_ASSERT(phy_ptr->rx_data == phy_ptr->rx_buffer_base);
+    LUOS_ASSERT((phy_ptr->received_data >= sizeof(header_t))
+                && (phy_ptr->received_data <= MAX_DATA_MSG_SIZE + sizeof(header_t))
+                // Check if their is a mistake on the buffer allocation. In this case, the phy.rx_data was not properly set to rx_buffer_base before the data reception.
+                && (phy_ptr->rx_data == phy_ptr->rx_buffer_base));
     LuosHAL_SetIrqState(true);
 
     // Now we can check if we need to store the received data
@@ -363,7 +366,6 @@ static void Phy_Dispatch(void)
     {
         return;
     }
-    running = true;
     // Interpreat received messages and create tasks for it.
     LuosHAL_SetIrqState(false);
     while (i < phy_ctx.io_job_nb)
@@ -372,6 +374,10 @@ static void Phy_Dispatch(void)
         // Get the oldest job
         IO_job_t *job = &phy_ctx.io_job[i];
         i++;
+        running = false;
+        LUOS_ASSERT((job->alloc_msg != NULL)
+                    && (job->size >= sizeof(header_t)));
+        running = true;
         // If message is timestamped, convert the latency to date
         if (Luos_IsMsgTimstamped(job->alloc_msg))
         {
@@ -413,14 +419,24 @@ static void Phy_Dispatch(void)
 _CRITICAL void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job)
 {
     // A phy failed to send a message, we need to be sure that our node don't try to contact this target again.
-    LUOS_ASSERT(job->msg_pt->header.target_mode == NODEIDACK || job->msg_pt->header.target_mode == SERVICEIDACK || job->msg_pt->header.target_mode == NODEID || job->msg_pt->header.target_mode == SERVICEID);
+    LUOS_ASSERT((job != NULL)
+                && (phy_ptr != NULL));
+    LUOS_ASSERT((job->msg_pt != NULL)
+                && (job->msg_pt->header.target_mode == NODEIDACK
+                    || job->msg_pt->header.target_mode == SERVICEIDACK
+                    || job->msg_pt->header.target_mode == NODEID
+                    || job->msg_pt->header.target_mode == SERVICEID));
+
     // Store the job in the dead service spotted list
     phy_ctx.failed_job[phy_ctx.failed_job_nb++] = *job;
+    uint16_t target                             = job->msg_pt->header.target;
+    uint16_t target_mode                        = job->msg_pt->header.target_mode;
 
     // Remove all job targeting this target on this phy job queue;
-    for (int i = 0; i < phy_ptr->job_nb; i++)
+    int i = 0;
+    while (i < phy_ptr->job_nb)
     {
-        if ((phy_ptr->job[i].msg_pt->header.target == job->msg_pt->header.target) && (phy_ptr->job[i].msg_pt->header.target_mode == job->msg_pt->header.target_mode))
+        if ((phy_ptr->job[i].msg_pt->header.target == target) && (phy_ptr->job[i].msg_pt->header.target_mode == target_mode))
         {
             // This job is targeting the dead target, remove it from the queue
             phy_ptr->job_nb--;
@@ -428,6 +444,11 @@ _CRITICAL void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job)
             {
                 phy_ptr->job[j] = phy_ptr->job[j + 1];
             }
+        }
+        else
+        {
+            // Treat the next job
+            i++;
         }
     }
 }
@@ -514,11 +535,16 @@ _CRITICAL inline phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr)
  ******************************************************************************/
 inline int Phy_GetJobId(luos_phy_t *phy_ptr, phy_job_t *job)
 {
+    LUOS_ASSERT((phy_ptr != NULL)
+                && (job >= phy_ptr->job)
+                && (job < &phy_ptr->job[MAX_MSG_NB]));
     return (((uintptr_t)job - (uintptr_t)phy_ptr->job) / sizeof(phy_job_t));
 }
 
 inline int Phy_GetPhyId(luos_phy_t *phy_ptr)
 {
+    LUOS_ASSERT((phy_ptr >= phy_ctx.phy)
+                && (phy_ptr < &phy_ctx.phy[PHY_NB]));
     return ((uintptr_t)phy_ptr - (uintptr_t)phy_ctx.phy) / sizeof(luos_phy_t);
 }
 
@@ -529,7 +555,9 @@ inline int Phy_GetPhyId(luos_phy_t *phy_ptr)
  ******************************************************************************/
 _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
 {
-    LUOS_ASSERT((phy_ptr != NULL) && (job != NULL));
+    LUOS_ASSERT((phy_ptr != NULL)
+                && (job >= phy_ptr->job)
+                && (job < &phy_ptr->job[MAX_MSG_NB]));
     if (phy_ptr->job_nb == 0)
     {
         return;
@@ -555,6 +583,7 @@ _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
  ******************************************************************************/
 _CRITICAL inline uint16_t Phy_GetJobNbr(luos_phy_t *phy_ptr)
 {
+    LUOS_ASSERT(phy_ptr != NULL);
     return phy_ptr->job_nb;
 }
 

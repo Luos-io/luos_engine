@@ -1,4 +1,3 @@
-#include "main.h"
 #include "unit_test.h"
 #include "filter.h"
 #include "../src/service.c"
