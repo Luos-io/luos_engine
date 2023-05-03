@@ -25,67 +25,88 @@ void unittest_SlotPack(void)
 
     NEW_TEST_CASE("Check if an already organized buffer is not modified");
     {
-        alloc_slots[0].data = &data;
-        alloc_slots[1].data = &data;
-        alloc_slots[2].data = &data;
-        alloc_slots[3].data = &data;
-        alloc_slots[4].data = 0;
-        alloc_slot_index    = 4;
-        MsgAlloc_SlotPack();
-        TEST_ASSERT_EQUAL(&data, alloc_slots[0].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[1].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[2].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[3].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[4].data);
-        TEST_ASSERT_EQUAL(4, alloc_slot_index);
+        TRY
+        {
+            alloc_slots[0].data = &data;
+            alloc_slots[1].data = &data;
+            alloc_slots[2].data = &data;
+            alloc_slots[3].data = &data;
+            alloc_slots[4].data = 0;
+            alloc_slot_index    = 4;
+            MsgAlloc_SlotPack();
+            TEST_ASSERT_EQUAL(&data, alloc_slots[0].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[1].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[2].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[3].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[4].data);
+            TEST_ASSERT_EQUAL(4, alloc_slot_index);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check if an unorganized buffer is organized");
     {
-        alloc_slots[0].data = 0;
-        alloc_slots[1].data = &data;
-        alloc_slots[2].data = &data;
-        alloc_slots[3].data = 0;
-        alloc_slots[4].data = 0;
-        alloc_slots[5].data = 0;
-        alloc_slots[6].data = &data;
-        alloc_slots[7].data = 0;
-        alloc_slot_index    = 8;
-        MsgAlloc_SlotPack();
-        TEST_ASSERT_EQUAL(&data, alloc_slots[0].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[1].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[2].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[3].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[4].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[5].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[6].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[7].data);
-        TEST_ASSERT_EQUAL(3, alloc_slot_index);
+        TRY
+        {
+            alloc_slots[0].data = 0;
+            alloc_slots[1].data = &data;
+            alloc_slots[2].data = &data;
+            alloc_slots[3].data = 0;
+            alloc_slots[4].data = 0;
+            alloc_slots[5].data = 0;
+            alloc_slots[6].data = &data;
+            alloc_slots[7].data = 0;
+            alloc_slot_index    = 8;
+            MsgAlloc_SlotPack();
+            TEST_ASSERT_EQUAL(&data, alloc_slots[0].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[1].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[2].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[3].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[4].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[5].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[6].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[7].data);
+            TEST_ASSERT_EQUAL(3, alloc_slot_index);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check how it's managing the buffer to it's limits");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data              = 0;
-        alloc_slots[1].data              = &data;
-        alloc_slots[2].data              = &data;
-        alloc_slots[3].data              = 0;
-        alloc_slots[4].data              = 0;
-        alloc_slots[5].data              = 0;
-        alloc_slots[6].data              = &data;
-        alloc_slots[MAX_MSG_NB - 1].data = &data;
-        alloc_slot_index                 = MAX_MSG_NB;
-        MsgAlloc_SlotPack();
-        TEST_ASSERT_EQUAL(&data, alloc_slots[0].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[1].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[2].data);
-        TEST_ASSERT_EQUAL(&data, alloc_slots[3].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[4].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[5].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[6].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[7].data);
-        TEST_ASSERT_EQUAL(0, alloc_slots[MAX_MSG_NB - 1].data);
-        TEST_ASSERT_EQUAL(4, alloc_slot_index);
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data              = 0;
+            alloc_slots[1].data              = &data;
+            alloc_slots[2].data              = &data;
+            alloc_slots[3].data              = 0;
+            alloc_slots[4].data              = 0;
+            alloc_slots[5].data              = 0;
+            alloc_slots[6].data              = &data;
+            alloc_slots[MAX_MSG_NB - 1].data = &data;
+            alloc_slot_index                 = MAX_MSG_NB;
+            MsgAlloc_SlotPack();
+            TEST_ASSERT_EQUAL(&data, alloc_slots[0].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[1].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[2].data);
+            TEST_ASSERT_EQUAL(&data, alloc_slots[3].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[4].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[5].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[6].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[7].data);
+            TEST_ASSERT_EQUAL(0, alloc_slots[MAX_MSG_NB - 1].data);
+            TEST_ASSERT_EQUAL(4, alloc_slot_index);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 }
 
@@ -104,51 +125,93 @@ void unittest_GetOldestMsg(void)
 
     NEW_TEST_CASE("Check the behavior if we dont have any message");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slot_index = 0;
-        TEST_ASSERT_EQUAL(0, MsgAlloc_GetOldestMsg());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slot_index = 0;
+            TEST_ASSERT_EQUAL(0, MsgAlloc_GetOldestMsg());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the behavior if we have a message in the first slot");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)0x1;
-        alloc_slot_index    = 1;
-        TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)0x1;
+            alloc_slot_index    = 1;
+            TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the behavior if we have a message in another place");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[3].data = (uint8_t *)0x1;
-        alloc_slot_index    = 4;
-        TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[3].data = (uint8_t *)0x1;
+            alloc_slot_index    = 4;
+            TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the behavior if we have a message in the last slot");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[MAX_MSG_NB - 1].data = (uint8_t *)0x1;
-        alloc_slot_index                 = MAX_MSG_NB;
-        TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[MAX_MSG_NB - 1].data = (uint8_t *)0x1;
+            alloc_slot_index                 = MAX_MSG_NB;
+            TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the behavior if we have a message in the last slot and the first one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data              = (uint8_t *)0x1;
-        alloc_slots[MAX_MSG_NB - 1].data = (uint8_t *)0x2;
-        alloc_slot_index                 = MAX_MSG_NB;
-        TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data              = (uint8_t *)0x1;
+            alloc_slots[MAX_MSG_NB - 1].data = (uint8_t *)0x2;
+            alloc_slot_index                 = MAX_MSG_NB;
+            TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the behavior if we have a message in the last slot and the first one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data              = (uint8_t *)0x1;
-        alloc_slots[MAX_MSG_NB - 1].data = (uint8_t *)0x2;
-        alloc_slot_index                 = MAX_MSG_NB;
-        TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data              = (uint8_t *)0x1;
+            alloc_slots[MAX_MSG_NB - 1].data = (uint8_t *)0x2;
+            alloc_slot_index                 = MAX_MSG_NB;
+            TEST_ASSERT_EQUAL((uint8_t *)0x1, MsgAlloc_GetOldestMsg());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 }
 
@@ -190,37 +253,65 @@ void unittest_BufferAvailableSpaceComputation(void)
 
     NEW_TEST_CASE("Check the result if we don't have any messages");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slot_index = 0;
-        data_ptr         = (uint8_t *)&msg_buffer[0];
-        TEST_ASSERT_EQUAL(MSG_BUFFER_SIZE, MsgAlloc_BufferAvailableSpaceComputation());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slot_index = 0;
+            data_ptr         = (uint8_t *)&msg_buffer[0];
+            TEST_ASSERT_EQUAL(MSG_BUFFER_SIZE, MsgAlloc_BufferAvailableSpaceComputation());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result in a situation we don't have to loop around the buffer end");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        data_ptr            = (uint8_t *)&msg_buffer[0];
-        TEST_ASSERT_EQUAL(10, MsgAlloc_BufferAvailableSpaceComputation());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            data_ptr            = (uint8_t *)&msg_buffer[0];
+            TEST_ASSERT_EQUAL(10, MsgAlloc_BufferAvailableSpaceComputation());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result in a situation we have to loop around the buffer end");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        data_ptr            = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
-        TEST_ASSERT_EQUAL(20, MsgAlloc_BufferAvailableSpaceComputation());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            data_ptr            = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
+            TEST_ASSERT_EQUAL(20, MsgAlloc_BufferAvailableSpaceComputation());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result in a situation we have to loop around the buffer end and data_ptr is set to the begin of the buffer");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[0];
-        alloc_slot_index    = 1;
-        data_ptr            = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
-        TEST_ASSERT_EQUAL(10, MsgAlloc_BufferAvailableSpaceComputation());
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[0];
+            alloc_slot_index    = 1;
+            data_ptr            = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
+            TEST_ASSERT_EQUAL(10, MsgAlloc_BufferAvailableSpaceComputation());
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 }
 
@@ -240,14 +331,28 @@ void unittest_DoWeHaveSpaceUntilBufferEnd(void)
 
     NEW_TEST_CASE("Check if it return SUCCEED when the pointer is in the buffer");
     {
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[0]));
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        TRY
+        {
+            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[0]));
+            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check if it return FAILED when the pointer is after the buffer");
     {
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE]));
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE + 1]));
+        TRY
+        {
+            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE]));
+            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_DoWeHaveSpaceUntilBufferEnd((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE + 1]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 }
 
@@ -299,49 +404,91 @@ void unittest_CheckMsgSpace(void)
 
     NEW_TEST_CASE("Check the result if we don't have any message yet");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slot_index = 0;
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slot_index = 0;
+            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result if we have one message and the new one is before the old one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[9]));
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[9]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result if we have one message and the new one is after the old one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[11], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[11], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result if we have one message and the new one is in the middle of the old one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result if we have one message and the new one is at the end of the old one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[10]));
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[10]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 
     NEW_TEST_CASE("Check the result if we have one message and the new one is at the beginning of the old one");
     {
-        memset(alloc_slots, 0, sizeof(alloc_slots));
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
-        alloc_slot_index    = 1;
-        TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[10], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        TRY
+        {
+            memset(alloc_slots, 0, sizeof(alloc_slots));
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[10];
+            alloc_slot_index    = 1;
+            TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[10], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
     }
 }
 
@@ -381,24 +528,38 @@ void unittest_MsgAlloc_Loop()
         // Call function and Verify
         //---------------------------
         // Empty buffer
-        expected_buffer_occupation_ratio = 0;
-        MsgAlloc_Loop();
-
-        NEW_STEP("Check that the buffer is empty");
-        TEST_ASSERT_EQUAL(0, memory_stats.buffer_occupation_ratio);
-
-        // Buffer occupation from 0 -> 100%
-        NEW_STEP("Check buffer is full in all cases");
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[0];
-        alloc_slot_index    = 1;
-        for (uint16_t i = 1; i < MSG_BUFFER_SIZE; i++)
+        TRY
         {
-            data_ptr                         = &msg_buffer[i];
-            expected_buffer_occupation_ratio = (i * 100) / (MSG_BUFFER_SIZE);
-
+            expected_buffer_occupation_ratio = 0;
             MsgAlloc_Loop();
 
-            TEST_ASSERT_EQUAL(expected_buffer_occupation_ratio, memory_stats.buffer_occupation_ratio);
+            NEW_STEP("Check that the buffer is empty");
+            TEST_ASSERT_EQUAL(0, memory_stats.buffer_occupation_ratio);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+
+        TRY
+        {
+            // Buffer occupation from 0 -> 100%
+            NEW_STEP("Check buffer is full in all cases");
+            alloc_slots[0].data = (uint8_t *)&msg_buffer[0];
+            alloc_slot_index    = 1;
+            for (uint16_t i = 1; i < MSG_BUFFER_SIZE; i++)
+            {
+                data_ptr                         = &msg_buffer[i];
+                expected_buffer_occupation_ratio = (i * 100) / (MSG_BUFFER_SIZE);
+
+                MsgAlloc_Loop();
+
+                TEST_ASSERT_EQUAL(expected_buffer_occupation_ratio, memory_stats.buffer_occupation_ratio);
+            }
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
         }
     }
 }

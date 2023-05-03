@@ -66,8 +66,9 @@ void Filter_AddServiceId(uint16_t service_id, uint16_t service_number)
     //--------------------------->|__________|
     //	Shift byte		            byte Mask of bit address
 
-    LUOS_ASSERT(service_id > 0);
-    LUOS_ASSERT(service_id <= 4096 - MAX_SERVICE_NUMBER);
+    LUOS_ASSERT((service_id > 0)
+                && (service_id <= 4096 - MAX_SERVICE_NUMBER)
+                && (service_number <= MAX_SERVICE_NUMBER));
     Filter_IdInit();
     uint16_t tempo         = 0;
     filter_ctx.IDShiftMask = (service_id - 1) / 8; // aligned to byte
@@ -87,6 +88,7 @@ void Filter_AddServiceId(uint16_t service_id, uint16_t service_number)
  ******************************************************************************/
 void Filter_AddTopic(uint16_t topic_id)
 {
+    LUOS_ASSERT(topic_id <= LAST_TOPIC);
     // Add 1 to the bit corresponding to the topic in multicast mask
     filter_ctx.TopicMask[(topic_id / 8)] |= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
 }
@@ -98,6 +100,7 @@ void Filter_AddTopic(uint16_t topic_id)
  ******************************************************************************/
 void Filter_RmTopic(uint16_t topic_id)
 {
+    LUOS_ASSERT(topic_id <= LAST_TOPIC);
     // Remove 1 to the bit corresponding to the topic in multicast mask
     filter_ctx.TopicMask[(topic_id / 8)] &= ~(1 << (topic_id - ((int)(topic_id / 8)) * 8));
 }
@@ -115,7 +118,7 @@ _CRITICAL bool Filter_ServiceID(uint16_t service_id)
     // In an node, service ID are consecutive
     // MaskID is byte field wich have the size of MAX_SERVICE_NUMBER
     // Shift depend od ID of first service in Node (shift = NodeID/8)
-
+    LUOS_ASSERT(service_id <= 4096);
     uint16_t compare = 0;
 
     if ((service_id > (8 * filter_ctx.IDShiftMask))) // IDMask aligned byte
@@ -157,10 +160,12 @@ _CRITICAL bool Filter_Topic(uint16_t topic_id)
  * @brief Parse all services type to find if target exists
  * @param type_id of message
  * @return bool true if there is one false if not
+ * We can't do this the same way other are done because identifiers don't have any continuity
  * _CRITICAL function call in IRQ
  ******************************************************************************/
 _CRITICAL bool Filter_Type(uint16_t type_id)
 {
+    LUOS_ASSERT(type_id <= 4096);
     // Check all service type
     for (int i = 0; i < Service_GetNumber(); i++)
     {
@@ -203,11 +208,8 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
             }
             break;
         case BROADCAST:
-            if (header->target == BROADCAST_VAL)
-            {
-                // This concerns Luos phy and Robus
-                return 0x01 | (0x01 << 1);
-            }
+            // This concerns Luos phy and Robus
+            return 0x01 | (0x01 << 1);
             break;
         case NODEIDACK:
         case NODEID:
@@ -225,10 +227,11 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
             }
             break;
         default:
+            LUOS_ASSERT(0);
             // This concerns Robus only
             return 0x01 << 1;
             break;
     }
-    // This concerns Robus only
+    // This concerns Robus only by default
     return 0x01 << 1;
 }

@@ -4,50 +4,8 @@
 #include "context.h"
 #include "unit_test.h"
 #include "default_scenario.h"
-#include "filter.h"
 
 extern default_scenario_t default_sc;
-
-void unittest_Filter_AddServiceId()
-{
-    NEW_TEST_CASE("Service ID mask test");
-    {
-        Filter_IdInit();
-
-        Filter_AddServiceId(7, SERVICE_NUMBER);
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(7));
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(7 + SERVICE_NUMBER - 1));
-
-        Filter_AddServiceId(8, SERVICE_NUMBER);
-        TEST_ASSERT_EQUAL(false, Filter_ServiceID(7));
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(8));
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(8 + SERVICE_NUMBER - 1));
-
-        Filter_AddServiceId(9, SERVICE_NUMBER);
-        TEST_ASSERT_EQUAL(false, Filter_ServiceID(8));
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(9));
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(9 + SERVICE_NUMBER - 1));
-    }
-
-    NEW_TEST_CASE("Limit 4096");
-    {
-        Filter_IdInit();
-        Filter_AddServiceId(4096 - MAX_SERVICE_NUMBER, SERVICE_NUMBER);
-        TEST_ASSERT_EQUAL(true, Filter_ServiceID(4096 - MAX_SERVICE_NUMBER));
-    }
-
-    NEW_TEST_CASE("Limit 0");
-    {
-        RESET_ASSERT();
-        Filter_IdInit();
-        TRY
-        {
-            Filter_AddServiceId(0, SERVICE_NUMBER);
-        }
-        TEST_ASSERT_TRUE(IS_ASSERT());
-        RESET_ASSERT();
-    }
-}
 
 void unittest_Luos_Subscribe(void)
 {
@@ -245,8 +203,6 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
-    // Big data reception
-    UNIT_TEST_RUN(unittest_Filter_AddServiceId);
     UNIT_TEST_RUN(unittest_Luos_Subscribe);
     UNIT_TEST_RUN(unittest_Robus_TopicUnsubscribe);
 

@@ -35,7 +35,9 @@ extern bool try_state;
 
 #define CATCH else
 
-#define END_TRY try_state = false
+#define END_TRY        \
+    try_state = false; \
+    RESET_ASSERT()
 
 /*******************************************************************************
  * Function
