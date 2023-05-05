@@ -24,9 +24,15 @@
 
 extern jmp_buf err_ctx;
 extern bool try_state;
+extern uint16_t test_case_number;
 
 #ifndef UNIT_TEST_RUN
-    #define UNIT_TEST_RUN(f) RUN(#f, f)
+    #define UNIT_TEST_RUN(f)                                                                                                             \
+        printf("\n\n===============================================================================================================\n"); \
+        printf("Unit test function : %s\n", #f);                                                                                         \
+        printf("===============================================================================================================\n");     \
+        test_case_number = 0;                                                                                                            \
+        RUN_TEST(f)
 #endif
 
 #define TRY           \
