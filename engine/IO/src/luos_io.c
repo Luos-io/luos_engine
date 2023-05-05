@@ -94,12 +94,14 @@ void LuosIO_Loop(void)
     Robus_Loop();
     if (Flag_DetectServices == true)
     {
+        LUOS_ASSERT(detection_service != NULL);
         Flag_DetectServices = false;
         // Set the detection launcher id to 1
         detection_service->id = 1;
         // Generate the filters
         Service_GenerateId(1);
         RoutingTB_DetectServices(detection_service);
+        detection_service = NULL;
     }
 }
 
@@ -110,6 +112,9 @@ void LuosIO_Loop(void)
  ******************************************************************************/
 static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
 {
+    LUOS_ASSERT((phy_ptr == luos_phy)
+                && (job >= luos_phy->job)
+                && (job < &luos_phy->job[MAX_MSG_NB]));
     // Check if this message is a protocol one
     if (LuosIO_ConsumeMsg(job->msg_pt) == FAILED)
     {
@@ -273,6 +278,7 @@ static error_return_t LuosIO_StartTopologyDetection(service_t *service)
  ******************************************************************************/
 error_return_t LuosIO_ConsumeMsg(const msg_t *input)
 {
+    LUOS_ASSERT(input != NULL);
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
     time_luos_t time;
@@ -292,7 +298,6 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                     // Someone asking us a new node id (we are the detecting service)
                     // Increase the number of node_nb and send it back
                     last_node++;
-                    output_msg.header.config      = BASE_PROTOCOL;
                     output_msg.header.cmd         = WRITE_NODE_ID;
                     output_msg.header.size        = sizeof(uint16_t);
                     output_msg.header.target      = input->header.source;
@@ -310,7 +315,6 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                     Robus_SaveNodeID(node_bootstrap.nodeid);
                     // Now we can send it to the next node
                     node_bootstrap.prev_nodeid    = Node_Get()->node_id;
-                    output_msg.header.config      = BASE_PROTOCOL;
                     output_msg.header.cmd         = WRITE_NODE_ID;
                     output_msg.header.size        = sizeof(node_bootstrap_t);
                     output_msg.header.target      = 0;
@@ -403,13 +407,10 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
 
         case ASK_DETECTION:
-            if (input->header.size == 0)
+            if (Node_GetState() < LOCAL_DETECTION)
             {
-                if (Node_GetState() < LOCAL_DETECTION)
-                {
-                    detection_service   = service;
-                    Flag_DetectServices = true;
-                }
+                detection_service   = service;
+                Flag_DetectServices = true;
             }
             return SUCCEED;
             break;
@@ -442,9 +443,9 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             {
                 output_msg.header.cmd         = REVISION;
                 output_msg.header.target_mode = SERVICEID;
+                output_msg.header.size        = sizeof(revision_t);
+                output_msg.header.target      = input->header.source;
                 memcpy(output_msg.data, service->revision.unmap, sizeof(revision_t));
-                output_msg.header.size   = sizeof(revision_t);
-                output_msg.header.target = input->header.source;
                 Luos_SendMsg(service, &output_msg);
                 return SUCCEED;
             }
@@ -488,7 +489,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
 
         case UPDATE_PUB:
-            // this service need to be auto updated
+            // This service need to be auto updated
             TimeOD_TimeFromMsg(&time, input);
             service->auto_refresh.target      = input->header.source;
             service->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
@@ -517,6 +518,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
  ******************************************************************************/
 static inline void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg)
 {
+    LUOS_ASSERT(routeTB_msg != NULL);
     uint16_t entry_nb = 0;
     routing_table_t local_routing_table[Service_GetNumber() + 1];
 
@@ -596,6 +598,8 @@ error_return_t LuosIO_TryToGetJob(uint16_t job_id, phy_job_t **job)
  ******************************************************************************/
 void LuosIO_RmJob(phy_job_t *job)
 {
+    LUOS_ASSERT((job >= luos_phy->job)
+                && (job < &luos_phy->job[luos_phy->job_nb]));
     // Be sure every service has finished to use this job
     if (*(service_filter_t *)job->phy_data != 0)
     {
