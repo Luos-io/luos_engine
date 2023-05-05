@@ -166,8 +166,8 @@ void unittest_Filter_Topic()
         Filter_TopicInit();
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC);
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            Filter_AddTopic(LAST_TOPIC - 1);
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -177,18 +177,18 @@ void unittest_Filter_Topic()
         Filter_TopicInit();
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC + 1);
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC + 1));
+            Filter_AddTopic(LAST_TOPIC);
+            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
 
         Filter_TopicInit();
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC);
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
-            Filter_RmTopic(LAST_TOPIC);
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
+            Filter_AddTopic(LAST_TOPIC - 1);
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            Filter_RmTopic(LAST_TOPIC - 1);
+            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -198,7 +198,7 @@ void unittest_Filter_Topic()
         Filter_TopicInit();
         TRY
         {
-            Filter_RmTopic(LAST_TOPIC + 1);
+            Filter_RmTopic(LAST_TOPIC);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -215,7 +215,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -230,7 +230,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -245,7 +245,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -254,13 +254,13 @@ void unittest_Filter_Topic()
 
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC);
+            Filter_AddTopic(LAST_TOPIC - 1);
             TEST_ASSERT_EQUAL(true, Filter_Topic(0));
             TEST_ASSERT_EQUAL(true, Filter_Topic(1));
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -275,7 +275,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -290,7 +290,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -305,7 +305,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -320,7 +320,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -335,7 +335,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -344,13 +344,13 @@ void unittest_Filter_Topic()
 
         TRY
         {
-            Filter_RmTopic(LAST_TOPIC);
+            Filter_RmTopic(LAST_TOPIC - 1);
             TEST_ASSERT_EQUAL(false, Filter_Topic(0));
             TEST_ASSERT_EQUAL(false, Filter_Topic(1));
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
         }
         CATCH
         {
@@ -708,10 +708,10 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
-    UNIT_TEST_RUN(unittest_Filter_ServiceId);
-    UNIT_TEST_RUN(unittest_Filter_Topic);
-    UNIT_TEST_RUN(unittest_Filter_Type);
-    UNIT_TEST_RUN(unittest_Filter_GetPhyTarget);
+    RUN_TEST(unittest_Filter_ServiceId);
+    RUN_TEST(unittest_Filter_Topic);
+    RUN_TEST(unittest_Filter_Type);
+    RUN_TEST(unittest_Filter_GetPhyTarget);
 
     UNITY_END();
 }

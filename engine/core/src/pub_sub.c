@@ -30,6 +30,8 @@
  ******************************************************************************/
 uint8_t PubSub_IsTopicSubscribed(service_t *service, uint16_t topic_id)
 {
+    LUOS_ASSERT((topic_id < LAST_TOPIC)
+                && (service != NULL));
     unsigned char i;
     for (i = 0; i < service->last_topic_position; i++)
     {
@@ -48,8 +50,8 @@ uint8_t PubSub_IsTopicSubscribed(service_t *service, uint16_t topic_id)
 error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
 {
     // Assert if we add a topic that is greater than the max topic value
-    LUOS_ASSERT(topic <= LAST_TOPIC);
-    LUOS_ASSERT(service != 0);
+    LUOS_ASSERT((topic < LAST_TOPIC)
+                && (service != 0));
 
     // Put this topic in the multicast bank
     Filter_AddTopic(topic);
@@ -72,8 +74,8 @@ error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
  ******************************************************************************/
 error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
 {
-    LUOS_ASSERT(topic <= LAST_TOPIC);
-    LUOS_ASSERT(service != 0);
+    LUOS_ASSERT((topic < LAST_TOPIC)
+                && (service != 0));
 
     error_return_t err = FAILED;
     // Delete topic from service list
@@ -81,10 +83,6 @@ error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
     {
         if (service->topic_list[i] == topic)
         {
-            if (service->last_topic_position >= LAST_TOPIC)
-            {
-                break;
-            }
             memcpy(&service->topic_list[i], &service->topic_list[i + 1], service->last_topic_position - i);
             service->last_topic_position--;
             err = SUCCEED;

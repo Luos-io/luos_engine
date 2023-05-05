@@ -88,7 +88,7 @@ void Filter_AddServiceId(uint16_t service_id, uint16_t service_number)
  ******************************************************************************/
 void Filter_AddTopic(uint16_t topic_id)
 {
-    LUOS_ASSERT(topic_id <= LAST_TOPIC);
+    LUOS_ASSERT(topic_id < LAST_TOPIC);
     // Add 1 to the bit corresponding to the topic in multicast mask
     filter_ctx.TopicMask[(topic_id / 8)] |= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
 }
@@ -100,7 +100,7 @@ void Filter_AddTopic(uint16_t topic_id)
  ******************************************************************************/
 void Filter_RmTopic(uint16_t topic_id)
 {
-    LUOS_ASSERT(topic_id <= LAST_TOPIC);
+    LUOS_ASSERT(topic_id < LAST_TOPIC);
     // Remove 1 to the bit corresponding to the topic in multicast mask
     filter_ctx.TopicMask[(topic_id / 8)] &= ~(1 << (topic_id - ((int)(topic_id / 8)) * 8));
 }
@@ -144,7 +144,7 @@ _CRITICAL bool Filter_Topic(uint16_t topic_id)
 {
     uint8_t compare = 0;
     // Make sure there is a topic that can be received by the node
-    if (topic_id <= LAST_TOPIC)
+    if (topic_id < LAST_TOPIC)
     {
         compare = topic_id - ((topic_id / 8) * 8);
         // Search if topic exists in mask
