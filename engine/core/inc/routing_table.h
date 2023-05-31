@@ -80,7 +80,6 @@ void RoutingTB_RemoveNode(uint16_t nodeid);
 void RoutingTB_RemoveService(uint16_t id);
 void RoutingTB_Erase(void);
 routing_table_t *RoutingTB_Get(void);
-uint16_t RoutingTB_GetLastService(void);
 uint16_t *RoutingTB_GetLastNode(void);
 uint16_t RoutingTB_GetLastEntry(void);
 

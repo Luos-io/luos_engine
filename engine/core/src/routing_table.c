@@ -16,14 +16,12 @@
 #include "service.h"
 
 /*******************************************************************************
- * Definitions
- ******************************************************************************/
-/*******************************************************************************
  * Variables
  ******************************************************************************/
 routing_table_t routing_table[MAX_RTB_ENTRY];
 volatile uint16_t last_service             = 0;
 volatile uint16_t last_routing_table_entry = 0;
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -47,6 +45,7 @@ static void RoutingTB_SendEndDetection(service_t *service);
  ******************************************************************************/
 uint16_t RoutingTB_IDFromAlias(char *alias)
 {
+    LUOS_ASSERT(alias);
     if (*alias != -1)
     {
         for (int i = 0; i <= last_routing_table_entry; i++)
@@ -62,6 +61,7 @@ uint16_t RoutingTB_IDFromAlias(char *alias)
     }
     return 0;
 }
+
 /******************************************************************************
  * @brief  Return a Nodeid from service id
  * @param id : Id of service
@@ -69,7 +69,9 @@ uint16_t RoutingTB_IDFromAlias(char *alias)
  ******************************************************************************/
 uint16_t RoutingTB_NodeIDFromID(uint16_t id)
 {
-    for (int32_t i = (int32_t)RoutingTB_GetServiceIndex(id); i >= 0; i--)
+    LUOS_ASSERT(id != 0); // Services can't have id 0.
+    // In RTB, node are always before service, so we can search backward and start just before the service index.
+    for (int16_t i = RoutingTB_GetServiceIndex(id) - 1; i >= 0; i--)
     {
         if (routing_table[i].mode == NODE)
         {
@@ -78,6 +80,7 @@ uint16_t RoutingTB_NodeIDFromID(uint16_t id)
     }
     return 0;
 }
+
 /******************************************************************************
  * @brief  Return service Alias from ID
  * @param id : Id service look at
@@ -85,6 +88,7 @@ uint16_t RoutingTB_NodeIDFromID(uint16_t id)
  ******************************************************************************/
 char *RoutingTB_AliasFromId(uint16_t id)
 {
+    LUOS_ASSERT(id != 0); // Services can't have id 0.
     for (int i = 0; i <= last_routing_table_entry; i++)
     {
         if (routing_table[i].mode == SERVICE)
@@ -97,6 +101,7 @@ char *RoutingTB_AliasFromId(uint16_t id)
     }
     return (char *)0;
 }
+
 /******************************************************************************
  * @brief  Return bigest service ID in list
  * @param None
@@ -104,19 +109,9 @@ char *RoutingTB_AliasFromId(uint16_t id)
  ******************************************************************************/
 uint16_t RoutingTB_BigestID(void)
 {
-    uint16_t max_id = 0;
-    for (uint16_t i = 0; i < last_routing_table_entry; i++)
-    {
-        if (routing_table[i].mode == SERVICE)
-        {
-            if (routing_table[i].id > max_id)
-            {
-                max_id = routing_table[i].id;
-            }
-        }
-    }
-    return max_id;
+    return (uint16_t)last_service;
 }
+
 /******************************************************************************
  * @brief  Return bigest node ID in list
  * @param None
@@ -124,27 +119,24 @@ uint16_t RoutingTB_BigestID(void)
  ******************************************************************************/
 static uint16_t RoutingTB_BigestNodeID(void)
 {
-    uint16_t max_id = 0;
-    for (uint16_t i = 0; i < last_routing_table_entry; i++)
+    for (int32_t i = last_routing_table_entry; i >= 0; i--)
     {
         if (routing_table[i].mode == NODE)
         {
-            if (routing_table[i].node_id > max_id)
-            {
-                max_id = routing_table[i].node_id;
-            }
+            return routing_table[i].node_id;
         }
     }
-    return max_id;
+    return 0;
 }
 
 /******************************************************************************
  * @brief  Get Index of service on the routing table
- * @param id : Routing table id
- * @return Index
+ * @param id : service id
+ * @return Routing table Index
  ******************************************************************************/
 uint16_t RoutingTB_GetServiceIndex(uint16_t id)
 {
+    LUOS_ASSERT(id != 0); // Services can't have id 0.
     for (uint8_t i = 0; i < last_routing_table_entry; i++)
     {
         if (routing_table[i].mode == SERVICE && routing_table[i].id == id)
@@ -179,6 +171,7 @@ void RoutingTB_ComputeRoutingTableEntryNB(void)
     // Routing table space is full.
     last_routing_table_entry = MAX_RTB_ENTRY - 1;
 }
+
 /******************************************************************************
  * @brief Manage service name increment to never have same alias
  * @param alias : Alias to change
@@ -187,6 +180,7 @@ void RoutingTB_ComputeRoutingTableEntryNB(void)
  ******************************************************************************/
 static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
 {
+    LUOS_ASSERT(alias);
     uint8_t intsize = 1;
     if (num > 9)
     {
@@ -213,6 +207,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
     char *alias_copy = alias;
     sprintf(alias, "%s%d", alias_copy, num);
 }
+
 /******************************************************************************
  * @brief Time out to receive en route table from
  * @param service : Service receive
@@ -221,6 +216,7 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
  ******************************************************************************/
 bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
 {
+    LUOS_ASSERT((service != 0) && (intro_msg != 0));
     const uint8_t timeout    = 15; // timeout in ms
     const uint16_t entry_bkp = last_routing_table_entry;
     Luos_SendMsg(service, intro_msg);
@@ -236,6 +232,7 @@ bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
     }
     return false;
 }
+
 /******************************************************************************
  * @brief Generate Complete route table with local route table receive
  * @param service : Service in node
@@ -244,6 +241,7 @@ bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
  ******************************************************************************/
 static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
 {
+    LUOS_ASSERT(service);
     // Asks for introduction for every found node (even the one detecting).
     uint16_t try_nb          = 0;
     uint16_t last_node_id    = RoutingTB_BigestNodeID();
@@ -294,6 +292,7 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
         }
     }
 }
+
 /******************************************************************************
  * @brief Send the complete route table to each node on the network
  * @param service : Service who send
@@ -302,6 +301,7 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 static void RoutingTB_Share(service_t *service, uint16_t nb_node)
 {
+    LUOS_ASSERT(service);
     // Make sure that the detection is not interrupted
     if (Node_GetState() == EXTERNAL_DETECTION)
     {
@@ -339,6 +339,7 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
  ******************************************************************************/
 void RoutingTB_SendEndDetection(service_t *service)
 {
+    LUOS_ASSERT(service);
     // Make sure that the detection is not interrupted
     if (Node_GetState() == EXTERNAL_DETECTION)
     {
@@ -363,6 +364,7 @@ void RoutingTB_SendEndDetection(service_t *service)
  ******************************************************************************/
 void RoutingTB_DetectServices(service_t *service)
 {
+    LUOS_ASSERT(service);
     // Starts the topology detection.
     uint16_t nb_node = LuosIO_TopologyDetection(service);
     // Clear data reception state
@@ -378,6 +380,7 @@ void RoutingTB_DetectServices(service_t *service)
     // Clear statistic of node who start the detction
     Luos_ResetStatistic();
 }
+
 /******************************************************************************
  * @brief Entry in routable node with associate service
  * @param entry : Route table
@@ -386,12 +389,14 @@ void RoutingTB_DetectServices(service_t *service)
  ******************************************************************************/
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
 {
+    LUOS_ASSERT((node != NULL) && (entry != NULL));
     // Check if the NBR_PORT config is too high to fit into routing table.
     LUOS_ASSERT(sizeof(node_t) <= (sizeof(routing_table_t) - 1));
     memset(entry, 0, sizeof(routing_table_t));
     entry->mode = NODE;
     memcpy(entry->unmap_data, node->unmap, sizeof(node_t));
 }
+
 /******************************************************************************
  * @brief Entry in routable service associate to a node
  * @param entry : Route table
@@ -400,6 +405,7 @@ void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node)
  ******************************************************************************/
 void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service)
 {
+    LUOS_ASSERT((service != NULL) && (entry != NULL));
     entry->type = service->type;
     entry->id   = service->id;
     entry->mode = SERVICE;
@@ -408,6 +414,7 @@ void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *s
         entry->alias[i] = service->alias[i];
     }
 }
+
 /******************************************************************************
  * @brief Remove an entire node
  * @param nodeid : Node id to remove from RTB
@@ -415,7 +422,8 @@ void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *s
  ******************************************************************************/
 void RoutingTB_RemoveNode(uint16_t nodeid)
 {
-    // instead of removing a node just remove all the service in it to make it unusable
+    LUOS_ASSERT(nodeid != 0);
+    // Instead of removing a node just remove all the service in it to make it unusable
     // We could add a param (CONTROL for example) to declare the node as STOP
     // find the node
     for (uint16_t i = 0; i < last_routing_table_entry; i++)
@@ -425,7 +433,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
             if (routing_table[i].node_id == nodeid)
             {
                 i++;
-                // We find our node remove all services
+                // We foundd our node remove all services in it
                 while (routing_table[i].mode == SERVICE)
                 {
                     RoutingTB_RemoveService(routing_table[i].id);
@@ -435,6 +443,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
         }
     }
 }
+
 /******************************************************************************
  * @brief Remove an entry from routing_table
  * @param id : Id of service
@@ -442,6 +451,7 @@ void RoutingTB_RemoveNode(uint16_t nodeid)
  ******************************************************************************/
 void RoutingTB_RemoveService(uint16_t serviceid)
 {
+    LUOS_ASSERT(serviceid != 0);
     Service_RmAutoUpdateTarget(serviceid);
     // Find the service
     for (uint16_t i = 0; i < last_routing_table_entry; i++)
@@ -452,10 +462,23 @@ void RoutingTB_RemoveService(uint16_t serviceid)
             memcpy(&routing_table[i], &routing_table[i + 1], sizeof(routing_table_t) * (last_routing_table_entry - (i + 1)));
             last_routing_table_entry--;
             memset(&routing_table[last_routing_table_entry], 0, sizeof(routing_table_t));
+            if (serviceid == last_service)
+            {
+                last_service = 0;
+                for (uint16_t i = last_routing_table_entry; i > 0; i--)
+                {
+                    if (routing_table[i].mode == SERVICE)
+                    {
+                        last_service = routing_table[i].id;
+                        break;
+                    }
+                }
+            }
             return;
         }
     }
 }
+
 /******************************************************************************
  * @brief Erase routing_table
  * @param None
@@ -467,6 +490,7 @@ void RoutingTB_Erase(void)
     last_service             = 0;
     last_routing_table_entry = 0;
 }
+
 /******************************************************************************
  * @brief Get routing_table
  * @param None
@@ -476,15 +500,7 @@ routing_table_t *RoutingTB_Get(void)
 {
     return routing_table;
 }
-/******************************************************************************
- * @brief Return the last ID registered into the routing_table
- * @param None
- * @return Last service ID
- ******************************************************************************/
-uint16_t RoutingTB_GetLastService(void)
-{
-    return (uint16_t)last_service;
-}
+
 /******************************************************************************
  * @brief Return the last ID registered into the routing_table
  * @param None
@@ -501,9 +517,9 @@ uint16_t RoutingTB_GetLastEntry(void)
  * @param result : Pointer to search result structure
  * @return SUCCEED : If the result address is available, else FAILED
  ******************************************************************************/
-
 error_return_t RTFilter_InitCheck(search_result_t *result)
 {
+    LUOS_ASSERT(result != NULL);
     // check if we fund the address of the result in routing table
     if ((result->result_table[0] >= &routing_table[0]) && (result->result_table[0] <= &routing_table[last_routing_table_entry - 1]))
     {
@@ -511,6 +527,7 @@ error_return_t RTFilter_InitCheck(search_result_t *result)
     }
     return FAILED;
 }
+
 /******************************************************************************
  * @brief Initialize the Result table pointers
  * @param result : Pointer to result table
@@ -518,6 +535,7 @@ error_return_t RTFilter_InitCheck(search_result_t *result)
  ******************************************************************************/
 search_result_t *RTFilter_Reset(search_result_t *result)
 {
+    LUOS_ASSERT(result != NULL);
     // the initialization is to keep a pointer to all the  servicesentries of the routing table
     result->result_nbr = 0;
     for (uint8_t i = 0; i < last_routing_table_entry; i++)
@@ -530,6 +548,7 @@ search_result_t *RTFilter_Reset(search_result_t *result)
     }
     return result;
 }
+
 /******************************************************************************
  * @brief Find the service with a specific Id
  * @param result : Pointer to previous result research structure
@@ -538,6 +557,7 @@ search_result_t *RTFilter_Reset(search_result_t *result)
  ******************************************************************************/
 search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
 {
+    LUOS_ASSERT((result != NULL) && (id != 0));
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
@@ -563,6 +583,7 @@ search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
     // return a pointer to the search structure
     return (result);
 }
+
 /******************************************************************************
  * @brief Search all the services with the same type
  * @param result : Pointer to previous result research structure
@@ -571,6 +592,7 @@ search_result_t *RTFilter_ID(search_result_t *result, uint16_t id)
  ******************************************************************************/
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
 {
+    LUOS_ASSERT((result != NULL));
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
@@ -596,6 +618,7 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
     // return a pointer to the search structure
     return (result);
 }
+
 /******************************************************************************
  * @brief Search all the services of the same node
  * @param result : Pointer to previous result research structure
@@ -604,6 +627,7 @@ search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type)
  ******************************************************************************/
 search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
 {
+    LUOS_ASSERT((result != NULL) && (node_id != 0));
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
@@ -631,8 +655,15 @@ search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
     return (result);
 }
 
+/******************************************************************************
+ * @brief Search all the services with the same alias
+ * @param result : Pointer to previous result research structure
+ * @param alias : Alias that we want to find
+ * @return New result research structure
+ ******************************************************************************/
 search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
 {
+    LUOS_ASSERT((result != NULL) && (alias != 0));
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
@@ -668,6 +699,7 @@ search_result_t *RTFilter_Alias(search_result_t *result, char *alias)
  ******************************************************************************/
 search_result_t *RTFilter_Service(search_result_t *result, service_t *service)
 {
+    LUOS_ASSERT((result != NULL) && (service != 0));
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
