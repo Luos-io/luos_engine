@@ -34,7 +34,6 @@ const revision_t *Luos_GetVersion(void);
 // ***************** Node management *****************
 uint32_t Luos_GetSystick(void);
 bool Luos_IsDetected(void);
-void Luos_SetFilterState(uint8_t state, service_t *service);
 
 // ***************** Package management *****************
 void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));

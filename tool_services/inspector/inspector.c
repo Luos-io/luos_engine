@@ -56,6 +56,6 @@ void Inspector_Loop(void)
         // if the network is not yet detected reset the pipe id
         pipe_id = 0;
         // send to Luos a flag in order to filter the messages
-        Luos_SetFilterState(true, inspector);
+        // Luos_SetFilterState(true, inspector);
     }
 }

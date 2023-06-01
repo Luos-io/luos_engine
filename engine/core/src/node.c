@@ -130,15 +130,3 @@ bool Luos_IsDetected(void)
 {
     return (node_ctx.state == DETECTION_OK);
 }
-
-/******************************************************************************
- * @brief Function that changes the filter value
- * @param state : Put to "1" if we want to disable the filter , "0" to enable
- * @param service
- * @return None
- ******************************************************************************/
-void Luos_SetFilterState(uint8_t state, service_t *service)
-{
-    // Enable or disable the filter for a given service
-    // This function have been disabled since 3.0.0
-}

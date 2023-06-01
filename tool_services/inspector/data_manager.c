@@ -94,13 +94,13 @@ void DataManager_GetPipeMsg(service_t *service, msg_t *data_msg)
             if (data_msg->data[7] == true)
             {
                 // check if data is true so that the inspector needs to start
-                Luos_SetFilterState(false, service);
+                // Luos_SetFilterState(false, service);
                 inspector_state = STARTED;
             }
             else
             {
                 // if we receive a false we should reactivate the filtering - inspector stopped
-                Luos_SetFilterState(true, service);
+                // Luos_SetFilterState(true, service);
                 inspector_state = STOPPED;
             }
             break;
