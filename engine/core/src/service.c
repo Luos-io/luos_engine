@@ -75,7 +75,7 @@ void Service_ResetStatistics(void)
 }
 
 /******************************************************************************
- * @brief API to generate a service ID
+ * @brief API to generate all service ID
  * @param baseId : base ID of the services, this value will be increased for eeach services
  * @return None
  ******************************************************************************/
@@ -119,7 +119,7 @@ void Service_ClearId(void)
 uint16_t Service_GetIndex(service_t *service)
 {
     LUOS_ASSERT((service >= service_ctx.list) && (service < &service_ctx.list[service_ctx.number]));
-    return (service - service_ctx.list) / sizeof(service_t);
+    return ((uintptr_t)service - (uintptr_t)service_ctx.list) / sizeof(service_t);
 }
 
 /******************************************************************************
@@ -139,6 +139,7 @@ void Service_RmAutoUpdateTarget(uint16_t service_id)
         }
     }
 }
+
 /******************************************************************************
  * @brief Auto update call for services
  * @param none
@@ -146,7 +147,7 @@ void Service_RmAutoUpdateTarget(uint16_t service_id)
  ******************************************************************************/
 void Service_AutoUpdateManager(void)
 {
-    // check all services timed_update_t contexts
+    // Check all services timed_update_t contexts
     for (uint16_t i = 0; i < service_ctx.number; i++)
     {
         // check if services have an actual ID. If not, we are in detection mode and should reset the auto refresh
@@ -281,6 +282,7 @@ error_return_t Service_Deliver(phy_job_t *job)
  ******************************************************************************/
 service_filter_t Service_GetFilter(const msg_t *msg)
 {
+    LUOS_ASSERT(msg);
     uint16_t i              = 0;
     service_filter_t filter = 0;
 
@@ -400,14 +402,14 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 }
 
 /******************************************************************************
- * @brief Store alias name service in flash
- * @param service : Service to store
+ * @brief Change a service alias name (this name is not persistent, please check How to have flexible and resilient aliases => https://www.luos.io/tutorials/resilient-alias)
+ * @param service : Service to store the alias in
  * @param alias : Alias to store
  * @return SUCCEED : If the alias is correctly updated
  ******************************************************************************/
 error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size)
 {
-
+    LUOS_ASSERT(service && alias);
     if ((size == 0) || (alias[0] == '\0'))
     {
         // This is a void alias just replace it with the default alias, write it
@@ -439,6 +441,10 @@ error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t 
                 break;
             case ' ':
                 clean_alias[i] = '_';
+                break;
+            case '\0':
+                // This is the end of the string
+                size = i + 1;
                 break;
             default:
                 // This is a wrong character, don't do anything and return FAILED
