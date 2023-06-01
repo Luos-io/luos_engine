@@ -79,7 +79,7 @@ void Node_Loop(void)
         // if timeout is reached, go back to link-down state
         if (Luos_GetSystick() - node_ctx.timeout > DETECTION_TIMEOUT_MS)
         {
-            node_ctx.state = NO_DETECTION;
+            Node_SetState(NO_DETECTION);
         }
     }
 }
@@ -90,11 +90,12 @@ void Node_Loop(void)
  * @return None
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL inline void Node_SetState(node_state_t state)
+void Node_SetState(node_state_t state)
 {
     switch (state)
     {
         case NO_DETECTION:
+        case DETECTION_OK:
             node_ctx.timeout_run = false;
             node_ctx.timeout     = 0;
             break;
@@ -103,11 +104,8 @@ _CRITICAL inline void Node_SetState(node_state_t state)
             node_ctx.timeout_run = true;
             node_ctx.timeout     = Luos_GetSystick();
             break;
-        case DETECTION_OK:
-            node_ctx.timeout_run = false;
-            node_ctx.timeout     = 0;
-            break;
         default:
+            LUOS_ASSERT(false);
             break;
     }
     node_ctx.state = state;
