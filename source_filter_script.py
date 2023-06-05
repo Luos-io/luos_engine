@@ -125,6 +125,11 @@ for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
             if resources.is_dir():
                 env.Append(CPPPATH=[(resources.path)])
 
+        if (current_os == 'Darwin'):
+            env.Append(LINKFLAGS=["--coverage"])
+
+        if (current_os == 'Linux') or (current_os == 'Windows'):
+            env.Append(LINKFLAGS=["-lgcov", "--coverage", "-fprofile-arcs"])
         # CODE COVERAGE WILL BE ADDED SOON
         # if (current_os == 'Linux') or (current_os == 'Darwin') or (current_os == 'Windows'):
         #     env.Append(LINKFLAGS=["-lgcov"])
@@ -136,9 +141,9 @@ for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
         #             env.Execute(".pio/build/native/program test/"+file)
         #         env.Execute("lcov -d .pio/build/native/ -c -o lcov.info")
         #         env.Execute(
-        #             "lcov --remove lcov.info '*/tool-unity/*' '*/test/*' -o filtered_lcov.info")
+        #             "lcov --remove lcov.info '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' -o filtered_lcov.info")
         #         env.Execute(
-        #             "genhtml -o cov/ --demangle-cpp filtered_lcov.info")
+        #             "genhtml filtered_lcov.info -o cov/ --demangle-cpp")
 
         # Generate code coverage when testing workflow is ended
         # env.AddPostAction(".pio/build/native/program", generateCoverageInfo)

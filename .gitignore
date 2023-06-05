@@ -16,6 +16,9 @@
 **/.gitignore
 *.out
 *.log
+*.info
+*.profraw
+cov/*
 /examples/projects/NUCLEO-G431KB/button/.mxproject
 /examples/projects/NUCLEO-G431KB/button/Button.gpdsc
 /examples/projects/NUCLEO-L432KC/button/Button.gpdsc

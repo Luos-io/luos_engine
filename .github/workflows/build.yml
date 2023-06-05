@@ -44,12 +44,23 @@ jobs:
           # Run Unit tests
           platformio test -vvv
 
+      - if: matrix.os == 'ubuntu-latest'
+        run: |
+            sudo apt-get install -y lcov
+            lcov -d .pio/build/native/ -c -o lcov.info
+            lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' -o lcov.info
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: Coveralls
+        uses: coverallsapp/github-action@v2
+
   unit-tests:
     name: Unit tests
     needs: tests-run
     runs-on: ubuntu-latest
     steps:
     - run: echo "Tests succeed!"
+
 
   code-format:
     name: Code format
