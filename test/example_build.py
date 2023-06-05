@@ -48,7 +48,7 @@ def compile_example(cmd, target, example, clean):
     if clean:
         subprocess.call(cmd + " --target clean", shell=True,
                         stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
-    if subprocess.call(cmd, shell=True, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb')):
+    if subprocess.call(cmd, shell=True, stdout=open(os.devnull, 'wb'), stderr=open("err.log", 'wb')):
         with compiled_example.get_lock():
             compiled_example.value += 1
         value = FAIL+"FAILED          " + str(join(target, example) + ENDC)
