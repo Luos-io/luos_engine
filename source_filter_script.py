@@ -64,7 +64,8 @@ sources = ["+<*.c>",
 # private library flags
 find_HAL = False
 env.Replace(SRC_FILTER=sources)
-for item in env.get("CPPDEFINES", []):
+envdefs = env['CPPDEFINES'].copy()
+for item in envdefs:
     if (isinstance(item, tuple) and item[0] == "LUOSHAL") and (find_HAL == False):
         find_HAL = True
         if (path.exists("network/robus/HAL/" + item[1]) and path.exists("engine/HAL/" + item[1])):
