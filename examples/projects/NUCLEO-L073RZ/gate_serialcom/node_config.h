@@ -109,8 +109,8 @@
  *    :-------------------------|------------------------------------------------------
  *    MAX_RTB_ENTRY             |              40            | max number entry in routing table
  *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
- *    PIPE_TO_LUOS_BUFFER_SIZE  |             1024           | Receive pipe buffer size
- *    LUOS_TO_PIPE_BUFFER_SIZE  |             2048           | Transmit pipe buffer size
+ *    PIPE_RX_BUFFER_SIZE       |             1024           | Receive pipe buffer size
+ *    PIPE_TX_BUFFER_SIZE       |             2048           | Transmit pipe buffer size
  ******************************************************************************/
 
 #define MAX_RTB_ENTRY       40

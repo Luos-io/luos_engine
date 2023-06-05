@@ -46,16 +46,13 @@ static void RoutingTB_SendEndDetection(service_t *service);
 uint16_t RoutingTB_IDFromAlias(char *alias)
 {
     LUOS_ASSERT(alias);
-    if (*alias != -1)
+    for (int i = 0; i <= last_routing_table_entry; i++)
     {
-        for (int i = 0; i <= last_routing_table_entry; i++)
+        if (routing_table[i].mode == SERVICE)
         {
-            if (routing_table[i].mode == SERVICE)
+            if (strcmp(routing_table[i].alias, alias) == 0)
             {
-                if (strcmp(routing_table[i].alias, alias) == 0)
-                {
-                    return routing_table[i].id;
-                }
+                return routing_table[i].id;
             }
         }
     }

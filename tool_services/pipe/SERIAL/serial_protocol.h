@@ -79,7 +79,7 @@ static inline void SerialProtocol_CreateTxMsg(void)
     {
         size_to_update = (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer - 2);
     }
-    else if (serialTx_StreamChannel->data_ptr == serialTx_StreamChannel->ring_buffer + serialTx_StreamChannel->data_size)
+    else if ((uintptr_t)serialTx_StreamChannel->data_ptr == (uintptr_t)serialTx_StreamChannel->ring_buffer + (uintptr_t)serialTx_StreamChannel->data_size)
     {
         size_to_update = (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer - 1);
     }

@@ -30,8 +30,8 @@ service_t *pin[9];
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void rx_digit_write_cb(service_t *service, msg_t *msg);
-static void rx_digit_read_cb(service_t *service, msg_t *msg);
+static void rx_digit_write_cb(service_t *service, const msg_t *msg);
+static void rx_digit_read_cb(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -63,7 +63,7 @@ void GpioDev_Loop(void)
 {
 }
 
-static void rx_digit_read_cb(service_t *service, msg_t *msg)
+static void rx_digit_read_cb(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {
@@ -107,7 +107,7 @@ static void rx_digit_read_cb(service_t *service, msg_t *msg)
     }
 }
 
-static void rx_digit_write_cb(service_t *service, msg_t *msg)
+static void rx_digit_write_cb(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == IO_STATE)
     {
