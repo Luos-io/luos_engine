@@ -140,6 +140,7 @@ const revision_t *Luos_GetVersion(void)
  ******************************************************************************/
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg)
 {
+    LUOS_ASSERT(msg != 0);
     // set protocol version
     msg->header.config = BASE_PROTOCOL;
     return Luos_Send(service, msg);
@@ -168,6 +169,7 @@ error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t
  ******************************************************************************/
 static error_return_t Luos_Send(service_t *service, msg_t *msg)
 {
+    LUOS_ASSERT(msg != 0);
     if (service == 0)
     {
         // There is no service specified here, take the first one
@@ -197,13 +199,14 @@ static error_return_t Luos_Send(service_t *service, msg_t *msg)
 }
 
 /******************************************************************************
- * @brief Read last message from buffer for a specifig service
- * @param service : Who receives the message we are looking for
- * @param msg_to_write : Message to write
- * @return SUCCEED : If the message is passed to the user, else FAILED
+ * @brief Read last message
+ * @param service : The service asking for a message
+ * @param msg_to_write : Message where the received message will be copied
+ * @return SUCCEED : If a message is passed to the user, else FAILED
  ******************************************************************************/
 error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write)
 {
+    LUOS_ASSERT((msg_to_write != 0) && (service != 0));
     uint8_t service_index    = Service_GetIndex(service);
     int remaining_job_number = 0;
     phy_job_t *job;
@@ -214,14 +217,19 @@ error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write)
         // Check if our service is concerned by this job
         if (((*(uint8_t *)job->phy_data) >> service_index) & 0x01)
         {
+            uint16_t msg_size = job->msg_pt->header.size;
             // This job is for our service, copy the job message to the user message
+            if (msg_size > MAX_DATA_MSG_SIZE)
+            {
+                msg_size = MAX_DATA_MSG_SIZE;
+            }
             if (Luos_IsMsgTimstamped(job->msg_pt) == true)
             {
-                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size + sizeof(time_luos_t));
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + msg_size + sizeof(time_luos_t));
             }
             else
             {
-                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size);
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + msg_size);
             }
             // Remove this service from the job filter
             *(uint8_t *)job->phy_data &= ~(1 << service_index);
@@ -235,15 +243,18 @@ error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write)
     LUOS_MUTEX_UNLOCK
     return FAILED;
 }
+
 /******************************************************************************
- * @brief Read last msg from buffer from a specific id service
- * @param service : Who receive the message we are looking for
+ * @brief Read last msg from a specific service id
+ * @param service : The service asking for a message
  * @param id : Who sent the message we are looking for
- * @param msg_to_write : Message to write
- * @return FAILED if no message available
+ * @param msg_to_write : Message where the received message will be copied
+ * @return SUCCEED : If a message is passed to the user, else FAILED
  ******************************************************************************/
 error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_to_write)
 {
+
+    LUOS_ASSERT((msg_to_write != 0) && (service != 0) && (id != 0));
     uint16_t remaining_job_number = 0;
     phy_job_t *job;
     uint8_t service_index = Service_GetIndex(service);
@@ -275,6 +286,7 @@ error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_
     LUOS_MUTEX_UNLOCK
     return FAILED;
 }
+
 /******************************************************************************
  * @brief Send large among of data and formating to send into multiple msg
  * @param service : Who send
@@ -285,6 +297,7 @@ error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_
  ******************************************************************************/
 void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size)
 {
+    LUOS_ASSERT((msg != 0) && (bin_data != 0) && (size != 0));
     // Compute number of message needed to send this data
     uint16_t msg_number = 1;
     uint16_t sent_size  = 0;
@@ -325,6 +338,7 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
         sent_size = sent_size + chunk_size;
     }
 }
+
 /******************************************************************************
  * @brief Receive a multi msg data
  * @param service : who receive
@@ -402,6 +416,7 @@ int Luos_ReceiveData(service_t *service, const msg_t *msg, void *bin_data)
     }
     return 0;
 }
+
 /******************************************************************************
  * @brief Return the number of messages available
  * @param None
@@ -411,6 +426,7 @@ uint16_t Luos_NbrAvailableMsg(void)
 {
     return LuosIO_GetJobNb();
 }
+
 /******************************************************************************
  * @brief Check if all Tx message are complete
  * @param None
@@ -420,6 +436,7 @@ error_return_t Luos_TxComplete(void)
 {
     return LuosIO_TxAllComplete();
 }
+
 /******************************************************************************
  * @brief Register a new package
  * @param Init : Init function name
