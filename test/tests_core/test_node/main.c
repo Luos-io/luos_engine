@@ -99,7 +99,7 @@ void unittest_Node_SetState(void)
             node_ctx.timeout_run = true;
             node_ctx.timeout     = 1;
             Node_SetState(LOCAL_DETECTION);
-            TEST_ASSERT_NOT_EQUAL(0, node_ctx.timeout);
+            TEST_ASSERT_NOT_EQUAL(0, (volatile uint32_t)node_ctx.timeout);
             TEST_ASSERT_EQUAL(true, node_ctx.timeout_run);
             TEST_ASSERT_EQUAL(LOCAL_DETECTION, node_ctx.state);
 

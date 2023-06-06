@@ -1084,10 +1084,10 @@ void unittest_phy_ComputeTimestamp()
             msg->header.size        = 1;
             msg->data[0]            = 0xAE;
 
-            time_luos_t timestamp = TimeOD_TimeFrom_ns(10);
+            volatile time_luos_t timestamp = TimeOD_TimeFrom_ns(10);
             memcpy(&msg->data[msg->header.size], &timestamp, sizeof(time_luos_t));
 
-            time_luos_t resulting_latency = Phy_ComputeTimestamp(&job);
+            volatile time_luos_t resulting_latency = Phy_ComputeTimestamp(&job);
 
             TEST_ASSERT_EQUAL(0xAE, job.msg_pt->data[0]);
             TEST_ASSERT_NOT_EQUAL(TimeOD_TimeTo_ns(timestamp), TimeOD_TimeTo_ns(resulting_latency));

@@ -480,7 +480,7 @@ void unittest_RTFilter_InitCheck(void)
         //  Init default scenario context
         Init_Context();
         //  Init variables
-        search_result_t result;
+        search_result_t result = {0};
 
         NEW_STEP("Verify that we have not initialized the result");
         TEST_ASSERT_EQUAL(FAILED, RTFilter_InitCheck(&result));
