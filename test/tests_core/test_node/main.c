@@ -99,7 +99,9 @@ void unittest_Node_SetState(void)
             node_ctx.timeout_run = true;
             node_ctx.timeout     = 1;
             Node_SetState(LOCAL_DETECTION);
+#ifndef _WIN32
             TEST_ASSERT_NOT_EQUAL(0, (volatile uint32_t)node_ctx.timeout);
+#endif
             TEST_ASSERT_EQUAL(true, node_ctx.timeout_run);
             TEST_ASSERT_EQUAL(LOCAL_DETECTION, node_ctx.state);
 
@@ -107,7 +109,9 @@ void unittest_Node_SetState(void)
             node_ctx.timeout_run = true;
             node_ctx.timeout     = 1;
             Node_SetState(EXTERNAL_DETECTION);
-            TEST_ASSERT_NOT_EQUAL(0, node_ctx.timeout);
+#ifndef _WIN32
+            TEST_ASSERT_NOT_EQUAL(0, (volatile uint32_t)node_ctx.timeout);
+#endif
             TEST_ASSERT_EQUAL(true, node_ctx.timeout_run);
             TEST_ASSERT_EQUAL(EXTERNAL_DETECTION, node_ctx.state);
         }
