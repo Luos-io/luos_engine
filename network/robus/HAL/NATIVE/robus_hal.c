@@ -50,10 +50,11 @@ volatile uint8_t *tx_data = 0;
 // Mongoose connection information
 struct mg_mgr robus_mgr; // Event manager
 struct mg_connection *c; // Client connection
-static const char *s_url = WS_BROKER_ADDR;
-volatile bool ptpa       = false;
-volatile bool ptpb       = false;
-volatile bool ptp_update = true;
+static const char *s_url   = WS_BROKER_ADDR;
+volatile bool ptpa         = false;
+volatile bool ptpb         = false;
+volatile bool ptp_update   = true;
+volatile bool ws_connected = false;
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -156,6 +157,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
     {
         // When websocket handshake is successful, send message
         printf("Connected to %s\n", s_url);
+        ws_connected = true;
     }
     else if (ev == MG_EV_WS_MSG)
     {
@@ -440,10 +442,13 @@ uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
     {
         // Ask PTPA state to the server
         mg_ws_send(c, "PTPA1", sizeof("PTPA1"), WEBSOCKET_OP_TEXT);
-        // Wait for the server to acknowledge the PTP update
-        while (ptp_update == false)
+        // Wait for the server to acknowledge the PTP update if connected
+        if (ws_connected)
         {
-            msleep(10);
+            while (ptp_update == false)
+            {
+                msleep(10);
+            }
         }
         return ptpa;
     }
@@ -451,10 +456,13 @@ uint8_t RobusHAL_GetPTPState(uint8_t PTPNbr)
     {
         // Ask PTPB state to the server
         mg_ws_send(c, "PTPB1", sizeof("PTPB1"), WEBSOCKET_OP_TEXT);
-        // Wait for the server to acknowledge the PTP update
-        while (ptp_update == false)
+        // Wait for the server to acknowledge the PTP update if connected
+        if (ws_connected)
         {
-            msleep(80);
+            while (ptp_update == false)
+            {
+                msleep(80);
+            }
         }
         return ptpb;
     }
