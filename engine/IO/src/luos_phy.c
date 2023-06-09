@@ -438,11 +438,7 @@ _CRITICAL void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job)
         if ((phy_ptr->job[i].msg_pt->header.target == target) && (phy_ptr->job[i].msg_pt->header.target_mode == target_mode))
         {
             // This job is targeting the dead target, remove it from the queue
-            phy_ptr->job_nb--;
-            for (int j = i; j < phy_ptr->job_nb; j++)
-            {
-                phy_ptr->job[j] = phy_ptr->job[j + 1];
-            }
+            Phy_RmJob(phy_ptr, &phy_ptr->job[i]);
         }
         else
         {
