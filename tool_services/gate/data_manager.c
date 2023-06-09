@@ -70,22 +70,25 @@ void DataManager_Run(service_t *service)
 void DataManager_RunPipeOnly(service_t *service)
 {
     msg_t data_msg;
-    while (Luos_ReadFromService(service, PipeLink_GetId(), &data_msg) == SUCCEED)
+    if (PipeLink_GetId() != 0)
     {
-        // This message is a command from pipe
-        // Convert the received data into Luos commands
-        static char data_cmd[GATE_BUFF_SIZE];
-        if (data_msg.header.cmd == PARAMETERS)
+        while (Luos_ReadFromService(service, PipeLink_GetId(), &data_msg) == SUCCEED)
         {
-            uintptr_t pointer;
-            memcpy(&pointer, data_msg.data, sizeof(void *));
-            PipeLink_SetDirectPipeSend((void *)pointer);
-            continue;
-        }
-        if (Luos_ReceiveData(service, &data_msg, data_cmd) > 0)
-        {
-            // We finish to receive this data, execute the received command
-            Convert_DataToLuos(service, data_cmd);
+            // This message is a command from pipe
+            // Convert the received data into Luos commands
+            static char data_cmd[GATE_BUFF_SIZE];
+            if (data_msg.header.cmd == PARAMETERS)
+            {
+                uintptr_t pointer;
+                memcpy(&pointer, data_msg.data, sizeof(void *));
+                PipeLink_SetDirectPipeSend((void *)pointer);
+                continue;
+            }
+            if (Luos_ReceiveData(service, &data_msg, data_cmd) > 0)
+            {
+                // We finish to receive this data, execute the received command
+                Convert_DataToLuos(service, data_cmd);
+            }
         }
     }
     if (Luos_ReadMsg(service, &data_msg) == SUCCEED)
