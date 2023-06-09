@@ -391,6 +391,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
         case START_DETECTION:
             Phy_Reset();
             MsgAlloc_Init(NULL);
+            Node_Init();
             Node_SetState(EXTERNAL_DETECTION);
             Service_ClearId();
             // Reset the data reception context
