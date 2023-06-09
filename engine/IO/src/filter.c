@@ -228,8 +228,6 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
             break;
         default:
             LUOS_ASSERT(0);
-            // This concerns Robus only
-            return 0x01 << 1;
             break;
     }
     // This concerns Robus only by default

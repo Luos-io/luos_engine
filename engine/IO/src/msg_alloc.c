@@ -77,10 +77,10 @@ volatile uint16_t alloc_slot_index;   /*!< Index of the next slot able to be wri
 static inline void MsgAlloc_SlotPack(void);
 
 // msg buffering
-_CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpaceUntilBufferEnd(void *to);
+_CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpaceUntilBufferEnd(const void *to);
 
 // Allocator task stack TX check space
-static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to);
+static inline error_return_t MsgAlloc_CheckMsgSpace(const void *from, const void *to);
 
 // Available buffer space evaluation
 static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void);
@@ -264,7 +264,7 @@ _CRITICAL static inline uint8_t *MsgAlloc_GetOldestMsg(void)
  * @return error_return_t
  * _CRITICAL function call in IRQ
  ******************************************************************************/
-_CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpaceUntilBufferEnd(void *to)
+_CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpaceUntilBufferEnd(const void *to)
 {
     LUOS_ASSERT((uintptr_t)to >= (uintptr_t)&msg_buffer[0]);
     if ((uintptr_t)to > ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE - 1]))
@@ -411,7 +411,7 @@ error_return_t MsgAlloc_IsEmpty(void)
  * @param to : stop of the memory space to check
  * @return error_return_t
  ******************************************************************************/
-static inline error_return_t MsgAlloc_CheckMsgSpace(void *from, void *to)
+static inline error_return_t MsgAlloc_CheckMsgSpace(const void *from, const void *to)
 {
     LUOS_ASSERT(((uintptr_t)from < (uintptr_t)to)
                 && ((uintptr_t)from >= (uintptr_t)&msg_buffer[0])

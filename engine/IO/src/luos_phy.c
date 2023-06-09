@@ -319,16 +319,15 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             // Now allocate it
             rx_data          = MsgAlloc_Alloc(phy_ptr->rx_size, (uint8_t)phy_ptr->rx_phy_filter);
             phy_ptr->rx_data = rx_data;
-            // Assert if the allocation failed. We don't allow to loose a message comming from outside.
             if ((phy_ptr == &phy_ctx.phy[0]) && (rx_data == NULL))
             {
-                // We don't successfully allocated the message.
-                // This is luos trying to send something, return and Luos will wait...
+                // We don't successfully allocated the message we are trying to send.
+                // return and the transmitter will be able to wait to get more space...
                 LuosHAL_SetIrqState(true);
                 phy_ptr->rx_keep = false;
                 return;
             }
-            LUOS_ASSERT(rx_data != NULL);
+            LUOS_ASSERT(rx_data != NULL); // Assert if the allocation failed. We don't allow to loose a message comming from outside.
             // Job is done
             LuosHAL_SetIrqState(true);
             copy_from = (void *)phy_ptr->rx_buffer_base;
