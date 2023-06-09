@@ -1359,6 +1359,15 @@ void unittest_phy_RmJob()
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
+
+        TRY
+        {
+            luos_phy->job_nb = 0;
+            Phy_RmJob(luos_phy, &luos_phy->job[0]);
+            TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
     }
 
     NEW_TEST_CASE("Check RmJob normal conditions");
@@ -1367,16 +1376,6 @@ void unittest_phy_RmJob()
         phy_test_reset();
         memory_stats_t memory_stats;
         MsgAlloc_Init(&memory_stats);
-        TRY
-        {
-            luos_phy->job_nb = 0;
-            Phy_RmJob(luos_phy, &luos_phy->job[0]);
-            TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
-        }
-        CATCH
-        {
-            TEST_ASSERT_TRUE(false);
-        }
 
         TRY
         {

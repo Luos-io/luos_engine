@@ -130,7 +130,11 @@ static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
     else
     {
         // This message was a protocol one, we can remove it.
-        Phy_RmJob(luos_phy, job);
+        // When we receive a start detection we reset everything so we don't need to remove the message anymore.
+        if (luos_phy->job_nb != 0)
+        {
+            Phy_RmJob(luos_phy, job);
+        }
     }
 }
 

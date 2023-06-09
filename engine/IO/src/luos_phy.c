@@ -556,11 +556,8 @@ _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
 {
     LUOS_ASSERT((phy_ptr != NULL)
                 && (job >= phy_ptr->job)
-                && (job < &phy_ptr->job[MAX_MSG_NB]));
-    if (phy_ptr->job_nb == 0)
-    {
-        return;
-    }
+                && (job < &phy_ptr->job[MAX_MSG_NB])
+                && (phy_ptr->job_nb != 0));
     // We potentially need to free this message from msg allocator
     // Get the Phy index
     int phy_index = Phy_GetPhyId(phy_ptr);
