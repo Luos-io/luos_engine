@@ -344,14 +344,19 @@ _CRITICAL uint8_t *MsgAlloc_Alloc(uint16_t data_size, uint8_t phy_filter)
         // We don't have the space to store the message, return NULL to indicate that there is no more space
         return NULL;
     }
-
-    // We consider this space as occupied, save its reference into the alloc_slots
-    alloc_slots[alloc_slot_index].data       = returned_ptr;
-    alloc_slots[alloc_slot_index].phy_filter = phy_filter;
-    alloc_slot_index++;
+    // We consider this space as occupied
     // Move data to the next available space
     data_ptr = (uint8_t *)((uintptr_t)returned_ptr + data_size);
     return returned_ptr;
+}
+
+_CRITICAL void MsgAlloc_Reference(uint8_t *rx_data, uint8_t phy_filter)
+{
+    LUOS_ASSERT((rx_data < &msg_buffer[MSG_BUFFER_SIZE]) && (rx_data >= &msg_buffer[0]) && (phy_filter != 0) && (alloc_slot_index < MAX_MSG_NB));
+    // Reference a space into the alloc_slots
+    alloc_slots[alloc_slot_index].data       = rx_data;
+    alloc_slots[alloc_slot_index].phy_filter = phy_filter;
+    alloc_slot_index++;
 }
 
 /******************************************************************************

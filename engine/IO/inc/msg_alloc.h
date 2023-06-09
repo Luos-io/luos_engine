@@ -19,6 +19,7 @@ void MsgAlloc_Loop(void);
 
 // Msg buffering functions
 uint8_t *MsgAlloc_Alloc(uint16_t data_size, uint8_t phy_filter);
+void MsgAlloc_Reference(uint8_t *rx_data, uint8_t phy_filter);
 void MsgAlloc_Free(uint8_t phy_id, const uint8_t *data);
 error_return_t MsgAlloc_IsEmpty(void);
 

@@ -246,6 +246,9 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
     }
     if (phy_ptr->rx_keep == true)
     {
+        // This message is ok we can reference it in the allocator
+        MsgAlloc_Reference((uint8_t *)phy_ptr->rx_data, (uint8_t)phy_ptr->rx_phy_filter);
+
         // Now we can create a phy_job to dispatch the tx_job later
         LUOS_ASSERT(phy_ctx.io_job_nb < MAX_MSG_NB);
         LuosHAL_SetIrqState(false);

@@ -744,9 +744,9 @@ void unittest_MsgAlloc_Alloc()
                 {
                     TEST_ASSERT_EQUAL((i * 8), ((uintptr_t)data) - (uintptr_t)&msg_buffer[0]);
                 }
-                MsgAlloc_Free(0, (const uint8_t *)data);
-                // Sort the allocator
-                MsgAlloc_Loop();
+                // MsgAlloc_Free(0, (const uint8_t *)data);
+                // // Sort the allocator
+                // MsgAlloc_Loop();
             }
         }
         CATCH
@@ -824,7 +824,54 @@ void unittest_MsgAlloc_Alloc()
     }
 }
 
-void unittest_MsgAlloc_IsEmpty()
+void unittest_MsgAlloc_Reference(void)
+{
+
+    NEW_TEST_CASE("Check if we assert when we try to reference a message with a bad data and/or no phy");
+    {
+
+        memset(alloc_slots, 0, sizeof(alloc_slots));
+        TRY
+        {
+            MsgAlloc_Reference((uint8_t *)(msg_buffer - 1), 1);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        TRY
+        {
+            MsgAlloc_Reference((uint8_t *)&msg_buffer[MSG_BUFFER_SIZE], 1);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        TRY
+        {
+            MsgAlloc_Reference((uint8_t *)&msg_buffer[0], 0);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+        TRY
+        {
+            alloc_slot_index = MAX_MSG_NB;
+            MsgAlloc_Reference((uint8_t *)&msg_buffer[0], 1);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+    }
+    NEW_TEST_CASE("Check normal referencing condition");
+    {
+        TRY
+        {
+            alloc_slot_index = 0;
+            MsgAlloc_Reference((uint8_t *)&msg_buffer[0], 1);
+            TEST_ASSERT_EQUAL(&msg_buffer[0], alloc_slots[0].data);
+            TEST_ASSERT_EQUAL(1, alloc_slot_index);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+    }
+}
+
+void unittest_MsgAlloc_IsEmpty(void)
 {
     NEW_TEST_CASE("Check if we assert when we have more slot than we can handle");
     {
@@ -969,6 +1016,7 @@ int main(int argc, char **argv)
     // Generic functions
     UNIT_TEST_RUN(unittest_MsgAlloc_Loop);
     UNIT_TEST_RUN(unittest_MsgAlloc_Alloc);
+    UNIT_TEST_RUN(unittest_MsgAlloc_Reference);
     UNIT_TEST_RUN(unittest_MsgAlloc_IsEmpty);
     UNIT_TEST_RUN(unittest_MsgAlloc_Free);
 
