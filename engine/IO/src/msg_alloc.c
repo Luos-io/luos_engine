@@ -300,7 +300,7 @@ _CRITICAL uint8_t *MsgAlloc_Alloc(uint16_t data_size, uint8_t phy_filter)
     if ((uintptr_t)data_ptr % 2 == 1)
     {
         data_ptr++;
-        if (data_ptr == &msg_buffer[MSG_BUFFER_SIZE])
+        if ((uintptr_t)data_ptr >= (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE - -sizeof(header_t)])
         {
             data_ptr = &msg_buffer[0];
         }
@@ -347,6 +347,11 @@ _CRITICAL uint8_t *MsgAlloc_Alloc(uint16_t data_size, uint8_t phy_filter)
     // We consider this space as occupied
     // Move data to the next available space
     data_ptr = (uint8_t *)((uintptr_t)returned_ptr + data_size);
+    // Move the data_ptr to the begin of the buffer if we don't have space for at least a header
+    if ((uintptr_t)data_ptr >= (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE - sizeof(header_t)])
+    {
+        data_ptr = &msg_buffer[0];
+    }
     return returned_ptr;
 }
 
