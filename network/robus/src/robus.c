@@ -80,7 +80,9 @@ void Robus_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
     encaps[encaps_index].size = CRC_SIZE;
 
     // Save the precomputed encapsulation in the job
+    LuosHAL_SetIrqState(false);
     job->phy_data = (void *)&encaps[encaps_index];
+    LuosHAL_SetIrqState(true);
 
     // Get the next encapsulation index for the next job
     encaps_index++;

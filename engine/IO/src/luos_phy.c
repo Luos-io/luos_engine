@@ -398,6 +398,7 @@ static void Phy_Dispatch(void)
                 phy_job.size      = job->size;
                 phy_job.ack       = ((job->alloc_msg->header.target_mode == NODEIDACK) || (job->alloc_msg->header.target_mode == SERVICEIDACK));
                 phy_job.timestamp = Luos_IsMsgTimstamped(job->alloc_msg);
+                phy_job.phy_data  = NULL;
 
                 // Write the job in the phy queue and get back the pointer to it
                 phy_job_t *job_ptr = Phy_AddJob(&phy_ctx.phy[y], &phy_job);

@@ -56,7 +56,6 @@
  * Variables
  ******************************************************************************/
 volatile uint8_t nbrRetry = 0;
-robus_encaps_t *end       = NULL;
 
 /*******************************************************************************
  * Function
@@ -129,9 +128,10 @@ _CRITICAL void Transmit_Process()
     phy_job_t *job          = Phy_GetJob(robus_phy);
     static uint8_t tx_data[sizeof(msg_t) + sizeof(robus_encaps_t)];
     // Get the message encapsulation
-    if ((job != NULL) && (Transmit_GetLockStatus() == false))
+    if ((job != NULL) && (Transmit_GetLockStatus() == false) && (job->phy_data != 0))
     {
-        robus_encaps_t *encaps = (robus_encaps_t *)job->phy_data;
+        LUOS_ASSERT((job->phy_data != NULL) && (job->size != 0) && (job->size < sizeof(msg_t)));
+        robus_encaps_t *jobEncaps = (robus_encaps_t *)job->phy_data;
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
         if (nbrRetry >= NBR_RETRY)
@@ -174,8 +174,10 @@ _CRITICAL void Transmit_Process()
             if (!nbrRetry)
             {
                 // This is the first time we try to send this message, we need to backup the original crc value and the job data to the TX_data buffer
-                crc_val = encaps->crc;
+                crc_val = jobEncaps->crc;
                 memcpy(tx_data, job->data_pt, job->size);
+                // Add the end of the message in the end of the buffer
+                memcpy(&tx_data[job->size], jobEncaps->unmaped, jobEncaps->size);
             }
 
             // Put timestamping on data here
@@ -183,19 +185,20 @@ _CRITICAL void Transmit_Process()
             {
 
                 // Convert date to a sendable timestamp and put it on the encapsulation
-                encaps->timestamp = Phy_ComputeTimestamp(job);
+                jobEncaps->timestamp = Phy_ComputeTimestamp(job);
 
-                encaps->timestamped_crc = ll_crc_compute(encaps->unmaped, sizeof(time_luos_t), crc_val);
-                encaps->size            = sizeof(time_luos_t) + CRC_SIZE;
+                jobEncaps->timestamped_crc = ll_crc_compute(jobEncaps->unmaped, sizeof(time_luos_t), crc_val);
+                jobEncaps->size            = sizeof(time_luos_t) + CRC_SIZE;
+                // Add the end of the message in the end of the buffer
+                memcpy(&tx_data[job->size], jobEncaps->unmaped, jobEncaps->size);
             }
 
             // Transmit data
             if (Phy_GetJobNbr(robus_phy) != 0)
             {
-                // Add the end of the message in the end of the buffer
-                memcpy(&tx_data[job->size], encaps->unmaped, encaps->size);
+                LUOS_ASSERT((job->size + jobEncaps->size) >= 9);
                 // We still have something to send, no reset occured
-                RobusHAL_ComTransmit(tx_data, (job->size + encaps->size));
+                RobusHAL_ComTransmit(tx_data, (job->size + jobEncaps->size));
             }
         }
     }
@@ -233,6 +236,7 @@ _CRITICAL void Transmit_End(void)
         // Remove the job
         luos_phy_t *robus_phy = Robus_GetPhy();
         phy_job_t *job        = Phy_GetJob(robus_phy);
+        job->phy_data         = 0;
         Phy_RmJob(robus_phy, job);
     }
     else if (ctx.tx.status == TX_NOK)
@@ -241,7 +245,7 @@ _CRITICAL void Transmit_End(void)
         nbrRetry++;
         // compute a delay before retry
         RobusHAL_ResetTimeout(20 * nbrRetry * (Phy_GetNodeId() + 1));
-        // Lock the trasmission to be sure no one can send something from this node.
+        // Lock the trasmission to be sure no one can send something from this node until next timeout.
         ctx.tx.lock   = true;
         ctx.tx.status = TX_DISABLE;
         return;
