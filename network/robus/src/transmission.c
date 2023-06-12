@@ -128,7 +128,7 @@ _CRITICAL void Transmit_Process()
     phy_job_t *job          = Phy_GetJob(robus_phy);
     static uint8_t tx_data[sizeof(msg_t) + sizeof(robus_encaps_t)];
     // Get the message encapsulation
-    if ((job != NULL) && (Transmit_GetLockStatus() == false) && (job->phy_data != 0))
+    if ((job != NULL) && (Transmit_GetLockStatus() == false) && (job->phy_data != NULL))
     {
         LUOS_ASSERT((job->phy_data != NULL) && (job->size != 0) && (job->size < sizeof(msg_t)));
         robus_encaps_t *jobEncaps = (robus_encaps_t *)job->phy_data;
@@ -236,8 +236,12 @@ _CRITICAL void Transmit_End(void)
         // Remove the job
         luos_phy_t *robus_phy = Robus_GetPhy();
         phy_job_t *job        = Phy_GetJob(robus_phy);
-        job->phy_data         = 0;
-        Phy_RmJob(robus_phy, job);
+        // We may had a reset during this transmission, so we need to check if we still have something to transmit
+        if (robus_phy->job_nb > 0)
+        {
+            job->phy_data = 0;
+            Phy_RmJob(robus_phy, job);
+        }
     }
     else if (ctx.tx.status == TX_NOK)
     {
