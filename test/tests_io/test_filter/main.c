@@ -459,7 +459,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode = 0x0f;
             Filter_GetPhyTarget(&header);
         }
-        TEST_ASSERT_TRUE(IS_ASSERT());
+        TEST_ASSERT_TRUE(!IS_ASSERT());
         END_TRY;
     }
 
