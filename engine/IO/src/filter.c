@@ -227,7 +227,9 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
             }
             break;
         default:
-            LUOS_ASSERT(0);
+            // We can be here in case of corrupted message.
+            // In this case nobody is concerned by this message.
+            return 0x00;
             break;
     }
     // This concerns Robus only by default
