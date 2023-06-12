@@ -130,7 +130,7 @@ _CRITICAL void Transmit_Process()
     // Get the message encapsulation
     if ((job != NULL) && (Transmit_GetLockStatus() == false) && (job->phy_data != NULL))
     {
-        LUOS_ASSERT((job->phy_data != NULL) && (job->size != 0) && (job->size < sizeof(msg_t)));
+        LUOS_ASSERT((job->phy_data != NULL) && (job->size != 0) && (job->size <= sizeof(msg_t)));
         robus_encaps_t *jobEncaps = (robus_encaps_t *)job->phy_data;
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
