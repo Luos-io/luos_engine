@@ -37,7 +37,7 @@ typedef struct __attribute__((__packed__))
 } node_bootstrap_t;
 
 static error_return_t LuosIO_StartTopologyDetection(service_t *service);
-static error_return_t LuosIO_DetectNextNodes(service_t *service);
+static error_return_t LuosIO_DetectNextNodes(service_t *service, bool wait_for_answer);
 static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job);
 static error_return_t LuosIO_ConsumeMsg(const msg_t *input);
 static void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
@@ -211,7 +211,7 @@ uint16_t LuosIO_TopologyDetection(service_t *service)
         // Setup sending service id
         service->id = 1;
 
-        if (LuosIO_DetectNextNodes(service) == FAILED)
+        if (LuosIO_DetectNextNodes(service, true) == FAILED)
         {
             // check the number of retry we made
             LUOS_ASSERT((redetect_nb <= 4));
@@ -344,7 +344,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                     Node_Get()->node_id = node_bootstrap.nodeid;
                     Robus_SaveNodeID(node_bootstrap.prev_nodeid);
                     // Continue the topology detection on our other ports.
-                    LuosIO_DetectNextNodes(service);
+                    LuosIO_DetectNextNodes(service, false);
                     break;
                 default:
                     LUOS_ASSERT(0);
@@ -543,7 +543,7 @@ static inline void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *r
  * @param service pointer to the detecting service
  * @return None.
  ******************************************************************************/
-static error_return_t LuosIO_DetectNextNodes(service_t *service)
+static error_return_t LuosIO_DetectNextNodes(service_t *service, bool wait_for_answer)
 {
     // Lets try to poke other nodes
     while (Robus_FindNeighbour() == SUCCEED)
@@ -557,6 +557,10 @@ static error_return_t LuosIO_DetectNextNodes(service_t *service)
         msg.header.cmd         = WRITE_NODE_ID;
         msg.header.size        = 0;
         Luos_SendMsg(service, &msg);
+        if (wait_for_answer == false)
+        {
+            return SUCCEED;
+        }
         // Wait the end of transmission
         while (Phy_TxAllComplete() == FAILED)
             ;

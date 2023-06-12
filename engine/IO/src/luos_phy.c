@@ -322,6 +322,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             // Now allocate it
             rx_data          = MsgAlloc_Alloc(phy_ptr->rx_size, (uint8_t)phy_ptr->rx_phy_filter);
             phy_ptr->rx_data = rx_data;
+            // Check if this message is a luos transmission and if allocation succeed
             if ((phy_ptr == &phy_ctx.phy[0]) && (rx_data == NULL))
             {
                 // We don't successfully allocated the message we are trying to send.
