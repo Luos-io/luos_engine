@@ -337,7 +337,9 @@ void unittest_phy_dispatch()
         {
             phy_test_reset();
             memset(&luos_phy->job[0], 0, sizeof(phy_job_t));
-            luos_phy->job_nb = 0;
+            luos_phy->job_nb              = 0;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 0;
 
             // Create a fake job
             phy_ctx.io_job_nb = 1;
@@ -358,6 +360,8 @@ void unittest_phy_dispatch()
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
 
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
+            TEST_ASSERT_EQUAL(0, luos_phy->oldest_job_index);
+            TEST_ASSERT_EQUAL(1, luos_phy->available_job_index);
             TEST_ASSERT_EQUAL(&luos_phy->job[0], Luos_handled_job);
             TEST_ASSERT_EQUAL(&msg_buffer[0], luos_phy->job[0].data_pt);
             TEST_ASSERT_EQUAL(10, luos_phy->job[0].size);
@@ -480,11 +484,13 @@ void unittest_phy_deadTarget()
         {
             phy_test_reset();
             // Create a fake phy job
-            luos_phy->job_nb         = 1;
-            luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
-            msg_t *msg               = (msg_t *)msg_buffer;
-            msg->header.target_mode  = NODEIDACK;
-            msg->header.target       = 1;
+            luos_phy->job_nb              = 1;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 1;
+            luos_phy->job[0].data_pt      = (uint8_t *)msg_buffer;
+            msg_t *msg                    = (msg_t *)msg_buffer;
+            msg->header.target_mode       = NODEIDACK;
+            msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
             Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
@@ -504,20 +510,24 @@ void unittest_phy_deadTarget()
         {
             phy_test_reset();
             // Create a fake phy job
-            luos_phy->job_nb         = 3;
-            luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
-            luos_phy->job[1].data_pt = (uint8_t *)&msg_buffer[20]; // This is a different target, it should not be removed
-            luos_phy->job[2].data_pt = (uint8_t *)msg_buffer;
-            msg_t *msg               = (msg_t *)msg_buffer;
-            msg->header.target_mode  = NODEIDACK;
-            msg->header.target       = 1;
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
+            luos_phy->job[0].data_pt      = (uint8_t *)msg_buffer;
+            luos_phy->job[1].data_pt      = (uint8_t *)&msg_buffer[20]; // This is a different target, it should not be removed
+            luos_phy->job[2].data_pt      = (uint8_t *)msg_buffer;
+            msg_t *msg                    = (msg_t *)msg_buffer;
+            msg->header.target_mode       = NODEIDACK;
+            msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
             Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
-            TEST_ASSERT_EQUAL(&msg_buffer[20], luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(NULL, luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(&msg_buffer[20], luos_phy->job[1].data_pt);
+            TEST_ASSERT_EQUAL(NULL, luos_phy->job[2].data_pt);
         }
         CATCH
         {
@@ -529,19 +539,23 @@ void unittest_phy_deadTarget()
         {
             phy_test_reset();
             // Create a fake phy job
-            luos_phy->job_nb         = 3;
-            luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
-            luos_phy->job[1].data_pt = (uint8_t *)msg_buffer; // All jobs should be removed
-            luos_phy->job[2].data_pt = (uint8_t *)msg_buffer;
-            msg_t *msg               = (msg_t *)msg_buffer;
-            msg->header.target_mode  = NODEIDACK;
-            msg->header.target       = 1;
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
+            luos_phy->job[0].data_pt      = (uint8_t *)msg_buffer;
+            luos_phy->job[1].data_pt      = (uint8_t *)msg_buffer; // All jobs should be removed
+            luos_phy->job[2].data_pt      = (uint8_t *)msg_buffer;
+            msg_t *msg                    = (msg_t *)msg_buffer;
+            msg->header.target_mode       = NODEIDACK;
+            msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
             Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
             TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
+            TEST_ASSERT_EQUAL(3, luos_phy->oldest_job_index);
+            TEST_ASSERT_EQUAL(3, luos_phy->available_job_index);
         }
         CATCH
         {
@@ -558,19 +572,23 @@ void unittest_phy_deadTarget()
             memory_stats_t memory_stats;
             MsgAlloc_Init(&memory_stats);
             // Create a fake phy job
-            luos_phy->job_nb         = 3;
-            luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
-            luos_phy->job[1].data_pt = (uint8_t *)&msg_buffer[20]; // This is a different target, it should not be removed
-            luos_phy->job[2].data_pt = (uint8_t *)msg_buffer;
-            msg_t *msg               = (msg_t *)msg_buffer;
-            msg->header.target_mode  = NODEIDACK;
-            msg->header.target       = 1;
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
+            luos_phy->job[0].data_pt      = (uint8_t *)msg_buffer;
+            luos_phy->job[1].data_pt      = (uint8_t *)&msg_buffer[20]; // This is a different target, it should not be removed
+            luos_phy->job[2].data_pt      = (uint8_t *)msg_buffer;
+            msg_t *msg                    = (msg_t *)msg_buffer;
+            msg->header.target_mode       = NODEIDACK;
+            msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
             Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
-            TEST_ASSERT_EQUAL(&msg_buffer[20], luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(NULL, luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(&msg_buffer[20], luos_phy->job[1].data_pt);
+            TEST_ASSERT_EQUAL(NULL, luos_phy->job[2].data_pt);
 
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             TEST_ASSERT_EQUAL(false, Luos_get_deadTarget);
@@ -1085,7 +1103,7 @@ void unittest_phy_ComputeTimestamp()
             msg->data[0]            = 0xAE;
 
             volatile time_luos_t timestamp = TimeOD_TimeFrom_ns(10);
-            memcpy(&msg->data[msg->header.size], &timestamp, sizeof(time_luos_t));
+            memcpy(&msg->data[msg->header.size], (void *)&timestamp, sizeof(time_luos_t));
 
             volatile time_luos_t resulting_latency = Phy_ComputeTimestamp(&job);
 
@@ -1167,10 +1185,14 @@ void unittest_phy_AddJob()
         TRY
         {
             phy_job_t phy_job;
-            luos_phy->job_nb         = 3;
-            phy_job_t *resulting_job = Phy_AddJob(luos_phy, &phy_job);
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
+            phy_job_t *resulting_job      = Phy_AddJob(luos_phy, &phy_job);
             TEST_ASSERT_EQUAL(&luos_phy->job[3], resulting_job);
             TEST_ASSERT_EQUAL(4, luos_phy->job_nb);
+            TEST_ASSERT_EQUAL(4, luos_phy->available_job_index);
+            TEST_ASSERT_EQUAL(0, luos_phy->oldest_job_index);
         }
         CATCH
         {
@@ -1196,8 +1218,10 @@ void unittest_phy_GetJob()
     {
         TRY
         {
-            luos_phy->job_nb         = 0;
-            phy_job_t *resulting_job = Phy_GetJob(luos_phy);
+            luos_phy->job_nb              = 0;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 0;
+            phy_job_t *resulting_job      = Phy_GetJob(luos_phy);
             TEST_ASSERT_EQUAL(NULL, resulting_job);
             TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
         }
@@ -1208,8 +1232,10 @@ void unittest_phy_GetJob()
 
         TRY
         {
-            luos_phy->job_nb         = 1;
-            phy_job_t *resulting_job = Phy_GetJob(luos_phy);
+            luos_phy->job_nb              = 1;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 1;
+            phy_job_t *resulting_job      = Phy_GetJob(luos_phy);
             TEST_ASSERT_EQUAL(&luos_phy->job[0], resulting_job);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
         }
@@ -1220,9 +1246,79 @@ void unittest_phy_GetJob()
 
         TRY
         {
-            luos_phy->job_nb         = 3;
-            phy_job_t *resulting_job = Phy_GetJob(luos_phy);
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
+            phy_job_t *resulting_job      = Phy_GetJob(luos_phy);
             TEST_ASSERT_EQUAL(&luos_phy->job[0], resulting_job);
+            TEST_ASSERT_EQUAL(3, luos_phy->job_nb);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+    }
+}
+
+void unittest_phy_GetNextJob()
+{
+    NEW_TEST_CASE("Check GetNextJob assertion conditions");
+    {
+        TRY
+        {
+            luos_phy->job_nb              = 0;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 0;
+            phy_job_t *job                = NULL;
+            phy_job_t *resulting_job      = Phy_GetNextJob(NULL, job);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check GetNextJob normal conditions");
+    {
+        TRY
+        {
+            luos_phy->job_nb              = 0;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 0;
+            phy_job_t *job                = NULL;
+            job                           = Phy_GetNextJob(luos_phy, job);
+            TEST_ASSERT_EQUAL(NULL, job);
+            TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+
+        phy_job_t *job = NULL;
+        TRY
+        {
+            luos_phy->job_nb              = 1;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 1;
+            luos_phy->job[0].msg_pt       = &msg_buffer[0];
+            job                           = Phy_GetNextJob(luos_phy, job);
+            TEST_ASSERT_EQUAL(&luos_phy->job[0], job);
+            TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+
+        TRY
+        {
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
+            luos_phy->job[0].msg_pt       = &msg_buffer[0];
+            luos_phy->job[1].msg_pt       = &msg_buffer[1];
+            luos_phy->job[2].msg_pt       = &msg_buffer[2];
+            job                           = Phy_GetNextJob(luos_phy, job);
+            TEST_ASSERT_EQUAL(&luos_phy->job[1], job);
             TEST_ASSERT_EQUAL(3, luos_phy->job_nb);
         }
         CATCH
@@ -1379,12 +1475,14 @@ void unittest_phy_RmJob()
 
         TRY
         {
-            for (int i = 0; i < PHY_NB; i++)
+            for (int i = 0; i < MAX_MSG_NB - 1; i++)
             {
-                luos_phy->job_nb         = i + 1;
-                luos_phy->job[i].data_pt = (uint8_t *)&msg_buffer[i];
+                luos_phy->job_nb              = 1;
+                luos_phy->oldest_job_index    = i;
+                luos_phy->available_job_index = i + 1;
+                luos_phy->job[i].data_pt      = (uint8_t *)&msg_buffer[i];
                 Phy_RmJob(luos_phy, &luos_phy->job[i]);
-                TEST_ASSERT_EQUAL(i, luos_phy->job_nb);
+                TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
                 TEST_ASSERT_EQUAL(NULL, luos_phy->job[i].data_pt);
             }
         }
@@ -1392,22 +1490,47 @@ void unittest_phy_RmJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+    }
+}
 
-        TRY
+void unittest_add_and_remove_jobs(void)
+{
+    NEW_TEST_CASE("Try to add and remove jobs massively");
+    {
+        Phy_Init();
+        for (int i = 0; i < MAX_MSG_NB - 1; i++)
         {
-            for (int i = 0; i < PHY_NB - 1; i++)
+            for (int y = 0; y <= i; y++)
             {
-                luos_phy->job_nb             = i + 2;
-                luos_phy->job[i].data_pt     = (uint8_t *)&msg_buffer[i];
-                luos_phy->job[i + 1].data_pt = (uint8_t *)&msg_buffer[i + 1];
-                Phy_RmJob(luos_phy, &luos_phy->job[i]);
-                TEST_ASSERT_EQUAL(i + 1, luos_phy->job_nb);
-                TEST_ASSERT_EQUAL(&msg_buffer[i + 1], luos_phy->job[i].data_pt);
+                phy_job_t job;
+                job.data_pt = (uint8_t *)&msg_buffer[0];
+                Phy_AddJob(luos_phy, &job);
+                TEST_ASSERT_EQUAL(y + 1, luos_phy->job_nb);
             }
-        }
-        CATCH
-        {
-            TEST_ASSERT_TRUE(false);
+            for (int y = 0; y <= i; y++)
+            {
+                phy_job_t *job_get = Phy_GetJob(luos_phy);
+                Phy_RmJob(luos_phy, job_get);
+                TEST_ASSERT_EQUAL(i - y, luos_phy->job_nb);
+            }
+            for (int y = 0; y <= i; y++)
+            {
+                phy_job_t job;
+                job.data_pt = (uint8_t *)&msg_buffer[0];
+                Phy_AddJob(luos_phy, &job);
+                TEST_ASSERT_EQUAL(y + 1, luos_phy->job_nb);
+            }
+            for (int y = i; y >= 0; y--)
+            {
+                uint16_t get_id = luos_phy->oldest_job_index + y;
+                if (get_id >= MAX_MSG_NB)
+                {
+                    get_id -= MAX_MSG_NB;
+                }
+                phy_job_t *job_get = &luos_phy->job[get_id];
+                Phy_RmJob(luos_phy, job_get);
+                TEST_ASSERT_EQUAL(y, luos_phy->job_nb);
+            }
         }
     }
 }
@@ -1448,9 +1571,14 @@ void unittest_phy_TxAllComplete()
     {
         TRY
         {
-            luos_phy->job_nb      = 1;
-            robus_phy->job_nb     = 1;
-            error_return_t result = Phy_TxAllComplete();
+            luos_phy->job_nb               = 1;
+            luos_phy->oldest_job_index     = 0;
+            luos_phy->available_job_index  = 1;
+            robus_phy->job_nb              = 1;
+            robus_phy->oldest_job_index    = 0;
+            robus_phy->available_job_index = 1;
+            phy_ctx.phy_nb                 = 2;
+            error_return_t result          = Phy_TxAllComplete();
             TEST_ASSERT_EQUAL(FAILED, result);
         }
         CATCH
@@ -1460,9 +1588,13 @@ void unittest_phy_TxAllComplete()
 
         TRY
         {
-            luos_phy->job_nb      = 0;
-            robus_phy->job_nb     = 1;
-            error_return_t result = Phy_TxAllComplete();
+            luos_phy->job_nb               = 0;
+            luos_phy->oldest_job_index     = 0;
+            luos_phy->available_job_index  = 0;
+            robus_phy->job_nb              = 1;
+            robus_phy->oldest_job_index    = 0;
+            robus_phy->available_job_index = 1;
+            error_return_t result          = Phy_TxAllComplete();
             TEST_ASSERT_EQUAL(FAILED, result);
         }
         CATCH
@@ -1498,9 +1630,11 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_phy_GetNodeId);
     UNIT_TEST_RUN(unittest_phy_AddJob);
     UNIT_TEST_RUN(unittest_phy_GetJob);
+    UNIT_TEST_RUN(unittest_phy_GetNextJob);
     UNIT_TEST_RUN(unittest_phy_GetJobId);
     UNIT_TEST_RUN(unittest_phy_GetPhyId);
     UNIT_TEST_RUN(unittest_phy_RmJob);
+    UNIT_TEST_RUN(unittest_add_and_remove_jobs);
     UNIT_TEST_RUN(unittest_phy_GetJobNbr);
     UNIT_TEST_RUN(unittest_phy_TxAllComplete);
 

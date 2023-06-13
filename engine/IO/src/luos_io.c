@@ -586,13 +586,14 @@ static error_return_t LuosIO_DetectNextNodes(service_t *service, bool wait_for_a
  * @param job pointer to the job pointer
  * @return SUCEED if the job is available, FAILED if not.
  ******************************************************************************/
-error_return_t LuosIO_TryToGetJob(uint16_t job_id, phy_job_t **job)
+error_return_t LuosIO_GetNextJob(phy_job_t **job)
 {
     LUOS_ASSERT(job != NULL);
     MSGALLOC_MUTEX_LOCK
-    if (job_id < luos_phy->job_nb)
+    phy_job_t *the_job = Phy_GetNextJob(luos_phy, *job);
+    *job               = the_job;
+    if (the_job != NULL)
     {
-        *job = &luos_phy->job[job_id];
         MSGALLOC_MUTEX_UNLOCK
         return SUCCEED;
     }
@@ -607,8 +608,9 @@ error_return_t LuosIO_TryToGetJob(uint16_t job_id, phy_job_t **job)
  ******************************************************************************/
 void LuosIO_RmJob(phy_job_t *job)
 {
-    LUOS_ASSERT((job >= luos_phy->job)
-                && (job < &luos_phy->job[luos_phy->job_nb]));
+    LUOS_ASSERT((job >= &luos_phy->job[0])
+                && (job < &luos_phy->job[MAX_MSG_NB])
+                && (job->phy_data != NULL));
     // Be sure every service has finished to use this job
     if (*(service_filter_t *)job->phy_data != 0)
     {

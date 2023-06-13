@@ -124,7 +124,9 @@ void Phy_Reset(void)
     for (uint8_t i = 0; i < phy_ctx.phy_nb; i++)
     {
         memset((void *)&phy_ctx.phy[i].job, 0, sizeof(phy_ctx.phy[0].job));
-        phy_ctx.phy[i].job_nb = 0;
+        phy_ctx.phy[i].job_nb              = 0;
+        phy_ctx.phy[i].oldest_job_index    = 0;
+        phy_ctx.phy[i].available_job_index = 0;
     }
 }
 
@@ -437,18 +439,22 @@ _CRITICAL void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job)
     uint16_t target_mode                        = job->msg_pt->header.target_mode;
 
     // Remove all job targeting this target on this phy job queue;
-    int i = 0;
-    while (i < phy_ptr->job_nb)
+
+    int i = phy_ptr->oldest_job_index;
+    while (i != phy_ptr->available_job_index)
     {
-        if ((phy_ptr->job[i].msg_pt->header.target == target) && (phy_ptr->job[i].msg_pt->header.target_mode == target_mode))
+        if (phy_ptr->job[i].msg_pt != NULL)
         {
-            // This job is targeting the dead target, remove it from the queue
-            Phy_RmJob(phy_ptr, &phy_ptr->job[i]);
+            if ((phy_ptr->job[i].msg_pt->header.target == target) && (phy_ptr->job[i].msg_pt->header.target_mode == target_mode))
+            {
+                // This job is targeting the dead target, remove it from the queue
+                Phy_RmJob(phy_ptr, &phy_ptr->job[i]);
+            }
         }
-        else
+        i++;
+        if (i >= MAX_MSG_NB)
         {
-            // Treat the next job
-            i++;
+            i = 0;
         }
     }
 }
@@ -506,10 +512,17 @@ static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job)
     LUOS_ASSERT((phy_job != NULL) && (phy_ptr != NULL));
     LUOS_ASSERT(phy_ptr->job_nb < MAX_MSG_NB);
     // Add the job to the queue
+    phy_job_t *returned_job = &phy_ptr->job[phy_ptr->available_job_index];
     LuosHAL_SetIrqState(false);
-    phy_ptr->job[phy_ptr->job_nb++] = *phy_job;
+    phy_ptr->job[phy_ptr->available_job_index++] = *phy_job;
+    if (phy_ptr->available_job_index >= MAX_MSG_NB)
+    {
+        phy_ptr->available_job_index = 0;
+    }
+    LUOS_ASSERT(phy_ptr->available_job_index != phy_ptr->oldest_job_index);
+    phy_ptr->job_nb++;
     LuosHAL_SetIrqState(true);
-    return &phy_ptr->job[phy_ptr->job_nb - 1];
+    return returned_job;
 }
 
 /******************************************************************************
@@ -524,7 +537,39 @@ _CRITICAL inline phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr)
     {
         return NULL;
     }
-    return &phy_ptr->job[0];
+    return &phy_ptr->job[phy_ptr->oldest_job_index];
+}
+
+/******************************************************************************
+ * @brief Get the next job from the phy queue
+ * @param phy_ptr Phy to get the job from
+ * @return Job pointer
+ ******************************************************************************/
+_CRITICAL phy_job_t *Phy_GetNextJob(luos_phy_t *phy_ptr, phy_job_t *job)
+{
+    LUOS_ASSERT(phy_ptr != NULL);
+    if (job == NULL)
+    {
+        return Phy_GetJob(phy_ptr);
+    }
+    if (phy_ptr->job_nb == 0)
+    {
+        return NULL;
+    }
+    int job_id = Phy_GetJobId(phy_ptr, job);
+    do
+    {
+        job_id++;
+        if (job_id >= MAX_MSG_NB)
+        {
+            job_id = 0;
+        }
+        if (job_id == phy_ptr->available_job_index)
+        {
+            return NULL;
+        }
+    } while (phy_ptr->job[job_id].msg_pt == NULL);
+    return &phy_ptr->job[job_id];
 }
 
 /******************************************************************************
@@ -541,6 +586,11 @@ inline int Phy_GetJobId(luos_phy_t *phy_ptr, phy_job_t *job)
     return (((uintptr_t)job - (uintptr_t)phy_ptr->job) / sizeof(phy_job_t));
 }
 
+/******************************************************************************
+ * @brief Get the phy id from the phy pointer
+ * @param phy_ptr Phy pointer
+ * @return Phy id
+ ******************************************************************************/
 inline int Phy_GetPhyId(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT((phy_ptr >= phy_ctx.phy)
@@ -564,13 +614,27 @@ _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
     int phy_index = Phy_GetPhyId(phy_ptr);
     MsgAlloc_Free(phy_index, job->data_pt);
 
-    // Remove the job from the queue
-    uint8_t id = Phy_GetJobId(phy_ptr, job);
-    for (int i = id; i < phy_ptr->job_nb; i++)
-    {
-        phy_ptr->job[i] = phy_ptr->job[i + 1];
-    }
+    // Clear this job values
+    memset(job, 0, sizeof(phy_job_t));
+    // Remove the job from the list
     phy_ptr->job_nb--;
+    uint8_t id = Phy_GetJobId(phy_ptr, job);
+    if (id == phy_ptr->oldest_job_index)
+    {
+        // We are removing the oldest job
+        while (phy_ptr->oldest_job_index != phy_ptr->available_job_index)
+        {
+            phy_ptr->oldest_job_index++;
+            if (phy_ptr->oldest_job_index >= MAX_MSG_NB)
+            {
+                phy_ptr->oldest_job_index = 0;
+            }
+            if (phy_ptr->job[phy_ptr->oldest_job_index].data_pt != NULL)
+            {
+                break;
+            }
+        }
+    }
 }
 
 /******************************************************************************

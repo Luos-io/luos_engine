@@ -29,7 +29,7 @@ uint16_t LuosIO_TopologyDetection(service_t *service);
 error_return_t LuosIO_Send(service_t *service, msg_t *msg);
 
 // Job management
-error_return_t LuosIO_TryToGetJob(uint16_t job_id, phy_job_t **job);
+error_return_t LuosIO_GetNextJob(phy_job_t **job);
 void LuosIO_RmJob(phy_job_t *job);
 uint16_t LuosIO_GetJobNb(void);
 error_return_t LuosIO_TxAllComplete(void);

@@ -844,32 +844,34 @@ void unittest_luosIO_DetectNextNodes()
     }
 }
 
-void unittest_luosIO_TryToGetJob()
+void unittest_luosIO_GetNextJob()
 {
-    NEW_TEST_CASE("Check assert condition for TryToGetJob");
+    NEW_TEST_CASE("Check assert condition for GetNextJob");
     {
         TRY
         {
             LuosIO_Init();
-            LuosIO_TryToGetJob(0, NULL);
+            LuosIO_GetNextJob(NULL);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
     }
 
-    NEW_TEST_CASE("Check TryToGetJob");
+    NEW_TEST_CASE("Check GetNextJob");
     {
+        LuosIO_Init();
+        phy_job_t *job                = NULL;
+        luos_phy->job_nb              = 2;
+        luos_phy->oldest_job_index    = 0;
+        luos_phy->available_job_index = 2;
         for (uint8_t i = 0; i < 2; i++)
         {
             TRY
             {
-                LuosIO_Init();
-                phy_job_t *job           = NULL;
-                luos_phy->job_nb         = 2;
                 luos_phy->job[0].data_pt = (uint8_t *)&msg_buffer[0];
                 luos_phy->job[1].data_pt = (uint8_t *)&msg_buffer[1];
 
-                error_return_t returned_val = LuosIO_TryToGetJob(i, &job);
+                error_return_t returned_val = LuosIO_GetNextJob(&job);
 
                 TEST_ASSERT_EQUAL(SUCCEED, returned_val);
                 TEST_ASSERT_EQUAL(&msg_buffer[i], job->data_pt);
@@ -883,13 +885,7 @@ void unittest_luosIO_TryToGetJob()
 
         TRY
         {
-            LuosIO_Init();
-            phy_job_t *job           = NULL;
-            luos_phy->job_nb         = 2;
-            luos_phy->job[0].data_pt = (uint8_t *)&msg_buffer[0];
-            luos_phy->job[1].data_pt = (uint8_t *)&msg_buffer[1];
-
-            error_return_t returned_val = LuosIO_TryToGetJob(2, &job);
+            error_return_t returned_val = LuosIO_GetNextJob(&job);
 
             TEST_ASSERT_EQUAL(FAILED, returned_val);
             TEST_ASSERT_EQUAL(NULL, job);
@@ -917,7 +913,9 @@ void unittest_luosIO_RmJob()
         TRY
         {
             LuosIO_Init();
-            luos_phy->job_nb = 3;
+            luos_phy->job_nb              = 3;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 3;
             LuosIO_RmJob(&luos_phy->job[luos_phy->job_nb]);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
@@ -929,23 +927,26 @@ void unittest_luosIO_RmJob()
         TRY
         {
             LuosIO_Init();
-            service_filter[0]         = 0x00;
-            service_filter[1]         = 0x01;
-            phy_job_t *job            = NULL;
-            luos_phy->job_nb          = 2;
-            luos_phy->job[0].data_pt  = (uint8_t *)&msg_buffer[0];
-            luos_phy->job[0].phy_data = &service_filter[0];
-            luos_phy->job[1].data_pt  = (uint8_t *)&msg_buffer[1];
-            luos_phy->job[1].phy_data = &service_filter[1];
+            service_filter[0]             = 0x00;
+            service_filter[1]             = 0x01;
+            phy_job_t *job                = NULL;
+            luos_phy->job_nb              = 2;
+            luos_phy->oldest_job_index    = 0;
+            luos_phy->available_job_index = 2;
+            luos_phy->job[0].data_pt      = (uint8_t *)&msg_buffer[0];
+            luos_phy->job[0].phy_data     = &service_filter[0];
+            luos_phy->job[1].data_pt      = (uint8_t *)&msg_buffer[1];
+            luos_phy->job[1].phy_data     = &service_filter[1];
 
             LuosIO_RmJob(&luos_phy->job[0]);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
-            TEST_ASSERT_EQUAL(&msg_buffer[1], luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(NULL, luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(&msg_buffer[1], luos_phy->job[1].data_pt);
 
             // Job 2 is not removed because service_filter is not equal to 0x00
-            LuosIO_RmJob(&luos_phy->job[0]);
+            LuosIO_RmJob(&luos_phy->job[1]);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
-            TEST_ASSERT_EQUAL(&msg_buffer[1], luos_phy->job[0].data_pt);
+            TEST_ASSERT_EQUAL(&msg_buffer[1], luos_phy->job[1].data_pt);
         }
         CATCH
         {
@@ -984,7 +985,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_luosIO_TransmitLocalRoutingTable);
     UNIT_TEST_RUN(unittest_luosIO_ConsumeMsg);
     UNIT_TEST_RUN(unittest_luosIO_DetectNextNodes);
-    UNIT_TEST_RUN(unittest_luosIO_TryToGetJob);
+    UNIT_TEST_RUN(unittest_luosIO_GetNextJob);
     UNIT_TEST_RUN(unittest_luosIO_RmJob);
     UNIT_TEST_RUN(unittest_luosIO_GetJobNb);
 

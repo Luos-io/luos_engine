@@ -59,8 +59,7 @@ void Luos_Init(void)
 void Luos_Loop(void)
 {
     static uint32_t last_loop_date;
-    uint16_t remaining_job_number = 0;
-    phy_job_t *job;
+    phy_job_t *job = NULL;
 
 #ifdef WITH_BOOTLOADER
     // After 3 Luos_Loop, consider this application as safe and write a flag to let the booloader know it can jump to the application safely.
@@ -86,18 +85,11 @@ void Luos_Loop(void)
     LuosIO_Loop();
     // Look at all received jobs
     LUOS_MUTEX_LOCK
-    while (LuosIO_TryToGetJob(remaining_job_number, &job) != FAILED)
+    while (LuosIO_GetNextJob(&job) != FAILED)
     {
         // We got a job
         // Try to deliver it to the services
-        if (Service_Deliver(job) == FAILED)
-        {
-            // Some services wasn't able to get this job, they are in polling mode keep it for later.
-#ifndef BOOTLOADER
-            remaining_job_number++;
-#endif
-        }
-        else
+        if (Service_Deliver(job) != FAILED)
         {
             // Services consume this job. remove it
             LuosIO_RmJob(job);
@@ -207,11 +199,10 @@ static error_return_t Luos_Send(service_t *service, msg_t *msg)
 error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write)
 {
     LUOS_ASSERT((msg_to_write != 0) && (service != 0));
-    uint8_t service_index    = Service_GetIndex(service);
-    int remaining_job_number = 0;
-    phy_job_t *job;
+    uint8_t service_index = Service_GetIndex(service);
+    phy_job_t *job        = NULL;
     LUOS_MUTEX_LOCK
-    while (LuosIO_TryToGetJob(remaining_job_number, &job) != FAILED)
+    while (LuosIO_GetNextJob(&job) != FAILED)
     {
         // We got a job
         // Check if our service is concerned by this job
@@ -238,7 +229,6 @@ error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write)
             LUOS_MUTEX_UNLOCK
             return SUCCEED;
         }
-        remaining_job_number++;
     }
     LUOS_MUTEX_UNLOCK
     return FAILED;
@@ -255,11 +245,10 @@ error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_
 {
 
     LUOS_ASSERT((msg_to_write != 0) && (service != 0) && (id != 0));
-    uint16_t remaining_job_number = 0;
-    phy_job_t *job;
+    phy_job_t *job        = NULL;
     uint8_t service_index = Service_GetIndex(service);
     LUOS_MUTEX_LOCK
-    while (LuosIO_TryToGetJob(remaining_job_number, &job) != FAILED)
+    while (LuosIO_GetNextJob(&job) != FAILED)
     {
         // We got a job
         // Check if our service is concerned by this job
@@ -281,7 +270,6 @@ error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_
             LUOS_MUTEX_UNLOCK
             return SUCCEED;
         }
-        remaining_job_number++;
     }
     LUOS_MUTEX_UNLOCK
     return FAILED;

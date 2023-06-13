@@ -51,10 +51,12 @@ typedef struct luos_phy_t
     phy_target_t rx_phy_filter; // The phy concerned by this message.
 
     // *************** TX informations ***************
-    // Jobs are stores from the newest to the oldest to optimize pulling time allowing to do it in IRQ.
-    // So adding a job is done by moving all job up and adding the new one at 0, then add 1 to job_nb.
-    phy_job_t job[MAX_MSG_NB]; // List of phy jobs to send.
-    uint8_t job_nb;            // Number of jobs to send.
+    // Jobs are used to send messages. during the message send phy may save a job pointer so we cann't move any job in the job list.
+    // When a job is created we have to guarantee that the job will stay. So we have to manage it as a circular buffer.
+    phy_job_t job[MAX_MSG_NB];    // List of phy jobs to send.
+    uint8_t job_nb;               // Number of jobs to send.
+    uint16_t oldest_job_index;    // Index of the oldest job.
+    uint16_t available_job_index; // Index of the next available job.
 
     void (*phy_cb)(struct luos_phy_t *phy_ptr, phy_job_t *job); // Callback
 } luos_phy_t;
@@ -74,7 +76,8 @@ uint16_t Phy_GetNodeId(void);
 
 // Job management
 void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job); // If some messages failed to be sent, call this function to consider the target as dead
-phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr);                      // Use it to get the next job to send.
+phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr);                      // Use it to get the first job to send.
+phy_job_t *Phy_GetNextJob(luos_phy_t *phy_ptr, phy_job_t *job);  // Use it to get the next job to send.
 void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job);             // Use it to remove a job from your phy job list when it's done.
 uint16_t Phy_GetJobNbr(luos_phy_t *phy_ptr);                     // Use it to get the number of job you currently have to send on your phy_ptr.job list.
 
