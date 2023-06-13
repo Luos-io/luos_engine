@@ -107,7 +107,10 @@ void Service_ClearId(void)
 {
     for (uint16_t i = 0; i < service_ctx.number; i++)
     {
-        service_ctx.list[i].id = DEFAULTID;
+        service_ctx.list[i].id                       = DEFAULTID;
+        service_ctx.list[i].auto_refresh.target      = 0;
+        service_ctx.list[i].auto_refresh.time_ms     = 0;
+        service_ctx.list[i].auto_refresh.last_update = 0;
     }
 }
 
