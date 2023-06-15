@@ -66,15 +66,14 @@ memory_stats_t *mem_stat = NULL;
 volatile uint8_t msg_buffer[MSG_BUFFER_SIZE]; /*!< Memory space used to save and alloc messages. */
 volatile uint8_t *data_ptr;                   /*!< Pointer to the next data able to be written into msgbuffer. */
 
-alloc_slot_t alloc_slots[MAX_MSG_NB]; /*!< Slots used to save the index of the first byte of a message. */
-volatile uint16_t alloc_slot_index;   /*!< Index of the next slot able to be written. */
+alloc_slot_t alloc_slots[MAX_MSG_NB];   /*!< Slots used to save the index of the first byte of a message. */
+volatile uint8_t alloc_nb;              // Number of referenced allocations.
+volatile uint16_t oldest_alloc_slot;    // Index of the oldest allocation.
+volatile uint16_t available_alloc_slot; // Index of the next available allocation slot.
 
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-
-// Pack allocated messages
-static inline void MsgAlloc_SlotPack(void);
 
 // msg buffering
 _CRITICAL static inline error_return_t MsgAlloc_DoWeHaveSpaceUntilBufferEnd(const void *to);
@@ -84,9 +83,6 @@ static inline error_return_t MsgAlloc_CheckMsgSpace(const void *from, const void
 
 // Available buffer space evaluation
 static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void);
-
-// Find get the oldest message
-_CRITICAL static inline uint8_t *MsgAlloc_GetOldestMsg(void);
 
 /*******************************************************************************
  * Functions --> generic
@@ -101,8 +97,10 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
     LuosHAL_SetIrqState(false);
-    data_ptr         = (uint8_t *)&msg_buffer[0];
-    alloc_slot_index = 0;
+    data_ptr             = (uint8_t *)&msg_buffer[0];
+    alloc_nb             = 0;
+    oldest_alloc_slot    = 0;
+    available_alloc_slot = 0;
     memset((void *)alloc_slots, 0, sizeof(alloc_slots));
     LuosHAL_SetIrqState(true);
     if (memory_stats != NULL)
@@ -118,8 +116,6 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
  ******************************************************************************/
 void MsgAlloc_Loop(void)
 {
-    // Pack the list of allocated messages
-    MsgAlloc_SlotPack();
     // Compute buffer occupation rate
     uint8_t stat = 0;
     stat         = (uint8_t)(((MSG_BUFFER_SIZE - MsgAlloc_BufferAvailableSpaceComputation()) * 100) / (MSG_BUFFER_SIZE));
@@ -127,46 +123,6 @@ void MsgAlloc_Loop(void)
     {
         mem_stat->buffer_occupation_ratio = stat;
     }
-}
-
-/******************************************************************************
- * @brief re-organize the list of allocated messages
- * @param None
- * @return None
- ******************************************************************************/
-static inline void MsgAlloc_SlotPack(void)
-{
-    LUOS_ASSERT(alloc_slot_index <= MAX_MSG_NB);
-    // Pack the list of allocated messages
-    uint16_t i     = 0;
-    uint16_t decay = 0;
-    LuosHAL_SetIrqState(false);
-    for (i = 0; i < alloc_slot_index; i++)
-    {
-        if (alloc_slots[i].data == 0)
-        {
-            decay++;
-        }
-        else
-        {
-            if (decay == 0)
-            {
-                continue;
-            }
-            if (i < MAX_MSG_NB)
-            {
-                alloc_slots[i - decay] = alloc_slots[i];
-                alloc_slots[i].data    = 0;
-            }
-            else
-            {
-
-                alloc_slots[i - decay].data = 0;
-            }
-        }
-    }
-    alloc_slot_index -= decay;
-    LuosHAL_SetIrqState(true);
 }
 
 /******************************************************************************
@@ -180,12 +136,14 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
     LUOS_ASSERT(((uintptr_t)data_ptr >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)data_ptr < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
 
     LuosHAL_SetIrqState(false);
-    uint8_t *oldest_msg = MsgAlloc_GetOldestMsg();
+    uint8_t *oldest_msg        = alloc_slots[oldest_alloc_slot].data;
+    uint8_t *data_ptr_snapshot = (uint8_t *)data_ptr;
+    LuosHAL_SetIrqState(true);
     if (oldest_msg != NULL)
     {
         LUOS_ASSERT(((uintptr_t)oldest_msg >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)oldest_msg < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
         // There is some tasks
-        if ((uintptr_t)oldest_msg > (uintptr_t)data_ptr)
+        if ((uintptr_t)oldest_msg > (uintptr_t)data_ptr_snapshot)
         {
             // The oldest task is between `data_ptr` and the end of the buffer
             //        msg_buffer
@@ -197,8 +155,7 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
             //               |                     |
             //               data_ptr              oldest_msg
             //
-            stack_free_space = (uintptr_t)oldest_msg - (uintptr_t)data_ptr;
-            LuosHAL_SetIrqState(true);
+            stack_free_space = (uintptr_t)oldest_msg - (uintptr_t)data_ptr_snapshot;
         }
         else
         {
@@ -214,43 +171,15 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
             //                      |                                 |
             //                      oldest_msg                        data_ptr
             //
-            stack_free_space = ((uintptr_t)oldest_msg - (uintptr_t)&msg_buffer[0]) + ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)data_ptr);
-            LuosHAL_SetIrqState(true);
+            stack_free_space = ((uintptr_t)oldest_msg - (uintptr_t)&msg_buffer[0]) + ((uintptr_t)&msg_buffer[MSG_BUFFER_SIZE] - (uintptr_t)data_ptr_snapshot);
         }
     }
     else
     {
         // There is nothing allocated
         stack_free_space = MSG_BUFFER_SIZE;
-        LuosHAL_SetIrqState(true);
     }
     return stack_free_space;
-}
-
-/******************************************************************************
- * @brief update the new oldest message if we need to
- * @param removed_msg : the freshly oldest removed message of the stack
- * @return None
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL static inline uint8_t *MsgAlloc_GetOldestMsg(void)
-{
-    LUOS_ASSERT(alloc_slot_index <= MAX_MSG_NB);
-    // Get the oldest message
-    if (alloc_slot_index == 0)
-    {
-        // There is no message allocated
-        return NULL;
-    }
-    for (int i = 0; i < alloc_slot_index; i++)
-    {
-        if (alloc_slots[i].data != NULL)
-        {
-            return alloc_slots[i].data;
-        }
-    }
-    // There is no message allocated
-    return NULL;
 }
 
 /*******************************************************************************
@@ -357,11 +286,16 @@ _CRITICAL uint8_t *MsgAlloc_Alloc(uint16_t data_size, uint8_t phy_filter)
 
 _CRITICAL void MsgAlloc_Reference(uint8_t *rx_data, uint8_t phy_filter)
 {
-    LUOS_ASSERT((rx_data < &msg_buffer[MSG_BUFFER_SIZE]) && (rx_data >= &msg_buffer[0]) && (phy_filter != 0) && (alloc_slot_index < MAX_MSG_NB));
+    LUOS_ASSERT((rx_data < &msg_buffer[MSG_BUFFER_SIZE]) && (rx_data >= &msg_buffer[0]) && (phy_filter != 0) && (alloc_nb < MAX_MSG_NB));
     // Reference a space into the alloc_slots
-    alloc_slots[alloc_slot_index].data       = rx_data;
-    alloc_slots[alloc_slot_index].phy_filter = phy_filter;
-    alloc_slot_index++;
+    alloc_slots[available_alloc_slot].data       = rx_data;
+    alloc_slots[available_alloc_slot].phy_filter = phy_filter;
+    alloc_nb++;
+    available_alloc_slot++;
+    if (available_alloc_slot >= MAX_MSG_NB)
+    {
+        available_alloc_slot = 0;
+    }
 }
 
 /******************************************************************************
@@ -375,7 +309,8 @@ _CRITICAL void MsgAlloc_Free(uint8_t phy_id, const uint8_t *data)
 {
     LUOS_ASSERT(data != NULL);
     // Find the slot where the data is stored
-    for (int i = 0; i < alloc_slot_index; i++)
+    int i = oldest_alloc_slot;
+    while (i != available_alloc_slot)
     {
         if (alloc_slots[i].data == data)
         {
@@ -389,8 +324,25 @@ _CRITICAL void MsgAlloc_Free(uint8_t phy_id, const uint8_t *data)
             {
                 // This message is not used anymore, free it
                 alloc_slots[i].data = NULL;
+                alloc_nb--;
+                if (i == oldest_alloc_slot)
+                {
+                    do
+                    {
+                        oldest_alloc_slot++;
+                        if (oldest_alloc_slot >= MAX_MSG_NB)
+                        {
+                            oldest_alloc_slot = 0;
+                        }
+                    } while ((alloc_slots[oldest_alloc_slot].data == NULL) && (oldest_alloc_slot != available_alloc_slot));
+                }
             }
             return;
+        }
+        i++;
+        if (i >= MAX_MSG_NB)
+        {
+            i = 0;
         }
     }
     // If you pass here, the message have been freed already.
@@ -404,8 +356,7 @@ _CRITICAL void MsgAlloc_Free(uint8_t phy_id, const uint8_t *data)
  ******************************************************************************/
 error_return_t MsgAlloc_IsEmpty(void)
 {
-    LUOS_ASSERT(alloc_slot_index <= MSG_BUFFER_SIZE);
-    if (alloc_slot_index == 0)
+    if (alloc_nb == 0)
     {
         return SUCCEED;
     }
@@ -428,7 +379,7 @@ static inline error_return_t MsgAlloc_CheckMsgSpace(const void *from, const void
                 && ((uintptr_t)from < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE])
                 && ((uintptr_t)to >= (uintptr_t)&msg_buffer[0])
                 && ((uintptr_t)to < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
-    uint8_t *oldest_msg = MsgAlloc_GetOldestMsg();
+    uint8_t *oldest_msg = alloc_slots[oldest_alloc_slot].data;
     if ((((uintptr_t)oldest_msg >= (uintptr_t)from) && ((uintptr_t)oldest_msg <= (uintptr_t)to)))
     {
         // FAILED CASES :

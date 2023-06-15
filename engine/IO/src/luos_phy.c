@@ -367,7 +367,7 @@ static void Phy_Dispatch(void)
 {
     static bool running = false;
     int i               = 0;
-    if (running)
+    if ((running) || (phy_ctx.io_job_nb == 0))
     {
         return;
     }

@@ -51,21 +51,6 @@ void unittest_luosIO_init()
 
 void unittest_luosIO_loop()
 {
-    NEW_TEST_CASE("Check that allocation treatment is done in loop");
-    {
-        TRY
-        {
-            LuosIO_Init();
-            alloc_slot_index = 3;
-            LuosIO_Loop();
-            TEST_ASSERT_EQUAL(0, alloc_slot_index);
-        }
-        CATCH
-        {
-            TEST_ASSERT_TRUE(false);
-        }
-        END_TRY;
-    }
 
     NEW_TEST_CASE("Check that phy treatment is done in loop");
     {
@@ -387,7 +372,6 @@ void unittest_luosIO_ConsumeMsg()
             msg_t msg;
             luosIO_reset_overlap_callback();
             phy_ctx.io_job_nb = 3;
-            alloc_slot_index  = 3;
             Node_SetState(DETECTION_OK);
             service_ctx.list[0].id = 1;
             service_ctx.list[1].id = 2;
@@ -400,7 +384,6 @@ void unittest_luosIO_ConsumeMsg()
             // Check received message content
             TEST_ASSERT_EQUAL(SUCCEED, ret_val);
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
-            TEST_ASSERT_EQUAL(0, alloc_slot_index);
             TEST_ASSERT_EQUAL(EXTERNAL_DETECTION, Node_GetState());
         }
         CATCH

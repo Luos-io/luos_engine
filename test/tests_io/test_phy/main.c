@@ -246,8 +246,10 @@ void unittest_phy_alloc()
         memory_stats_t memory_stats;
         MsgAlloc_Init(&memory_stats);
         // Put a fake message in allocation
-        alloc_slot_index    = 1;
-        alloc_slots[0].data = (uint8_t *)&msg_buffer[7];
+        alloc_nb             = 1;
+        oldest_alloc_slot    = 0;
+        available_alloc_slot = 1;
+        alloc_slots[0].data  = (uint8_t *)&msg_buffer[7];
         TRY
         {
             phy_test_reset();
@@ -1299,7 +1301,7 @@ void unittest_phy_GetNextJob()
             luos_phy->job_nb              = 1;
             luos_phy->oldest_job_index    = 0;
             luos_phy->available_job_index = 1;
-            luos_phy->job[0].msg_pt       = &msg_buffer[0];
+            luos_phy->job[0].data_pt      = (const uint8_t *)&msg_buffer[0];
             job                           = Phy_GetNextJob(luos_phy, job);
             TEST_ASSERT_EQUAL(&luos_phy->job[0], job);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
@@ -1314,9 +1316,9 @@ void unittest_phy_GetNextJob()
             luos_phy->job_nb              = 3;
             luos_phy->oldest_job_index    = 0;
             luos_phy->available_job_index = 3;
-            luos_phy->job[0].msg_pt       = &msg_buffer[0];
-            luos_phy->job[1].msg_pt       = &msg_buffer[1];
-            luos_phy->job[2].msg_pt       = &msg_buffer[2];
+            luos_phy->job[0].data_pt      = (const uint8_t *)&msg_buffer[0];
+            luos_phy->job[1].data_pt      = (const uint8_t *)&msg_buffer[1];
+            luos_phy->job[2].data_pt      = (const uint8_t *)&msg_buffer[2];
             job                           = Phy_GetNextJob(luos_phy, job);
             TEST_ASSERT_EQUAL(&luos_phy->job[1], job);
             TEST_ASSERT_EQUAL(3, luos_phy->job_nb);
