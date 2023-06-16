@@ -113,6 +113,8 @@ void Robus_SaveNodeID(uint16_t nodeid)
 void Robus_ResetNodeID(void)
 {
     PortMng_Init();
+    Recep_Reset();
+    Transmit_Init();
 }
 
 /******************************************************************************

@@ -261,6 +261,15 @@ static error_return_t LuosIO_StartTopologyDetection(service_t *service)
         uint32_t start_tick = LuosHAL_GetSystick();
         while (LuosHAL_GetSystick() - start_tick < 2)
             ;
+        // Resend the message just to be sure that no other messages were revceived during the reset.
+        Luos_SendMsg(service, &msg);
+        // Wait until message is actually transmitted
+        while (Phy_TxAllComplete() != SUCCEED)
+            ;
+        // Wait 2ms to be sure all previous messages are received and treated by other nodes
+        start_tick = LuosHAL_GetSystick();
+        while (LuosHAL_GetSystick() - start_tick < 2)
+            ;
         try_nbr++;
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
     // Reinit our node id

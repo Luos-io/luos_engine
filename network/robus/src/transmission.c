@@ -74,6 +74,8 @@ void Transmit_Init(void)
     ctx.tx.collision = false;
     // Init Tx status
     ctx.tx.status = TX_DISABLE;
+    // Init the transmission retry counter
+    nbrRetry = 0;
 }
 /******************************************************************************
  * @brief Transmit an ACK
@@ -194,11 +196,15 @@ _CRITICAL void Transmit_Process()
             }
 
             // Transmit data
-            if (Phy_GetJobNbr(robus_phy) != 0)
+            if (Phy_GetJob(robus_phy) == job)
             {
                 LUOS_ASSERT((job->size + jobEncaps->size) >= 9);
                 // We still have something to send, no reset occured
                 RobusHAL_ComTransmit(tx_data, (job->size + jobEncaps->size));
+            }
+            else
+            {
+                nbrRetry = 0;
             }
         }
     }
