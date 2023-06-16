@@ -514,9 +514,8 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
         //**************************************** bootloader section ****************************************
         case BOOTLOADER_CMD:
-            // send data to the bootloader
-            LuosBootloader_MsgHandler(input);
-            return SUCCEED;
+            // TODO add here the bootloader command used in application avoiding to include bootloader files.
+            return FAILED;
             break;
 
         default:

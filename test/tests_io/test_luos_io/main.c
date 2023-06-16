@@ -785,7 +785,7 @@ void unittest_luosIO_ConsumeMsg()
             error_return_t ret_val = LuosIO_ConsumeMsg(&msg);
 
             // Check received message content
-            TEST_ASSERT_EQUAL(SUCCEED, ret_val);
+            TEST_ASSERT_EQUAL(FAILED, ret_val);
         }
         CATCH
         {
