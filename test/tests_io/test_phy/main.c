@@ -246,7 +246,6 @@ void unittest_phy_alloc()
         memory_stats_t memory_stats;
         MsgAlloc_Init(&memory_stats);
         // Put a fake message in allocation
-        alloc_nb             = 1;
         oldest_alloc_slot    = 0;
         available_alloc_slot = 1;
         alloc_slots[0].data  = (uint8_t *)&msg_buffer[7];

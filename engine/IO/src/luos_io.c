@@ -163,6 +163,7 @@ error_return_t LuosIO_Send(service_t *service, msg_t *msg)
     luos_phy->received_data = sizeof(header_t);
     luos_phy->rx_keep       = true; // Tell phy that we want to keep this message
     Phy_ComputeHeader(luos_phy);
+    LUOS_ASSERT(luos_phy->rx_keep == true);
     // The header computation give us how many byte we need to have.
     // Just update the received data to the full message size.
     luos_phy->received_data = luos_phy->rx_size;
@@ -271,6 +272,7 @@ static error_return_t LuosIO_StartTopologyDetection(service_t *service)
         while (LuosHAL_GetSystick() - start_tick < 2)
             ;
         try_nbr++;
+
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
     // Reinit our node id
     Node_Get()->node_id = 0;

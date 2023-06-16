@@ -254,15 +254,17 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         // Now we can create a phy_job to dispatch the tx_job later
         LUOS_ASSERT(phy_ctx.io_job_nb < MAX_MSG_NB);
         LuosHAL_SetIrqState(false);
-        phy_ctx.io_job[phy_ctx.io_job_nb].timestamp  = phy_ptr->rx_timestamp;
-        phy_ctx.io_job[phy_ctx.io_job_nb].alloc_msg  = (msg_t *)phy_ptr->rx_data;
-        phy_ctx.io_job[phy_ctx.io_job_nb].phy_filter = phy_ptr->rx_phy_filter;
-        phy_ctx.io_job[phy_ctx.io_job_nb].size       = phy_ptr->rx_size;
-        phy_ctx.io_job_nb++;
+        uint16_t my_job = phy_ctx.io_job_nb++;
+        LuosHAL_SetIrqState(true);
+        // Now copy the data in the job
+        phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
+        phy_ctx.io_job[my_job].alloc_msg  = (msg_t *)phy_ptr->rx_data;
+        phy_ctx.io_job[my_job].phy_filter = phy_ptr->rx_phy_filter;
+        phy_ctx.io_job[my_job].size       = phy_ptr->rx_size;
+
         // Then reset the phy to receive the next message
         phy_ptr->rx_data       = phy_ptr->rx_buffer_base;
         phy_ptr->received_data = 0;
-        LuosHAL_SetIrqState(true);
     }
 }
 
@@ -324,18 +326,17 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             // Now allocate it
             rx_data          = MsgAlloc_Alloc(phy_ptr->rx_size, (uint8_t)phy_ptr->rx_phy_filter);
             phy_ptr->rx_data = rx_data;
+            LuosHAL_SetIrqState(true);
             // Check if this message is a luos transmission and if allocation succeed
             if ((phy_ptr == &phy_ctx.phy[0]) && (rx_data == NULL))
             {
                 // We don't successfully allocated the message we are trying to send.
                 // return and the transmitter will be able to wait to get more space...
-                LuosHAL_SetIrqState(true);
                 phy_ptr->rx_keep = false;
                 return;
             }
             LUOS_ASSERT(rx_data != NULL); // Assert if the allocation failed. We don't allow to loose a message comming from outside.
             // Job is done
-            LuosHAL_SetIrqState(true);
             copy_from = (void *)phy_ptr->rx_buffer_base;
 
             // Now we can copy the data already received
@@ -346,15 +347,8 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
     }
     else
     {
-        LuosHAL_SetIrqState(false);
-        if (phy_ptr->rx_alloc_job)
-        {
-            // Job is done
-            phy_ptr->rx_alloc_job = false;
-            LuosHAL_SetIrqState(true);
-            return;
-        }
-        LuosHAL_SetIrqState(true);
+        // We don't want to keep it so we don't allocate it.
+        phy_ptr->rx_alloc_job = false;
     }
 }
 
@@ -512,16 +506,17 @@ static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job)
     LUOS_ASSERT((phy_job != NULL) && (phy_ptr != NULL));
     LUOS_ASSERT(phy_ptr->job_nb < MAX_MSG_NB);
     // Add the job to the queue
-    phy_job_t *returned_job = &phy_ptr->job[phy_ptr->available_job_index];
     LuosHAL_SetIrqState(false);
-    phy_ptr->job[phy_ptr->available_job_index++] = *phy_job;
+    phy_job_t *returned_job = &phy_ptr->job[phy_ptr->available_job_index++];
     if (phy_ptr->available_job_index >= MAX_MSG_NB)
     {
         phy_ptr->available_job_index = 0;
     }
     LUOS_ASSERT(phy_ptr->available_job_index != phy_ptr->oldest_job_index);
-    phy_ptr->job_nb++;
     LuosHAL_SetIrqState(true);
+    phy_ptr->job_nb++;
+    // Copy the actual job data to the allocated job
+    *returned_job = *phy_job;
     return returned_job;
 }
 

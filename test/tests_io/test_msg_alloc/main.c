@@ -42,7 +42,6 @@ void unittest_BufferAvailableSpaceComputation(void)
         TRY
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
             data_ptr             = (uint8_t *)&msg_buffer[0];
@@ -60,7 +59,6 @@ void unittest_BufferAvailableSpaceComputation(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = (uint8_t *)&msg_buffer[0];
@@ -78,7 +76,6 @@ void unittest_BufferAvailableSpaceComputation(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
@@ -96,7 +93,6 @@ void unittest_BufferAvailableSpaceComputation(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
@@ -201,7 +197,6 @@ void unittest_CheckMsgSpace(void)
         TRY
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
             TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
@@ -218,7 +213,6 @@ void unittest_CheckMsgSpace(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[9]));
@@ -235,10 +229,8 @@ void unittest_CheckMsgSpace(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[11], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
@@ -255,7 +247,6 @@ void unittest_CheckMsgSpace(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
@@ -272,7 +263,6 @@ void unittest_CheckMsgSpace(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[0], (uint8_t *)&msg_buffer[10]));
@@ -289,7 +279,6 @@ void unittest_CheckMsgSpace(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_CheckMsgSpace((uint8_t *)&msg_buffer[10], (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 1]));
@@ -351,7 +340,6 @@ void unittest_MsgAlloc_Loop()
             // Buffer occupation from 0 -> 100%
             NEW_STEP("Check buffer is full in all cases");
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             for (uint16_t i = 1; i < MSG_BUFFER_SIZE; i++)
@@ -409,7 +397,6 @@ void unittest_MsgAlloc_Alloc()
         TRY
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
             data_ptr             = &msg_buffer[0];
@@ -427,7 +414,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[10];
@@ -446,7 +432,6 @@ void unittest_MsgAlloc_Alloc()
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
             alloc_slots[1].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 2;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 2;
             data_ptr             = &msg_buffer[20];
@@ -464,7 +449,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[MSG_BUFFER_SIZE - 5];
@@ -482,7 +466,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[5];
@@ -500,7 +483,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 5];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[MSG_BUFFER_SIZE - 7];
@@ -518,7 +500,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[MSG_BUFFER_SIZE - 5];
@@ -526,7 +507,6 @@ void unittest_MsgAlloc_Alloc()
 
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[1];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[MSG_BUFFER_SIZE - 5];
@@ -544,7 +524,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[1];
@@ -563,7 +542,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = 0;
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[0];
@@ -597,7 +575,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[0];
@@ -612,7 +589,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[2];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[2];
@@ -627,7 +603,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[MSG_BUFFER_SIZE - 2 - (MSG_BUFFER_SIZE % 2)];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[MSG_BUFFER_SIZE - 2 - (MSG_BUFFER_SIZE % 2)];
@@ -642,7 +617,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[10];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[0];
@@ -657,7 +631,6 @@ void unittest_MsgAlloc_Alloc()
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             data_ptr             = &msg_buffer[MSG_BUFFER_SIZE - 8];
@@ -695,7 +668,6 @@ void unittest_MsgAlloc_Reference(void)
         END_TRY;
         TRY
         {
-            alloc_nb             = MAX_MSG_NB;
             oldest_alloc_slot    = 0;
             available_alloc_slot = MAX_MSG_NB;
             MsgAlloc_Reference((uint8_t *)&msg_buffer[0], 1);
@@ -707,12 +679,10 @@ void unittest_MsgAlloc_Reference(void)
     {
         TRY
         {
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
             MsgAlloc_Reference((uint8_t *)&msg_buffer[0], 1);
             TEST_ASSERT_EQUAL(&msg_buffer[0], alloc_slots[0].data);
-            TEST_ASSERT_EQUAL(1, alloc_nb);
         }
         CATCH
         {
@@ -728,7 +698,6 @@ void unittest_MsgAlloc_IsEmpty(void)
         TRY
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
             TEST_ASSERT_EQUAL(SUCCEED, MsgAlloc_IsEmpty());
@@ -745,7 +714,6 @@ void unittest_MsgAlloc_IsEmpty(void)
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data  = (uint8_t *)&msg_buffer[0];
-            alloc_nb             = 1;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 1;
             TEST_ASSERT_EQUAL(FAILED, MsgAlloc_IsEmpty());
@@ -776,7 +744,6 @@ void unittest_MsgAlloc_Free(void)
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data       = (uint8_t *)&msg_buffer[0];
             alloc_slots[0].phy_filter = 0x01;
-            alloc_nb                  = 1;
             oldest_alloc_slot         = 0;
             available_alloc_slot      = 1;
             MsgAlloc_Free(1, (uint8_t *)&msg_buffer[0]);
@@ -790,11 +757,9 @@ void unittest_MsgAlloc_Free(void)
         TRY
         {
             memset(alloc_slots, 0, sizeof(alloc_slots));
-            alloc_nb             = 0;
             oldest_alloc_slot    = 0;
             available_alloc_slot = 0;
             MsgAlloc_Free(1, (uint8_t *)&msg_buffer[0]);
-            TEST_ASSERT_EQUAL(0, alloc_nb);
             TEST_ASSERT_EQUAL(0, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(0, available_alloc_slot);
         }
@@ -812,7 +777,6 @@ void unittest_MsgAlloc_Free(void)
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data       = (uint8_t *)&msg_buffer[0];
             alloc_slots[0].phy_filter = 0x01;
-            alloc_nb                  = 1;
             oldest_alloc_slot         = 0;
             available_alloc_slot      = 1;
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[0]);
@@ -835,19 +799,16 @@ void unittest_MsgAlloc_Free(void)
             memset(alloc_slots, 0, sizeof(alloc_slots));
             alloc_slots[0].data       = (uint8_t *)&msg_buffer[0];
             alloc_slots[0].phy_filter = 0x03;
-            alloc_nb                  = 1;
             oldest_alloc_slot         = 0;
             available_alloc_slot      = 1;
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[0]);
             TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[0], alloc_slots[0].data);
             TEST_ASSERT_EQUAL(0x02, alloc_slots[0].phy_filter);
-            TEST_ASSERT_EQUAL(1, alloc_nb);
             TEST_ASSERT_EQUAL(0, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(1, available_alloc_slot);
             MsgAlloc_Free(1, (uint8_t *)&msg_buffer[0]);
             TEST_ASSERT_EQUAL(0, alloc_slots[0].data);
             TEST_ASSERT_EQUAL(0x00, alloc_slots[0].phy_filter);
-            TEST_ASSERT_EQUAL(0, alloc_nb);
             TEST_ASSERT_EQUAL(1, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(1, available_alloc_slot);
         }
@@ -866,17 +827,14 @@ void unittest_MsgAlloc_Free(void)
             alloc_slots[0].phy_filter = 0x01;
             alloc_slots[1].data       = (uint8_t *)&msg_buffer[1];
             alloc_slots[1].phy_filter = 0x01;
-            alloc_nb                  = 2;
             oldest_alloc_slot         = 0;
             available_alloc_slot      = 2;
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[1]);
             TEST_ASSERT_EQUAL((uint8_t *)&msg_buffer[0], alloc_slots[0].data);
-            TEST_ASSERT_EQUAL(1, alloc_nb);
             TEST_ASSERT_EQUAL(0, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(2, available_alloc_slot);
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[0]);
             TEST_ASSERT_EQUAL(0, alloc_slots[0].data);
-            TEST_ASSERT_EQUAL(0, alloc_nb);
             TEST_ASSERT_EQUAL(2, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(2, available_alloc_slot);
         }
@@ -896,15 +854,12 @@ void unittest_MsgAlloc_Free(void)
             alloc_slots[MAX_MSG_NB - 1].phy_filter = 0x01;
             alloc_slots[0].data                    = (uint8_t *)&msg_buffer[1];
             alloc_slots[0].phy_filter              = 0x01;
-            alloc_nb                               = 2;
             oldest_alloc_slot                      = MAX_MSG_NB - 1;
             available_alloc_slot                   = 1;
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[1]);
-            TEST_ASSERT_EQUAL(1, alloc_nb);
             TEST_ASSERT_EQUAL(MAX_MSG_NB - 1, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(1, available_alloc_slot);
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[0]);
-            TEST_ASSERT_EQUAL(0, alloc_nb);
             TEST_ASSERT_EQUAL(1, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(1, available_alloc_slot);
         }
@@ -921,15 +876,12 @@ void unittest_MsgAlloc_Free(void)
             alloc_slots[MAX_MSG_NB - 1].phy_filter = 0x01;
             alloc_slots[0].data                    = (uint8_t *)&msg_buffer[1];
             alloc_slots[0].phy_filter              = 0x01;
-            alloc_nb                               = 2;
             oldest_alloc_slot                      = MAX_MSG_NB - 1;
             available_alloc_slot                   = 1;
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[0]);
-            TEST_ASSERT_EQUAL(1, alloc_nb);
             TEST_ASSERT_EQUAL(0, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(1, available_alloc_slot);
             MsgAlloc_Free(0, (uint8_t *)&msg_buffer[1]);
-            TEST_ASSERT_EQUAL(0, alloc_nb);
             TEST_ASSERT_EQUAL(1, oldest_alloc_slot);
             TEST_ASSERT_EQUAL(1, available_alloc_slot);
         }
