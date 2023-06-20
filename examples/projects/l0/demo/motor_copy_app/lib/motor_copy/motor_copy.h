@@ -8,6 +8,7 @@
 #define MOTOR_COPY_H
 
 #include "luos_engine.h"
+#include "robus.h"
 
 /*******************************************************************************
  * Definitions

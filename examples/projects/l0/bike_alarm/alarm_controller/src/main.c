@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "led_fader.h"
 #include "alarm_controller.h"
 /* USER CODE END Includes */
@@ -90,6 +91,7 @@ int main(void)
 
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     LedFader_Init();
     AlarmController_Init();
     /* USER CODE END 2 */

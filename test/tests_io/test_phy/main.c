@@ -36,13 +36,22 @@ static void phy_robus_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
     }
 }
 
+error_return_t topo_cb(luos_phy_t *phy_ptr, uint8_t *portId)
+{
+    return SUCCEED;
+}
+
+void reset_cb(luos_phy_t *phy_ptr)
+{
+}
+
 static void phy_test_reset(void)
 {
     Phy_Init();
-    luos_phy = Phy_Get(0, phy_luos_MsgHandler);
+    luos_phy = Phy_Get(0, phy_luos_MsgHandler, reset_cb, topo_cb);
     TEST_ASSERT_EQUAL(&phy_ctx.phy[0], luos_phy);
     TEST_ASSERT_EQUAL(1, phy_ctx.phy_nb);
-    robus_phy = Phy_Create(phy_robus_MsgHandler);
+    robus_phy = Phy_Create(phy_robus_MsgHandler, reset_cb, topo_cb);
     TEST_ASSERT_EQUAL(&phy_ctx.phy[1], robus_phy);
     TEST_ASSERT_EQUAL(2, phy_ctx.phy_nb);
 }

@@ -8,6 +8,7 @@
 #define LIGHT_SENSOR_H
 
 #include "luos_engine.h"
+#include "robus.h"
 #include "light_sensor_drv.h"
 /*******************************************************************************
  * Definitions

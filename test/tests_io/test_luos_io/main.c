@@ -18,12 +18,21 @@ static void phy_robus_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
     Robus_handled_job = job;
 }
 
+error_return_t topo_cb(luos_phy_t *phy_ptr, uint8_t *portId)
+{
+    return SUCCEED;
+}
+
+void reset_cb(luos_phy_t *phy_ptr)
+{
+}
+
 static void luosIO_reset_overlap_callback(void)
 {
     LuosIO_Init();
     // Overlap the normal callbacks
-    luos_phy = Phy_Get(0, phy_luos_MsgHandler);
-    Phy_Get(1, phy_robus_MsgHandler);
+    luos_phy = Phy_Get(0, phy_luos_MsgHandler, topo_cb, reset_cb);
+    Phy_Get(1, phy_robus_MsgHandler, topo_cb, reset_cb);
     TEST_ASSERT_EQUAL(&phy_ctx.phy[0], luos_phy);
 }
 
@@ -151,6 +160,8 @@ void unittest_luosIO_TransmitLocalRoutingTable()
 
 void unittest_luosIO_ConsumeMsg()
 {
+    connection_t con_table[5];
+
     NEW_TEST_CASE("Check assert condition for ConsumeMsg");
     {
         TRY
@@ -160,34 +171,96 @@ void unittest_luosIO_ConsumeMsg()
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
+
+        TRY
+        {
+            LuosIO_Init();
+            msg_t msg;
+            msg.header.cmd       = CONNECTION_DATA;
+            connection_table_ptr = NULL;
+            LuosIO_ConsumeMsg(&msg);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
+            LuosIO_Init();
+            msg_t msg;
+            msg.header.cmd       = PORT_DATA;
+            connection_table_ptr = NULL;
+            LuosIO_ConsumeMsg(&msg);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
+            LuosIO_Init();
+            msg_t msg;
+            msg.header.cmd              = PORT_DATA;
+            msg.header.size             = 0;
+            connection_table_ptr        = con_table;
+            con_table[0].parent.node_id = 1;
+            LuosIO_ConsumeMsg(&msg);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
+            LuosIO_Init();
+            msg_t msg;
+            msg.header.cmd                          = PORT_DATA;
+            msg.header.size                         = sizeof(port_t);
+            connection_table_ptr                    = con_table;
+            con_table[last_node - 1].parent.node_id = 0xFFFF;
+            LuosIO_ConsumeMsg(&msg);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
+            LuosIO_Init();
+            msg_t msg;
+            msg.header.cmd                      = PORT_DATA;
+            msg.header.size                     = sizeof(connection_t) + 1;
+            connection_table_ptr                = con_table;
+            con_table[last_node].parent.node_id = 20;
+            LuosIO_ConsumeMsg(&msg);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
     }
 
-    NEW_TEST_CASE("Check WRITE_NODE_ID size 0 treatment (node id generation)");
+    NEW_TEST_CASE("Check CONNECTION_DATA size of a port_ treatment (topology retriving)");
     {
         TRY
         {
             luosIO_reset_overlap_callback();
-            Luos_handled_job    = NULL;
             last_node           = 1;
             Node_Get()->node_id = 1;
             msg_t msg;
-            msg.header.cmd    = WRITE_NODE_ID;
-            msg.header.size   = 0;
-            msg.header.source = 1;
+            msg.header.cmd  = CONNECTION_DATA;
+            msg.header.size = sizeof(port_t);
+            port_t port;
+            port.node_id = 1;
+            port.phy_id  = 2;
+            port.port_id = 3;
+            memcpy(msg.data, &port, sizeof(port_t));
+            memset(connection_table_ptr, 0xFF, sizeof(connection_t) * 2);
 
             LuosIO_ConsumeMsg(&msg);
-
             TEST_ASSERT_EQUAL(2, last_node);
-            // Check received message content
-            TEST_ASSERT_NOT_EQUAL(NULL, Luos_handled_job);
-            TEST_ASSERT_EQUAL(WRITE_NODE_ID, Luos_handled_job->msg_pt->header.cmd);
-            TEST_ASSERT_EQUAL(sizeof(uint16_t), Luos_handled_job->msg_pt->header.size);
-            TEST_ASSERT_EQUAL(msg.header.source, Luos_handled_job->msg_pt->header.target);
-            TEST_ASSERT_EQUAL(NODEIDACK, Luos_handled_job->msg_pt->header.target_mode);
-            TEST_ASSERT_EQUAL(1, service_ctx.list[0].id);
-            uint16_t id;
-            memcpy((void *)&id, (void *)Luos_handled_job->msg_pt->data, sizeof(uint16_t));
-            TEST_ASSERT_EQUAL(2, id);
+
+            TEST_ASSERT_EQUAL(1, connection_table_ptr[1].parent.node_id);
+            TEST_ASSERT_EQUAL(2, connection_table_ptr[1].parent.phy_id);
+            TEST_ASSERT_EQUAL(3, connection_table_ptr[1].parent.port_id);
+
+            TEST_ASSERT_EQUAL(0xFFFF, connection_table_ptr[0].parent.node_id);
+            TEST_ASSERT_EQUAL(0xFF, connection_table_ptr[0].parent.phy_id);
+            TEST_ASSERT_EQUAL(0xFF, connection_table_ptr[0].parent.port_id);
         }
         CATCH
         {
@@ -196,34 +269,47 @@ void unittest_luosIO_ConsumeMsg()
         END_TRY;
     }
 
-    NEW_TEST_CASE("Check WRITE_NODE_ID size 2 treatment (node id received from the detector)");
+    NEW_TEST_CASE("Check CONNECTION_DATA size of a connection_t treatment (topology retriving)");
     {
         TRY
         {
             luosIO_reset_overlap_callback();
-            Luos_handled_job    = NULL;
-            Robus_handled_job   = NULL;
+            last_node           = 1;
             Node_Get()->node_id = 1;
             msg_t msg;
-            msg.header.cmd    = WRITE_NODE_ID;
-            msg.header.size   = 2;
-            msg.header.source = 1;
-            uint16_t id       = 2;
-            memcpy((void *)msg.data, (void *)&id, sizeof(uint16_t));
+            msg.header.cmd  = CONNECTION_DATA;
+            msg.header.size = 2 * sizeof(connection_t);
+            connection_t con[2];
+            con[0].parent.node_id = 2;
+            con[0].parent.phy_id  = 1;
+            con[0].parent.port_id = 3;
+            con[0].child.node_id  = 4;
+            con[0].child.phy_id   = 5;
+            con[0].child.port_id  = 6;
+            con[1].parent.node_id = 7;
+            con[1].parent.phy_id  = 8;
+            con[1].parent.port_id = 9;
+            con[1].child.node_id  = 3;
+            con[1].child.phy_id   = 11;
+            con[1].child.port_id  = 12;
+
+            memcpy(msg.data, con, 2 * sizeof(connection_t));
+            memset(connection_table_ptr, 0xFF, sizeof(connection_t) * 2);
 
             LuosIO_ConsumeMsg(&msg);
+            TEST_ASSERT_EQUAL(3, last_node);
 
-            // Check received message content
-            TEST_ASSERT_EQUAL(NULL, Luos_handled_job);
-            TEST_ASSERT_NOT_EQUAL(NULL, Robus_handled_job);
-            TEST_ASSERT_EQUAL(WRITE_NODE_ID, Robus_handled_job->msg_pt->header.cmd);
-            TEST_ASSERT_EQUAL(sizeof(node_bootstrap_t), Robus_handled_job->msg_pt->header.size);
-            TEST_ASSERT_EQUAL(0, Robus_handled_job->msg_pt->header.target);
-            TEST_ASSERT_EQUAL(NODEIDACK, Robus_handled_job->msg_pt->header.target_mode);
-            node_bootstrap_t node_bootstrap;
-            memcpy((void *)&node_bootstrap, (void *)Robus_handled_job->msg_pt->data, sizeof(node_bootstrap_t));
-            TEST_ASSERT_EQUAL(2, node_bootstrap.nodeid);
-            TEST_ASSERT_EQUAL(1, node_bootstrap.prev_nodeid);
+            TEST_ASSERT_EQUAL(2, connection_table_ptr[1].parent.node_id);
+            TEST_ASSERT_EQUAL(1, connection_table_ptr[1].parent.phy_id);
+            TEST_ASSERT_EQUAL(3, connection_table_ptr[1].parent.port_id);
+
+            TEST_ASSERT_EQUAL(3, connection_table_ptr[2].child.node_id);
+            TEST_ASSERT_EQUAL(11, connection_table_ptr[2].child.phy_id);
+            TEST_ASSERT_EQUAL(12, connection_table_ptr[2].child.port_id);
+
+            TEST_ASSERT_EQUAL(0xFFFF, connection_table_ptr[0].parent.node_id);
+            TEST_ASSERT_EQUAL(0xFF, connection_table_ptr[0].parent.phy_id);
+            TEST_ASSERT_EQUAL(0xFF, connection_table_ptr[0].parent.port_id);
         }
         CATCH
         {
@@ -232,7 +318,7 @@ void unittest_luosIO_ConsumeMsg()
         END_TRY;
     }
 
-    NEW_TEST_CASE("Check WRITE_NODE_ID sizeof node_bootstrap_t treatment (nodereceiving it's id and the previous one)");
+    NEW_TEST_CASE("Check NODE_ID reception");
     {
         TRY
         {
@@ -241,22 +327,49 @@ void unittest_luosIO_ConsumeMsg()
             Robus_handled_job   = NULL;
             Node_Get()->node_id = 0;
             msg_t msg;
-            msg.header.cmd    = WRITE_NODE_ID;
-            msg.header.size   = sizeof(node_bootstrap_t);
+            msg.header.cmd    = NODE_ID;
+            msg.header.size   = 2;
             msg.header.source = 1;
-
-            node_bootstrap_t node_bootstrap;
-            node_bootstrap.nodeid      = 2;
-            node_bootstrap.prev_nodeid = 1;
-            memcpy((void *)msg.data, (void *)&node_bootstrap, sizeof(node_bootstrap_t));
+            uint16_t node_id  = 2;
+            memcpy(msg.data, &node_id, sizeof(uint16_t));
 
             error_return_t ret_val = LuosIO_ConsumeMsg(&msg);
 
-            // Check received message content
             TEST_ASSERT_EQUAL(SUCCEED, ret_val);
             TEST_ASSERT_EQUAL(NULL, Luos_handled_job);
             TEST_ASSERT_EQUAL(NULL, Robus_handled_job);
             TEST_ASSERT_EQUAL(2, Node_Get()->node_id);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check PORT_DATA treatment (topology retriving)");
+    {
+        TRY
+        {
+            luosIO_reset_overlap_callback();
+            Luos_handled_job                       = NULL;
+            last_node                              = 2;
+            connection_table_ptr[1].parent.node_id = 2;
+            Node_Get()->node_id                    = 1;
+            msg_t msg;
+            msg.header.cmd  = PORT_DATA;
+            msg.header.size = sizeof(port_t);
+            port_t port;
+            port.node_id = 1;
+            port.phy_id  = 2;
+            port.port_id = 3;
+            memcpy(msg.data, &port, sizeof(port_t));
+
+            LuosIO_ConsumeMsg(&msg);
+
+            TEST_ASSERT_EQUAL(1, connection_table_ptr[1].child.node_id);
+            TEST_ASSERT_EQUAL(2, connection_table_ptr[1].child.phy_id);
+            TEST_ASSERT_EQUAL(3, connection_table_ptr[1].child.port_id);
         }
         CATCH
         {
@@ -384,7 +497,6 @@ void unittest_luosIO_ConsumeMsg()
             // Check received message content
             TEST_ASSERT_EQUAL(SUCCEED, ret_val);
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
-            TEST_ASSERT_EQUAL(EXTERNAL_DETECTION, Node_GetState());
         }
         CATCH
         {

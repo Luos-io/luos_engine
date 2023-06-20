@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "servo.h"
 /* USER CODE END Includes */
 
@@ -89,6 +90,7 @@ int main(void)
     MX_GPIO_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     Servo_Init();
     /* USER CODE END 2 */
 

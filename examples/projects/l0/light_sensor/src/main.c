@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "light_sensor.h"
 /* USER CODE END Includes */
 
@@ -92,6 +93,7 @@ int main(void)
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     LightSensor_Init();
     /* USER CODE END 2 */
 

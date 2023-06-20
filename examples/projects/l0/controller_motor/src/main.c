@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "controller_motor.h"
 /* USER CODE END Includes */
 
@@ -86,6 +87,7 @@ int main(void)
     /* Initialize all configured peripherals */
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     ControllerMotor_Init();
     /* USER CODE END 2 */
 

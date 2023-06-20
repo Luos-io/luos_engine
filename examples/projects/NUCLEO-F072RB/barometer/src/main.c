@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "BMP280.h"
 
 void SystemClock_Config(void);
@@ -34,6 +35,7 @@ int main(void)
     SystemClock_Config();
     MX_GPIO_Init();
     Luos_Init();
+    Robus_Init();
     BMP280_Init();
 
     while (1)

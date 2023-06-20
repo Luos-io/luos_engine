@@ -32,6 +32,7 @@ void Init_Context(void)
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
+    Robus_Init();
     if (IS_ASSERT())
     {
         printf("[FATAL] Can't reset scenario context\n");
@@ -41,6 +42,7 @@ void Init_Context(void)
 
     RESET_ASSERT();
     Luos_Init();
+    Robus_Init();
 
     // Create services
     revision_t revision  = {.major = 1, .minor = 0, .build = 0};

@@ -10,20 +10,24 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define LUOS_LAST_RESERVED_CMD 42    // Last Luos reserved command
-#define ROBUS_PROTOCOL_NB      13    // Number of Robus protocol command
-#define ALIAS_SIZE             15    // Number of max char for service alias
+#define LUOS_LAST_RESERVED_CMD 42 // Last Luos reserved command
+#define ROBUS_PROTOCOL_NB      13 // Number of Robus protocol command
+#define ALIAS_SIZE             15 // Number of max char for service alias
+#define MAX_ALIAS_SIZE         16
 #define DETECTION_TIMEOUT_MS   10000 // Timeout used to detect a failed detection
 #define BOOT_TIMEOUT           1000
 #define DEFAULTID              0x00
 #define PROTOCOL_REVISION      0
 #define BROADCAST_VAL          0x0FFF
 
-#define MAX_ALIAS_SIZE    16
 #define MAX_DATA_MSG_SIZE 128
 
 #ifndef MAX_SERVICE_NUMBER
     #define MAX_SERVICE_NUMBER 5
+#endif
+
+#ifndef MAX_NODE_NUMBER
+    #define MAX_NODE_NUMBER 20
 #endif
 
 #ifndef MAX_RTB_ENTRY
@@ -44,10 +48,6 @@
 
 #ifndef MAX_MSG_NB
     #define MAX_MSG_NB 2 * MAX_SERVICE_NUMBER
-#endif
-
-#ifndef NBR_PORT
-    #define NBR_PORT 2
 #endif
 
 #ifndef LAST_TOPIC

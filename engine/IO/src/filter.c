@@ -213,7 +213,9 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
             break;
         case NODEIDACK:
         case NODEID:
-            if (header->target == Node_Get()->node_id)
+            // If the target is our node and our node ave a node_id or if we don't have a node_id and we are waiting for one.
+            if (((header->target == Node_Get()->node_id) && (header->target != 0))
+                || ((header->target == 0) && (Node_WaitId() == true)))
             {
                 // This concerns Luos phy only
                 return 0x01;

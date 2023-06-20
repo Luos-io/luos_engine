@@ -1,4 +1,5 @@
 #include "luos_engine.h"
+#include "robus.h"
 #include "pipe.h"
 #include "gate.h"
 #include <pthread.h>
@@ -16,6 +17,7 @@ void *Gate_Pipe_LoopThread(void *vargp)
 int main(void)
 {
     Luos_Init();
+    Robus_Init();
     Pipe_Init();
     Gate_Init();
     // Create a thread to convert messages into Json and steam them using Websocket

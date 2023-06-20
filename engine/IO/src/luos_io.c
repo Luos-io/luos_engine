@@ -14,38 +14,27 @@
 #include "luos_hal.h"
 #include "luos_engine.h"
 #include "bootloader_core.h"
+#include "robus.h"
 #include "_luos_phy.h"
 #include "stats.h"
-
-#include "robus.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-typedef struct __attribute__((__packed__))
-{
-    union
-    {
-        struct __attribute__((__packed__))
-        {
-            uint16_t prev_nodeid;
-            uint16_t nodeid;
-        };
-        uint8_t unmap[sizeof(uint16_t) * 2];
-    };
-} node_bootstrap_t;
-
 static error_return_t LuosIO_StartTopologyDetection(service_t *service);
-static error_return_t LuosIO_DetectNextNodes(service_t *service, bool wait_for_answer);
-static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job);
+static error_return_t LuosIO_DetectNextNodes(service_t *service);
 static error_return_t LuosIO_ConsumeMsg(const msg_t *input);
 static void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
+
+// Phy_callbacks
+static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job);
+error_return_t LuosIO_RunTopo(luos_phy_t *phy_ptr, uint8_t *portId);
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-volatile uint16_t last_node = 0;
+volatile uint16_t last_node        = 0;
+connection_t *connection_table_ptr = NULL;
 luos_phy_t *luos_phy;
 service_filter_t service_filter[MAX_MSG_NB]; // Service filter table. Each of these filter will be linked with jobs.
 uint8_t service_filter_index = 0;            // Index of the next service filter to use.
@@ -55,6 +44,23 @@ bool Flag_DetectServices     = false;
 /*******************************************************************************
  * Functions
  ******************************************************************************/
+
+error_return_t LuosIO_RunTopo(luos_phy_t *phy_ptr, uint8_t *portId)
+{
+    // This function should not be called because Luos can't run a topology.
+    LUOS_ASSERT(0);
+    return FAILED;
+}
+
+void LuosIO_Reset(luos_phy_t *phy_ptr)
+{
+    MsgAlloc_Init(NULL);
+    Node_Init();
+    Node_SetState(EXTERNAL_DETECTION);
+    Service_ClearId();
+    // Reset the data reception context
+    Luos_ReceiveData(NULL, NULL, NULL);
+}
 
 /******************************************************************************
  * @brief Init the interface file.
@@ -75,10 +81,7 @@ void LuosIO_Init(void)
     Phy_Init();
 
     // Get the Luos phy struct, Luos always use the first phy
-    luos_phy = Phy_Get(0, LuosIO_MsgHandler);
-
-    // Init Robus
-    Robus_Init();
+    luos_phy = Phy_Get(0, LuosIO_MsgHandler, LuosIO_RunTopo, LuosIO_Reset);
 }
 
 /******************************************************************************
@@ -91,7 +94,6 @@ void LuosIO_Loop(void)
     // Execute message allocation tasks
     MsgAlloc_Loop();
     Phy_Loop();
-    Robus_Loop();
     if (Flag_DetectServices == true)
     {
         LUOS_ASSERT(detection_service != NULL);
@@ -185,14 +187,16 @@ error_return_t LuosIO_Send(service_t *service, msg_t *msg)
  * @param service pointer to the detecting service
  * @return The number of detected node.
  ******************************************************************************/
-uint16_t LuosIO_TopologyDetection(service_t *service)
+uint16_t LuosIO_TopologyDetection(service_t *service, connection_t *connection_table)
 {
-    uint8_t redetect_nb = 0;
-    bool detect_enabled = true;
+    uint8_t redetect_nb  = 0;
+    bool detect_enabled  = true;
+    connection_table_ptr = connection_table;
 
     // If a detection is in progress, don't do an another detection and return 0
     if (Node_GetState() >= LOCAL_DETECTION)
     {
+        connection_table_ptr = NULL;
         return 0;
     }
     while (detect_enabled)
@@ -204,6 +208,7 @@ uint16_t LuosIO_TopologyDetection(service_t *service)
         // Make sure that the detection is not interrupted
         if (Node_GetState() == EXTERNAL_DETECTION)
         {
+            connection_table_ptr = NULL;
             return 0;
         }
         // Setup local node
@@ -211,8 +216,11 @@ uint16_t LuosIO_TopologyDetection(service_t *service)
         last_node           = 1;
         // Setup sending service id
         service->id = 1;
+        // Consider this node as ready
+        // Clear the nodeID waiting flag
+        Node_WaitId();
 
-        if (LuosIO_DetectNextNodes(service, true) == FAILED)
+        if (LuosIO_DetectNextNodes(service) == FAILED)
         {
             // check the number of retry we made
             LUOS_ASSERT((redetect_nb <= 4));
@@ -221,6 +229,7 @@ uint16_t LuosIO_TopologyDetection(service_t *service)
             detect_enabled = true;
         }
     }
+    connection_table_ptr = NULL;
     return last_node;
 }
 
@@ -250,14 +259,8 @@ static error_return_t LuosIO_StartTopologyDetection(service_t *service)
         // Wait until message is actually transmitted
         while (Phy_TxAllComplete() != SUCCEED)
             ;
-        // Reinit services id
-        Service_ClearId();
-        // Reinit msg alloc
-        MsgAlloc_Init(NULL);
-        // Reinit service filter
-        Filter_IdInit();
-        // Reinit Phy
-        Phy_Reset();
+        // Reinit Phy (this will call LuosIO_Reset)
+        Phy_ResetAll();
         // Wait 2ms to be sure all previous messages are received and treated by other nodes
         uint32_t start_tick = LuosHAL_GetSystick();
         while (LuosHAL_GetSystick() - start_tick < 2)
@@ -276,8 +279,6 @@ static error_return_t LuosIO_StartTopologyDetection(service_t *service)
     } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
     // Reinit our node id
     Node_Get()->node_id = 0;
-    // Clear any saved node id on physical layer ports
-    Robus_ResetNodeID();
     if (try_nbr < 5)
     {
         Node_SetState(LOCAL_DETECTION);
@@ -295,7 +296,6 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
 {
     LUOS_ASSERT(input != NULL);
     msg_t output_msg;
-    node_bootstrap_t node_bootstrap;
     time_luos_t time;
     service_t *service         = Service_GetConcerned(&input->header);
     dead_target_t *dead_target = (dead_target_t *)input->data;
@@ -305,62 +305,80 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
     switch (input->header.cmd)
     {
         //**************************************** detection section ****************************************
-        case WRITE_NODE_ID:
-            // Depending on the size of the received data we have to do different things
-            switch (input->header.size)
+        // Only the master node should receive this message
+        case CONNECTION_DATA:
+            LUOS_ASSERT(connection_table_ptr != NULL);
+            if (input->header.size == sizeof(port_t))
             {
-                case 0:
-                    // Someone asking us a new node id (we are the detecting service)
-                    // Increase the number of node_nb and send it back
-                    last_node++;
-                    output_msg.header.cmd         = WRITE_NODE_ID;
-                    output_msg.header.size        = sizeof(uint16_t);
-                    output_msg.header.target      = input->header.source;
-                    output_msg.header.target_mode = NODEIDACK;
-                    memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
-                    Luos_SendMsg(service, &output_msg);
-                    break;
-                case 2:
-                    // This is a node id for the next node.
-                    // This is a reply to our request to generate the next node id.
-                    // This node_id is the one after the currently poked branch.
-                    // Extract the node id from the received data
-                    memcpy((void *)&node_bootstrap.nodeid, (void *)&input->data[0], sizeof(uint16_t));
-                    // We need to save this node ID as a connection to a port
-                    Robus_SaveNodeID(node_bootstrap.nodeid);
-                    // Now we can send it to the next node
-                    node_bootstrap.prev_nodeid    = Node_Get()->node_id;
-                    output_msg.header.cmd         = WRITE_NODE_ID;
-                    output_msg.header.size        = sizeof(node_bootstrap_t);
-                    output_msg.header.target      = 0;
-                    output_msg.header.target_mode = NODEIDACK;
-                    memcpy((void *)&output_msg.data[0], (void *)&node_bootstrap.unmap[0], sizeof(node_bootstrap_t));
-                    Luos_SendMsg(service, &output_msg);
-                    break;
-                case sizeof(node_bootstrap_t):
-                    if (Node_Get()->node_id != 0)
-                    {
-                        Node_Get()->node_id = 0;
-                        // Reinit service id
-                        Service_ClearId();
-                        // Reinit msg alloc
-                        MsgAlloc_Init(NULL);
-                        // Reinit service filter
-                        Filter_IdInit();
-                        // Reinit Phy
-                        Phy_Reset();
-                    }
-                    // This is a node bootstrap information.
-                    memcpy((void *)&node_bootstrap.unmap[0], (void *)&input->data[0], sizeof(node_bootstrap_t));
-                    Node_Get()->node_id = node_bootstrap.nodeid;
-                    Robus_SaveNodeID(node_bootstrap.prev_nodeid);
-                    // Continue the topology detection on our other ports.
-                    LuosIO_DetectNextNodes(service, false);
-                    break;
-                default:
-                    LUOS_ASSERT(0);
-                    break;
+                // This is a partial connection information (only the output part)
+                // Save it we will receive the input part later
+                memcpy(&connection_table_ptr[last_node++].parent, input->data, sizeof(port_t));
+                // Now send the new generated node_id
+                output_msg.header.cmd         = NODE_ID;
+                output_msg.header.size        = sizeof(uint16_t);
+                output_msg.header.target      = 0; // We target the node_id 0 becanse the node receiving this message don't have a node_id yet. This node need to be the only one to receive it.
+                output_msg.header.target_mode = NODEIDACK;
+                memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
+                Luos_SendMsg(service, &output_msg);
             }
+            else
+            {
+                // We receive this because a node port have a static mapping of it's connectivity, so we have to save it and consider it as detected nodes.
+                // Check that we receive a full connection information
+                LUOS_ASSERT(input->header.size % sizeof(connection_t) == 0);
+                memcpy(&connection_table_ptr[last_node], input->data, input->header.size);
+                last_node += input->header.size / sizeof(connection_t);
+                // Check that node id are continuous
+                LUOS_ASSERT(connection_table_ptr[last_node - 1].child.node_id == last_node);
+            }
+            // This message have been consumed
+            return SUCCEED;
+            break;
+
+        // Only the master node should receive this message
+        case PORT_DATA:
+            LUOS_ASSERT(connection_table_ptr != NULL);
+            // This is the last part (input port) of a connection_ data
+            // Check that we receive a full port information
+            LUOS_ASSERT(input->header.size == sizeof(port_t)
+                        && (connection_table_ptr[last_node - 1].parent.node_id != 0xFFFF));
+            memcpy(&connection_table_ptr[last_node - 1].child, input->data, sizeof(port_t));
+            // This message have been consumed
+            return SUCCEED;
+            break;
+
+        case NODE_ID:
+            LUOS_ASSERT(input->header.size == sizeof(uint16_t));
+            // This is our new node id.
+            if (Node_Get()->node_id != 0)
+            {
+                // We didn't received the start detection message
+                // Reinit our node id
+                Node_Get()->node_id = 0;
+                // A phy have already been detected, so we can't reset everything
+                // Just reset LuosIO and Phy jobs.
+                LuosIO_Reset(luos_phy);
+                // Reinit Phy
+                Phy_Reset();
+            }
+            // Save our new node id
+            // We have to do it this way because Node_Get()->node_id is a bitfield and input->data is not well aligned.
+            uint16_t node_id;
+            memcpy(&node_id, input->data, sizeof(uint16_t));
+            Node_Get()->node_id = node_id;
+            // Now we need to send back the input part of the connection data.
+            port_t *input_port  = Phy_GetTopologysource();
+            input_port->node_id = Node_Get()->node_id;
+
+            output_msg.header.target_mode = NODEIDACK;
+            output_msg.header.target      = 1;
+            output_msg.header.cmd         = PORT_DATA;
+            output_msg.header.size        = sizeof(port_t);
+            memcpy(output_msg.data, input_port, sizeof(port_t));
+            Luos_SendMsg(service, &output_msg);
+            // This message can't be send directly to avoid dispatch re-entrance issue.
+            // To be able to send this message then run the detection of the other nodes we need to make it later on the LuosIO_Loop, so we put a flag for it.
+            Phy_FindNextNodeJob();
             // This message have been consumed
             return SUCCEED;
             break;
@@ -391,7 +409,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
 
         case RTB:
-            // We are receiving a rouiting table
+            // We are receiving a routing table
             // Check routing table overflow
             LUOS_ASSERT(((uintptr_t)route_tab + input->header.size) <= ((uintptr_t)RoutingTB_Get() + (sizeof(routing_table_t) * MAX_RTB_ENTRY)));
             if (Luos_ReceiveData(service, input, (void *)route_tab) > 0)
@@ -404,14 +422,8 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
 
         case START_DETECTION:
-            Phy_Reset();
-            MsgAlloc_Init(NULL);
-            Node_Init();
-            Node_SetState(EXTERNAL_DETECTION);
-            Service_ClearId();
-            // Reset the data reception context
-            Luos_ReceiveData(NULL, NULL, NULL);
-            Robus_ResetNodeID();
+            // Reset All phy
+            Phy_ResetAll();
             // This message have been consumed
             return SUCCEED;
             break;
@@ -553,31 +565,18 @@ static inline void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *r
  * @param service pointer to the detecting service
  * @return None.
  ******************************************************************************/
-static error_return_t LuosIO_DetectNextNodes(service_t *service, bool wait_for_answer)
+static error_return_t LuosIO_DetectNextNodes(service_t *service)
 {
-    // Lets try to poke other nodes
-    while (Robus_FindNeighbour() == SUCCEED)
+    // Lets try to find other nodes
+    while (Phy_FindNextNode() == SUCCEED)
     {
-        // There is someone here
-        // Ask an ID  to the detector service.
-        msg_t msg;
-        msg.header.config      = BASE_PROTOCOL;
-        msg.header.target_mode = NODEIDACK;
-        msg.header.target      = 1;
-        msg.header.cmd         = WRITE_NODE_ID;
-        msg.header.size        = 0;
-        Luos_SendMsg(service, &msg);
-        if (wait_for_answer == false)
-        {
-            return SUCCEED;
-        }
         // Wait the end of transmission
         while (Phy_TxAllComplete() == FAILED)
             ;
         // When Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
         // We just have to wait the end of the treatment of the entire branch
         uint32_t start_tick = LuosHAL_GetSystick();
-        while (Robus_Busy())
+        while (Phy_Busy())
         {
             LuosIO_Loop();
             if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)

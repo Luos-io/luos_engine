@@ -4,15 +4,15 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
-#ifndef _ROBUS_H_
-#define _ROBUS_H_
+#ifndef __ROBUS_H_
+#define __ROBUS_H_
 
+#include <stdint.h>
 #include "luos_phy.h"
 
 /*******************************************************************************
  * Function
  ******************************************************************************/
-void Robus_Init(void);
-void Robus_Loop(void);
+luos_phy_t *Robus_GetPhy(void);
 
-#endif /* _ROBUS_H_ */
+#endif /* __ROBUS_H_ */

@@ -6,6 +6,7 @@
 #include <time.h>
 #include <errno.h>
 #include "luos_engine.h"
+#include "robus.h"
 #include "game_anim.h"
 #include "scoring.h"
 

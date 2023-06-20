@@ -8,6 +8,7 @@
 #define LedStripPosition
 
 #include "luos_engine.h"
+#include "robus.h"
 
 /*******************************************************************************
  * Definitions

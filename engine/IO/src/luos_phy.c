@@ -73,6 +73,12 @@ typedef struct
     luos_phy_t phy[PHY_NB]; // phy[0] is the local phy, phy[1] is the remote phy.
     uint8_t phy_nb;         // Number of phy instantiated in the phy_ctx.phy array.
 
+    // ******************** Topology management ********************
+    port_t topology_source; // The source port. Where we receive the topological detection signal from.
+    uint32_t topology_done; // We put bits to 1 when a phy ended the topology detection.
+    bool topology_running;  // We put bits to 1 when a phy is running the topology detection.
+    bool find_next_node_job;
+
     // ******************** job management ********************
     // io_jobs are stores from the newest to the oldest.
     // This will add time in IRQ when we will pull a job but allow to keep pointers constant.
@@ -110,7 +116,7 @@ void Phy_Init(void)
 }
 
 /******************************************************************************
- * @brief Reset the phy
+ * @brief Reset the phy context
  * @param None
  * @return None
  ******************************************************************************/
@@ -128,6 +134,35 @@ void Phy_Reset(void)
         phy_ctx.phy[i].oldest_job_index    = 0;
         phy_ctx.phy[i].available_job_index = 0;
     }
+    memset((void *)&phy_ctx.topology_source, 0xFFFF, sizeof(phy_ctx.topology_source));
+    phy_ctx.topology_done      = 0;
+    phy_ctx.topology_running   = false;
+    phy_ctx.find_next_node_job = false;
+}
+
+/******************************************************************************
+ * @brief Reset the phy context and all the phy instances
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Phy_ResetAll(void)
+{
+    Phy_Reset();
+    // Now call the reset fuction of each phy
+    for (uint8_t i = 0; i < phy_ctx.phy_nb; i++)
+    {
+        phy_ctx.phy[i].reset_phy(&phy_ctx.phy[i]);
+    }
+}
+
+/******************************************************************************
+ * @brief Check if a phy is actually detecting nodes on one of its port
+ * @param None
+ * @return None
+ ******************************************************************************/
+bool Phy_Busy(void)
+{
+    return phy_ctx.topology_running;
 }
 
 /******************************************************************************
@@ -146,6 +181,15 @@ void Phy_Loop(void)
     Phy_ManageFailedJob();
     // Manage complete message received dispatching
     Phy_Dispatch();
+    // Check if we need to find the next node
+    if (phy_ctx.find_next_node_job == true)
+    {
+        phy_ctx.find_next_node_job = false;
+        // Wait for the node to send all its messages.
+        while (Phy_TxAllComplete() == FAILED)
+            ;
+        Phy_FindNextNode();
+    }
     // Compute phy job statistics
     /*
     uint8_t stat = (uint8_t)((job nbr * 100) / (MAX_MSG_NB));
@@ -160,23 +204,142 @@ void Phy_Loop(void)
  * @param phy_cb callback to call when we want to transmit a message
  * @return None
  ******************************************************************************/
-luos_phy_t *Phy_Create(PHY_CB phy_cb)
+luos_phy_t *Phy_Create(JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
 {
-    return Phy_Get(phy_ctx.phy_nb++, phy_cb);
+    return Phy_Get(phy_ctx.phy_nb++, job_cb, run_topo, reset_phy);
 }
 
 /******************************************************************************
- * @brief return the local physical layer
+ * @brief save a flag allowing to run a new discovering outside of IRQ (because this function is very long and can't be run in IRQ)
+ * @return None
+ ******************************************************************************/
+_CRITICAL void Phy_FindNextNodeJob(void)
+{
+    phy_ctx.find_next_node_job = true;
+}
+/******************************************************************************
+ * @brief Try to find the next node connected a phy port
+ * @return SUCCESS if a node is found, FAILED if not
+ ******************************************************************************/
+error_return_t Phy_FindNextNode(void)
+{
+    // Loop through all the phys except Luos and check if they need to be detected
+    // We have to make the source phy the last one to check because it is the one that will send back the token when all its ports will be detected.
+    // So we need to finish detections of all other phys before checking the source phy.
+    for (uint8_t i = 1; i < phy_ctx.phy_nb; i++)
+    {
+        if ((!(phy_ctx.topology_done & (1 << i))) && (phy_ctx.topology_source.phy_id != i))
+        {
+            // This phy still have port to detect
+            uint8_t port_id;
+            // Check if a node is connected
+            phy_ctx.topology_running = true;
+            if (phy_ctx.phy[i].run_topo(&phy_ctx.phy[i], &port_id) == SUCCEED)
+            {
+                port_t output_port;
+                output_port.node_id = Node_Get()->node_id;
+                output_port.port_id = port_id;
+                output_port.phy_id  = i;
+
+                // We find a new node on this specific output_port
+                // Send the output_port information to master as a partial CONNECTION_DATA and ask it to generate and send a new node_id.
+                msg_t msg;
+                msg.header.target_mode = NODEIDACK;
+                msg.header.target      = 1;
+                msg.header.cmd         = CONNECTION_DATA;
+                msg.header.size        = sizeof(port_t);
+                memcpy(msg.data, &output_port, sizeof(port_t));
+                Luos_SendMsg(0, &msg);
+                return SUCCEED;
+            }
+            phy_ctx.topology_running = false;
+        }
+    }
+    // We checked all the phys except the source one.
+    // Check if the source phy still have port to detect
+    if (phy_ctx.topology_done != (1 << phy_ctx.phy_nb) - 2)
+    {
+        // We still have a phy to detect. This must be the source phy.
+        // Check that only the source phy and the luos phy are not detected.
+        LUOS_ASSERT((phy_ctx.topology_done | (1 << phy_ctx.topology_source.phy_id)) == ((1 << phy_ctx.phy_nb) - 2));
+        uint8_t port_id;
+        // Check if a node is connected
+        phy_ctx.topology_running = true;
+        if (phy_ctx.phy[phy_ctx.topology_source.phy_id].run_topo(&phy_ctx.phy[phy_ctx.topology_source.phy_id], &port_id) == SUCCEED)
+        {
+            port_t output_port;
+            output_port.node_id = Node_Get()->node_id;
+            output_port.port_id = port_id;
+            output_port.phy_id  = phy_ctx.topology_source.phy_id;
+
+            // We find a new node on this specific output_port
+            // Send the output_port information to master as a partial CONNECTION_DATA and ask it to generate and send a new node_id.
+            msg_t msg;
+            msg.header.target_mode = NODEIDACK;
+            msg.header.target      = 1;
+            msg.header.cmd         = CONNECTION_DATA;
+            msg.header.size        = sizeof(port_t);
+            memcpy(msg.data, &output_port, sizeof(port_t));
+            Luos_SendMsg(0, &msg);
+            return SUCCEED;
+        }
+        phy_ctx.topology_running = false;
+    }
+    // This is the end of detection for our node.
+    return FAILED;
+}
+
+/******************************************************************************
+ * @brief A phy port have been detected
+ * @param phy_ptr pointer on the phy which have been detected
+ * @param port_id id of the port detected in the phy
+ * @return None
+ ******************************************************************************/
+void Phy_Topologysource(luos_phy_t *phy_ptr, uint8_t port_id)
+{
+    LUOS_ASSERT((phy_ptr != NULL)
+                && (port_id < 0xFF));
+    // This port is the source of a topology request. it become the input port.
+    // We have to save it in the node context.
+    phy_ctx.topology_source.phy_id  = Phy_GetPhyId(phy_ptr);
+    phy_ctx.topology_source.port_id = port_id;
+    phy_ctx.topology_source.node_id = 0xFFFF;
+    // We don't have the node id yet, we will fill it out when we will receive it from the master.
+    // Put a flag to indicate that we are waiting for a node id.
+    Node_WillGetId();
+}
+
+void Phy_TopologyDone(luos_phy_t *phy_ptr)
+{
+    LUOS_ASSERT(phy_ptr != NULL);
+    phy_ctx.topology_done    = (1 << Phy_GetPhyId(phy_ptr));
+    phy_ctx.topology_running = false;
+}
+
+/******************************************************************************
+ * @brief A phy port have been detected
+ * @return pointer on the input port
+ ******************************************************************************/
+port_t *Phy_GetTopologysource(void)
+{
+    return &phy_ctx.topology_source;
+}
+
+/******************************************************************************
+ * @brief return the local physical layer (only used by LuosIO, this function is private)
  * @param id of the phy we want
  * @param phy_cb callback to call when we want to transmit a message
  * @return None
  ******************************************************************************/
-luos_phy_t *Phy_Get(uint8_t id, PHY_CB phy_cb)
+luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
 {
     LUOS_ASSERT((id <= PHY_NB)
-                && (phy_cb != NULL));
-    // Set the callback
-    phy_ctx.phy[id].phy_cb = phy_cb;
+                && (job_cb != NULL)
+                && (run_topo != NULL));
+    // Set the callbacks
+    phy_ctx.phy[id].job_cb    = job_cb;
+    phy_ctx.phy[id].run_topo  = run_topo;
+    phy_ctx.phy[id].reset_phy = reset_phy;
     // Return the phy pointer
     return &phy_ctx.phy[id];
 }
@@ -400,7 +563,7 @@ static void Phy_Dispatch(void)
                 // Write the job in the phy queue and get back the pointer to it
                 phy_job_t *job_ptr = Phy_AddJob(&phy_ctx.phy[y], &phy_job);
                 // Notify this phy that a job is available and give it the concerned job on his queue
-                phy_ctx.phy[y].phy_cb(&phy_ctx.phy[y], job_ptr);
+                phy_ctx.phy[y].job_cb(&phy_ctx.phy[y], job_ptr);
             }
         }
         LuosHAL_SetIrqState(false);
@@ -637,7 +800,7 @@ _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
  * @param phy_ptr Phy to get the number of job from
  * @return Number of job
  ******************************************************************************/
-_CRITICAL inline uint16_t Phy_GetJobNbr(luos_phy_t *phy_ptr)
+_CRITICAL inline volatile uint16_t Phy_GetJobNbr(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT(phy_ptr != NULL);
     return phy_ptr->job_nb;

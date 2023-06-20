@@ -9,6 +9,7 @@ extern "C"
 #endif
 
 #include "luos_engine.h"
+#include "robus.h"
 
 #ifdef __cplusplus
 }
@@ -22,6 +23,7 @@ extern "C"
 void setup()
 {
     Luos_Init();
+    Robus_Init();
     Motor_Init();
 }
 /******************************************************************************

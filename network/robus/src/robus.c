@@ -16,7 +16,10 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-static void Robus_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job);
+// Phy callback definitions
+static void Robus_JobHandler(luos_phy_t *phy_ptr, phy_job_t *job);
+static error_return_t Robus_RunTopology(luos_phy_t *phy_ptr, uint8_t *portId);
+static void Robus_Reset(luos_phy_t *phy_ptr);
 
 /*******************************************************************************
  * Variables
@@ -47,7 +50,7 @@ void Robus_Init(void)
     Transmit_Init();
 
     // Instantiate the phy struct
-    phy_robus = Phy_Create(Robus_MsgHandler);
+    phy_robus = Phy_Create(Robus_JobHandler, Robus_RunTopology, Robus_Reset);
     LUOS_ASSERT(phy_robus);
 
     // Init reception
@@ -70,7 +73,7 @@ void Robus_Loop(void)
  * @param job
  * @return None
  ******************************************************************************/
-void Robus_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
+void Robus_JobHandler(luos_phy_t *phy_ptr, phy_job_t *job)
 {
     static uint8_t encaps_index = 0;
     // Luos ask Robus to send a message
@@ -96,21 +99,11 @@ void Robus_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job)
 }
 
 /******************************************************************************
- * @brief Save a node id in the port table
- * @param nodeid to save
- * @return None.
- ******************************************************************************/
-void Robus_SaveNodeID(uint16_t nodeid)
-{
-    PortMng_SaveNodeID(nodeid);
-}
-
-/******************************************************************************
  * @brief Reset the node id of the port table
- * @param None
+ * @param phy_ptr not used
  * @return None.
  ******************************************************************************/
-void Robus_ResetNodeID(void)
+void Robus_Reset(luos_phy_t *phy_ptr)
 {
     PortMng_Init();
     Recep_Reset();
@@ -118,23 +111,13 @@ void Robus_ResetNodeID(void)
 }
 
 /******************************************************************************
- * @brief Is Robus busy
- * @param None
- * @return nodeid.
- ******************************************************************************/
-bool Robus_Busy(void)
-{
-    return PortMng_Busy();
-}
-
-/******************************************************************************
  * @brief Find the next neighbour on this phy
  * @param None
  * @return error_return_t
  ******************************************************************************/
-error_return_t Robus_FindNeighbour(void)
+error_return_t Robus_RunTopology(luos_phy_t *phy_ptr, uint8_t *portId)
 {
-    return PortMng_PokeNextPort();
+    return PortMng_PokeNextPort(portId);
 }
 
 /******************************************************************************

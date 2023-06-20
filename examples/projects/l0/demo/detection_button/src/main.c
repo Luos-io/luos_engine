@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "button.h"
 #include "detection_button.h"
 /* USER CODE END Includes */
@@ -93,6 +94,7 @@ int main(void)
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     Button_Init();
     DetectionButton_Init();
     /* USER CODE END 2 */

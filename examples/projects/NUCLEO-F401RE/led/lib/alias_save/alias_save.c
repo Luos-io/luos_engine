@@ -7,6 +7,7 @@
 #include "main.h"
 #include "alias_save.h"
 #include "luos_engine.h"
+#include "robus.h"
 #include "string.h"
 
 /*******************************************************************************

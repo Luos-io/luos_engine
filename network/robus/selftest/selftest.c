@@ -45,6 +45,7 @@ void selftest_SetRxFlag(void)
 void selftest_init(void)
 {
     Luos_Init();
+    Robus_Init();
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
 
     Luos_CreateService(NULL, VOID_TYPE, "Selftest", revision);

@@ -39,6 +39,7 @@
  *    :---------------------|------------------------------------------------------
  *    DEFAULTBAUDRATE       |          1000000           | Robus Network Baudrate b/s
  *    MAX_SERVICE_NUMBER    |              5             | Service number in the node
+ *    MAX_NODE_NUMBER.      |              20            | Node number in the device
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
  *    MAX_MSG_NB            |   2*MAX_SERVICE_NUMBER     | Message number in Luos buffer
  *    MAX_RTB_ENTRY         |             40             | Max entries in the routing table

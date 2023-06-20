@@ -6,6 +6,7 @@ extern "C"
 #endif
 
 #include "luos_engine.h"
+#include "robus.h"
 #include "pipe.h"
 #include "gate.h"
 
@@ -21,6 +22,7 @@ extern "C"
 void setup()
 {
     Luos_Init();
+    Robus_Init();
     Gate_Init();
     Pipe_Init();
 }

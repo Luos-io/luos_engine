@@ -4,10 +4,11 @@
  * @author Luos
  * @version 0.1.0
  ******************************************************************************/
+#include <stdio.h>
+#include "luos_engine.h"
 #include "pipe.h"
 #include "_pipe.h"
 #include "pipe_com.h"
-#include <stdio.h>
 
 /*******************************************************************************
  * Definitions
@@ -101,6 +102,7 @@ static void Pipe_MsgHandler(service_t *service, const msg_t *msg)
     {
         tx_StreamChannel.data_ptr   = tx_StreamChannel.ring_buffer;
         tx_StreamChannel.sample_ptr = tx_StreamChannel.data_ptr;
+
         rx_StreamChannel.data_ptr   = rx_StreamChannel.ring_buffer;
         rx_StreamChannel.sample_ptr = rx_StreamChannel.data_ptr;
         PipeCom_Init();

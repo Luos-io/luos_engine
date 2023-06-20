@@ -28,6 +28,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "dxl.h"
 /* USER CODE END Includes */
 
@@ -97,6 +98,7 @@ int main(void)
     MX_RTC_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     Dxl_Init();
     /* USER CODE END 2 */
 

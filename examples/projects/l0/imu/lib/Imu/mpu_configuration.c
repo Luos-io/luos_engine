@@ -1,5 +1,6 @@
 #include <mpu_configuration.h>
 #include "luos_engine.h"
+#include "robus.h"
 #include "invensense.h"
 #include "invensense_adv.h"
 #include "mpu.h"

@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,6 +87,9 @@ int main(void)
     /* Initialize all configured peripherals */
 
     /* USER CODE BEGIN 2 */
+
+    LUOS_ADD_PACKAGE(LuosBootloader)
+    LUOS_ADD_PACKAGE(Robus)
     while (1)
     {
         LUOS_RUN()

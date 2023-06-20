@@ -8,6 +8,7 @@
 #include "luos_hal.h"
 #include "robus_hal.h"
 #include "luos_engine.h"
+#include "robus.h"
 #include "luos_utils.h"
 #include <setjmp.h>
 

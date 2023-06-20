@@ -68,7 +68,6 @@ uint16_t crc_val               = 0;   // CRC value
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static inline bool Recep_RobusShouldDrop(header_t *header);
 /******************************************************************************
  * @brief Reception init.
  * @param None
@@ -131,12 +130,6 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
             ctx.rx.callback = Recep_GetData;
             if (ctx.rx.status.rx_framing_error == false)
             {
-                if (Recep_RobusShouldDrop((header_t *)data_rx) == true)
-                {
-                    ctx.rx.callback = Recep_Drop;
-                    return;
-                }
-
                 // We complete the header reception, we need to compute all the needed values.
                 // Compute message header size, keep, ... the result will be available in phy_robus->rx_size, ...
                 Phy_ComputeHeader(phy_robus);
@@ -319,25 +312,4 @@ _CRITICAL void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data)
     {
         ctx.tx.status = TX_NOK;
     }
-}
-/******************************************************************************
- * @brief Define if we should drop this message before Luos get it
- * @param header of message
- * @return true or false
- * warning : this function can be redefined only for mock testing purpose
- * _CRITICAL function call in IRQ
- ******************************************************************************/
-_CRITICAL static inline bool Recep_RobusShouldDrop(header_t *header)
-{
-    // During detection we receive node ID messages, we need to keep them only if PTP allow us to keep them.
-    // Find if we should remove this message.
-    if (header->target_mode == NODEIDACK)
-    {
-        if ((header->target == 0) && ((ctx.port.activ == NBR_PORT) || (PortMng_Busy() == true)))
-        {
-            // If a no port is activ or we are waiting for a release of a PTP we drop node ID 1 message
-            return true;
-        }
-    }
-    return false;
 }

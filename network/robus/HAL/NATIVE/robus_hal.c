@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include "luos_engine.h"
+#include "robus.h"
 #include "luos_hal.h"
 
 /*******************************************************************************

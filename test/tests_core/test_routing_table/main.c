@@ -255,19 +255,19 @@ void unittest_RoutingTB_ConvertNodeToRoutingTable(void)
 
             routing_table_t entry;
             node_t node;
-            node.certified     = false;
-            node.node_id       = 10;
-            node.node_info     = 20;
-            node.port_table[0] = 30;
-            node.port_table[1] = 40;
+            node.certified                 = false;
+            node.node_id                   = 10;
+            node.node_info                 = 20;
+            node.connection.parent.node_id = 30;
+            node.connection.child.node_id  = 40;
 
             RoutingTB_ConvertNodeToRoutingTable(&entry, &node);
             TEST_ASSERT_EQUAL(NODE, entry.mode);
             TEST_ASSERT_EQUAL(false, entry.certified);
             TEST_ASSERT_EQUAL(10, entry.node_id);
             TEST_ASSERT_EQUAL(20, entry.node_info);
-            TEST_ASSERT_EQUAL(30, entry.port_table[0]);
-            TEST_ASSERT_EQUAL(40, entry.port_table[1]);
+            TEST_ASSERT_EQUAL(30, entry.connection.parent.node_id);
+            TEST_ASSERT_EQUAL(40, entry.connection.child.node_id);
         }
         CATCH
         {

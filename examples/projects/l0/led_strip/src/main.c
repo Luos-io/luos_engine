@@ -28,6 +28,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "led_strip.h"
 /* USER CODE END Includes */
 
@@ -96,6 +97,7 @@ int main(void)
     MX_TIM2_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     LedStrip_Init();
     /* USER CODE END 2 */
 

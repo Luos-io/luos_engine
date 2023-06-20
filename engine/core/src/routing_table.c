@@ -32,7 +32,7 @@ static uint16_t RoutingTB_BigestNodeID(void);
 uint16_t RoutingTB_GetServiceIndex(uint16_t id);
 bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
-static void RoutingTB_Generate(service_t *service, uint16_t nb_node);
+static void RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table);
 static void RoutingTB_Share(service_t *service, uint16_t nb_node);
 static void RoutingTB_SendEndDetection(service_t *service);
 
@@ -236,7 +236,7 @@ bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
  * @param nb_node : Node number on network
  * @return None
  ******************************************************************************/
-static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
+static void RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table)
 {
     LUOS_ASSERT(service);
     // Asks for introduction for every found node (even the one detecting).
@@ -255,6 +255,8 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
         intro_msg.header.size = 2;
         last_service_id       = RoutingTB_BigestID() + 1;
         memcpy(intro_msg.data, &last_service_id, sizeof(uint16_t));
+        // save the current last routing table entry allowing us to easily write the connection informations later
+        uint16_t rtb_next_node_index = RoutingTB_GetLastEntry();
         // Ask to introduce and wait for a reply
         if (!RoutingTB_WaitRoutingTable(service, &intro_msg))
         {
@@ -262,7 +264,11 @@ static void RoutingTB_Generate(service_t *service, uint16_t nb_node)
             nb_node = last_node_id;
             break;
         }
-        last_node_id = RoutingTB_BigestNodeID();
+        // The node answer don't include connection because the node don't know it yet
+        // add this information to the routing table
+        LUOS_ASSERT(routing_table[rtb_next_node_index].mode == NODE);
+        routing_table[rtb_next_node_index].connection = connection_table[last_node_id];
+        last_node_id                                  = RoutingTB_BigestNodeID();
     }
     // Check Alias duplication.
     uint16_t nb_service = RoutingTB_BigestID();
@@ -362,14 +368,17 @@ void RoutingTB_SendEndDetection(service_t *service)
 void RoutingTB_DetectServices(service_t *service)
 {
     LUOS_ASSERT(service);
+    // Create a connetion list to store all the connection describing the topology
+    connection_t connection_table[MAX_NODE_NUMBER];
+    memset(connection_table, 0xFFFFFFFF, sizeof(connection_table));
     // Starts the topology detection.
-    uint16_t nb_node = LuosIO_TopologyDetection(service);
+    uint16_t nb_node = LuosIO_TopologyDetection(service, connection_table);
     // Clear data reception state
     Luos_ReceiveData(NULL, NULL, NULL);
     // Clear the routing table.
     RoutingTB_Erase();
     // Generate the routing_table
-    RoutingTB_Generate(service, nb_node);
+    RoutingTB_Generate(service, nb_node, connection_table);
     // We have a complete routing table now share it with others.
     RoutingTB_Share(service, nb_node);
     // Send a message to indicate the end of the detection

@@ -9,6 +9,7 @@ extern "C"
 #include <pipe.h>
 #include <inspector.h>
 #include "luos_engine.h"
+#include "robus.h"
 
 #ifdef __cplusplus
 }
@@ -18,6 +19,7 @@ void setup()
 {
 
     Luos_Init();
+    Robus_Init();
     Inspector_Init();
     Pipe_Init();
 }

@@ -9,6 +9,7 @@
 #include "device.h"
 
 #include "luos_engine.h"
+#include "robus.h"
 #include "button.h"
 
 void SetSystemClock_48Mhz(void);
@@ -19,6 +20,7 @@ int main()
     SetSystemClock_48Mhz();
 
     Luos_Init();
+    Robus_Init();
     Button_Init();
 
     while (1)

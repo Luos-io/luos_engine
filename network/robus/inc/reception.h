@@ -7,8 +7,7 @@
 #ifndef _RECEPTION_H_
 #define _RECEPTION_H_
 
-#include <stdbool.h>
-#include "luos_phy.h"
+#include "_robus.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/

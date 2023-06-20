@@ -16,6 +16,7 @@ typedef struct
     node_t info;
     node_state_t state;
     bool timeout_run;
+    bool wait_id; // A flag to indicate that wr are about to reeive a node_id
     uint32_t timeout;
 } node_ctx_t;
 
@@ -36,6 +37,27 @@ node_ctx_t node_ctx;
 node_t *Node_Get(void)
 {
     return (node_t *)&node_ctx.info;
+}
+
+/******************************************************************************
+ * @brief indicate to the node that it is waiting for a node ID
+ * @return None
+ ******************************************************************************/
+void Node_WillGetId(void)
+{
+    node_ctx.wait_id = true;
+}
+
+/******************************************************************************
+ * @brief check if node is actually expecting an ID to come
+ * @param None
+ * @return bool
+ ******************************************************************************/
+bool Node_WaitId(void)
+{
+    bool return_value = node_ctx.wait_id;
+    node_ctx.wait_id  = false;
+    return return_value;
 }
 
 /******************************************************************************
@@ -65,6 +87,7 @@ void Node_Init(void)
     node_ctx.node_info |= 1 << 0;
 #endif
     Node_SetState(NO_DETECTION);
+    node_ctx.wait_id = false;
 }
 
 /******************************************************************************

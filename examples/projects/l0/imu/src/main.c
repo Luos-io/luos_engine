@@ -47,6 +47,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
+#include "robus.h"
 #include "imu.h"
 /* USER CODE END Includes */
 
@@ -114,6 +115,7 @@ int main(void)
     MX_I2C2_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
+    Robus_Init();
     Imu_Init();
     /* USER CODE END 2 */
 

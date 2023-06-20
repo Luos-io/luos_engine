@@ -29,7 +29,9 @@ typedef enum
 typedef enum
 {
     // Luos specific registers
-    WRITE_NODE_ID,   // Get and save a new given node ID.
+    NODE_ID,         // Get and save a new given node ID.
+    CONNECTION_DATA, // Message containing connection_t information or part of it (output port_t).
+    PORT_DATA,       // Message containing port_t information. This is used to complete the input part of a partial CONNECTION_DATA.
     START_DETECTION, // Start a detection
     END_DETECTION,   // Detect the end of a detection
     LOCAL_RTB,       // Ask(size == 0), generate(size == 2) a local routing_table.

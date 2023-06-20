@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include "engine_config.h"
+#include "struct_phy.h"
 
 /*******************************************************************************
  * Definitions
@@ -35,11 +36,11 @@ typedef struct __attribute__((__packed__))
             {
                 uint16_t node_id : 12;  /*!< Node id */
                 uint16_t certified : 4; /*!< True if the node have a certificate */
-                uint8_t node_info;
             };
-            uint16_t port_table[NBR_PORT]; /*!< Phisical port connections */
+            uint8_t node_info;
+            connection_t connection;
         };
-        uint8_t unmap[NBR_PORT + 3]; /*!< Uncmaped form. */
+        uint8_t unmap[sizeof(connection_t) + 3]; /*!< Uncmaped form. */
     };
 } node_t;
 
@@ -49,6 +50,8 @@ typedef struct __attribute__((__packed__))
 void Node_Init(void);
 void Node_Loop(void);
 node_t *Node_Get(void);
+void Node_WillGetId(void);
+bool Node_WaitId(void);
 node_state_t Node_GetState(void);
 void Node_SetState(node_state_t);
 

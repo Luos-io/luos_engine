@@ -15,7 +15,10 @@
 
 void Phy_Init(void);
 void Phy_Reset(void);
+void Phy_ResetAll(void);
+bool Phy_Busy(void);
 void Phy_Loop(void);
-luos_phy_t *Phy_Get(uint8_t id, PHY_CB phy_cb);
+luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy);
+error_return_t Phy_FindNextNode(void); // Use it to find the next node as a master.
 
 #endif /* _PRIVATE_LUOS_PHY_H_ */

@@ -7,8 +7,7 @@
 #ifndef _TRANSMISSION_H_
 #define _TRANSMISSION_H_
 
-#include <stdint.h>
-#include "luos_phy.h"
+#include "_robus.h"
 #include "robus_config.h"
 /*******************************************************************************
  * Definitions

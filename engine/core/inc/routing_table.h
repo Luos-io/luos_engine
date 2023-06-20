@@ -49,9 +49,9 @@ typedef struct __attribute__((__packed__))
                 uint16_t certified : 4; // True if the node have a certificate
                 uint8_t node_info;      // node info can contain info such as the saving of routing table
             };
-            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t) - 2) / 2]; // Node link table
+            connection_t connection; // Node connection source
         };
-        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t)];
+        uint8_t unmap_data[MAX_ALIAS_SIZE + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint8_t)];
     };
 } routing_table_t;
 

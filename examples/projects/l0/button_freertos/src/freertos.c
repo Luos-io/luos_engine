@@ -3,6 +3,7 @@
 #include "cmsis_os.h"
 
 #include "luos_engine.h"
+#include "robus.h"
 #include "button.h"
 #include "led.h"
 
@@ -35,6 +36,7 @@ void Firmware_Init(void)
 {
     // Initialization of LuosTask
     Luos_Init();
+    Robus_Init();
     Button_Init();
     Led_Init();
 

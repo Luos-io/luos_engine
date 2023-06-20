@@ -9,6 +9,7 @@
 
 #include "stm32f0xx_hal.h"
 #include "luos_engine.h"
+#include "robus.h"
 #include "luos_hal.h"
 /*******************************************************************************
  * Definitions

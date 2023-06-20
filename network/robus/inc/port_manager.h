@@ -7,7 +7,7 @@
 #ifndef _PORTMANAGER_H_
 #define _PORTMANAGER_H_
 
-#include <robus.h>
+#include <_robus.h>
 
 /*******************************************************************************
  * Definitions
@@ -27,10 +27,8 @@ typedef struct
  ******************************************************************************/
 void PortMng_Init(void);
 void PortMng_PtpHandler(uint8_t PortNbr);
-uint8_t PortMng_PokePort(uint8_t PortNbr);
-error_return_t PortMng_PokeNextPort(void);
+error_return_t PortMng_PokeNextPort(uint8_t *portId);
 uint8_t PortMng_PortPokedStatus(void);
-void PortMng_SaveNodeID(uint16_t nodeid);
 bool PortMng_Busy(void);
 
 #endif /* _PORTMANAGER_H_ */
