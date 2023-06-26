@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
 #include "robus.h"
+#include "bootloader_core.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

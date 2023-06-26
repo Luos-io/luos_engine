@@ -150,7 +150,7 @@ void DataManager_Format(service_t *service)
                     continue;
                 }
                 // check if a node send a bootloader message
-                if (data_msg.header.cmd == BOOTLOADER_RESP)
+                if (data_msg.header.cmd >= BOOTLOADER_START && data_msg.header.cmd <= BOOTLOADER_ERROR_SIZE)
                 {
                     do
                     {

@@ -47,13 +47,32 @@ typedef enum
     LUOS_REVISION,   // service sends its luos revision
     LUOS_STATISTICS, // service sends its luos revision
 
-    // bootloader command and response
-    BOOTLOADER_CMD,
-    BOOTLOADER_RESP,
+    // Bootloader specific command
+    BOOTLOADER_START,
+    BOOTLOADER_STOP,
+    BOOTLOADER_RESET,
+    BOOTLOADER_READY,
+    BOOTLOADER_ERASE,
+    BOOTLOADER_BIN_CHUNK,
+    BOOTLOADER_BIN_END,
+    BOOTLOADER_CRC,
+    BOOTLOADER_APP_SAVED,
+    BOOTLOADER_ERROR_SIZE,
 
     // compatibility area
     // LUOS_LAST_RESERVED_CMD = 42
 } reserved_luos_cmd_t;
+
+/******************************************************************************
+ * This enum list all bootloader states
+ * please refer to the documentation
+ ******************************************************************************/
+typedef enum
+{
+    BOOT_MODE,
+    JUMP_TO_APP_MODE,
+    APP_RELOAD_MODE,
+} bootloader_mode_t;
 
 /******************************************************************************
  * @enum target_mode_t

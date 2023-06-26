@@ -13,7 +13,6 @@
 #include "luos_utils.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
-#include "bootloader_core.h"
 #include "robus.h"
 #include "_luos_phy.h"
 #include "stats.h"
@@ -524,12 +523,22 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             service->auto_refresh.last_update = LuosHAL_GetSystick();
             return SUCCEED;
             break;
-        //**************************************** bootloader section ****************************************
-        case BOOTLOADER_CMD:
-            // TODO add here the bootloader command used in application avoiding to include bootloader files.
-            return FAILED;
+            //**************************************** bootloader section ****************************************
+
+        case BOOTLOADER_RESET:
+            LuosHAL_SetMode((uint8_t)BOOT_MODE);
+            LuosHAL_Reboot();
+            return SUCCEED;
             break;
 
+#ifdef WITH_BOOTLOADER
+        case BOOTLOADER_START:
+            // We're in the app,
+            // set bootloader mode, save node ID and reboot
+            Luos_JumpToBootloader();
+            return SUCCEED;
+            break;
+#endif
         default:
             return FAILED;
             break;

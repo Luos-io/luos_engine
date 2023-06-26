@@ -889,7 +889,7 @@ void unittest_luosIO_ConsumeMsg()
         {
             msg_t msg;
             luosIO_reset_overlap_callback();
-            msg.header.cmd         = BOOTLOADER_CMD;
+            msg.header.cmd         = BOOTLOADER_START;
             msg.header.target_mode = BROADCAST;
             msg.header.source      = 1;
             msg.header.size        = 0;

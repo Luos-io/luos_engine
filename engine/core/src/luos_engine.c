@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include "luos_engine.h"
 #include "luos_hal.h"
-#include "bootloader_core.h"
 #include "_timestamp.h"
 #include "filter.h"
 #include "service.h"
@@ -489,22 +488,14 @@ void Luos_Run(void)
     if (!node_run)
     {
         Luos_Init();
-#ifdef BOOTLOADER
-        LuosBootloader_Init();
-#else
         Luos_PackageInit();
-#endif
         // go to run state after initialization
         node_run = true;
     }
     else
     {
         Luos_Loop();
-#ifdef BOOTLOADER
-        LuosBootloader_Loop();
-#else
         Luos_PackageLoop();
-#endif
     }
 }
 
