@@ -24,7 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
 #include "robus.h"
-#include "bootloader_core.h"
+#include "luos_bootloader.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

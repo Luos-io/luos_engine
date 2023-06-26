@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "bootloader_core.h"
+#include "luos_bootloader.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
 #include "routing_table.h"

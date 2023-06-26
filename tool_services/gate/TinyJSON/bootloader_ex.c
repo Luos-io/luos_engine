@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "bootloader_ex.h"
-#include "bootloader_core.h"
+#include "luos_bootloader.h"
 #include "gate_config.h"
 #include "pipe_link.h"
 #include "routing_table.h"
