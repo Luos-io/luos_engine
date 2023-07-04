@@ -10,7 +10,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <luos_hal_config.h>
+#include <stdbool.h>
+#include "luos_hal_config.h"
 
 /*******************************************************************************
  * Definitions

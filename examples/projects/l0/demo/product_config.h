@@ -7,7 +7,7 @@
 #ifndef PRODUCT_CONFIG_H
 #define PRODUCT_CONFIG_H
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 
 enum
 {

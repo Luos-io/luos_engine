@@ -7,7 +7,7 @@ extern "C"
 #endif
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 
 #ifdef __cplusplus
 }

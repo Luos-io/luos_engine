@@ -6,7 +6,7 @@
  ******************************************************************************/
 #include <string.h>
 #include <stdbool.h>
-#include "robus.h"
+#include "robus_network.h"
 #include "transmission.h"
 #include "reception.h"
 #include "port_manager.h"

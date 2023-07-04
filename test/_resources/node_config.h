@@ -12,8 +12,7 @@
  *     with your need concerning among of data transiting through the network
  *     or network speed for example
  *
- *     Luos libraries can be use with a lot a MCU family. Luos compagny give you
- *     a default configuration, for specific MCU family, in robus_hal_config.h.
+ *     Luos libraries can be use with a lot a MCU family.
  *     This configuration can be modify here to fit with you design by
  *     preprocessor definitions of MCU Hardware needs
  *

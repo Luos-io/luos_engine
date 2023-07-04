@@ -7,7 +7,7 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
-#include <_robus.h>
+#include <_robus_network.h>
 #include "robus_config.h"
 #include "port_manager.h"
 #include "reception.h"

@@ -11,7 +11,7 @@
 #define FINGERPRINT_DRV_H_
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 
 /*******************************************************************************
  * Definitions

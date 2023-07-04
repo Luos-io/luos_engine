@@ -28,7 +28,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "dxl.h"
 /* USER CODE END Includes */
 

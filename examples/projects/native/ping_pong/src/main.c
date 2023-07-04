@@ -1,5 +1,5 @@
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "ping_pong.h"
 #include <pthread.h>
 
@@ -22,5 +22,6 @@ int main(void)
     while (1)
     {
         Luos_Loop();
+        Robus_Loop();
     }
 }

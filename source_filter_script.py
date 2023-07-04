@@ -38,7 +38,8 @@ if not visited_key in global_env:
     # install pyluos
     try:
         import pyluos
-        env.Execute("$PYTHONEXE -m pip install pyluos --upgrade --quiet")
+        # env.Execute(
+        #     "$PYTHONEXE -m pip install pyluos --upgrade --quiet")
     except ImportError:  # module doesn't exist, deal with it.
         env.Execute("$PYTHONEXE -m pip install pyluos")
         pass
@@ -53,9 +54,7 @@ if not visited_key in global_env:
         luos_telemetry["pyluos_rev"] = "none"
 
 sources = ["+<*.c>",
-           "+<../../../network/robus/src/*.c>",
            "+<../../IO/src/*.c>",
-           "+<../../../network/robus/selftest/*.c>",
            "+<../../profiles/state/*.c>",
            "+<../../profiles/motor/*.c>",
            "+<../../profiles/servo_motor/*.c>",
@@ -69,16 +68,11 @@ envdefs = env['CPPDEFINES'].copy()
 for item in envdefs:
     if (isinstance(item, tuple) and item[0] == "LUOSHAL") and (find_HAL == False):
         find_HAL = True
-        if (path.exists("network/robus/HAL/" + item[1]) and path.exists("engine/HAL/" + item[1])):
+        if (path.exists("engine/HAL/" + item[1])):
             if not visited_key in global_env:
                 click.secho(
-                    "\t* %s HAL selected for Luos and Robus." % item[1], fg="green")
+                    "\t* %s HAL selected for luos_engine." % item[1], fg="green")
                 luos_telemetry["luos_hal"] = item[1]
-                if (path.exists("network/robus/HAL/" + item[1] + "/hal_script.py")):
-                    # This is an extra script dedicated to this HAL, run it
-                    hal_script_path = realpath(
-                        "network/robus/HAL/" + item[1] + "/hal_script.py")
-                    env.SConscript(hal_script_path, exports="env")
                 if (path.exists("engine/HAL/" + item[1] + "/hal_script.py")):
                     # This is an extra script dedicated to this HAL, run it
                     hal_script_path = realpath(
@@ -88,10 +82,7 @@ for item in envdefs:
             if not visited_key in global_env:
                 click.secho("\t* %s HAL not found" % item[1], fg="red")
                 luos_telemetry["luos_hal"] = "invalid" + str(item[1])
-        env.Append(CPPPATH=[realpath("network/robus/HAL/" + item[1])])
         env.Append(CPPPATH=[realpath("engine/HAL/" + item[1])])
-        env.Append(
-            SRC_FILTER=["+<../../../network/robus/HAL/%s/*.c>" % item[1]])
         env.Append(SRC_FILTER=["+<../../HAL/%s/*.c>" % item[1]])
     if (item == 'NOTELEMETRY'):
         telemetry = False
@@ -118,7 +109,7 @@ for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
     if (item == 'UNIT_TEST'):
         click.secho("Native unit testing:", underline=True)
         current_os = pf.system()
-        click.secho("\t* Native Mock HAL for %s is selected for Luos and Robus." %
+        click.secho("\t* Native Mock HAL for %s is selected for Luos." %
                     current_os, fg="green")
         env.Append(SRC_FILTER=["+<../../../test/_resources/*>"])
         for resources in scandir(getcwd() + "/test/_resources"):

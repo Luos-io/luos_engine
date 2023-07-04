@@ -7,7 +7,7 @@
 #ifndef _PORTMANAGER_H_
 #define _PORTMANAGER_H_
 
-#include <_robus.h>
+#include <_robus_network.h>
 
 /*******************************************************************************
  * Definitions

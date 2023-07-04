@@ -28,7 +28,7 @@
 #include "definitions.h" // SYS function prototypes
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "luos_bootloader.h"
 
 // *****************************************************************************

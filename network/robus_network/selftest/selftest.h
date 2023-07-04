@@ -8,7 +8,7 @@
 #define SELFTEST_H
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 
 void selftest_SetRxFlag(void);
 void selftest_run(void (*ok_callback)(void), void (*ko_callback)(void));

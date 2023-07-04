@@ -8,7 +8,7 @@
 #define LED_STRIP_H
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 
 /*******************************************************************************
  * Definitions

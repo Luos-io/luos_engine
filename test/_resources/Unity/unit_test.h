@@ -6,9 +6,8 @@
 #include <stdbool.h>
 #include "../../../.pio/libdeps/native/Unity/src/unity.h"
 #include "luos_hal.h"
-#include "robus_hal.h"
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "luos_utils.h"
 #include <setjmp.h>
 

@@ -8,7 +8,6 @@
 #define SCORING_H
 
 #include "luos_engine.h"
-#include "robus.h"
 
 #define SCORE_TOPIC 1
 #define SCORE_CMD   LUOS_LAST_STD_CMD + 1

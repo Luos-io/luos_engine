@@ -1,0 +1,23 @@
+{
+    "name": "robus_network",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service",
+    "description": "A very handy half duplex serial network interface specialy crafted and optimized for Luos.",
+    "version": "3.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "homepage": "https://luos.io",
+    "license": "MIT",
+    "headers": "robus_network.h",
+    "build": {
+        "extraScript": "robus_select_hal_script.py"
+    },
+    "dependencies": {
+        "luos_engine": "^3.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Luos-io/luos_engine"
+    }
+}

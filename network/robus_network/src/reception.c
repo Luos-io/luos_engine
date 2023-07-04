@@ -44,7 +44,7 @@
 #include <string.h>
 #include "reception.h"
 #include "robus_hal.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "context.h"
 /*******************************************************************************
  * Definitions

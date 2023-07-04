@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include "luos_utils.h"
 #include "luos_engine.h"
-#include "port_manager.h"
 #include "string.h"
 #include "luos_hal.h"
 #include "msg_alloc.h"

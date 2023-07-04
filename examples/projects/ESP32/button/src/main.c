@@ -7,7 +7,7 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "button.h"
 
 void app_main(void)

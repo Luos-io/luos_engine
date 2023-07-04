@@ -2,7 +2,7 @@
 #define __MPU_SETUP_H__
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include <eMPL_outputs.h>
 #include <inv_mpu_dmp_motion_driver.h>
 #include <inv_mpu.h>

@@ -7,7 +7,7 @@
 #ifndef _TRANSMISSION_H_
 #define _TRANSMISSION_H_
 
-#include "_robus.h"
+#include "_robus_network.h"
 #include "robus_config.h"
 /*******************************************************************************
  * Definitions

@@ -9,7 +9,8 @@
 #define _LUOSHAL_H_
 
 #include <stdint.h>
-#include <luos_hal_config.h>
+#include <stdbool.h>
+#include "luos_hal_config.h"
 
 /*******************************************************************************
  * Definitions

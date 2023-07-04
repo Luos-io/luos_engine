@@ -204,3 +204,28 @@ jobs:
           pio package pack
           pio package publish --owner luos --non-interactive
           cd ../..
+
+  deploy_robus:
+    needs: check_valid_tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+      - name: publish robus network
+        env:
+          PLATFORMIO_AUTH_TOKEN: ${{ secrets.PIO_TOKEN }}
+        run: |
+          # ***** Robus network publication *****
+          cd network/robus_network
+          # We don't publish examples with this one.
+
+          pio package pack
+          pio package publish --owner luos --non-interactive
+          cd ../..

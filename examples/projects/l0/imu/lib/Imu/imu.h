@@ -8,7 +8,7 @@
 #define IMU_H
 
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 
 /*******************************************************************************
  * Definitions

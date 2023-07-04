@@ -7,7 +7,7 @@
 #include "main.h"
 #include "alias_save.h"
 #include "luos_engine.h"
-#include "robus.h"
+#include "robus_network.h"
 #include "string.h"
 
 /*******************************************************************************
@@ -35,7 +35,7 @@ int Alias_read(int slot, char *alias)
  * @param size the size of the alias
  * @return none
  ******************************************************************************/
-void Alias_write(int slot, char *alias, size_t size)
+void Alias_write(int slot, const uint8_t *alias, size_t size)
 {
     if (size > MAX_ALIAS_SIZE)
     {
