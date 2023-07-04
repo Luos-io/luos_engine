@@ -49,7 +49,7 @@ void LuosHAL_Init(void)
  * @param None
  * @return None
  ******************************************************************************/
-void LuosHAL_SetIrqState(uint8_t Enable)
+void LuosHAL_SetIrqState(bool Enable)
 {
 }
 

@@ -8,7 +8,6 @@
 #include "ll_motor.h"
 #include "profile_servo_motor.h"
 
-#include "luos_hal.h"
 #include "stdbool.h"
 #include "math.h"
 #include <float.h>
@@ -259,11 +258,11 @@ static void ControllerMotor_MsgHandler(service_t *service, const msg_t *msg)
         ll_motor_enable(servo_motor.mode.mode_compliant == 0);
         if (servo_motor.mode.mode_compliant == 0)
         {
-            LuosHAL_SetIrqState(false);
+            Luos_SetIrqState(false);
             last_position = servo_motor.angular_position;
             errAngleSum   = 0.0;
             lastErrAngle  = 0.0;
-            LuosHAL_SetIrqState(true);
+            Luos_SetIrqState(true);
         }
         return;
     }
@@ -281,9 +280,9 @@ static void ControllerMotor_MsgHandler(service_t *service, const msg_t *msg)
         if ((servo_motor.mode.mode_angular_position | servo_motor.mode.mode_angular_position) && (msg->header.size == sizeof(angular_position_t)))
         {
             // set the motor target angular position
-            LuosHAL_SetIrqState(false);
+            Luos_SetIrqState(false);
             last_position = servo_motor.angular_position;
-            LuosHAL_SetIrqState(true);
+            Luos_SetIrqState(true);
         }
         return;
     }

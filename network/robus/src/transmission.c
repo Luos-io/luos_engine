@@ -168,9 +168,9 @@ _CRITICAL void Transmit_Process()
             ctx.tx.lock = true;
             RobusHAL_SetRxDetecPin(false);
             // Switch reception in collision detection mode
-            LuosHAL_SetIrqState(false);
+            Phy_SetIrqState(false);
             ctx.rx.callback = Recep_GetCollision;
-            LuosHAL_SetIrqState(true);
+            Phy_SetIrqState(true);
             ctx.tx.data = tx_data;
 
             if (!nbrRetry)

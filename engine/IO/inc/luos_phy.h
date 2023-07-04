@@ -20,6 +20,11 @@
 typedef void (*JOB_CB)(luos_phy_t *phy_ptr, phy_job_t *job);
 typedef error_return_t (*RUN_TOPO)(luos_phy_t *phy_ptr, uint8_t *portId);
 typedef void (*RESET_PHY)(luos_phy_t *phy_ptr);
+typedef void (*IRQ_STATE)(bool state);
+
+// Irq management
+void Phy_SetIrqStateFunciton(IRQ_STATE irq_state); // Use it to reference your phy specific Irq state management to Luos.
+void Phy_SetIrqState(bool state);                  // Use it to globally enable/disable all the phy irq.
 
 // Phy creation
 luos_phy_t *Phy_Create(JOB_CB phy_cb, RUN_TOPO run_topo, RESET_PHY reset_phy); // Use it to reference your phy to Luos.

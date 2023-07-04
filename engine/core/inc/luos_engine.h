@@ -30,6 +30,7 @@ void Luos_Init(void);
 void Luos_Loop(void);
 void Luos_ResetStatistic(void);
 const revision_t *Luos_GetVersion(void);
+void Luos_SetIrqState(bool state);
 
 // ***************** Node management *****************
 uint32_t Luos_GetSystick(void);

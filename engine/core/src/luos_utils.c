@@ -12,6 +12,7 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "filter.h"
+#include "luos_phy.h"
 
 /*******************************************************************************
  * Function
@@ -57,7 +58,7 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
 {
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.
-    PortMng_Init();
+    Luos_Init();
     // completely reinit the allocator
     MsgAlloc_Init(NULL);
     Filter_IdInit(); // Mask filter for service ID
@@ -81,7 +82,7 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
     // Set bootloader mode, save node ID and reboot
     Luos_JumpToBootloader();
     #endif
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     while (1)
     {
     }

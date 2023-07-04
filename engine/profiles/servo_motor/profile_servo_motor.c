@@ -5,7 +5,6 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "profile_servo_motor.h"
-#include "luos_hal.h"
 
 /******************************************************************************
  * @brief Initialization function
@@ -53,9 +52,9 @@ void ProfileServo_Handler(service_t *service, const msg_t *msg)
                 }
                 else
                 {
-                    LuosHAL_SetIrqState(false);
+                    Luos_SetIrqState(false);
                     AngularOD_PositionToMsg((angular_position_t *)&servo_motor_profile->angular_position, &pub_msg);
-                    LuosHAL_SetIrqState(true);
+                    Luos_SetIrqState(true);
                     Luos_SendMsg(service, &pub_msg);
                 }
             }
@@ -111,10 +110,10 @@ void ProfileServo_Handler(service_t *service, const msg_t *msg)
         case REINIT:
         {
             // set state to 0
-            LuosHAL_SetIrqState(false);
+            Luos_SetIrqState(false);
             servo_motor_profile->angular_position        = AngularOD_PositionFrom_deg(0.0);
             servo_motor_profile->target_angular_position = AngularOD_PositionFrom_deg(0.0);
-            LuosHAL_SetIrqState(true);
+            Luos_SetIrqState(true);
         }
         break;
         case DIMENSION:
@@ -131,9 +130,9 @@ void ProfileServo_Handler(service_t *service, const msg_t *msg)
                 if (msg->header.size == sizeof(angular_position_t))
                 {
                     // set the motor target angular position
-                    LuosHAL_SetIrqState(false);
+                    Luos_SetIrqState(false);
                     AngularOD_PositionFromMsg((angular_position_t *)&servo_motor_profile->target_angular_position, msg);
-                    LuosHAL_SetIrqState(true);
+                    Luos_SetIrqState(true);
                 }
                 else
                 {

@@ -104,6 +104,9 @@ void RobusHAL_Init(void)
 
     // Com Initialization
     RobusHAL_ComInit(DEFAULTBAUDRATE);
+
+    // Reference the IRQ manafement function of Robus
+    Phy_SetIrqStateFunciton(RobusHAL_SetIrqState);
 }
 
 /******************************************************************************
@@ -119,7 +122,7 @@ void RobusHAL_Loop(void)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void RobusHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void RobusHAL_SetIrqState(bool Enable)
 {
     static volatile uint8_t irq_mutex = true;
 
@@ -621,6 +624,7 @@ _CRITICAL void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     for (uint8_t j = 0; j < 8; ++j)
     {
         uint16_t mix = *(uint16_t *)crc & 0x8000;
+
         *(uint16_t *)crc = (*(uint16_t *)crc << 1);
         if (mix)
             *(uint16_t *)crc = *(uint16_t *)crc ^ 0x0007;

@@ -45,7 +45,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "msg_alloc.h"
-#include "luos_hal.h"
+#include "luos_phy.h"
 #include "luos_utils.h"
 
 /*******************************************************************************
@@ -95,12 +95,12 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void);
 void MsgAlloc_Init(memory_stats_t *memory_stats)
 {
     //******** Init global vars pointers **********
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     data_ptr             = (uint8_t *)&msg_buffer[0];
     oldest_alloc_slot    = 0;
     available_alloc_slot = 0;
     memset((void *)alloc_slots, 0, sizeof(alloc_slots));
-    LuosHAL_SetIrqState(true);
+    Phy_SetIrqState(true);
     if (memory_stats != NULL)
     {
         mem_stat = memory_stats;
@@ -133,10 +133,10 @@ static inline uint32_t MsgAlloc_BufferAvailableSpaceComputation(void)
     uint32_t stack_free_space = 0;
     LUOS_ASSERT(((uintptr_t)data_ptr >= (uintptr_t)&msg_buffer[0]) && ((uintptr_t)data_ptr < (uintptr_t)&msg_buffer[MSG_BUFFER_SIZE]));
 
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     uint8_t *oldest_msg        = alloc_slots[oldest_alloc_slot].data;
     uint8_t *data_ptr_snapshot = (uint8_t *)data_ptr;
-    LuosHAL_SetIrqState(true);
+    Phy_SetIrqState(true);
 
     if (oldest_msg != NULL)
     {
@@ -285,14 +285,14 @@ _CRITICAL void MsgAlloc_Reference(uint8_t *rx_data, uint8_t phy_filter)
 {
     LUOS_ASSERT((rx_data < &msg_buffer[MSG_BUFFER_SIZE]) && (rx_data >= &msg_buffer[0]) && (phy_filter != 0));
     // Reference a space into the alloc_slots
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     uint16_t my_slot = available_alloc_slot++;
     if (available_alloc_slot >= MAX_MSG_NB)
     {
         available_alloc_slot = 0;
     }
     LUOS_ASSERT(available_alloc_slot != oldest_alloc_slot);
-    LuosHAL_SetIrqState(true);
+    Phy_SetIrqState(true);
     alloc_slots[my_slot].data       = rx_data;
     alloc_slots[my_slot].phy_filter = phy_filter;
 }
@@ -317,7 +317,7 @@ _CRITICAL void MsgAlloc_Free(uint8_t phy_id, const uint8_t *data)
             // Remove the phy_id from the phy_filter
             // Assert if this phy have already been freed
             LUOS_ASSERT(alloc_slots[i].phy_filter & (0x01 << phy_id));
-            LuosHAL_SetIrqState(false);
+            Phy_SetIrqState(false);
             alloc_slots[i].phy_filter &= ~(0x01 << phy_id);
             // Check if the phy_filter is empty
             if (alloc_slots[i].phy_filter == 0)
@@ -336,7 +336,7 @@ _CRITICAL void MsgAlloc_Free(uint8_t phy_id, const uint8_t *data)
                     } while ((alloc_slots[oldest_alloc_slot].data == NULL) && (oldest_alloc_slot != available_alloc_slot));
                 }
             }
-            LuosHAL_SetIrqState(true);
+            Phy_SetIrqState(true);
             return;
         }
         i++;

@@ -80,6 +80,8 @@ void LuosIO_Init(void)
 
     // Get the Luos phy struct, Luos always use the first phy
     luos_phy = Phy_Get(0, LuosIO_MsgHandler, LuosIO_RunTopo, LuosIO_Reset);
+    // Set the irq management function
+    Phy_SetIrqStateFunciton(LuosHAL_SetIrqState);
 }
 
 /******************************************************************************

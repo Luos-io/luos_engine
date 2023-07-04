@@ -12,6 +12,7 @@
 #include "service.h"
 #include "struct_engine.h"
 #include "luos_io.h"
+#include "luos_phy.h"
 #include "stats.h"
 
 /*******************************************************************************
@@ -121,6 +122,16 @@ void Luos_ResetStatistic(void)
 const revision_t *Luos_GetVersion(void)
 {
     return &luos_version;
+}
+
+/******************************************************************************
+ * @brief enable or disable IRQ
+ * @param state : true to enable, false to disable
+ * @return None
+ ******************************************************************************/
+void Luos_SetIrqState(bool state)
+{
+    Phy_SetIrqState(state);
 }
 
 /******************************************************************************

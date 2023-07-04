@@ -27,7 +27,7 @@
  * Function
  ******************************************************************************/
 void LuosHAL_Init(void);
-void LuosHAL_SetIrqState(uint8_t Enable);
+void LuosHAL_SetIrqState(bool Enable);
 uint32_t LuosHAL_GetSystick(void);
 void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);

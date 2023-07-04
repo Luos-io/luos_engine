@@ -70,8 +70,9 @@ typedef struct __attribute__((__packed__))
 typedef struct
 {
     // ******************** Phy management ********************
-    luos_phy_t phy[PHY_NB]; // phy[0] is the local phy, phy[1] is the remote phy.
-    uint8_t phy_nb;         // Number of phy instantiated in the phy_ctx.phy array.
+    luos_phy_t phy[PHY_NB];           // phy[0] is the local phy, phy[1] is the remote phy.
+    uint8_t phy_nb;                   // Number of phy instantiated in the phy_ctx.phy array.
+    IRQ_STATE phy_irq_states[PHY_NB]; // Store the irq state functions of phys aving one.
 
     // ******************** Topology management ********************
     port_t topology_source; // The source port. Where we receive the topological detection signal from.
@@ -113,6 +114,7 @@ void Phy_Init(void)
 {
     Phy_Reset();
     phy_ctx.phy_nb = 1;
+    memset(phy_ctx.phy_irq_states, 0, sizeof(phy_ctx.phy_irq_states));
 }
 
 /******************************************************************************
@@ -207,6 +209,50 @@ void Phy_Loop(void)
 luos_phy_t *Phy_Create(JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
 {
     return Phy_Get(phy_ctx.phy_nb++, job_cb, run_topo, reset_phy);
+}
+
+/******************************************************************************
+ * @brief Reference a specific irq state function to a physical layer
+ * @param irq_state function pointer to the IRQ state function
+ * @return None
+ ******************************************************************************/
+void Phy_SetIrqStateFunciton(IRQ_STATE irq_state)
+{
+    int i = 0;
+    while (phy_ctx.phy_irq_states[i] != NULL)
+    {
+        i++;
+        if (i >= PHY_NB)
+        {
+            // We exceed the number of phy
+            LUOS_ASSERT(0);
+            return;
+        }
+    }
+    // Save the function pointer
+    phy_ctx.phy_irq_states[i] = irq_state;
+}
+
+/******************************************************************************
+ * @brief Run all the phy irq state function referenced
+ * @param state state of the IRQ
+ * @return None
+ ******************************************************************************/
+void Phy_SetIrqState(bool state)
+{
+    // Loop int the phy_irq_states and call each function referenced
+    int i = 0;
+    while (phy_ctx.phy_irq_states[i] != NULL)
+    {
+        phy_ctx.phy_irq_states[i](state);
+        i++;
+        if (i >= PHY_NB)
+        {
+            // We exceed the number of phy
+            LUOS_ASSERT(0);
+            return;
+        }
+    }
 }
 
 /******************************************************************************
@@ -416,9 +462,9 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
 
         // Now we can create a phy_job to dispatch the tx_job later
         LUOS_ASSERT(phy_ctx.io_job_nb < MAX_MSG_NB);
-        LuosHAL_SetIrqState(false);
+        Phy_SetIrqState(false);
         uint16_t my_job = phy_ctx.io_job_nb++;
-        LuosHAL_SetIrqState(true);
+        Phy_SetIrqState(true);
         // Now copy the data in the job
         phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
         phy_ctx.io_job[my_job].alloc_msg  = (msg_t *)phy_ptr->rx_data;
@@ -462,11 +508,11 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
     void *rx_data;
     void *copy_from;
 
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     // Check if this phy really need to alloc
     if (phy_ptr->rx_alloc_job == false)
     {
-        LuosHAL_SetIrqState(true);
+        Phy_SetIrqState(true);
         return;
     }
     // Check if we receive enougth data to be able to allocate the complete message
@@ -474,14 +520,14 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
                 && (phy_ptr->received_data <= MAX_DATA_MSG_SIZE + sizeof(header_t))
                 // Check if their is a mistake on the buffer allocation. In this case, the phy.rx_data was not properly set to rx_buffer_base before the data reception.
                 && (phy_ptr->rx_data == phy_ptr->rx_buffer_base));
-    LuosHAL_SetIrqState(true);
+    Phy_SetIrqState(true);
 
     // Now we can check if we need to store the received data
     if (phy_ptr->rx_keep)
     {
         // We need to store the received data.
         // Update the informations allowing reception to continue and directly copy the data into the allocated buffer
-        LuosHAL_SetIrqState(false);
+        Phy_SetIrqState(false);
         if (phy_ptr->rx_alloc_job)
         {
             uint16_t phy_stored_data_size = phy_ptr->received_data;
@@ -489,7 +535,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             // Now allocate it
             rx_data          = MsgAlloc_Alloc(phy_ptr->rx_size, (uint8_t)phy_ptr->rx_phy_filter);
             phy_ptr->rx_data = rx_data;
-            LuosHAL_SetIrqState(true);
+            Phy_SetIrqState(true);
             // Check if this message is a luos transmission and if allocation succeed
             if ((phy_ptr == &phy_ctx.phy[0]) && (rx_data == NULL))
             {
@@ -506,7 +552,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             memcpy(rx_data, copy_from, phy_stored_data_size);
             return;
         }
-        LuosHAL_SetIrqState(true);
+        Phy_SetIrqState(true);
     }
     else
     {
@@ -529,10 +575,10 @@ static void Phy_Dispatch(void)
         return;
     }
     // Interpreat received messages and create tasks for it.
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     while (i < phy_ctx.io_job_nb)
     {
-        LuosHAL_SetIrqState(true);
+        Phy_SetIrqState(true);
         // Get the oldest job
         IO_job_t *job = &phy_ctx.io_job[i];
         i++;
@@ -566,10 +612,10 @@ static void Phy_Dispatch(void)
                 phy_ctx.phy[y].job_cb(&phy_ctx.phy[y], job_ptr);
             }
         }
-        LuosHAL_SetIrqState(false);
+        Phy_SetIrqState(false);
     }
     phy_ctx.io_job_nb = 0;
-    LuosHAL_SetIrqState(true);
+    Phy_SetIrqState(true);
     running = false;
 }
 
@@ -669,14 +715,14 @@ static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job)
     LUOS_ASSERT((phy_job != NULL) && (phy_ptr != NULL));
     LUOS_ASSERT(phy_ptr->job_nb < MAX_MSG_NB);
     // Add the job to the queue
-    LuosHAL_SetIrqState(false);
+    Phy_SetIrqState(false);
     phy_job_t *returned_job = &phy_ptr->job[phy_ptr->available_job_index++];
     if (phy_ptr->available_job_index >= MAX_MSG_NB)
     {
         phy_ptr->available_job_index = 0;
     }
     LUOS_ASSERT(phy_ptr->available_job_index != phy_ptr->oldest_job_index);
-    LuosHAL_SetIrqState(true);
+    Phy_SetIrqState(true);
     phy_ptr->job_nb++;
     // Copy the actual job data to the allocated job
     *returned_job = *phy_job;
