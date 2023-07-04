@@ -8,7 +8,6 @@
 #define OD_OD_CONTROL_H_
 
 #include "luos_engine.h"
-#include "robus.h"
 #include <string.h>
 
 /*******************************************************************************

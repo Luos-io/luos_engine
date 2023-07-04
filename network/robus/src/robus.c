@@ -99,7 +99,7 @@ void Robus_JobHandler(luos_phy_t *phy_ptr, phy_job_t *job)
 }
 
 /******************************************************************************
- * @brief Reset the node id of the port table
+ * @brief Reset Robus
  * @param phy_ptr not used
  * @return None.
  ******************************************************************************/

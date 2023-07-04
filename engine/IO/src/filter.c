@@ -203,17 +203,17 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
 
             if (Filter_Type(header->target))
             {
-                // This concerns Luos phy and Robus
+                // This concerns Luos phy and external phy
                 return 0x01 | (0x01 << 1);
             }
             break;
         case BROADCAST:
-            // This concerns Luos phy and Robus
+            // This concerns Luos phy and external phy
             return 0x01 | (0x01 << 1);
             break;
         case NODEIDACK:
         case NODEID:
-            // If the target is our node and our node ave a node_id or if we don't have a node_id and we are waiting for one.
+            // If the target is our node and our node have a node_id or if we don't have a node_id and we are waiting for one.
             if (((header->target == Node_Get()->node_id) && (header->target != 0))
                 || ((header->target == 0) && (Node_WaitId() == true)))
             {
@@ -224,7 +224,7 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
         case TOPIC:
             if (Filter_Topic(header->target))
             {
-                // This concerns Luos phy and Robus
+                // This concerns Luos phy and external phy
                 return 0x01 | (0x01 << 1);
             }
             break;
@@ -234,6 +234,6 @@ _CRITICAL uint8_t Filter_GetPhyTarget(header_t *header)
             return 0x00;
             break;
     }
-    // This concerns Robus only by default
+    // This concerns external phy only by default
     return 0x01 << 1;
 }

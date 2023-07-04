@@ -42,6 +42,5 @@ void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job); // If some mess
 phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr);                      // Use it to get the first job to send.
 phy_job_t *Phy_GetNextJob(luos_phy_t *phy_ptr, phy_job_t *job);  // Use it to get the next job to send.
 void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job);             // Use it to remove a job from your phy job list when it's done.
-volatile uint16_t Phy_GetJobNbr(luos_phy_t *phy_ptr);            // Use it to get the number of job you currently have to send on your phy_ptr.job list.
 
 #endif /* _LUOS_PHY_H_ */

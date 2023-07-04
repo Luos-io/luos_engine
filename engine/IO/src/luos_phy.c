@@ -79,7 +79,7 @@ typedef struct
     bool topology_running;  // We put bits to 1 when a phy is running the topology detection.
     bool find_next_node_job;
 
-    // ******************** job management ********************
+    // ******************** Job management ********************
     // io_jobs are stores from the newest to the oldest.
     // This will add time in IRQ when we will pull a job but allow to keep pointers constant.
     IO_job_t io_job[MAX_MSG_NB]; // Table of all the io_jobs to dispatch.
@@ -173,7 +173,7 @@ bool Phy_Busy(void)
 void Phy_Loop(void)
 {
     // Manage received data allocation
-    // This is only needed for Robus for now.
+    // This is only needed for external phy for now.
     if (phy_ctx.phy[1].rx_alloc_job)
     {
         Phy_alloc(&phy_ctx.phy[1]);
@@ -796,17 +796,6 @@ _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
 }
 
 /******************************************************************************
- * @brief Get the number of job in the phy queue
- * @param phy_ptr Phy to get the number of job from
- * @return Number of job
- ******************************************************************************/
-_CRITICAL inline volatile uint16_t Phy_GetJobNbr(luos_phy_t *phy_ptr)
-{
-    LUOS_ASSERT(phy_ptr != NULL);
-    return phy_ptr->job_nb;
-}
-
-/******************************************************************************
  * @brief define is there is something waiting to be sent or not
  * @return Succeed if nothing is waiting to be sent
  ******************************************************************************/
@@ -815,7 +804,8 @@ error_return_t Phy_TxAllComplete(void)
     // We don't check the first phy because it is Luos
     for (int i = 1; i < phy_ctx.phy_nb; i++)
     {
-        if (Phy_GetJobNbr(&phy_ctx.phy[i]) != 0)
+        LUOS_ASSERT(&phy_ctx.phy[i] != NULL);
+        if (phy_ctx.phy[i].job_nb != 0)
         {
             return FAILED;
         }

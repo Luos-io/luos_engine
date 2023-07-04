@@ -1545,36 +1545,6 @@ void unittest_add_and_remove_jobs(void)
     }
 }
 
-void unittest_phy_GetJobNbr()
-{
-    NEW_TEST_CASE("Check GetJobNbr assertion conditions");
-    {
-        TRY
-        {
-            uint16_t value = Phy_GetJobNbr(NULL);
-        }
-        TEST_ASSERT_TRUE(IS_ASSERT());
-        END_TRY;
-    }
-
-    NEW_TEST_CASE("Check GetPhyId normal conditions");
-    {
-        TRY
-        {
-            for (int i = 0; i < MAX_MSG_NB; i++)
-            {
-                luos_phy->job_nb = i;
-                uint16_t value   = Phy_GetJobNbr(luos_phy);
-                TEST_ASSERT_EQUAL(i, value);
-            }
-        }
-        CATCH
-        {
-            TEST_ASSERT_TRUE(false);
-        }
-    }
-}
-
 void unittest_phy_TxAllComplete()
 {
     NEW_TEST_CASE("Check TxAllComplete normal conditions");
@@ -1645,7 +1615,6 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_phy_GetPhyId);
     UNIT_TEST_RUN(unittest_phy_RmJob);
     UNIT_TEST_RUN(unittest_add_and_remove_jobs);
-    UNIT_TEST_RUN(unittest_phy_GetJobNbr);
     UNIT_TEST_RUN(unittest_phy_TxAllComplete);
 
     UNITY_END();

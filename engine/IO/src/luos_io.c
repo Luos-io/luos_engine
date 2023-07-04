@@ -13,7 +13,6 @@
 #include "luos_utils.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
-#include "robus.h"
 #include "_luos_phy.h"
 #include "stats.h"
 
@@ -582,7 +581,7 @@ static error_return_t LuosIO_DetectNextNodes(service_t *service)
         // Wait the end of transmission
         while (Phy_TxAllComplete() == FAILED)
             ;
-        // When Robus loop will receive the reply it will store and manage the new node_id and send it to the next node.
+        // When phy loop will receive the reply it will store and manage the new node_id and send it to the next node.
         // We just have to wait the end of the treatment of the entire branch
         uint32_t start_tick = LuosHAL_GetSystick();
         while (Phy_Busy())
