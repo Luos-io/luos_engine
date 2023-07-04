@@ -247,7 +247,7 @@ int LuosIO_TopologyDetection(service_t *service, connection_t *connection_table)
             result = LuosIO_DetectNextNodes(service);
             if (result == -1)
             {
-                // check the number of retry we made
+                // Check the number of retry we made
                 LUOS_ASSERT((redetect_nb <= 4));
                 // Detection fail, restart it
                 redetect_nb++;

@@ -36,7 +36,8 @@ void Button_Init(void)
     // Profile configuration
     button.access = READ_ONLY_ACCESS;
     // Service creation following state profile
-    ProfileState_CreateService(&button, 0, "button", revision);
+    service_t *service = ProfileState_CreateService(&button, 0, "button", revision);
+    Luos_Detect(service);
 }
 
 /******************************************************************************

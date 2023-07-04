@@ -26,7 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
-#include "robus_network.h"
+#include "serial_network.h"
 #include "button.h"
 /* USER CODE END Includes */
 
@@ -91,7 +91,7 @@ int main(void)
     /* Initialize all configured peripherals */
     /* USER CODE BEGIN 2 */
     Luos_Init();
-    Robus_Init();
+    Serial_Init();
     Button_Init();
     /* USER CODE END 2 */
 
@@ -100,6 +100,7 @@ int main(void)
     while (1)
     {
         Luos_Loop();
+        Serial_Loop();
         Button_Loop();
         /* USER CODE END WHILE */
 
