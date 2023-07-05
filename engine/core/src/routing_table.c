@@ -30,9 +30,8 @@ uint16_t RoutingTB_IDFromAlias(char *alias);
 char *RoutingTB_AliasFromId(uint16_t id);
 static uint16_t RoutingTB_BigestNodeID(void);
 uint16_t RoutingTB_GetServiceIndex(uint16_t id);
-bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg);
 
-static void RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table);
+static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table);
 static void RoutingTB_Share(service_t *service, uint16_t nb_node);
 static void RoutingTB_SendEndDetection(service_t *service);
 
@@ -155,7 +154,7 @@ void RoutingTB_ComputeRoutingTableEntryNB(void)
 {
     for (uint16_t i = 0; i < MAX_RTB_ENTRY; i++)
     {
-        if (routing_table[i].mode == SERVICE)
+        if ((routing_table[i].mode == SERVICE) && (last_service < routing_table[i].id))
         {
             last_service = routing_table[i].id;
         }
@@ -206,94 +205,110 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
 }
 
 /******************************************************************************
- * @brief Time out to receive en route table from
- * @param service : Service receive
- * @param intro_msg : into route table message
- * @return None
- ******************************************************************************/
-bool RoutingTB_WaitRoutingTable(service_t *service, msg_t *intro_msg)
-{
-    LUOS_ASSERT((service != 0) && (intro_msg != 0));
-    const uint8_t timeout    = 15; // timeout in ms
-    const uint16_t entry_bkp = last_routing_table_entry;
-    Luos_SendMsg(service, intro_msg);
-    uint32_t timestamp = LuosHAL_GetSystick();
-    while ((LuosHAL_GetSystick() - timestamp) < timeout)
-    {
-        // If this request is for a service in this board allow him to respond.
-        Luos_Loop();
-        if (entry_bkp != last_routing_table_entry)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-/******************************************************************************
  * @brief Generate Complete route table with local route table receive
  * @param service : Service in node
  * @param nb_node : Node number on network
  * @return None
  ******************************************************************************/
-static void RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table)
+static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table)
 {
     LUOS_ASSERT(service);
     // Asks for introduction for every found node (even the one detecting).
-    uint16_t try_nb          = 0;
-    uint16_t last_node_id    = RoutingTB_BigestNodeID();
-    uint16_t last_service_id = 0;
+    uint16_t try_nb              = 0;
+    static uint16_t last_node_id = 0;
+    uint16_t last_service_id     = 0;
     msg_t intro_msg;
-    while ((last_node_id < nb_node) && (try_nb < nb_node))
+    uint16_t nb_service;
+    static uint16_t rtb_next_node_index;
+    static uint8_t detect_state_machine = 0;
+    static uint16_t entry_bkp;
+    static uint32_t timestamp;
+
+    switch (detect_state_machine)
     {
-        try_nb++;
-        intro_msg.header.cmd         = LOCAL_RTB;
-        intro_msg.header.target_mode = NODEIDACK;
-        // Target next unknown node
-        intro_msg.header.target = last_node_id + 1;
-        // set the first service id it can use
-        intro_msg.header.size = 2;
-        last_service_id       = RoutingTB_BigestID() + 1;
-        memcpy(intro_msg.data, &last_service_id, sizeof(uint16_t));
-        // save the current last routing table entry allowing us to easily write the connection informations later
-        uint16_t rtb_next_node_index = RoutingTB_GetLastEntry();
-        // Ask to introduce and wait for a reply
-        if (!RoutingTB_WaitRoutingTable(service, &intro_msg))
-        {
-            // We don't get the answer
-            nb_node = last_node_id;
-            break;
-        }
-        // The node answer don't include connection because the node don't know it yet
-        // add this information to the routing table
-        LUOS_ASSERT(routing_table[rtb_next_node_index].mode == NODE);
-        routing_table[rtb_next_node_index].connection = connection_table[last_node_id];
-        last_node_id                                  = RoutingTB_BigestNodeID();
-    }
-    // Check Alias duplication.
-    uint16_t nb_service = RoutingTB_BigestID();
-    for (uint16_t id = 1; id <= nb_service; id++)
-    {
-        int32_t found_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
-        if ((found_id != id) & (found_id != -1))
-        {
-            // The found_id don't match with the actual ID of the service because the alias already exist
-            // Find the new alias to give him
-            uint8_t annotation              = 1;
-            char base_alias[MAX_ALIAS_SIZE] = {0};
-            memcpy(base_alias, RoutingTB_AliasFromId(id), MAX_ALIAS_SIZE);
-            // Add a number after alias in routing table
-            RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
-            // check another time if this alias is already used
-            while (RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id)) != id)
+        case 0:
+            if ((last_node_id >= nb_node) || (try_nb >= nb_node))
             {
-                // This alias is already used.
-                // Remove the number previously setuped by overwriting it with the base_alias
-                memcpy(RoutingTB_AliasFromId(id), base_alias, MAX_ALIAS_SIZE);
-                RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
+                // Go to check alias duplication step
+                detect_state_machine = 2;
+                return 0;
             }
-        }
+            try_nb++;
+            intro_msg.header.cmd         = LOCAL_RTB;
+            intro_msg.header.target_mode = NODEIDACK;
+            // Target next unknown node
+            intro_msg.header.target = last_node_id + 1;
+            // set the first service id it can use
+            intro_msg.header.size = 2;
+            last_service_id       = RoutingTB_BigestID() + 1;
+            memcpy(intro_msg.data, &last_service_id, sizeof(uint16_t));
+            // save the current last routing table entry allowing us to easily write the connection informations later
+            rtb_next_node_index = RoutingTB_GetLastEntry();
+            entry_bkp           = last_routing_table_entry;
+            Luos_SendMsg(service, &intro_msg);
+            timestamp = LuosHAL_GetSystick();
+            detect_state_machine++;
+        case 1:
+            if ((LuosHAL_GetSystick() - timestamp) >= 200)
+            {
+                // Time out is reached
+                // We don't get the answer
+                nb_node = last_node_id;
+                // Go directly to Alias duplication check
+                detect_state_machine = 2;
+                return 0;
+            }
+            // If this request is for a service in this board allow him to respond.
+            if (entry_bkp == last_routing_table_entry)
+            {
+                // We don't get the answer yet
+                return 0;
+            }
+            // We get the answer
+            // The node answer don't include connection because the node don't know it yet
+            // add this information to the routing table
+            LUOS_ASSERT(routing_table[rtb_next_node_index].mode == NODE);
+            routing_table[rtb_next_node_index].connection = connection_table[last_node_id];
+            last_node_id                                  = RoutingTB_BigestNodeID();
+            // Go back to step 0 to ask the routing table of the next node
+            detect_state_machine = 0;
+            return 0;
+            break;
+        case 2:
+            // Check Alias duplication.
+            nb_service = RoutingTB_BigestID();
+            for (uint16_t id = 1; id <= nb_service; id++)
+            {
+                int32_t found_id = RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id));
+                if ((found_id != id) & (found_id != -1))
+                {
+                    // The found_id don't match with the actual ID of the service because the alias already exist
+                    // Find the new alias to give him
+                    uint8_t annotation              = 1;
+                    char base_alias[MAX_ALIAS_SIZE] = {0};
+                    memcpy(base_alias, RoutingTB_AliasFromId(id), MAX_ALIAS_SIZE);
+                    // Add a number after alias in routing table
+                    RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
+                    // check another time if this alias is already used
+                    while (RoutingTB_IDFromAlias(RoutingTB_AliasFromId(id)) != id)
+                    {
+                        // This alias is already used.
+                        // Remove the number previously setuped by overwriting it with the base_alias
+                        memcpy(RoutingTB_AliasFromId(id), base_alias, MAX_ALIAS_SIZE);
+                        RoutingTB_AddNumToAlias(RoutingTB_AliasFromId(id), annotation++);
+                    }
+                }
+            }
+            detect_state_machine = 0;
+            last_node_id         = 0;
+            return 1;
+            break;
+        default:
+            LUOS_ASSERT(0);
+            break;
     }
+    LUOS_ASSERT(0);
+    return -1;
 }
 
 /******************************************************************************
@@ -363,28 +378,69 @@ void RoutingTB_SendEndDetection(service_t *service)
  * If multiple services have the same name it will be changed with a number in it
  * Automatically at the end this function create a list of sensors id
  * @param service : Service who send
- * @return None
+ * @return return true if the detection is complete
  ******************************************************************************/
-void RoutingTB_DetectServices(service_t *service)
+bool RoutingTB_DetectServices(service_t *service)
 {
     LUOS_ASSERT(service);
-    // Create a connetion list to store all the connection describing the topology
-    connection_t connection_table[MAX_NODE_NUMBER];
-    memset(connection_table, 0xFFFFFFFF, sizeof(connection_table));
-    // Starts the topology detection.
-    uint16_t nb_node = LuosIO_TopologyDetection(service, connection_table);
-    // Clear data reception state
-    Luos_ReceiveData(NULL, NULL, NULL);
-    // Clear the routing table.
-    RoutingTB_Erase();
-    // Generate the routing_table
-    RoutingTB_Generate(service, nb_node, connection_table);
-    // We have a complete routing table now share it with others.
-    RoutingTB_Share(service, nb_node);
-    // Send a message to indicate the end of the detection
-    RoutingTB_SendEndDetection(service);
-    // Clear statistic of node who start the detction
-    Luos_ResetStatistic();
+    static uint8_t detect_state_machine = 0;
+    static uint16_t nb_node             = 0;
+    static connection_t connection_table[MAX_NODE_NUMBER];
+    int result;
+    switch (detect_state_machine)
+    {
+        case 0:
+            // Create a connetion list to store all the connection describing the topology
+            memset(connection_table, 0xFF, sizeof(connection_table));
+            detect_state_machine++;
+        case 1:
+            result = LuosIO_TopologyDetection(service, connection_table);
+            if (result == 0)
+            {
+                // No node detected meaning that the detection is not finished
+                return false;
+            }
+            if (result < 0)
+            {
+                // another detection is in progress, stop this one
+                detect_state_machine = 0;
+                return true;
+            }
+            nb_node = (uint16_t)result;
+            // Clear data reception state
+            Luos_ReceiveData(NULL, NULL, NULL);
+            // Clear the routing table.
+            RoutingTB_Erase();
+            detect_state_machine++;
+        case 2:
+            // Generate the routing_table
+            result = RoutingTB_Generate(service, nb_node, connection_table);
+            if (result == 0)
+            {
+                // RTB generation not finished
+                return false;
+            }
+            if (result < 0)
+            {
+                // another detection is in progress, stop this one
+                detect_state_machine = 0;
+                return true;
+            }
+            // We have a complete routing table now share it with others.
+            RoutingTB_Share(service, nb_node);
+            // Send a message to indicate the end of the detection
+            RoutingTB_SendEndDetection(service);
+            // Clear statistic of node who start the detction
+            Luos_ResetStatistic();
+            detect_state_machine = 0;
+            return true;
+            break;
+        default:
+            LUOS_ASSERT(0);
+            break;
+    }
+    LUOS_ASSERT(0);
+    return false;
 }
 
 /******************************************************************************

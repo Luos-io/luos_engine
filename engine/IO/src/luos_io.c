@@ -19,8 +19,8 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-static error_return_t LuosIO_StartTopologyDetection(service_t *service);
-static error_return_t LuosIO_DetectNextNodes(service_t *service);
+static int LuosIO_StartTopologyDetection(service_t *service);
+static int LuosIO_DetectNextNodes(service_t *service);
 static error_return_t LuosIO_ConsumeMsg(const msg_t *input);
 static void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
 
@@ -91,6 +91,7 @@ void LuosIO_Init(void)
  ******************************************************************************/
 void LuosIO_Loop(void)
 {
+    static bool detec_state_machine = false;
     // Execute message allocation tasks
     MsgAlloc_Loop();
     Phy_Loop();
@@ -102,8 +103,18 @@ void LuosIO_Loop(void)
         detection_service->id = 1;
         // Generate the filters
         Service_GenerateId(1);
-        RoutingTB_DetectServices(detection_service);
-        detection_service = NULL;
+        // Turn on the infinite loop to perform the detection
+        detec_state_machine = true;
+    }
+    if (detec_state_machine == true)
+    {
+        // Check if the detection is finished
+        if (RoutingTB_DetectServices(detection_service))
+        {
+            // Turn off the infinite loop
+            detec_state_machine = false;
+            detection_service   = NULL;
+        }
     }
 }
 
@@ -187,47 +198,75 @@ error_return_t LuosIO_Send(service_t *service, msg_t *msg)
  * @param service pointer to the detecting service
  * @return The number of detected node.
  ******************************************************************************/
-uint16_t LuosIO_TopologyDetection(service_t *service, connection_t *connection_table)
+int LuosIO_TopologyDetection(service_t *service, connection_t *connection_table)
 {
-    uint8_t redetect_nb  = 0;
-    bool detect_enabled  = true;
-    connection_table_ptr = connection_table;
+    static uint8_t redetect_nb          = 0;
+    static uint8_t detect_state_machine = 0;
+    int result;
 
-    // If a detection is in progress, don't do an another detection and return 0
-    if (Node_GetState() >= LOCAL_DETECTION)
+    switch (detect_state_machine)
     {
-        connection_table_ptr = NULL;
-        return 0;
-    }
-    while (detect_enabled)
-    {
-        detect_enabled = false;
-
-        // Reset all detection state of services on the network to start a new detection
-        LuosIO_StartTopologyDetection(service);
-        // Make sure that the detection is not interrupted
-        if (Node_GetState() == EXTERNAL_DETECTION)
-        {
-            connection_table_ptr = NULL;
-            return 0;
-        }
-        // Setup local node
-        Node_Get()->node_id = 1;
-        last_node           = 1;
-        // Setup sending service id
-        service->id = 1;
-        // Consider this node as ready
-        // Clear the nodeID waiting flag
-        Node_WaitId();
-
-        if (LuosIO_DetectNextNodes(service) == FAILED)
-        {
-            // check the number of retry we made
-            LUOS_ASSERT((redetect_nb <= 4));
-            // Detection fail, restart it
-            redetect_nb++;
-            detect_enabled = true;
-        }
+        case 0:
+            connection_table_ptr = connection_table;
+            // If a detection is in progress, don't do an another detection and return 0
+            if (Node_GetState() >= LOCAL_DETECTION)
+            {
+                connection_table_ptr = NULL;
+                return -1;
+            }
+            detect_state_machine++;
+        case 1:
+            // Reset all detection state of services on the network to start a new detection
+            result = LuosIO_StartTopologyDetection(service);
+            if (result <= 0)
+            {
+                return result;
+            }
+            detect_state_machine++;
+        case 2:
+            // Make sure that the detection is not interrupted
+            if (Node_GetState() == EXTERNAL_DETECTION)
+            {
+                connection_table_ptr = NULL;
+                return -1;
+            }
+            // Setup local node
+            Node_Get()->node_id = 1;
+            last_node           = 1;
+            // Setup sending service id
+            service->id = 1;
+            // Consider this node as ready
+            // Clear the nodeID waiting flag
+            Node_WaitId();
+            detect_state_machine++;
+        case 3:
+            // results:
+            //  -1 : detection failed
+            //  0 : detection in progress
+            //  1 : detection finished
+            result = LuosIO_DetectNextNodes(service);
+            if (result == -1)
+            {
+                // check the number of retry we made
+                LUOS_ASSERT((redetect_nb <= 4));
+                // Detection fail, restart it
+                redetect_nb++;
+                // Go back to stage 1
+                detect_state_machine = 1;
+                return 0;
+            }
+            if (result == 0)
+            {
+                // Detection in progress
+                return 0;
+            }
+            // We finished the topology detection
+            detect_state_machine = 0;
+            redetect_nb          = 0;
+            break;
+        default:
+            LUOS_ASSERT(0);
+            break;
     }
     connection_table_ptr = NULL;
     return last_node;
@@ -238,53 +277,80 @@ uint16_t LuosIO_TopologyDetection(service_t *service, connection_t *connection_t
  * @param service pointer to the detecting service
  * @return The number of detected node.
  ******************************************************************************/
-static error_return_t LuosIO_StartTopologyDetection(service_t *service)
+static int LuosIO_StartTopologyDetection(service_t *service)
 {
+    static uint8_t detect_state_machine = 0;
+    static uint32_t start_tick;
     msg_t msg;
-    uint8_t try_nbr = 0;
 
-    msg.header.target      = BROADCAST_VAL;
-    msg.header.target_mode = BROADCAST;
-    msg.header.cmd         = START_DETECTION;
-    msg.header.size        = 0;
-    do
+    switch (detect_state_machine)
     {
-        // If a detection is in progress, don't do an another detection and return 0
-        if (Node_GetState() >= LOCAL_DETECTION)
-        {
-            return 0;
-        }
-        // Load the message to send
-        Luos_SendMsg(service, &msg);
-        // Wait until message is actually transmitted
-        while (Phy_TxAllComplete() != SUCCEED)
-            ;
-        // Reinit Phy (this will call LuosIO_Reset)
-        Phy_ResetAll();
-        // Wait 2ms to be sure all previous messages are received and treated by other nodes
-        uint32_t start_tick = LuosHAL_GetSystick();
-        while (LuosHAL_GetSystick() - start_tick < 2)
-            ;
-        // Resend the message just to be sure that no other messages were revceived during the reset.
-        Luos_SendMsg(service, &msg);
-        // Wait until message is actually transmitted
-        while (Phy_TxAllComplete() != SUCCEED)
-            ;
-        // Wait 2ms to be sure all previous messages are received and treated by other nodes
-        start_tick = LuosHAL_GetSystick();
-        while (LuosHAL_GetSystick() - start_tick < 2)
-            ;
-        try_nbr++;
+        case 0:
+            // If a detection is in progress, don't do an another detection and return 0
+            if (Node_GetState() >= LOCAL_DETECTION)
+            {
+                return -1;
+            }
+            // Load the message to send
+            msg.header.target      = BROADCAST_VAL;
+            msg.header.target_mode = BROADCAST;
+            msg.header.cmd         = START_DETECTION;
+            msg.header.size        = 0;
+            Luos_SendMsg(service, &msg);
+            detect_state_machine++;
+        case 1:
+            // Wait until the message is transmitted
+            if (Phy_TxAllComplete() != SUCCEED)
+            {
+                return 0;
+            }
+            detect_state_machine++;
+        case 2:
+            // Reinit Phy (this will call LuosIO_Reset)
+            Phy_ResetAll();
+            // Wait 2ms to be sure all previous messages are received and treated by other nodes
+            start_tick = LuosHAL_GetSystick();
+            detect_state_machine++;
+        case 3:
+            // Wait 2ms  for the other to manage the message
+            if (LuosHAL_GetSystick() - start_tick < 2)
+            {
+                return 0;
+            }
+            detect_state_machine++;
+        case 4:
+            // Resend the message just to be sure that no other messages were revceived during the reset.
+            msg.header.target      = BROADCAST_VAL;
+            msg.header.target_mode = BROADCAST;
+            msg.header.cmd         = START_DETECTION;
+            msg.header.size        = 0;
+            Luos_SendMsg(service, &msg);
+            detect_state_machine++;
+        case 5:
+            // Wait until the message is transmitted
+            if (Phy_TxAllComplete() != SUCCEED)
+            {
+                return 0;
+            }
+            start_tick = LuosHAL_GetSystick();
+            detect_state_machine++;
+        case 6:
+            // Wait 2ms to be sure all previous messages are received and treated by other nodes
+            if (LuosHAL_GetSystick() - start_tick < 2)
+            {
+                return 0;
+            }
 
-    } while ((MsgAlloc_IsEmpty() != SUCCEED) || (try_nbr > 5));
-    // Reinit our node id
-    Node_Get()->node_id = 0;
-    if (try_nbr < 5)
-    {
-        Node_SetState(LOCAL_DETECTION);
-        return SUCCEED;
+            // Reinit our node id
+            Node_Get()->node_id = 0;
+            Node_SetState(LOCAL_DETECTION);
+            detect_state_machine = 0;
+            return 1;
+        default:
+            LUOS_ASSERT(0);
+            break;
     }
-    return FAILED;
+    return -1;
 }
 
 /******************************************************************************
@@ -575,28 +641,49 @@ static inline void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *r
  * @param service pointer to the detecting service
  * @return None.
  ******************************************************************************/
-static error_return_t LuosIO_DetectNextNodes(service_t *service)
+static int LuosIO_DetectNextNodes(service_t *service)
 {
-    // Lets try to find other nodes
-    while (Phy_FindNextNode() == SUCCEED)
+    static uint8_t detect_state_machine = 0;
+    static uint32_t start_tick;
+
+    switch (detect_state_machine)
     {
-        // Wait the end of transmission
-        while (Phy_TxAllComplete() == FAILED)
-            ;
-        // When phy loop will receive the reply it will store and manage the new node_id and send it to the next node.
-        // We just have to wait the end of the treatment of the entire branch
-        uint32_t start_tick = LuosHAL_GetSystick();
-        while (Phy_Busy())
-        {
-            LuosIO_Loop();
-            if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)
+        case 0:
+            // Lets try to find other nodes
+            if (Phy_FindNextNode() != SUCCEED)
             {
-                // Topology detection is too long, we should abort it and restart
-                return FAILED;
+                // No more nodes to detect
+                return 1;
             }
-        }
+            detect_state_machine++;
+        case 1:
+            // Wait the end of transmission
+            if (Phy_TxAllComplete() == FAILED)
+            {
+                // Transmission is not finished
+                return 0;
+            }
+            start_tick = LuosHAL_GetSystick();
+            detect_state_machine++;
+        case 2:
+            // When phy loop will receive the reply it will store and manage the new node_id and send it to the next node.
+            // We just have to wait the end of the treatment of the entire branch
+            if (Phy_Busy())
+            {
+                if (LuosHAL_GetSystick() - start_tick > DETECTION_TIMEOUT_MS)
+                {
+                    // Topology detection is too long, we should abort it and restart
+                    return -1;
+                }
+                return 0;
+            }
+            detect_state_machine = 0;
+            return 1;
+        default:
+            LUOS_ASSERT(0);
+            break;
     }
-    return SUCCEED;
+    return -1;
 }
 
 /******************************************************************************

@@ -25,7 +25,7 @@
 // generic functions
 void LuosIO_Init(void);
 void LuosIO_Loop(void);
-uint16_t LuosIO_TopologyDetection(service_t *service, connection_t *connection_table);
+int LuosIO_TopologyDetection(service_t *service, connection_t *connection_table);
 error_return_t LuosIO_Send(service_t *service, msg_t *msg);
 
 // Job management

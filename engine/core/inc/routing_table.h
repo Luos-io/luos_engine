@@ -73,7 +73,7 @@ uint16_t RoutingTB_NodeIDFromID(uint16_t id);
 
 // ********************* routing_table management tools ************************
 void RoutingTB_ComputeRoutingTableEntryNB(void);
-void RoutingTB_DetectServices(service_t *service);
+bool RoutingTB_DetectServices(service_t *service);
 void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
 void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service);
 void RoutingTB_RemoveNode(uint16_t nodeid);

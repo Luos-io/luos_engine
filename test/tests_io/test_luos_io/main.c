@@ -96,25 +96,6 @@ void unittest_luosIO_loop()
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
     }
-
-    NEW_TEST_CASE("Check that the detection treatment is done in loop");
-    {
-        TRY
-        {
-            LuosIO_Init();
-            Flag_DetectServices = true;
-            detection_service   = &service_ctx.list[0];
-            LuosIO_Loop();
-            TEST_ASSERT_EQUAL(NULL, detection_service);
-            TEST_ASSERT_EQUAL(false, Flag_DetectServices);
-            TEST_ASSERT_EQUAL(1, service_ctx.list[0].id);
-        }
-        CATCH
-        {
-            TEST_ASSERT_TRUE(false);
-        }
-        END_TRY;
-    }
 }
 
 void unittest_luosIO_TransmitLocalRoutingTable()
