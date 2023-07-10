@@ -280,6 +280,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
         LUOS_ASSERT(0);
     }
 #endif
+    sleep(2);
 }
 
 /******************************************************************************

@@ -6,7 +6,7 @@ extern "C"
 #endif
 
 #include "luos_engine.h"
-#include "robus_network.h"
+#include "serial_network.h"
 #include "button.h"
 
 #ifdef __cplusplus
@@ -21,7 +21,7 @@ extern "C"
 void setup()
 {
     Luos_Init();
-    Robus_Init();
+    Serial_Init();
     Button_Init();
 }
 /******************************************************************************
@@ -32,5 +32,6 @@ void setup()
 void loop()
 {
     Luos_Loop();
+    Serial_Loop();
     Button_Loop();
 }

@@ -60,6 +60,8 @@ void SerialHAL_Loop(void)
 void SerialHAL_Send(uint8_t *data, uint16_t size)
 {
     Serial.write(data, size);
+    // Call the callback managing the end of the transmission
+    Serial_TransmissionEnd();
 }
 
 uint8_t SerialHAL_GetPort(void)
