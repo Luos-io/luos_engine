@@ -24,7 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
-#include "robus_network.h"
+#include "serial_network.h"
 #include "button.h"
 /* USER CODE END Includes */
 
@@ -88,7 +88,7 @@ int main(void)
     MX_GPIO_Init();
     /* USER CODE BEGIN 2 */
     Luos_Init();
-    Robus_Init();
+    Serial_Init();
     Button_Init();
     /* USER CODE END 2 */
 
@@ -100,6 +100,7 @@ int main(void)
 
         /* USER CODE BEGIN 3 */
         Luos_Loop();
+        Serial_Loop();
         Button_Loop();
     }
     /* USER CODE END 3 */
