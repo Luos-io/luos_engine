@@ -67,8 +67,8 @@ void Filter_AddServiceId(uint16_t service_id, uint16_t service_number)
     //	Shift byte		            byte Mask of bit address
 
     LUOS_ASSERT((service_id > 0)
-                && (service_id <= 4096 - MAX_SERVICE_NUMBER)
-                && (service_number <= MAX_SERVICE_NUMBER));
+                && (service_id <= 4096 - MAX_LOCAL_SERVICE_NUMBER)
+                && (service_number <= MAX_LOCAL_SERVICE_NUMBER));
     Filter_IdInit();
     uint16_t tempo         = 0;
     filter_ctx.IDShiftMask = (service_id - 1) / 8; // aligned to byte
@@ -88,7 +88,7 @@ void Filter_AddServiceId(uint16_t service_id, uint16_t service_number)
  ******************************************************************************/
 void Filter_AddTopic(uint16_t topic_id)
 {
-    LUOS_ASSERT(topic_id < LAST_TOPIC);
+    LUOS_ASSERT(topic_id < MAX_LOCAL_TOPIC_NUMBER);
     // Add 1 to the bit corresponding to the topic in multicast mask
     filter_ctx.TopicMask[(topic_id / 8)] |= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
 }
@@ -100,7 +100,7 @@ void Filter_AddTopic(uint16_t topic_id)
  ******************************************************************************/
 void Filter_RmTopic(uint16_t topic_id)
 {
-    LUOS_ASSERT(topic_id < LAST_TOPIC);
+    LUOS_ASSERT(topic_id < MAX_LOCAL_TOPIC_NUMBER);
     // Remove 1 to the bit corresponding to the topic in multicast mask
     filter_ctx.TopicMask[(topic_id / 8)] &= ~(1 << (topic_id - ((int)(topic_id / 8)) * 8));
 }
@@ -116,7 +116,7 @@ _CRITICAL bool Filter_ServiceID(uint16_t service_id)
     //--------------------------->|__________|
     //	      Shift byte		  byte Mask of bit address
     // In an node, service ID are consecutive
-    // MaskID is byte field wich have the size of MAX_SERVICE_NUMBER
+    // MaskID is byte field wich have the size of MAX_LOCAL_SERVICE_NUMBER
     // Shift depend od ID of first service in Node (shift = NodeID/8)
     LUOS_ASSERT(service_id <= 4096);
     uint16_t compare = 0;
@@ -144,7 +144,7 @@ _CRITICAL bool Filter_Topic(uint16_t topic_id)
 {
     uint8_t compare = 0;
     // Make sure there is a topic that can be received by the node
-    if (topic_id < LAST_TOPIC)
+    if (topic_id < MAX_LOCAL_TOPIC_NUMBER)
     {
         compare = topic_id - ((topic_id / 8) * 8);
         // Search if topic exists in mask

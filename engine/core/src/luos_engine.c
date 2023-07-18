@@ -19,7 +19,7 @@
  * Variables
  ******************************************************************************/
 const revision_t luos_version = {.major = 3, .minor = 0, .build = 0};
-package_t package_table[MAX_SERVICE_NUMBER];
+package_t package_table[MAX_LOCAL_SERVICE_NUMBER];
 uint16_t package_number = 0;
 
 /*******************************************************************************
@@ -347,8 +347,8 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
 int Luos_ReceiveData(service_t *service, const msg_t *msg, void *bin_data)
 {
     // Manage buffer session (one per service)
-    static uint32_t data_size[MAX_SERVICE_NUMBER]       = {0};
-    static uint32_t total_data_size[MAX_SERVICE_NUMBER] = {0};
+    static uint32_t data_size[MAX_LOCAL_SERVICE_NUMBER]       = {0};
+    static uint32_t total_data_size[MAX_LOCAL_SERVICE_NUMBER] = {0};
     static uint16_t last_msg_size                       = 0;
 
     // When this function receive a data from a NULL service it is an error and we should reinit the reception state

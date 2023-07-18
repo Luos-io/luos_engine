@@ -56,7 +56,7 @@ void unittest_Filter_ServiceId()
         }
     }
 
-    service_number = MAX_SERVICE_NUMBER;
+    service_number = MAX_LOCAL_SERVICE_NUMBER;
     NEW_TEST_CASE("Service ID mask test with max services");
     {
         Filter_IdInit();
@@ -109,12 +109,12 @@ void unittest_Filter_ServiceId()
         }
     }
 
-    NEW_TEST_CASE("Overlap the MAX_SERVICE_NUMBER");
+    NEW_TEST_CASE("Overlap the MAX_LOCAL_SERVICE_NUMBER");
     {
         Filter_IdInit();
         TRY
         {
-            Filter_AddServiceId(1, MAX_SERVICE_NUMBER + 1);
+            Filter_AddServiceId(1, MAX_LOCAL_SERVICE_NUMBER + 1);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -125,8 +125,8 @@ void unittest_Filter_ServiceId()
         Filter_IdInit();
         TRY
         {
-            Filter_AddServiceId(4096 - MAX_SERVICE_NUMBER, service_number);
-            TEST_ASSERT_EQUAL(true, Filter_ServiceID(4096 - MAX_SERVICE_NUMBER));
+            Filter_AddServiceId(4096 - MAX_LOCAL_SERVICE_NUMBER, service_number);
+            TEST_ASSERT_EQUAL(true, Filter_ServiceID(4096 - MAX_LOCAL_SERVICE_NUMBER));
         }
         CATCH
         {
@@ -135,7 +135,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(4096 - MAX_SERVICE_NUMBER + 1, service_number);
+            Filter_AddServiceId(4096 - MAX_LOCAL_SERVICE_NUMBER + 1, service_number);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
 
@@ -166,8 +166,8 @@ void unittest_Filter_Topic()
         Filter_TopicInit();
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC - 1);
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            Filter_AddTopic(MAX_LOCAL_TOPIC_NUMBER - 1);
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -177,18 +177,18 @@ void unittest_Filter_Topic()
         Filter_TopicInit();
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC);
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC));
+            Filter_AddTopic(MAX_LOCAL_TOPIC_NUMBER);
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER));
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
 
         Filter_TopicInit();
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC - 1);
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
-            Filter_RmTopic(LAST_TOPIC - 1);
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
+            Filter_AddTopic(MAX_LOCAL_TOPIC_NUMBER - 1);
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
+            Filter_RmTopic(MAX_LOCAL_TOPIC_NUMBER - 1);
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -198,7 +198,7 @@ void unittest_Filter_Topic()
         Filter_TopicInit();
         TRY
         {
-            Filter_RmTopic(LAST_TOPIC);
+            Filter_RmTopic(MAX_LOCAL_TOPIC_NUMBER);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -215,7 +215,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -230,7 +230,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -245,7 +245,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -254,13 +254,13 @@ void unittest_Filter_Topic()
 
         TRY
         {
-            Filter_AddTopic(LAST_TOPIC - 1);
+            Filter_AddTopic(MAX_LOCAL_TOPIC_NUMBER - 1);
             TEST_ASSERT_EQUAL(true, Filter_Topic(0));
             TEST_ASSERT_EQUAL(true, Filter_Topic(1));
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -275,7 +275,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -290,7 +290,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(true, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -305,7 +305,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -320,7 +320,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -335,7 +335,7 @@ void unittest_Filter_Topic()
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -344,13 +344,13 @@ void unittest_Filter_Topic()
 
         TRY
         {
-            Filter_RmTopic(LAST_TOPIC - 1);
+            Filter_RmTopic(MAX_LOCAL_TOPIC_NUMBER - 1);
             TEST_ASSERT_EQUAL(false, Filter_Topic(0));
             TEST_ASSERT_EQUAL(false, Filter_Topic(1));
             TEST_ASSERT_EQUAL(false, Filter_Topic(2));
             TEST_ASSERT_EQUAL(false, Filter_Topic(3));
             TEST_ASSERT_EQUAL(false, Filter_Topic(4));
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {

@@ -28,7 +28,7 @@ typedef struct
     unsigned char id;
 } dxl_t;
 
-dxl_t dxl[MAX_SERVICE_NUMBER];
+dxl_t dxl[MAX_LOCAL_SERVICE_NUMBER];
 
 volatile float trajectory_buf[BUFFER_SIZE];
 volatile float measurement_buf[BUFFER_SIZE];
@@ -60,8 +60,8 @@ void Dxl_Init(void)
 void Dxl_Loop(void)
 {
     static int index                                = 0;
-    static uint32_t last_temp[MAX_SERVICE_NUMBER]   = {0};
-    static uint32_t last_sample[MAX_SERVICE_NUMBER] = {0};
+    static uint32_t last_temp[MAX_LOCAL_SERVICE_NUMBER]   = {0};
+    static uint32_t last_sample[MAX_LOCAL_SERVICE_NUMBER] = {0};
     // check motor values one by one
     //  Get motor info
     if (dxl[index].id == 0)
@@ -411,8 +411,8 @@ static void discover_dxl(void)
     // Clear service table
     Luos_ServicesClear();
     // Clear local tables
-    memset((void *)dxl, 0, sizeof(dxl_t) * MAX_SERVICE_NUMBER);
-    for (dxl_id = 0; dxl_id < MAX_SERVICE_NUMBER; dxl_id++)
+    memset((void *)dxl, 0, sizeof(dxl_t) * MAX_LOCAL_SERVICE_NUMBER);
+    for (dxl_id = 0; dxl_id < MAX_LOCAL_SERVICE_NUMBER; dxl_id++)
     {
         memset(&dxl[dxl_id].dxl_motor, 0, sizeof(profile_servo_motor_t));
     }
@@ -493,7 +493,7 @@ static int find_id(service_t *service)
 {
     profile_core_t *profile = (profile_core_t *)service->profile_context;
     int i                   = 0;
-    for (i = 0; i <= MAX_SERVICE_NUMBER; i++)
+    for (i = 0; i <= MAX_LOCAL_SERVICE_NUMBER; i++)
     {
         if ((uint32_t)profile->profile_data == (uint32_t)&dxl[i].dxl_motor)
             return i;

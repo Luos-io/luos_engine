@@ -13,16 +13,16 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#if (MAX_SERVICE_NUMBER <= 8)
+#if (MAX_LOCAL_SERVICE_NUMBER <= 8)
 typedef uint8_t service_filter_t;
-#elif (MAX_SERVICE_NUMBER <= 16)
+#elif (MAX_LOCAL_SERVICE_NUMBER <= 16)
 typedef uint16_t service_filter_t;
-#elif (MAX_SERVICE_NUMBER <= 32)
+#elif (MAX_LOCAL_SERVICE_NUMBER <= 32)
 typedef uint32_t service_filter_t;
-#elif (MAX_SERVICE_NUMBER <= 64)
+#elif (MAX_LOCAL_SERVICE_NUMBER <= 64)
 typedef uint64_t service_filter_t;
 #else
-    #error "MAX_SERVICE_NUMBER is too high"
+    #error "MAX_LOCAL_SERVICE_NUMBER is too high"
 #endif
 
 /*******************************************************************************

@@ -212,7 +212,7 @@ typedef struct service_t
 
     // Private Variables
     uint16_t last_topic_position;    /*!< Position pointer of the last topic added. */
-    uint16_t topic_list[LAST_TOPIC]; /*!< multicast target bank. */
+    uint16_t topic_list[MAX_LOCAL_TOPIC_NUMBER]; /*!< multicast target bank. */
     timed_update_t auto_refresh;     /*!< service auto refresh context. */
     void *profile_context;           /*!< Pointer to the profile context. */
 

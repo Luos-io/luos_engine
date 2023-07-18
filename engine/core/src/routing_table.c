@@ -186,14 +186,14 @@ static void RoutingTB_AddNumToAlias(char *alias, uint8_t num)
     if (num > 99) // only 2 digit are alowed when add alias number
     {
         // This is probably a mistake, put an error into the alias
-        memset(alias, 0, ALIAS_SIZE);
+        memset(alias, 0, MAX_ALIAS_SIZE - 1);
         memcpy(alias, "error", strlen("error"));
         return;
     }
     // Change size to fit into 15 characters
-    if (strlen(alias) > (ALIAS_SIZE - intsize))
+    if (strlen(alias) > (MAX_ALIAS_SIZE - 1 - intsize))
     {
-        alias[(ALIAS_SIZE - intsize)] = '\0';
+        alias[(MAX_ALIAS_SIZE - 1 - intsize)] = '\0';
     }
     else
     {

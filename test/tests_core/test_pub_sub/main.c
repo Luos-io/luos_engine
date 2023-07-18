@@ -22,7 +22,7 @@ void unittest_PubSub_IsTopicSubscribed(void)
         {
             //  Init default scenario context
             Init_Context();
-            PubSub_IsTopicSubscribed(default_sc.App_1.app, LAST_TOPIC);
+            PubSub_IsTopicSubscribed(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -65,7 +65,7 @@ void unittest_Luos_Subscribe(void)
         {
             //  Init default scenario context
             Init_Context();
-            Luos_Subscribe(default_sc.App_1.app, LAST_TOPIC);
+            Luos_Subscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -79,11 +79,11 @@ void unittest_Luos_Subscribe(void)
 
             TEST_ASSERT_EQUAL(SUCCEED, Luos_Subscribe(default_sc.App_1.app, 1));
             TEST_ASSERT_EQUAL(SUCCEED, Luos_Subscribe(default_sc.App_1.app, 2));
-            TEST_ASSERT_EQUAL(SUCCEED, Luos_Subscribe(default_sc.App_1.app, LAST_TOPIC - 1));
+            TEST_ASSERT_EQUAL(SUCCEED, Luos_Subscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER - 1));
             TEST_ASSERT_EQUAL(3, default_sc.App_1.app->last_topic_position);
             TEST_ASSERT_EQUAL(1, default_sc.App_1.app->topic_list[0]);
             TEST_ASSERT_EQUAL(2, default_sc.App_1.app->topic_list[1]);
-            TEST_ASSERT_EQUAL(LAST_TOPIC - 1, default_sc.App_1.app->topic_list[2]);
+            TEST_ASSERT_EQUAL(MAX_LOCAL_TOPIC_NUMBER - 1, default_sc.App_1.app->topic_list[2]);
         }
         CATCH
         {
@@ -99,15 +99,15 @@ void unittest_Luos_Subscribe(void)
             //  Init default scenario context
             Init_Context();
 
-            for (uint8_t i = 0; i < LAST_TOPIC; i++)
+            for (uint8_t i = 0; i < MAX_LOCAL_TOPIC_NUMBER; i++)
             {
                 TEST_ASSERT_EQUAL(SUCCEED, Luos_Subscribe(default_sc.App_1.app, i));
                 TEST_ASSERT_EQUAL(i + 1, default_sc.App_1.app->last_topic_position);
             }
 
-            TEST_ASSERT_EQUAL(LAST_TOPIC, default_sc.App_1.app->last_topic_position);
+            TEST_ASSERT_EQUAL(MAX_LOCAL_TOPIC_NUMBER, default_sc.App_1.app->last_topic_position);
 
-            TEST_ASSERT_TRUE(PubSub_IsTopicSubscribed(default_sc.App_1.app, LAST_TOPIC - 1));
+            TEST_ASSERT_TRUE(PubSub_IsTopicSubscribed(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER - 1));
         }
         CATCH
         {
@@ -158,12 +158,12 @@ void unittest_Luos_Subscribe(void)
 
         RESET_ASSERT();
 
-        Luos_Subscribe(default_sc.App_1.app, LAST_TOPIC - 1);
+        Luos_Subscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER - 1);
         TEST_ASSERT_FALSE(IS_ASSERT());
 
         TRY
         {
-            Luos_Subscribe(default_sc.App_1.app, LAST_TOPIC);
+            Luos_Subscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
     }
@@ -275,11 +275,11 @@ void unittest_Luos_Unsubscribe(void)
         {
             //  Init default scenario context
             Init_Context();
-            Luos_Subscribe(default_sc.App_1.app, LAST_TOPIC - 1);
-            TEST_ASSERT_EQUAL(true, Filter_Topic(LAST_TOPIC - 1));
-            Luos_Unsubscribe(default_sc.App_1.app, LAST_TOPIC - 1);
-            TEST_ASSERT_EQUAL(false, Filter_Topic(LAST_TOPIC - 1));
-            error_return_t err = Luos_Unsubscribe(default_sc.App_1.app, LAST_TOPIC - 1);
+            Luos_Subscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER - 1);
+            TEST_ASSERT_EQUAL(true, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
+            Luos_Unsubscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER - 1);
+            TEST_ASSERT_EQUAL(false, Filter_Topic(MAX_LOCAL_TOPIC_NUMBER - 1));
+            error_return_t err = Luos_Unsubscribe(default_sc.App_1.app, MAX_LOCAL_TOPIC_NUMBER - 1);
             TEST_ASSERT_EQUAL(err, FAILED);
         }
         CATCH
@@ -430,7 +430,7 @@ void unittest_Luos_Unsubscribe(void)
             Init_Context();
 
             Luos_Subscribe(default_sc.App_1.app, 2);
-            default_sc.App_1.app->last_topic_position = LAST_TOPIC;
+            default_sc.App_1.app->last_topic_position = MAX_LOCAL_TOPIC_NUMBER;
             TEST_ASSERT_EQUAL(SUCCEED, Luos_Unsubscribe(default_sc.App_1.app, 2));
             TEST_ASSERT_EQUAL(FAILED, Luos_Unsubscribe(default_sc.App_1.app, 2));
         }

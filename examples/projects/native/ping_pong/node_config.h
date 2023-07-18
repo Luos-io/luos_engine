@@ -37,17 +37,19 @@
  *******************************************************************************
  *    Define                | Default Value              | Description
  *    :---------------------|------------------------------------------------------
- *    MAX_SERVICE_NUMBER    |              5             | Service number in the node
- *    MAX_NODE_NUMBER.      |              20            | Node number in the device
+ *    MAX_LOCAL_SERVICE_NUMBER    |              5             | Service number in the node
+ *    MAX_NODE_NUMBER       |              20            | Node number in the device
+ *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
- *    MAX_MSG_NB            |   2*MAX_SERVICE_NUMBER   | Message number in Luos buffer
+ *    MAX_MSG_NB            |   2*MAX_LOCAL_SERVICE_NUMBER   | Message number in Luos buffer
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
-#define MAX_SERVICE_NUMBER 1
-#define MAX_PROFILE_NUMBER 1
-#define MAX_MSG_NB         5
-#define MAX_RTB_ENTRY      100
+#define MAX_LOCAL_SERVICE_NUMBER 1
+#define MAX_LOCAL_PROFILE_NUMBER 1
+#define MAX_MSG_NB               5
+#define MAX_NODE_NB              50
+#define MAX_SERVICE_NUMBER       50
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION

@@ -30,7 +30,7 @@
  ******************************************************************************/
 uint8_t PubSub_IsTopicSubscribed(service_t *service, uint16_t topic_id)
 {
-    LUOS_ASSERT((topic_id < LAST_TOPIC)
+    LUOS_ASSERT((topic_id < MAX_LOCAL_TOPIC_NUMBER)
                 && (service != NULL));
     unsigned char i;
     for (i = 0; i < service->last_topic_position; i++)
@@ -50,14 +50,14 @@ uint8_t PubSub_IsTopicSubscribed(service_t *service, uint16_t topic_id)
 error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
 {
     // Assert if we add a topic that is greater than the max topic value
-    LUOS_ASSERT((topic < LAST_TOPIC)
+    LUOS_ASSERT((topic < MAX_LOCAL_TOPIC_NUMBER)
                 && (service != 0));
 
     // Put this topic in the multicast bank
     Filter_AddTopic(topic);
 
     // Check if target exists or if we reached the maximum topics number
-    if ((PubSub_IsTopicSubscribed(service, topic) == false) && (service->last_topic_position < LAST_TOPIC))
+    if ((PubSub_IsTopicSubscribed(service, topic) == false) && (service->last_topic_position < MAX_LOCAL_TOPIC_NUMBER))
     {
         service->topic_list[service->last_topic_position] = topic;
         service->last_topic_position++;
@@ -74,7 +74,7 @@ error_return_t Luos_Subscribe(service_t *service, uint16_t topic)
  ******************************************************************************/
 error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic)
 {
-    LUOS_ASSERT((topic < LAST_TOPIC)
+    LUOS_ASSERT((topic < MAX_LOCAL_TOPIC_NUMBER)
                 && (service != 0));
 
     error_return_t err = FAILED;

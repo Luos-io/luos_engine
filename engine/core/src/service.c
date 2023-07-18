@@ -18,7 +18,7 @@
  ******************************************************************************/
 typedef struct
 {
-    service_t list[MAX_SERVICE_NUMBER];
+    service_t list[MAX_LOCAL_SERVICE_NUMBER];
     uint16_t number;
 } service_ctx_t;
 
@@ -369,7 +369,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
     service->statistics.max_retry = 0;
     // Clear topic number
     service->last_topic_position = 0;
-    for (uint16_t i = 0; i < LAST_TOPIC; i++)
+    for (uint16_t i = 0; i < MAX_LOCAL_TOPIC_NUMBER; i++)
     {
         service->topic_list[i] = 0;
     }
@@ -400,7 +400,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
     }
 
     service_ctx.number++;
-    LUOS_ASSERT(service_ctx.number <= MAX_SERVICE_NUMBER);
+    LUOS_ASSERT(service_ctx.number <= MAX_LOCAL_SERVICE_NUMBER);
     return service;
 }
 
@@ -470,5 +470,5 @@ void Luos_ServicesClear(void)
     service_ctx.number = 0;
 
     // Clear service table
-    memset((void *)service_ctx.list, 0, sizeof(service_t) * MAX_SERVICE_NUMBER);
+    memset((void *)service_ctx.list, 0, sizeof(service_t) * MAX_LOCAL_SERVICE_NUMBER);
 }
