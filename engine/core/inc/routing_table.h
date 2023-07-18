@@ -68,20 +68,6 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-// ********************* routing_table search tools ************************
-uint16_t RoutingTB_NodeIDFromID(uint16_t id);
-
-// ********************* routing_table management tools ************************
-void RoutingTB_ComputeRoutingTableEntryNB(void);
-bool RoutingTB_DetectServices(service_t *service);
-void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
-void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service);
-void RoutingTB_RemoveNode(uint16_t nodeid);
-void RoutingTB_RemoveService(uint16_t id);
-void RoutingTB_Erase(void);
-routing_table_t *RoutingTB_Get(void);
-uint16_t *RoutingTB_GetLastNode(void);
-uint16_t RoutingTB_GetLastEntry(void);
 
 // ********************* routing table  filtering ********************************
 error_return_t RTFilter_InitCheck(search_result_t *result);

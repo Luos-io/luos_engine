@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "routing_table.h"
+#include "_routing_table.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
 #include "struct_engine.h"

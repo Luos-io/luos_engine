@@ -13,6 +13,7 @@
 #include "luos_utils.h"
 #include "luos_hal.h"
 #include "luos_engine.h"
+#include "_routing_table.h"
 #include "_luos_phy.h"
 #include "stats.h"
 
