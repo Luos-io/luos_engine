@@ -82,7 +82,8 @@ void Serial_Init(void)
     Serial_Reset(phy_serial);
     SerialHAL_Init(RX_data, SERIAL_RX_BUFFER_SIZE);
 
-    phy_serial->rx_timestamp   = 0;
+    phy_serial->rx_timestamp = TimeOD_TimeFrom_s(0.0);
+    ;
     phy_serial->rx_buffer_base = RX_data;
     phy_serial->rx_data        = RX_data; // In our case we don't need to use this pointer because we use DMA to receive complete messages in one time.
     phy_serial->rx_keep        = true;
@@ -223,7 +224,7 @@ void Serial_Loop(void)
                     // We receive this ping from a master node
                     // This port become the topology source of this node
                     // Notify luos_phy about it
-                    Phy_Topologysource(phy_serial, SerialHAL_GetPort());
+                    Phy_TopologySource(phy_serial, SerialHAL_GetPort());
                     // The next ping we send will be a deping
                     next_ping_is_deping = true;
                 }
@@ -302,7 +303,7 @@ _CRITICAL void Serial_TransmissionEnd(void)
     sending = false;
     // We transmitted this message, we can remove it then send another one
     // We may had a reset during this transmission, so we need to check if we still have something to transmit
-    if (phy_serial->job_nb > 0)
+    if (Phy_GetJobNumber(phy_serial) > 0)
     {
         phy_job_t *job = Phy_GetJob(phy_serial);
         job->phy_data  = 0;
@@ -377,6 +378,7 @@ _CRITICAL void Serial_ReceptionAdd(uint8_t *data, uint32_t size)
         memcpy(RX_data, data + copy_size, size - copy_size);
     }
     rx_size += size;
+    LUOS_ASSERT(rx_size < sizeof(RX_data));
     if ((wait_reception == true) && (size >= sizeof(SerialHeader_t) + 1))
     {
         // We received the answer of a topology ping, just indicate that we receive it

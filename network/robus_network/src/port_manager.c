@@ -90,7 +90,7 @@ _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
             PortMng_Reset();
         }
         // Ask Luos_phy to find another node
-        Phy_FindNextNodeJob();
+        Phy_TopologyNext();
     }
     else if (Port_ExpectedState == POKE)
     {
@@ -102,7 +102,7 @@ _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
         ctx.port.activ = PortNbr;
         // This port become the topology source of this node
         // Notify luos_phy about it
-        Phy_Topologysource(Robus_GetPhy(), PortNbr);
+        Phy_TopologySource(Robus_GetPhy(), PortNbr);
     }
 }
 /******************************************************************************
@@ -143,7 +143,7 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
 
 /******************************************************************************
  * @brief being poked so poke next node to
- * @param None
+ * @param portId pointer to the port id
  * @return true if a port have been poke else false
  ******************************************************************************/
 error_return_t PortMng_PokeNextPort(uint8_t *portId)

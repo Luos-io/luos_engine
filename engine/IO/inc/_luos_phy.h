@@ -19,6 +19,7 @@ void Phy_ResetAll(void);
 bool Phy_Busy(void);
 void Phy_Loop(void);
 luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy);
-error_return_t Phy_FindNextNode(void); // Use it to find the next node as a master.
+error_return_t Phy_FindNextNode(void);                          // Use it to find the next node as a master.
+phy_job_t *Phy_GetNextJob(luos_phy_t *phy_ptr, phy_job_t *job); // Use it to get the next job to send.
 
 #endif /* _PRIVATE_LUOS_PHY_H_ */

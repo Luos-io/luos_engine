@@ -447,7 +447,7 @@ void unittest_phy_deadTarget()
             // Create a fake phy job
             luos_phy->job_nb         = 1;
             luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
-            Phy_DeadTargetSpotted(luos_phy, 0);
+            Phy_FailedJob(luos_phy, 0);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -458,7 +458,7 @@ void unittest_phy_deadTarget()
             // Create a fake phy job
             luos_phy->job_nb         = 1;
             luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
-            Phy_DeadTargetSpotted(0, &luos_phy->job[0]);
+            Phy_FailedJob(0, &luos_phy->job[0]);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -469,7 +469,7 @@ void unittest_phy_deadTarget()
             // Create a fake phy job
             luos_phy->job_nb         = 1;
             luos_phy->job[0].data_pt = 0;
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -482,7 +482,7 @@ void unittest_phy_deadTarget()
             luos_phy->job[0].data_pt = (uint8_t *)msg_buffer;
             msg_t *msg               = (msg_t *)msg_buffer;
             msg->header.target_mode  = 0x0f;
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -503,7 +503,7 @@ void unittest_phy_deadTarget()
             msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
         }
@@ -531,7 +531,7 @@ void unittest_phy_deadTarget()
             msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
@@ -560,7 +560,7 @@ void unittest_phy_deadTarget()
             msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
             TEST_ASSERT_EQUAL(0, luos_phy->job_nb);
@@ -593,7 +593,7 @@ void unittest_phy_deadTarget()
             msg->header.target            = 1;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.failed_job_nb);
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.failed_job[0].data_pt);
             TEST_ASSERT_EQUAL(1, luos_phy->job_nb);
             TEST_ASSERT_EQUAL(NULL, luos_phy->job[0].data_pt);
@@ -663,7 +663,7 @@ void unittest_phy_loop()
             Luos_get_deadTarget      = false;
             Robus_get_deadTarget     = false;
 
-            Phy_DeadTargetSpotted(luos_phy, &luos_phy->job[0]);
+            Phy_FailedJob(luos_phy, &luos_phy->job[0]);
 
             TEST_ASSERT_EQUAL(1, phy_ctx.failed_job_nb);
             Phy_Loop();
@@ -969,7 +969,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_alloc_job  = false;
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x02; // A Robus node is targeted
-            luos_phy->rx_timestamp  = 10;
+            luos_phy->rx_timestamp  = TimeOD_TimeFrom_ns(10.0f);
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1006,7 +1006,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_alloc_job  = false;
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x02; // A Robus node is targeted
-            luos_phy->rx_timestamp  = 10;
+            luos_phy->rx_timestamp  = TimeOD_TimeFrom_ns(10.0f);
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1039,7 +1039,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_alloc_job  = true;
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x02; // A Robus node is targeted
-            luos_phy->rx_timestamp  = 10;
+            luos_phy->rx_timestamp  = TimeOD_TimeFrom_ns(10.0f);
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1066,7 +1066,7 @@ void unittest_phy_ComputeTimestamp()
     {
         TRY
         {
-            Phy_ComputeTimestamp(NULL);
+            Phy_ComputeMsgTimestamp(NULL);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1076,7 +1076,7 @@ void unittest_phy_ComputeTimestamp()
             phy_job_t job;
             job.timestamp = false;
             job.data_pt   = (uint8_t *)msg_buffer;
-            Phy_ComputeTimestamp(&job);
+            Phy_ComputeMsgTimestamp(&job);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1086,7 +1086,7 @@ void unittest_phy_ComputeTimestamp()
             phy_job_t job;
             job.timestamp = true;
             job.data_pt   = NULL;
-            Phy_ComputeTimestamp(&job);
+            Phy_ComputeMsgTimestamp(&job);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1115,7 +1115,7 @@ void unittest_phy_ComputeTimestamp()
             volatile time_luos_t timestamp = TimeOD_TimeFrom_ns(10);
             memcpy(&msg->data[msg->header.size], (void *)&timestamp, sizeof(time_luos_t));
 
-            volatile time_luos_t resulting_latency = Phy_ComputeTimestamp(&job);
+            volatile time_luos_t resulting_latency = Phy_ComputeMsgTimestamp(&job);
 
             TEST_ASSERT_EQUAL(0xAE, job.msg_pt->data[0]);
 #ifndef _WIN32

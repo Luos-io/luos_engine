@@ -76,12 +76,11 @@ uint16_t crc_val               = 0;   // CRC value
 void Recep_Init(luos_phy_t *phy_robus)
 {
     LUOS_ASSERT(phy_robus != NULL);
-    LUOS_ASSERT(phy_robus->rx_alloc_job == false);
     // Initialize the reception state machine
     ctx.rx.status.unmap       = 0;
     ctx.rx.callback           = Recep_GetHeader;
     ctx.rx.status.identifier  = 0xF;
-    phy_robus->rx_timestamp   = 0;
+    phy_robus->rx_timestamp   = TimeOD_TimeFrom_s(0.0);
     phy_robus->rx_buffer_base = data_rx;
     phy_robus->rx_data        = data_rx;
     phy_robus->rx_keep        = true;
@@ -104,7 +103,7 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
             // When we catch the first byte we timestamp the msg
             // We remove the time of the first byte to get the exact reception date.
             // 1 byte is 10 bits and we convert it to nanoseconds
-            phy_robus->rx_timestamp = LuosHAL_GetTimestamp() - ((uint32_t)10 * (uint32_t)1000000000 / (uint32_t)DEFAULTBAUDRATE);
+            phy_robus->rx_timestamp = TimeOD_TimeFrom_ns(TimeOD_TimeTo_ns(Phy_GetTimestamp()) - ((uint32_t)10 * (uint32_t)1000000000 / (uint32_t)DEFAULTBAUDRATE));
 
             // Declare Robus as busy
             ctx.tx.lock = true;
@@ -281,11 +280,8 @@ _CRITICAL void Recep_Timeout(void)
  ******************************************************************************/
 _CRITICAL void Recep_Reset(void)
 {
-    luos_phy_t *phy_robus          = Robus_GetPhy();
-    phy_robus->received_data       = 0;
-    phy_robus->rx_size             = 0;
-    phy_robus->rx_keep             = true;
-    phy_robus->rx_alloc_job        = false;
+    luos_phy_t *phy_robus = Robus_GetPhy();
+    Phy_ResetMsg(phy_robus);
     crc_val                        = 0xFFFF;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.status.rx_error         = false;

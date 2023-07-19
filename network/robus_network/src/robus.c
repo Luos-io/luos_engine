@@ -112,7 +112,8 @@ void Robus_Reset(luos_phy_t *phy_ptr)
 
 /******************************************************************************
  * @brief Find the next neighbour on this phy
- * @param None
+ * @param phy_ptr
+ * @param portId pointer to the portId of the next node
  * @return error_return_t
  ******************************************************************************/
 error_return_t Robus_RunTopology(luos_phy_t *phy_ptr, uint8_t *portId)

@@ -139,7 +139,7 @@ _CRITICAL void Transmit_Process()
         if (nbrRetry >= NBR_RETRY)
         {
             // We failed to transmit this message. We can't allow it, there is an issue on this target.
-            Phy_DeadTargetSpotted(robus_phy, job);
+            Phy_FailedJob(robus_phy, job);
             nbrRetry         = 0;
             ctx.tx.collision = false;
             // Try to get a new job
@@ -187,7 +187,7 @@ _CRITICAL void Transmit_Process()
             {
 
                 // Convert date to a sendable timestamp and put it on the encapsulation
-                jobEncaps->timestamp = Phy_ComputeTimestamp(job);
+                jobEncaps->timestamp = Phy_ComputeMsgTimestamp(job);
 
                 jobEncaps->timestamped_crc = ll_crc_compute(jobEncaps->unmaped, sizeof(time_luos_t), crc_val);
                 jobEncaps->size            = sizeof(time_luos_t) + CRC_SIZE;
@@ -243,7 +243,7 @@ _CRITICAL void Transmit_End(void)
         luos_phy_t *robus_phy = Robus_GetPhy();
         phy_job_t *job        = Phy_GetJob(robus_phy);
         // We may had a reset during this transmission, so we need to check if we still have something to transmit
-        if (robus_phy->job_nb > 0)
+        if (Phy_GetJobNumber(robus_phy) > 0)
         {
             job->phy_data = 0;
             Phy_RmJob(robus_phy, job);

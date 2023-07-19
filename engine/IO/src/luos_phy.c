@@ -203,7 +203,9 @@ void Phy_Loop(void)
 
 /******************************************************************************
  * @brief Instanciate a physical layer
- * @param phy_cb callback to call when we want to transmit a message
+ * @param job_cb callback to call when we want to transmit a message
+ * @param run_topo callback to call when we want to run the topology detection
+ * @param reset_phy callback to call when we want to reset the phy
  * @return None
  ******************************************************************************/
 luos_phy_t *Phy_Create(JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
@@ -259,7 +261,7 @@ void Phy_SetIrqState(bool state)
  * @brief save a flag allowing to run a new discovering outside of IRQ (because this function is very long and can't be run in IRQ)
  * @return None
  ******************************************************************************/
-_CRITICAL void Phy_FindNextNodeJob(void)
+_CRITICAL void Phy_TopologyNext(void)
 {
     phy_ctx.find_next_node_job = true;
 }
@@ -341,7 +343,7 @@ error_return_t Phy_FindNextNode(void)
  * @param port_id id of the port detected in the phy
  * @return None
  ******************************************************************************/
-void Phy_Topologysource(luos_phy_t *phy_ptr, uint8_t port_id)
+void Phy_TopologySource(luos_phy_t *phy_ptr, uint8_t port_id)
 {
     LUOS_ASSERT((phy_ptr != NULL)
                 && (port_id < 0xFF));
@@ -374,7 +376,9 @@ port_t *Phy_GetTopologysource(void)
 /******************************************************************************
  * @brief return the local physical layer (only used by LuosIO, this function is private)
  * @param id of the phy we want
- * @param phy_cb callback to call when we want to transmit a message
+ * @param job_cb callback to call when we want to transmit a message
+ * @param run_topo callback to call when we want to run a topology detection
+ * @param reset_phy callback to call when we want to reset the phy
  * @return None
  ******************************************************************************/
 luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
@@ -466,7 +470,7 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         uint16_t my_job = phy_ctx.io_job_nb++;
         Phy_SetIrqState(true);
         // Now copy the data in the job
-        phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
+        phy_ctx.io_job[my_job].timestamp  = (uint64_t)TimeOD_TimeTo_ns(phy_ptr->rx_timestamp);
         phy_ctx.io_job[my_job].alloc_msg  = (msg_t *)phy_ptr->rx_data;
         phy_ctx.io_job[my_job].phy_filter = phy_ptr->rx_phy_filter;
         phy_ctx.io_job[my_job].size       = phy_ptr->rx_size;
@@ -478,14 +482,38 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
 }
 
 /******************************************************************************
+ * @brief Consider the message as failed and reset the phy
+ * @param phy_ptr Pointer to the phy concerned by the allocation
+ * @return None
+ ******************************************************************************/
+_CRITICAL void Phy_ResetMsg(luos_phy_t *phy_ptr)
+{
+    phy_ptr->received_data = 0;
+    phy_ptr->rx_size       = 0;
+    phy_ptr->rx_keep       = true;
+    phy_ptr->rx_alloc_job  = false;
+    phy_ptr->rx_data       = phy_ptr->rx_buffer_base;
+}
+
+/******************************************************************************
  * @brief Compute the timestamp to send with the message
  * @param job Pointer to the job concerned by this message
  * @return None
  ******************************************************************************/
-time_luos_t Phy_ComputeTimestamp(phy_job_t *job)
+time_luos_t Phy_ComputeMsgTimestamp(phy_job_t *job)
 {
     LUOS_ASSERT((job != NULL) && (job->msg_pt != NULL) && (job->timestamp == true));
     return Timestamp_ConvertToLatency(job->msg_pt);
+}
+
+/******************************************************************************
+ * @brief Get the current timestamp
+ * @param None
+ * @return Timestamp value
+ ******************************************************************************/
+_CRITICAL time_luos_t Phy_GetTimestamp(void)
+{
+    return TimeOD_TimeFrom_ns((double)LuosHAL_GetTimestamp());
 }
 
 /******************************************************************************
@@ -625,7 +653,7 @@ static void Phy_Dispatch(void)
  * @param job pointer to the job that failed.
  * @return None
  ******************************************************************************/
-_CRITICAL void Phy_DeadTargetSpotted(luos_phy_t *phy_ptr, phy_job_t *job)
+_CRITICAL void Phy_FailedJob(luos_phy_t *phy_ptr, phy_job_t *job)
 {
     // A phy failed to send a message, we need to be sure that our node don't try to contact this target again.
     LUOS_ASSERT((job != NULL)
@@ -734,7 +762,7 @@ static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job)
  * @param phy_ptr Phy to get the job from
  * @return Job pointer
  ******************************************************************************/
-_CRITICAL inline phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr)
+inline phy_job_t *Phy_GetJob(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT(phy_ptr != NULL);
     if (phy_ptr->job_nb == 0)
@@ -839,6 +867,17 @@ _CRITICAL void Phy_RmJob(luos_phy_t *phy_ptr, phy_job_t *job)
             }
         }
     }
+}
+
+/******************************************************************************
+ * @brief Get the number of job in the phy queue
+ * @param phy_ptr Phy to get the job number from
+ * @return None
+ ******************************************************************************/
+inline uint16_t Phy_GetJobNumber(luos_phy_t *phy_ptr)
+{
+    LUOS_ASSERT(phy_ptr != NULL);
+    return phy_ptr->job_nb;
 }
 
 /******************************************************************************

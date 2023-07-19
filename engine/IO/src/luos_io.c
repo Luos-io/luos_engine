@@ -445,7 +445,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             Luos_SendMsg(service, &output_msg);
             // This message can't be send directly to avoid dispatch re-entrance issue.
             // To be able to send this message then run the detection of the other nodes we need to make it later on the LuosIO_Loop, so we put a flag for it.
-            Phy_FindNextNodeJob();
+            Phy_TopologyNext();
             // This message have been consumed
             return SUCCEED;
             break;
