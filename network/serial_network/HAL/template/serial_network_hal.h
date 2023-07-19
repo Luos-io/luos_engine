@@ -9,7 +9,7 @@
 #define _SERIAL_HAL_H_
 
 #include "stdint.h"
-#include "stdbool.h"
+#include "serial_hal_config.h"
 
 void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size); // Init the serial communication
 void SerialHAL_Loop(void);                                     // Do your loop stuff if needed

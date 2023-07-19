@@ -9,54 +9,7 @@
 #define _SERIAL_HAL_H_
 
 #include "stdint.h"
-
-// SERIAL_CONFIG need to be define in your node_config.h if you want to redefine
-// SERIAL configuration usart or DMA If you need change something in this configuration
-// you must redefine all the configuration in you node_config.h
-
-// Nucleo G474RE configuration
-#ifndef SERIAL_CONFIG
-    #define SERIAL_TX_CLK() __HAL_RCC_GPIOA_CLK_ENABLE();
-    #define SERIAL_TX_PIN   GPIO_PIN_2
-    #define SERIAL_TX_PORT  GPIOA
-    #define SERIAL_TX_AF    GPIO_AF12_LPUART1
-
-    #define SERIAL_RX_CLK() __HAL_RCC_GPIOA_CLK_ENABLE();
-    #define SERIAL_RX_PIN   GPIO_PIN_3
-    #define SERIAL_RX_PORT  GPIOA
-    #define SERIAL_RX_AF    GPIO_AF12_LPUART1
-
-    #define SERIAL_COM_CLOCK_ENABLE() __HAL_RCC_LPUART1_CLK_ENABLE()
-    #define SERIAL_COM                LPUART1
-    #define SERIAL_COM_IRQ            LPUART1_IRQn
-    #define SERIAL_COM_IRQHANDLER()   LPUART1_IRQHandler()
-
-    #define SERIAL_RX_DMA_CLOCK_ENABLE()    \
-        do                                  \
-        {                                   \
-            __HAL_RCC_DMA1_CLK_ENABLE();    \
-            __HAL_RCC_DMAMUX1_CLK_ENABLE(); \
-        } while (0U)
-    #define SERIAL_RX_DMA                         DMA1
-    #define SERIAL_RX_DMA_CHANNEL                 LL_DMA_CHANNEL_3
-    #define SERIAL_RX_DMA_REQUEST                 LL_DMAMUX_REQ_LPUART1_RX
-    #define SERIAL_RX_DMA_TC(SERIAL_RX_DMA)       LL_DMA_IsActiveFlag_TC3(SERIAL_RX_DMA)
-    #define SERIAL_RX_DMA_CLEAR_TC(SERIAL_RX_DMA) LL_DMA_ClearFlag_TC3(SERIAL_RX_DMA)
-
-    #define SERIAL_TX_DMA_CLOCK_ENABLE()    \
-        do                                  \
-        {                                   \
-            __HAL_RCC_DMA1_CLK_ENABLE();    \
-            __HAL_RCC_DMAMUX1_CLK_ENABLE(); \
-        } while (0U)
-    #define SERIAL_TX_DMA                         DMA1
-    #define SERIAL_TX_DMA_CHANNEL                 LL_DMA_CHANNEL_4
-    #define SERIAL_TX_DMA_REQUEST                 LL_DMAMUX_REQ_LPUART1_TX
-    #define SERIAL_TX_DMA_TC(SERIAL_TX_DMA)       LL_DMA_IsActiveFlag_TC4(SERIAL_TX_DMA)
-    #define SERIAL_TX_DMA_CLEAR_TC(SERIAL_TX_DMA) LL_DMA_ClearFlag_TC4(SERIAL_TX_DMA)
-    #define SERIAL_TX_DMA_IRQ                     DMA1_Channel4_IRQn
-    #define SERIAL_TX_DMA_IRQHANDLER()            DMA1_Channel4_IRQHandler()
-#endif
+#include "serial_hal_config.h"
 
 void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size);
 void SerialHAL_Loop(void);
