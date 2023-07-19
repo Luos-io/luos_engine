@@ -22,7 +22,7 @@
     #define COM_TX_PIN GPIO_NUM_10
     #define COM_RX_PIN GPIO_NUM_9 // this pin should pin pull up to vcc if no internal pull up
 
-    #define LUOS_TIMER_GROUP TIMER_GROUP_1
+    #define ROBUS_TIMER_GROUP TIMER_GROUP_1
 
 #elif CONFIG_IDF_TARGET_ESP32C3
     #define PTPA_PIN   GPIO_NUM_6

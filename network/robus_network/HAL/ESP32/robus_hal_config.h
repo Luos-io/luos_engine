@@ -66,17 +66,17 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#ifndef LUOS_COM
-    #define LUOS_COM UART_NUM_1
+#ifndef ROBUS_COM
+    #define ROBUS_COM UART_NUM_1
 #endif
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#ifndef LUOS_TIMER_GROUP
-    #define LUOS_TIMER_GROUP TIMER_GROUP_0
+#ifndef ROBUS_TIMER_GROUP
+    #define ROBUS_TIMER_GROUP TIMER_GROUP_0
 #endif
-#ifndef LUOS_TIMER
-    #define LUOS_TIMER TIMER_0
+#ifndef ROBUS_TIMER
+    #define ROBUS_TIMER TIMER_0
 #endif
 
 #endif /* _LUOSHAL_CONFIG_H_ */

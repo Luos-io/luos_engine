@@ -90,12 +90,12 @@ void RobusHAL_Loop(void)
  ******************************************************************************/
 void RobusHAL_ComInit(uint32_t Baudrate)
 {
-    LUOS_COM_CLOCK_ENABLE();
+    ROBUS_COM_CLOCK_ENABLE();
 
     LL_USART_InitTypeDef USART_InitStruct;
 
     // Initialise USART
-    LL_USART_Disable(LUOS_COM);
+    LL_USART_Disable(ROBUS_COM);
     USART_InitStruct.BaudRate            = Baudrate;
     USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_8B;
     USART_InitStruct.StopBits            = LL_USART_STOPBITS_1;
@@ -103,33 +103,33 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     USART_InitStruct.TransferDirection   = LL_USART_DIRECTION_TX_RX;
     USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
     USART_InitStruct.OverSampling        = LL_USART_OVERSAMPLING_16;
-    while (LL_USART_Init(LUOS_COM, &USART_InitStruct) != SUCCESS)
+    while (LL_USART_Init(ROBUS_COM, &USART_InitStruct) != SUCCESS)
         ;
-    LL_USART_Enable(LUOS_COM);
+    LL_USART_Enable(ROBUS_COM);
 
     // Enable Reception interrupt
-    LL_USART_EnableIT_RXNE(LUOS_COM);
+    LL_USART_EnableIT_RXNE(ROBUS_COM);
 
-    HAL_NVIC_EnableIRQ(LUOS_COM_IRQ);
-    HAL_NVIC_SetPriority(LUOS_COM_IRQ, 0, 1);
+    HAL_NVIC_EnableIRQ(ROBUS_COM_IRQ);
+    HAL_NVIC_SetPriority(ROBUS_COM_IRQ, 0, 1);
 
     // Timeout Initialization
     Timer_Prescaler = (MCUFREQ / Baudrate) / TIMERDIV;
     RobusHAL_TimeoutInit();
 
 #ifndef USE_TX_IT
-    LUOS_DMA_CLOCK_ENABLE();
+    ROBUS_DMA_CLOCK_ENABLE();
 
-    LL_DMA_SetChannelSelection(LUOS_DMA, LUOS_DMA_STREAM, LUOS_DMA_CHANNEL);
-    LL_DMA_SetDataTransferDirection(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
-    LL_DMA_SetStreamPriorityLevel(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_PRIORITY_LOW);
-    LL_DMA_SetMode(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_MODE_NORMAL);
-    LL_DMA_SetPeriphIncMode(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_PERIPH_NOINCREMENT);
-    LL_DMA_SetMemoryIncMode(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_MEMORY_INCREMENT);
-    LL_DMA_SetPeriphSize(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_PDATAALIGN_BYTE);
-    LL_DMA_SetMemorySize(LUOS_DMA, LUOS_DMA_STREAM, LL_DMA_MDATAALIGN_BYTE);
-    LL_DMA_DisableFifoMode(LUOS_DMA, LUOS_DMA_STREAM);
-    LL_DMA_SetPeriphAddress(LUOS_DMA, LUOS_DMA_STREAM, (uint32_t)&LUOS_COM->DR);
+    LL_DMA_SetChannelSelection(ROBUS_DMA, ROBUS_DMA_STREAM, ROBUS_DMA_CHANNEL);
+    LL_DMA_SetDataTransferDirection(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+    LL_DMA_SetStreamPriorityLevel(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetMode(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_MODE_NORMAL);
+    LL_DMA_SetPeriphIncMode(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_PERIPH_NOINCREMENT);
+    LL_DMA_SetMemoryIncMode(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_MEMORY_INCREMENT);
+    LL_DMA_SetPeriphSize(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_PDATAALIGN_BYTE);
+    LL_DMA_SetMemorySize(ROBUS_DMA, ROBUS_DMA_STREAM, LL_DMA_MDATAALIGN_BYTE);
+    LL_DMA_DisableFifoMode(ROBUS_DMA, ROBUS_DMA_STREAM);
+    LL_DMA_SetPeriphAddress(ROBUS_DMA, ROBUS_DMA_STREAM, (uint32_t)&ROBUS_COM->DR);
 #endif
 }
 /******************************************************************************
@@ -160,13 +160,13 @@ _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
         // Stop current transmit operation
         data_size_to_transmit = 0;
         // Disable Transmission empty buffer interrupt
-        LL_USART_DisableIT_TXE(LUOS_COM);
+        LL_USART_DisableIT_TXE(ROBUS_COM);
 #else
-        LL_USART_DisableDMAReq_TX(LUOS_COM);
-        LL_DMA_DisableStream(LUOS_DMA, LUOS_DMA_STREAM);
+        LL_USART_DisableDMAReq_TX(ROBUS_COM);
+        LL_DMA_DisableStream(ROBUS_DMA, ROBUS_DMA_STREAM);
 #endif
         // Disable Transmission complete interrupt
-        LL_USART_DisableIT_TC(LUOS_COM);
+        LL_USART_DisableIT_TC(ROBUS_COM);
     }
 }
 /******************************************************************************
@@ -178,14 +178,14 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 {
     if (Enable == true)
     {
-        LL_USART_ReceiveData8(LUOS_COM); // empty buffer
-        LL_USART_EnableDirectionRx(LUOS_COM);
-        LL_USART_EnableIT_RXNE(LUOS_COM); // Enable Rx IT
+        LL_USART_ReceiveData8(ROBUS_COM); // empty buffer
+        LL_USART_EnableDirectionRx(ROBUS_COM);
+        LL_USART_EnableIT_RXNE(ROBUS_COM); // Enable Rx IT
     }
     else
     {
-        LL_USART_DisableDirectionRx(LUOS_COM);
-        LL_USART_DisableIT_RXNE(LUOS_COM); // Disable Rx IT
+        LL_USART_DisableDirectionRx(ROBUS_COM);
+        LL_USART_DisableIT_RXNE(ROBUS_COM); // Disable Rx IT
     }
 }
 /******************************************************************************
@@ -193,30 +193,30 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void LUOS_COM_IRQHANDLER()
+_CRITICAL void ROBUS_COM_IRQHANDLER()
 {
     // Reset timeout to it's default value
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
     // reception management
-    if ((LL_USART_IsActiveFlag_RXNE(LUOS_COM) != RESET) && (LL_USART_IsEnabledIT_RXNE(LUOS_COM) != RESET))
+    if ((LL_USART_IsActiveFlag_RXNE(ROBUS_COM) != RESET) && (LL_USART_IsEnabledIT_RXNE(ROBUS_COM) != RESET))
     {
         // We receive a byte
-        uint8_t data = LL_USART_ReceiveData8(LUOS_COM);
+        uint8_t data = LL_USART_ReceiveData8(ROBUS_COM);
         Recep_data(&data); // send reception byte to state machine
         if (data_size_to_transmit == 0)
         {
-            LUOS_COM->SR = 0xFFFFFFFF;
+            ROBUS_COM->SR = 0xFFFFFFFF;
             return;
         }
     }
-    else if (LL_USART_IsActiveFlag_FE(LUOS_COM) != RESET)
+    else if (LL_USART_IsActiveFlag_FE(ROBUS_COM) != RESET)
     {
         // Framing ERROR
         ctx.rx.status.rx_framing_error = true;
     }
 
     // Transmission management
-    if ((LL_USART_IsActiveFlag_TC(LUOS_COM) != RESET) && (LL_USART_IsEnabledIT_TC(LUOS_COM) != RESET))
+    if ((LL_USART_IsActiveFlag_TC(ROBUS_COM) != RESET) && (LL_USART_IsEnabledIT_TC(ROBUS_COM) != RESET))
     {
         // Transmission complete
         data_size_to_transmit = 0;
@@ -224,26 +224,26 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
         // Disable transmission complete IRQ
-        LL_USART_ClearFlag_TC(LUOS_COM);
-        LL_USART_DisableIT_TC(LUOS_COM);
+        LL_USART_ClearFlag_TC(ROBUS_COM);
+        LL_USART_DisableIT_TC(ROBUS_COM);
     }
 #ifdef USE_TX_IT
-    else if ((LL_USART_IsActiveFlag_TXE(LUOS_COM) != RESET) && (LL_USART_IsEnabledIT_TXE(LUOS_COM) != RESET))
+    else if ((LL_USART_IsActiveFlag_TXE(ROBUS_COM) != RESET) && (LL_USART_IsEnabledIT_TXE(ROBUS_COM) != RESET))
     {
         // Transmit buffer empty (this is a software DMA)
         data_size_to_transmit--;
-        LL_USART_TransmitData8(LUOS_COM, *(tx_data++));
+        LL_USART_TransmitData8(ROBUS_COM, *(tx_data++));
         if (data_size_to_transmit == 0)
         {
             // Transmission complete, stop loading data and watch for the end of transmission
             // Disable Transmission empty buffer interrupt
-            LL_USART_DisableIT_TXE(LUOS_COM);
+            LL_USART_DisableIT_TXE(ROBUS_COM);
             // Enable Transmission complete interrupt
-            LL_USART_EnableIT_TC(LUOS_COM);
+            LL_USART_EnableIT_TC(ROBUS_COM);
         }
     }
 #endif
-    LUOS_COM->SR = 0xFFFFFFFF;
+    ROBUS_COM->SR = 0xFFFFFFFF;
 }
 /******************************************************************************
  * @brief Process data transmit
@@ -252,7 +252,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
  ******************************************************************************/
 _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
-    while (LL_USART_IsActiveFlag_TXE(LUOS_COM) == RESET)
+    while (LL_USART_IsActiveFlag_TXE(ROBUS_COM) == RESET)
         ;
     // Disable RX detec pin if needed
 
@@ -266,30 +266,30 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         tx_data = data;
 #ifdef USE_TX_IT
         // Send the first byte
-        LL_USART_TransmitData8(LUOS_COM, *(tx_data++));
+        LL_USART_TransmitData8(ROBUS_COM, *(tx_data++));
         // Enable Transmission empty buffer interrupt to transmit next datas
-        LL_USART_EnableIT_TXE(LUOS_COM);
+        LL_USART_EnableIT_TXE(ROBUS_COM);
         // Disable Transmission complete interrupt
-        LL_USART_DisableIT_TC(LUOS_COM);
+        LL_USART_DisableIT_TC(ROBUS_COM);
 #else
         data_size_to_transmit = 0; // to not check IT TC during collision
         // Disable DMA to load new length to be tranmitted
-        LL_DMA_DisableStream(LUOS_DMA, LUOS_DMA_STREAM);
+        LL_DMA_DisableStream(ROBUS_DMA, ROBUS_DMA_STREAM);
         // Configure address to be transmitted by DMA
-        LL_DMA_SetMemoryAddress(LUOS_DMA, LUOS_DMA_STREAM, (uint32_t)data);
+        LL_DMA_SetMemoryAddress(ROBUS_DMA, ROBUS_DMA_STREAM, (uint32_t)data);
         // Set length to be tranmitted
-        LL_DMA_SetDataLength(LUOS_DMA, LUOS_DMA_STREAM, size);
+        LL_DMA_SetDataLength(ROBUS_DMA, ROBUS_DMA_STREAM, size);
         // Set request DMA
-        LL_USART_EnableDMAReq_TX(LUOS_COM);
+        LL_USART_EnableDMAReq_TX(ROBUS_COM);
         // clear flag shity way must be change
-        LUOS_DMA->HIFCR = 0xFFFFFFFF;
-        LUOS_DMA->LIFCR = 0xFFFFFFFF;
+        ROBUS_DMA->HIFCR = 0xFFFFFFFF;
+        ROBUS_DMA->LIFCR = 0xFFFFFFFF;
         // Enable TX
         RobusHAL_SetTxState(true);
         // Enable DMA again
-        LL_DMA_EnableStream(LUOS_DMA, LUOS_DMA_STREAM);
+        LL_DMA_EnableStream(ROBUS_DMA, ROBUS_DMA_STREAM);
         // Enable transmit complete
-        LL_USART_EnableIT_TC(LUOS_COM);
+        LL_USART_EnableIT_TC(ROBUS_COM);
 #endif
     }
     else
@@ -297,14 +297,14 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         // Wait before send ack
         data_size_to_transmit = 1;
         // This is a patch du to difference MCU frequency
-        while (LL_TIM_GetCounter(LUOS_TIMER) < TIMEOUT_ACK)
+        while (LL_TIM_GetCounter(ROBUS_TIMER) < TIMEOUT_ACK)
             ;
         // Enable TX
         RobusHAL_SetTxState(true);
         // Transmit the only byte we have
-        LL_USART_TransmitData8(LUOS_COM, *data);
+        LL_USART_TransmitData8(ROBUS_COM, *data);
         // Enable Transmission complete interrupt because we only have one.
-        LL_USART_EnableIT_TC(LUOS_COM);
+        LL_USART_EnableIT_TC(ROBUS_COM);
     }
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }
@@ -338,7 +338,7 @@ _CRITICAL uint8_t RobusHAL_GetTxLockState(void)
     uint8_t result = false;
 
 #ifdef USART_ISR_BUSY
-    if (LL_USART_IsActiveFlag_BUSY(LUOS_COM) == true)
+    if (LL_USART_IsActiveFlag_BUSY(ROBUS_COM) == true)
     {
         RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
         result = true;
@@ -371,18 +371,18 @@ static void RobusHAL_TimeoutInit(void)
     LL_TIM_InitTypeDef TimerInit = {0};
 
     // initialize clock
-    LUOS_TIMER_CLOCK_ENABLE();
+    ROBUS_TIMER_CLOCK_ENABLE();
 
     TimerInit.Autoreload        = DEFAULT_TIMEOUT;
     TimerInit.ClockDivision     = LL_TIM_CLOCKDIVISION_DIV1;
     TimerInit.CounterMode       = LL_TIM_COUNTERMODE_UP;
     TimerInit.Prescaler         = Timer_Prescaler - 1;
     TimerInit.RepetitionCounter = 0;
-    while (LL_TIM_Init(LUOS_TIMER, &TimerInit) != SUCCESS)
+    while (LL_TIM_Init(ROBUS_TIMER, &TimerInit) != SUCCESS)
         ;
-    LL_TIM_EnableIT_UPDATE(LUOS_TIMER);
-    HAL_NVIC_SetPriority(LUOS_TIMER_IRQ, 0, 2);
-    HAL_NVIC_EnableIRQ(LUOS_TIMER_IRQ);
+    LL_TIM_EnableIT_UPDATE(ROBUS_TIMER);
+    HAL_NVIC_SetPriority(ROBUS_TIMER_IRQ, 0, 2);
+    HAL_NVIC_EnableIRQ(ROBUS_TIMER_IRQ);
 }
 /******************************************************************************
  * @brief Luos Timeout for Rx communication
@@ -391,14 +391,14 @@ static void RobusHAL_TimeoutInit(void)
  ******************************************************************************/
 _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
-    LL_TIM_DisableCounter(LUOS_TIMER);
-    NVIC_ClearPendingIRQ(LUOS_TIMER_IRQ); // Clear IT pending NVIC
-    LL_TIM_ClearFlag_UPDATE(LUOS_TIMER);
-    LL_TIM_SetCounter(LUOS_TIMER, 0); // Reset counter
+    LL_TIM_DisableCounter(ROBUS_TIMER);
+    NVIC_ClearPendingIRQ(ROBUS_TIMER_IRQ); // Clear IT pending NVIC
+    LL_TIM_ClearFlag_UPDATE(ROBUS_TIMER);
+    LL_TIM_SetCounter(ROBUS_TIMER, 0); // Reset counter
     if (nbrbit != 0)
     {
-        LL_TIM_SetAutoReload(LUOS_TIMER, nbrbit); // reload value
-        LL_TIM_EnableCounter(LUOS_TIMER);
+        LL_TIM_SetAutoReload(ROBUS_TIMER, nbrbit); // reload value
+        LL_TIM_EnableCounter(ROBUS_TIMER);
     }
 }
 /******************************************************************************
@@ -406,12 +406,12 @@ _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void LUOS_TIMER_IRQHANDLER()
+_CRITICAL void ROBUS_TIMER_IRQHANDLER()
 {
-    if (LL_TIM_IsActiveFlag_UPDATE(LUOS_TIMER) != RESET)
+    if (LL_TIM_IsActiveFlag_UPDATE(ROBUS_TIMER) != RESET)
     {
-        LL_TIM_ClearFlag_UPDATE(LUOS_TIMER);
-        LL_TIM_DisableCounter(LUOS_TIMER);
+        LL_TIM_ClearFlag_UPDATE(ROBUS_TIMER);
+        LL_TIM_DisableCounter(ROBUS_TIMER);
         if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
         {
             // Enable RX detection pin if needed

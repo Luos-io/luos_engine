@@ -10,7 +10,7 @@
 #include "luos_bootloader.h"
 #include "gate_config.h"
 #include "pipe_link.h"
-#include "routing_table.h"
+#include "_routing_table.h"
 
 /*******************************************************************************
  * Definitions

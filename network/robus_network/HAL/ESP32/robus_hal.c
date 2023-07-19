@@ -67,14 +67,14 @@ gpio_config_t PinConfig;
 static uart_isr_handle_t handle_console;
 
 uart_hal_context_t uart_hal_context = {
-    .dev = UART_LL_GET_HW(LUOS_COM)};
+    .dev = UART_LL_GET_HW(ROBUS_COM)};
 
 gpio_hal_context_t gpio_hal_context = {
     .dev = GPIO_HAL_GET_HW(GPIO_PORT_0)};
 
 timer_hal_context_t timeout_hal_context = {
-    .dev = TIMER_LL_GET_HW(LUOS_TIMER_GROUP),
-    .idx = LUOS_TIMER,
+    .dev = TIMER_LL_GET_HW(ROBUS_TIMER_GROUP),
+    .idx = ROBUS_TIMER,
 };
 
 /*******************************************************************************
@@ -170,19 +170,19 @@ void RobusHAL_ComInit(uint32_t Baudrate)
         .source_clk = UART_SCLK_APB,
     };
 
-    if (uart_is_driver_installed(LUOS_COM) == true)
+    if (uart_is_driver_installed(ROBUS_COM) == true)
     {
-        ESP_ERROR_CHECK(uart_driver_delete(LUOS_COM));
+        ESP_ERROR_CHECK(uart_driver_delete(ROBUS_COM));
     }
-    ESP_ERROR_CHECK(uart_driver_install(LUOS_COM, RX_BUFFER_SIZE, TX_BUFFER_SIZE, 0, NULL, ESP_INTR_FLAG_IRAM));
-    ESP_ERROR_CHECK(uart_param_config(LUOS_COM, &uart_config));
-    ESP_ERROR_CHECK(uart_set_pin(LUOS_COM, COM_TX_PIN, COM_RX_PIN, GPIO_NUM_NC, GPIO_NUM_NC));
+    ESP_ERROR_CHECK(uart_driver_install(ROBUS_COM, RX_BUFFER_SIZE, TX_BUFFER_SIZE, 0, NULL, ESP_INTR_FLAG_IRAM));
+    ESP_ERROR_CHECK(uart_param_config(ROBUS_COM, &uart_config));
+    ESP_ERROR_CHECK(uart_set_pin(ROBUS_COM, COM_TX_PIN, COM_RX_PIN, GPIO_NUM_NC, GPIO_NUM_NC));
 
     uart_hal_set_rxfifo_full_thr(&uart_hal_context, 1);
     uart_hal_rxfifo_rst(&uart_hal_context);
     uart_hal_txfifo_rst(&uart_hal_context);
-    ESP_ERROR_CHECK(uart_isr_free(LUOS_COM));
-    ESP_ERROR_CHECK(uart_isr_register(LUOS_COM, &RobusHAL_ComIrqHandler, NULL, ESP_INTR_FLAG_IRAM, &handle_console));
+    ESP_ERROR_CHECK(uart_isr_free(ROBUS_COM));
+    ESP_ERROR_CHECK(uart_isr_register(ROBUS_COM, &RobusHAL_ComIrqHandler, NULL, ESP_INTR_FLAG_IRAM, &handle_console));
 
     uart_hal_disable_intr_mask(&uart_hal_context, UART_LL_INTR_MASK);
 
@@ -208,7 +208,7 @@ _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
     if (Enable == true)
     {
         // Put Tx in push pull
-        esp_rom_gpio_connect_out_signal(COM_TX_PIN, UART_PERIPH_SIGNAL(LUOS_COM, SOC_UART_TX_PIN_IDX), 0, 0);
+        esp_rom_gpio_connect_out_signal(COM_TX_PIN, UART_PERIPH_SIGNAL(ROBUS_COM, SOC_UART_TX_PIN_IDX), 0, 0);
         if (TX_EN_PIN != DISABLE)
         {
             gpio_hal_set_level(&gpio_hal_context, TX_EN_PIN, 1);
@@ -400,8 +400,8 @@ static void RobusHAL_TimeoutInit(void)
     Timeout.counter_dir = TIMER_COUNT_UP;      /*!< Counter direction  */
     Timeout.auto_reload = TIMER_AUTORELOAD_EN; /*!< Timer auto-reload */
     Timeout.divider     = Timer_Prescaler - 1; /*!< Counter clock divider. The divider's range is from from 2 to 65536. */
-    timer_init(LUOS_TIMER_GROUP, LUOS_TIMER, &Timeout);
-    timer_isr_callback_add(LUOS_TIMER_GROUP, LUOS_TIMER, &RobusHAL_TimeoutIrqHandler, NULL, ESP_INTR_FLAG_IRAM);
+    timer_init(ROBUS_TIMER_GROUP, ROBUS_TIMER, &Timeout);
+    timer_isr_callback_add(ROBUS_TIMER_GROUP, ROBUS_TIMER, &RobusHAL_TimeoutIrqHandler, NULL, ESP_INTR_FLAG_IRAM);
     timer_hal_set_alarm_value(&timeout_hal_context, DEFAULT_TIMEOUT);
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }

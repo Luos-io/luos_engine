@@ -48,8 +48,8 @@
  ******************************************************************************/
 
 #define MAX_LOCAL_SERVICE_NUMBER 2
-#define MSG_BUFFER_SIZE    2048
-#define MAX_MSG_NB         40
+#define MSG_BUFFER_SIZE          2048
+#define MAX_MSG_NB               40
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -70,19 +70,19 @@
  *    COM_RX                  | Rx USART Com Pin/Port/Alternate
  *    PINOUT_IRQHANDLER       | Callback function for Pin IRQ handler
 
- *    LUOS_COM_CLOCK_ENABLE   | Enable clock for USART
- *    LUOS_COM                | USART number
- *    LUOS_COM_IRQ            | USART IRQ number
- *    LUOS_COM_IRQHANDLER     | Callback function for USART IRQ handler
+ *    ROBUS_COM_CLOCK_ENABLE   | Enable clock for USART
+ *    ROBUS_COM                | USART number
+ *    ROBUS_COM_IRQ            | USART IRQ number
+ *    ROBUS_COM_IRQHANDLER     | Callback function for USART IRQ handler
 
- *    LUOS_DMA_CLOCK_ENABLE   | Enable clock for DMA
- *    LUOS_DMA                | DMA number
- *    LUOS_DMA_CHANNEL        | DMA channel (depending on MCU DMA may need special config)
+ *    ROBUS_DMA_CLOCK_ENABLE   | Enable clock for DMA
+ *    ROBUS_DMA                | DMA number
+ *    ROBUS_DMA_CHANNEL        | DMA channel (depending on MCU DMA may need special config)
 
- *    LUOS_TIMER_CLOCK_ENABLE | Enable clock for Timer
- *    LUOS_TIMER              | Timer number
- *    LUOS_TIMER_IRQ          | Timer IRQ number
- *    LUOS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
+ *    ROBUS_TIMER_CLOCK_ENABLE | Enable clock for Timer
+ *    ROBUS_TIMER              | Timer number
+ *    ROBUS_TIMER_IRQ          | Timer IRQ number
+ *    ROBUS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
 ******************************************************************************/
 
 /*******************************************************************************
@@ -105,10 +105,10 @@
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#define LUOS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM5_CLK_ENABLE()
-#define LUOS_TIMER                TIM5
-#define LUOS_TIMER_IRQ            TIM5_IRQn
-#define LUOS_TIMER_IRQHANDLER()   TIM5_IRQHandler()
+#define ROBUS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM5_CLK_ENABLE()
+#define ROBUS_TIMER                TIM5
+#define ROBUS_TIMER_IRQ            TIM5_IRQn
+#define ROBUS_TIMER_IRQHANDLER()   TIM5_IRQHandler()
 
 /*******************************************************************************
  * FLASH CONFIGURATION FOR APP WITH BOOTLOADER

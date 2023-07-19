@@ -87,41 +87,41 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     uint32_t baud = 0;
 
     // initialize clock
-    LUOS_COM_CLOCK_ENABLE();
+    ROBUS_COM_CLOCK_ENABLE();
 
     /* Disable the USART before configurations */
-    LUOS_COM->USART.CTRLA.reg &= ~SERCOM_USART_CTRLA_ENABLE;
+    ROBUS_COM->USART.CTRLA.reg &= ~SERCOM_USART_CTRLA_ENABLE;
 
     /* Configure Baud Rate */
     baud                     = 65536 - ((uint64_t)65536 * 16 * Baudrate) / MCUFREQ;
-    LUOS_COM->USART.BAUD.reg = SERCOM_USART_BAUD_BAUD(baud);
+    ROBUS_COM->USART.BAUD.reg = SERCOM_USART_BAUD_BAUD(baud);
 
     // Configures USART Clock Mode/ TXPO and RXPO/ Data Order/ Standby Mode/ Sampling rate/ IBON
-    LUOS_COM->USART.CTRLA.reg = SERCOM_USART_CTRLA_MODE_USART_INT_CLK | SERCOM_USART_CTRLA_RXPO(COM_RX_POS)
+    ROBUS_COM->USART.CTRLA.reg = SERCOM_USART_CTRLA_MODE_USART_INT_CLK | SERCOM_USART_CTRLA_RXPO(COM_RX_POS)
                                 | SERCOM_USART_CTRLA_TXPO(COM_TX_POS) | SERCOM_USART_CTRLA_DORD
                                 | SERCOM_USART_CTRLA_IBON | SERCOM_USART_CTRLA_FORM(0x0)
                                 | SERCOM_USART_CTRLA_SAMPR(0);
 
     // Configures RXEN/ TXEN/ CHSIZE/ Parity/ Stop bits
-    LUOS_COM->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0) | SERCOM_USART_CTRLB_SBMODE
+    ROBUS_COM->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0) | SERCOM_USART_CTRLB_SBMODE
                                 | SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN
                                 | SERCOM_USART_CTRLB_SFDE;
 
     /* Enable the UART after the configurations */
-    LUOS_COM->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
+    ROBUS_COM->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
 
     /* Wait for sync */
-    // while (LUOS_COM->USART.SYNCBUSY.bit.ENABLE)
+    // while (ROBUS_COM->USART.SYNCBUSY.bit.ENABLE)
     //     ;
 
     /* Clean IT */
-    LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_RESETVALUE;
+    ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_RESETVALUE;
 
     /* Enable Receive Complete interrupt */
-    LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
+    ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
 
-    NVIC_SetPriority(LUOS_COM_IRQ, 3);
-    NVIC_EnableIRQ(LUOS_COM_IRQ);
+    NVIC_SetPriority(ROBUS_COM_IRQ, 3);
+    NVIC_EnableIRQ(ROBUS_COM_IRQ);
 
     // Timeout Initialization
     timoutclockcnt
@@ -129,15 +129,15 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     RobusHAL_TimeoutInit();
 
 #ifndef USE_TX_IT
-    LUOS_DMA_CLOCK_ENABLE();
+    ROBUS_DMA_CLOCK_ENABLE();
 
-    LUOS_DMA->BASEADDR.reg        = (uint32_t)&descriptor_section;
-    LUOS_DMA->WRBADDR.reg         = (uint32_t)&write_back_section;
-    LUOS_DMA->PRICTRL0.reg        = DMAC_PRICTRL0_LVLPRI0(1UL) | DMAC_PRICTRL0_RRLVLEN0 | DMAC_PRICTRL0_LVLPRI1(1UL) | DMAC_PRICTRL0_RRLVLEN1 | DMAC_PRICTRL0_LVLPRI2(1UL) | DMAC_PRICTRL0_RRLVLEN2 | DMAC_PRICTRL0_LVLPRI3(1UL) | DMAC_PRICTRL0_RRLVLEN3;
-    LUOS_DMA->CHID.reg            = LUOS_DMA_CHANNEL; // DMA Channel
-    LUOS_DMA->CHCTRLB.reg         = DMAC_CHCTRLB_TRIGACT(2) | DMAC_CHCTRLB_TRIGSRC(LUOS_DMA_TRIGGER) | DMAC_CHCTRLB_LVL(0);
+    ROBUS_DMA->BASEADDR.reg        = (uint32_t)&descriptor_section;
+    ROBUS_DMA->WRBADDR.reg         = (uint32_t)&write_back_section;
+    ROBUS_DMA->PRICTRL0.reg        = DMAC_PRICTRL0_LVLPRI0(1UL) | DMAC_PRICTRL0_RRLVLEN0 | DMAC_PRICTRL0_LVLPRI1(1UL) | DMAC_PRICTRL0_RRLVLEN1 | DMAC_PRICTRL0_LVLPRI2(1UL) | DMAC_PRICTRL0_RRLVLEN2 | DMAC_PRICTRL0_LVLPRI3(1UL) | DMAC_PRICTRL0_RRLVLEN3;
+    ROBUS_DMA->CHID.reg            = ROBUS_DMA_CHANNEL; // DMA Channel
+    ROBUS_DMA->CHCTRLB.reg         = DMAC_CHCTRLB_TRIGACT(2) | DMAC_CHCTRLB_TRIGSRC(ROBUS_DMA_TRIGGER) | DMAC_CHCTRLB_LVL(0);
     descriptor_section.BTCTRL.reg = DMAC_BTCTRL_BLOCKACT_INT | DMAC_BTCTRL_BEATSIZE_BYTE | DMAC_BTCTRL_VALID | DMAC_BTCTRL_SRCINC;
-    LUOS_DMA->CTRL.reg            = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN0 | DMAC_CTRL_LVLEN1 | DMAC_CTRL_LVLEN2 | DMAC_CTRL_LVLEN3;
+    ROBUS_DMA->CTRL.reg            = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN0 | DMAC_CTRL_LVLEN1 | DMAC_CTRL_LVLEN2 | DMAC_CTRL_LVLEN3;
 #endif
 }
 /******************************************************************************
@@ -169,13 +169,13 @@ _CRITICAL void RobusHAL_SetTxState(uint8_t Enable)
         // Stop current transmit operation
         data_size_to_transmit = 0;
         // Disable Transmission empty buffer interrupt
-        LUOS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE; // disable IT
+        ROBUS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE; // disable IT
 #else
-        LUOS_DMA->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
+        ROBUS_DMA->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
 #endif
         // Disable Transmission complete interrupt
-        LUOS_COM->USART.INTENCLR.reg    = SERCOM_USART_INTENCLR_TXC; // disable IT
-        LUOS_COM->USART.INTFLAG.bit.RXS = 1;                         // clear flag rx start
+        ROBUS_COM->USART.INTENCLR.reg    = SERCOM_USART_INTENCLR_TXC; // disable IT
+        ROBUS_COM->USART.INTFLAG.bit.RXS = 1;                         // clear flag rx start
     }
 }
 /******************************************************************************
@@ -187,15 +187,15 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
 {
     if (Enable == true)
     {
-        while ((LUOS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_RXC) == SERCOM_USART_INTFLAG_RXC)
+        while ((ROBUS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_RXC) == SERCOM_USART_INTFLAG_RXC)
         {
-            LUOS_COM->USART.DATA.reg;
+            ROBUS_COM->USART.DATA.reg;
         }
-        LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
+        ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
     }
     else
     {
-        LUOS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_RXC;
+        ROBUS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_RXC;
     }
 }
 /******************************************************************************
@@ -203,31 +203,31 @@ _CRITICAL void RobusHAL_SetRxState(uint8_t Enable)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void LUOS_COM_IRQHANDLER()
+_CRITICAL void ROBUS_COM_IRQHANDLER()
 {
     // Reset timeout to it's default value
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 
     // reception management
-    if (((LUOS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_RXC) == SERCOM_USART_INTFLAG_RXC) && ((LUOS_COM->USART.INTENSET.reg & SERCOM_USART_INTENSET_RXC) == SERCOM_USART_INTENSET_RXC))
+    if (((ROBUS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_RXC) == SERCOM_USART_INTFLAG_RXC) && ((ROBUS_COM->USART.INTENSET.reg & SERCOM_USART_INTENSET_RXC) == SERCOM_USART_INTENSET_RXC))
     {
         // clean start bit detection
-        uint8_t data = LUOS_COM->USART.DATA.reg;
+        uint8_t data = ROBUS_COM->USART.DATA.reg;
         Recep_data(&data);
         if (data_size_to_transmit == 0)
         {
-            LUOS_COM->USART.STATUS.reg      = SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF;
-            LUOS_COM->USART.INTFLAG.bit.RXS = 1; // clear flag rx start
+            ROBUS_COM->USART.STATUS.reg      = SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF;
+            ROBUS_COM->USART.INTFLAG.bit.RXS = 1; // clear flag rx start
             return;
         }
     }
-    else if ((LUOS_COM->USART.STATUS.reg & SERCOM_USART_STATUS_FERR) == SERCOM_USART_STATUS_FERR) // check error on ligne
+    else if ((ROBUS_COM->USART.STATUS.reg & SERCOM_USART_STATUS_FERR) == SERCOM_USART_STATUS_FERR) // check error on ligne
     {
         ctx.rx.status.rx_framing_error = true;
     }
 
     // Transmission management
-    if (((LUOS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_TXC) == SERCOM_USART_INTFLAG_TXC) && ((LUOS_COM->USART.INTENSET.reg & SERCOM_USART_INTENSET_TXC) == SERCOM_USART_INTENSET_TXC))
+    if (((ROBUS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_TXC) == SERCOM_USART_INTFLAG_TXC) && ((ROBUS_COM->USART.INTENSET.reg & SERCOM_USART_INTENSET_TXC) == SERCOM_USART_INTENSET_TXC))
     {
         // Transmission complete
         data_size_to_transmit = 0;
@@ -235,28 +235,28 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
         RobusHAL_SetTxState(false);
         RobusHAL_SetRxState(true);
         // Disable transmission complete IRQ
-        LUOS_COM->USART.INTFLAG.reg  = SERCOM_USART_INTFLAG_TXC;  // clear flag
-        LUOS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_TXC; // disable IT
+        ROBUS_COM->USART.INTFLAG.reg  = SERCOM_USART_INTFLAG_TXC;  // clear flag
+        ROBUS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_TXC; // disable IT
     }
 #ifdef USE_TX_IT
-    else if (((LUOS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_DRE) == SERCOM_USART_INTFLAG_DRE) && ((LUOS_COM->USART.INTENSET.reg & SERCOM_USART_INTENSET_DRE) == SERCOM_USART_INTENSET_DRE))
+    else if (((ROBUS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_DRE) == SERCOM_USART_INTFLAG_DRE) && ((ROBUS_COM->USART.INTENSET.reg & SERCOM_USART_INTENSET_DRE) == SERCOM_USART_INTENSET_DRE))
     {
         // Transmit buffer empty (this is a software DMA)
         data_size_to_transmit--;
-        LUOS_COM->USART.DATA.reg = *(tx_data++);
+        ROBUS_COM->USART.DATA.reg = *(tx_data++);
         if (data_size_to_transmit == 0)
         {
             // Transmission complete, stop loading data and watch for the end of transmission
             // Disable Transmission empty buffer interrupt
-            LUOS_COM->USART.INTFLAG.reg  = SERCOM_USART_INTFLAG_DRE;  // clear flag
-            LUOS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE; // disable IT
+            ROBUS_COM->USART.INTFLAG.reg  = SERCOM_USART_INTFLAG_DRE;  // clear flag
+            ROBUS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE; // disable IT
             // Enable Transmission complete interrupt
-            LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_TXC; // disable IT
+            ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_TXC; // disable IT
         }
     }
 #endif
-    LUOS_COM->USART.STATUS.reg      = SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF;
-    LUOS_COM->USART.INTFLAG.bit.RXS = 1; // clear flag rx start
+    ROBUS_COM->USART.STATUS.reg      = SERCOM_USART_STATUS_PERR | SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF;
+    ROBUS_COM->USART.INTFLAG.bit.RXS = 1; // clear flag rx start
 }
 /******************************************************************************
  * @brief Process data transmit
@@ -265,7 +265,7 @@ _CRITICAL void LUOS_COM_IRQHANDLER()
  ******************************************************************************/
 _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 {
-    while ((LUOS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_DRE) != SERCOM_USART_INTFLAG_DRE)
+    while ((ROBUS_COM->USART.INTFLAG.reg & SERCOM_USART_INTFLAG_DRE) != SERCOM_USART_INTFLAG_DRE)
         ;
     // Disable RX detec pin if needed
 
@@ -279,20 +279,20 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         tx_data = data;
 #ifdef USE_TX_IT
         // Send the first byte
-        LUOS_COM->USART.DATA.reg = *(tx_data++);
+        ROBUS_COM->USART.DATA.reg = *(tx_data++);
         // Enable Transmission empty buffer interrupt to transmit next datas
-        LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE; // enable IT
+        ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE; // enable IT
         // Disable Transmission complete interrupt
-        LUOS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_TXC; // disable IT
+        ROBUS_COM->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_TXC; // disable IT
 #else
         data_size_to_transmit          = 0; // to not check IT TC during collision
         descriptor_section.SRCADDR.reg = (uint32_t)(data + size);
-        descriptor_section.DSTADDR.reg = (uint32_t)&LUOS_COM->USART.DATA.reg;
+        descriptor_section.DSTADDR.reg = (uint32_t)&ROBUS_COM->USART.DATA.reg;
         descriptor_section.BTCNT.reg   = size;
         // Enable TX
         RobusHAL_SetTxState(true);
-        LUOS_DMA->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
-        LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_TXC; // enable IT
+        ROBUS_DMA->CHCTRLA.reg |= DMAC_CHCTRLA_ENABLE;
+        ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_TXC; // enable IT
 #endif
     }
     else
@@ -300,14 +300,14 @@ _CRITICAL void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         // Wait before send ack
         data_size_to_transmit = 0;
         // This is a patch du to difference MCU frequency
-        while (LUOS_TIMER->COUNT16.COUNT.reg < (0xFFFF - (timoutclockcnt * (DEFAULT_TIMEOUT - TIMEOUT_ACK))))
+        while (ROBUS_TIMER->COUNT16.COUNT.reg < (0xFFFF - (timoutclockcnt * (DEFAULT_TIMEOUT - TIMEOUT_ACK))))
             ;
         // Enable TX
         RobusHAL_SetTxState(true);
         // Transmit the only byte we have
-        LUOS_COM->USART.DATA.reg = *data;
+        ROBUS_COM->USART.DATA.reg = *data;
         // Enable Transmission complete interrupt because we only have one.
-        LUOS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_TXC; // enable IT
+        ROBUS_COM->USART.INTENSET.reg = SERCOM_USART_INTENSET_TXC; // enable IT
     }
     RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
 }
@@ -339,9 +339,9 @@ _CRITICAL void RobusHAL_SetRxDetecPin(uint8_t Enable)
 _CRITICAL uint8_t RobusHAL_GetTxLockState(void)
 {
     uint8_t result = false;
-    if (LUOS_COM->USART.INTFLAG.bit.RXS == 1)
+    if (ROBUS_COM->USART.INTFLAG.bit.RXS == 1)
     {
-        LUOS_COM->USART.INTFLAG.bit.RXS = 1; // clear flag rx start
+        ROBUS_COM->USART.INTFLAG.bit.RXS = 1; // clear flag rx start
         RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
         result = true;
     }
@@ -372,22 +372,22 @@ _CRITICAL uint8_t RobusHAL_GetTxLockState(void)
 static void RobusHAL_TimeoutInit(void)
 {
     // initialize clock
-    LUOS_TIMER_LOCK_ENABLE();
+    ROBUS_TIMER_CLOCK_ENABLE();
 
-    LUOS_TIMER->COUNT16.CTRLA.reg = TC_CTRLA_RESETVALUE;
-    while ((LUOS_TIMER->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY))
+    ROBUS_TIMER->COUNT16.CTRLA.reg = TC_CTRLA_RESETVALUE;
+    while ((ROBUS_TIMER->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY))
         ;
     /* Configure counter mode & prescaler */
-    LUOS_TIMER->COUNT16.CTRLA.reg            = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_WAVEGEN_MPWM;
-    LUOS_TIMER->COUNT16.CTRLBSET.bit.ONESHOT = 1;
+    ROBUS_TIMER->COUNT16.CTRLA.reg            = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_WAVEGEN_MPWM;
+    ROBUS_TIMER->COUNT16.CTRLBSET.bit.ONESHOT = 1;
 
-    LUOS_TIMER->COUNT16.COUNT.reg = 0xFFFF - (timoutclockcnt * DEFAULT_TIMEOUT);
+    ROBUS_TIMER->COUNT16.COUNT.reg = 0xFFFF - (timoutclockcnt * DEFAULT_TIMEOUT);
     /* Clear all interrupt flags */
-    LUOS_TIMER->COUNT16.INTENSET.reg = TC_INTENSET_RESETVALUE;
-    LUOS_TIMER->COUNT16.INTENSET.reg = TC_INTENSET_OVF;
+    ROBUS_TIMER->COUNT16.INTENSET.reg = TC_INTENSET_RESETVALUE;
+    ROBUS_TIMER->COUNT16.INTENSET.reg = TC_INTENSET_OVF;
 
-    NVIC_SetPriority(LUOS_TIMER_IRQ, 3);
-    NVIC_EnableIRQ(LUOS_TIMER_IRQ);
+    NVIC_SetPriority(ROBUS_TIMER_IRQ, 3);
+    NVIC_EnableIRQ(ROBUS_TIMER_IRQ);
 }
 /******************************************************************************
  * @brief Luos Timeout for Rx communication
@@ -396,13 +396,13 @@ static void RobusHAL_TimeoutInit(void)
  ******************************************************************************/
 _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
-    NVIC_ClearPendingIRQ(LUOS_TIMER_IRQ); // clear IT pending
-    LUOS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;
-    LUOS_TIMER->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+    NVIC_ClearPendingIRQ(ROBUS_TIMER_IRQ); // clear IT pending
+    ROBUS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;
+    ROBUS_TIMER->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
     if (nbrbit != 0)
     {
-        LUOS_TIMER->COUNT16.COUNT.reg = 0xFFFF - (timoutclockcnt * nbrbit);
-        LUOS_TIMER->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
+        ROBUS_TIMER->COUNT16.COUNT.reg = 0xFFFF - (timoutclockcnt * nbrbit);
+        ROBUS_TIMER->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
     }
 }
 /******************************************************************************
@@ -410,11 +410,11 @@ _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void LUOS_TIMER_IRQHANDLER()
+_CRITICAL void ROBUS_TIMER_IRQHANDLER()
 {
-    if (LUOS_TIMER->COUNT16.INTFLAG.bit.OVF == 1)
+    if (ROBUS_TIMER->COUNT16.INTFLAG.bit.OVF == 1)
     {
-        LUOS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;
+        ROBUS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;
         if ((ctx.tx.lock == true) && (RobusHAL_GetTxLockState() == false))
         {
             RobusHAL_SetTxState(false);

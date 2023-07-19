@@ -110,49 +110,49 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#ifndef LUOS_COM_CLOCK_ENABLE
-    #define LUOS_COM_CLOCK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
+#ifndef ROBUS_COM_CLOCK_ENABLE
+    #define ROBUS_COM_CLOCK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
 #endif
-#ifndef LUOS_COM
-    #define LUOS_COM USART1
+#ifndef ROBUS_COM
+    #define ROBUS_COM USART1
 #endif
-#ifndef LUOS_COM_IRQ
-    #define LUOS_COM_IRQ USART1_IRQn
+#ifndef ROBUS_COM_IRQ
+    #define ROBUS_COM_IRQ USART1_IRQn
 #endif
-#ifndef LUOS_COM_IRQHANDLER
-    #define LUOS_COM_IRQHANDLER() USART1_IRQHandler()
+#ifndef ROBUS_COM_IRQHANDLER
+    #define ROBUS_COM_IRQHANDLER() USART1_IRQHandler()
 #endif
 /*******************************************************************************
  * DMA CONFIG
  ******************************************************************************/
-#ifndef LUOS_DMA_CLOCK_ENABLE
-    #define LUOS_DMA_CLOCK_ENABLE() __HAL_RCC_DMA2_CLK_ENABLE();
+#ifndef ROBUS_DMA_CLOCK_ENABLE
+    #define ROBUS_DMA_CLOCK_ENABLE() __HAL_RCC_DMA2_CLK_ENABLE();
 #endif
-#ifndef LUOS_DMA
-    #define LUOS_DMA DMA2
+#ifndef ROBUS_DMA
+    #define ROBUS_DMA DMA2
 #endif
-#ifndef LUOS_DMA_STREAM
-    #define LUOS_DMA_STREAM LL_DMA_STREAM_7
+#ifndef ROBUS_DMA_STREAM
+    #define ROBUS_DMA_STREAM LL_DMA_STREAM_7
 #endif
-#ifndef LUOS_DMA_CHANNEL
-    #define LUOS_DMA_CHANNEL LL_DMA_CHANNEL_4
+#ifndef ROBUS_DMA_CHANNEL
+    #define ROBUS_DMA_CHANNEL LL_DMA_CHANNEL_4
 #endif
-#ifndef LUOS_DMA_REMAP
-    #define LUOS_DMA_REMAP 0
+#ifndef ROBUS_DMA_REMAP
+    #define ROBUS_DMA_REMAP 0
 #endif
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#ifndef LUOS_TIMER_CLOCK_ENABLE
-    #define LUOS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM5_CLK_ENABLE()
+#ifndef ROBUS_TIMER_CLOCK_ENABLE
+    #define ROBUS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM5_CLK_ENABLE()
 #endif
-#ifndef LUOS_TIMER
-    #define LUOS_TIMER TIM5
+#ifndef ROBUS_TIMER
+    #define ROBUS_TIMER TIM5
 #endif
-#ifndef LUOS_TIMER_IRQ
-    #define LUOS_TIMER_IRQ TIM5_IRQn
+#ifndef ROBUS_TIMER_IRQ
+    #define ROBUS_TIMER_IRQ TIM5_IRQn
 #endif
-#ifndef LUOS_TIMER_IRQHANDLER
-    #define LUOS_TIMER_IRQHANDLER() TIM5_IRQHandler()
+#ifndef ROBUS_TIMER_IRQHANDLER
+    #define ROBUS_TIMER_IRQHANDLER() TIM5_IRQHandler()
 #endif
 #endif /* _RobusHAL_CONFIG_H_ */

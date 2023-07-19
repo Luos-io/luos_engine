@@ -40,8 +40,8 @@
  ******************************************************************************/
 
 #define MAX_LOCAL_SERVICE_NUMBER 25
-#define MSG_BUFFER_SIZE    25 * sizeof(msg_t)
-#define MAX_MSG_NB         100
+#define MSG_BUFFER_SIZE          25 * sizeof(msg_t)
+#define MAX_MSG_NB               100
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -86,7 +86,8 @@
  *******************************************************************************
  *    Define                    | Default Value              | Description
  *    :-------------------------|------------------------------------------------------
- *    MAX_RTB_ENTRY             |              40            | max number entry in routing table
+ *    MAX_NODE_NUMBER       |              20            | Node number in the device
+ *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
  *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
  *    PIPE_TX_BUFFER_SIZE  |             1024           | Receive pipe buffer size
  *    PIPE_RX_BUFFER_SIZE  |             2048           | Transmit pipe buffer size

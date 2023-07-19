@@ -115,62 +115,62 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#ifndef LUOS_COM_CLOCK_ENABLE
-    #define LUOS_COM_CLOCK_ENABLE()                                                                                                          \
+#ifndef ROBUS_COM_CLOCK_ENABLE
+    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                          \
         do                                                                                                                                   \
         {                                                                                                                                    \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM0_CORE_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
             PM->APBCMASK.reg |= PM_APBCMASK_SERCOM0;                                                                                         \
         } while (0U)
 #endif
-#ifndef LUOS_COM
-    #define LUOS_COM SERCOM0
+#ifndef ROBUS_COM
+    #define ROBUS_COM SERCOM0
 #endif
-#ifndef LUOS_COM_IRQ
-    #define LUOS_COM_IRQ SERCOM0_IRQn
+#ifndef ROBUS_COM_IRQ
+    #define ROBUS_COM_IRQ SERCOM0_IRQn
 #endif
-#ifndef LUOS_COM_IRQHANDLER
+#ifndef ROBUS_COM_IRQHANDLER
 
-    #define LUOS_COM_IRQHANDLER() SERCOM0_Handler()
+    #define ROBUS_COM_IRQHANDLER() SERCOM0_Handler()
 #endif
 /*******************************************************************************
  * DMA CONFIG
  ******************************************************************************/
-#ifndef LUOS_DMA_CLOCK_ENABLE
-    #define LUOS_DMA_CLOCK_ENABLE()              \
+#ifndef ROBUS_DMA_CLOCK_ENABLE
+    #define ROBUS_DMA_CLOCK_ENABLE()              \
         do                                       \
         {                                        \
             PM->APBCMASK.reg |= PM_AHBMASK_DMAC; \
         } while (0U)
 #endif
-#ifndef LUOS_DMA
-    #define LUOS_DMA DMAC
+#ifndef ROBUS_DMA
+    #define ROBUS_DMA DMAC
 #endif
-#ifndef LUOS_DMA_TRIGGER
-    #define LUOS_DMA_TRIGGER 2
+#ifndef ROBUS_DMA_TRIGGER
+    #define ROBUS_DMA_TRIGGER 2
 #endif
-#ifndef LUOS_DMA_CHANNEL
-    #define LUOS_DMA_CHANNEL 0
+#ifndef ROBUS_DMA_CHANNEL
+    #define ROBUS_DMA_CHANNEL 0
 #endif
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#ifndef LUOS_TIMER_LOCK_ENABLE
-    #define LUOS_TIMER_LOCK_ENABLE()                                                                                                     \
+#ifndef ROBUS_TIMER_CLOCK_ENABLE
+    #define ROBUS_TIMER_CLOCK_ENABLE()                                                                                                     \
         do                                                                                                                               \
         {                                                                                                                                \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_TCC2_TC3_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
             PM->APBCMASK.reg |= PM_APBCMASK_TC3;                                                                                         \
         } while (0U)
 #endif
-#ifndef LUOS_TIMER
-    #define LUOS_TIMER TC3
+#ifndef ROBUS_TIMER
+    #define ROBUS_TIMER TC3
 #endif
-#ifndef LUOS_TIMER_IRQ
-    #define LUOS_TIMER_IRQ TC3_IRQn
+#ifndef ROBUS_TIMER_IRQ
+    #define ROBUS_TIMER_IRQ TC3_IRQn
 #endif
-#ifndef LUOS_TIMER_IRQHANDLER
-    #define LUOS_TIMER_IRQHANDLER() TC3_Handler()
+#ifndef ROBUS_TIMER_IRQHANDLER
+    #define ROBUS_TIMER_IRQHANDLER() TC3_Handler()
 #endif
 
 #endif /* _RobusHAL_CONFIG_H_ */

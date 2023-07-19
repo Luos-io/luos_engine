@@ -105,44 +105,44 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#ifndef LUOS_COM_CLOCK_ENABLE
-    #define LUOS_COM_CLOCK_ENABLE
+#ifndef ROBUS_COM_CLOCK_ENABLE
+    #define ROBUS_COM_CLOCK_ENABLE
 #endif
-#ifndef LUOS_COM
-    #define LUOS_COM
+#ifndef ROBUS_COM
+    #define ROBUS_COM
 #endif
-#ifndef LUOS_COM_IRQ
-    #define LUOS_COM_IRQ
+#ifndef ROBUS_COM_IRQ
+    #define ROBUS_COM_IRQ
 #endif
-#ifndef LUOS_COM_IRQHANDLER
-    #define LUOS_COM_IRQHANDLER()
+#ifndef ROBUS_COM_IRQHANDLER
+    #define ROBUS_COM_IRQHANDLER()
 #endif
 /*******************************************************************************
  * DMA CONFIG
  ******************************************************************************/
-#ifndef LUOS_DMA_CLOCK_ENABLE
-    #define LUOS_DMA_CLOCK_ENABLE
+#ifndef ROBUS_DMA_CLOCK_ENABLE
+    #define ROBUS_DMA_CLOCK_ENABLE
 #endif
-#ifndef LUOS_DMA
-    #define LUOS_DMA
+#ifndef ROBUS_DMA
+    #define ROBUS_DMA
 #endif
-#ifndef LUOS_DMA_CHANNEL
-    #define LUOS_DMA_CHANNEL
+#ifndef ROBUS_DMA_CHANNEL
+    #define ROBUS_DMA_CHANNEL
 #endif
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#ifndef LUOS_TIMER_LOCK_ENABLE
-    #define LUOS_TIMER_LOCK_ENABLE
+#ifndef ROBUS_TIMER_CLOCK_ENABLE
+    #define ROBUS_TIMER_CLOCK_ENABLE
 #endif
-#ifndef LUOS_TIMER
-    #define LUOS_TIMER
+#ifndef ROBUS_TIMER
+    #define ROBUS_TIMER
 #endif
-#ifndef LUOS_TIMER_IRQ
-    #define LUOS_TIMER_IRQ
+#ifndef ROBUS_TIMER_IRQ
+    #define ROBUS_TIMER_IRQ
 #endif
-#ifndef LUOS_TIMER_IRQHANDLER
-    #define LUOS_TIMER_IRQHANDLER()
+#ifndef ROBUS_TIMER_IRQHANDLER
+    #define ROBUS_TIMER_IRQHANDLER()
 #endif
 
 #endif /* _RobusHAL_CONFIG_H_ */

@@ -107,49 +107,49 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#ifndef LUOS_COM_CLOCK_ENABLE
-    #define LUOS_COM_CLOCK_ENABLE() X86_STUB
+#ifndef ROBUS_COM_CLOCK_ENABLE
+    #define ROBUS_COM_CLOCK_ENABLE() X86_STUB
 #endif
-#ifndef LUOS_COM
-    #define LUOS_COM X86_STUB // STUB
+#ifndef ROBUS_COM
+    #define ROBUS_COM X86_STUB // STUB
 #endif
-#ifndef LUOS_COM_IRQ
-    #define LUOS_COM_IRQ X86_STUB // STUB
+#ifndef ROBUS_COM_IRQ
+    #define ROBUS_COM_IRQ X86_STUB // STUB
 #endif
-#ifndef LUOS_COM_IRQHANDLER
-    #define LUOS_COM_IRQHANDLER() // STUB
+#ifndef ROBUS_COM_IRQHANDLER
+    #define ROBUS_COM_IRQHANDLER() // STUB
 #endif
 
 /*******************************************************************************
  * DMA CONFIG
  ******************************************************************************/
-#ifndef LUOS_DMA_CLOCK_ENABLE
-    #define LUOS_DMA_CLOCK_ENABLE() X86_STUB
+#ifndef ROBUS_DMA_CLOCK_ENABLE
+    #define ROBUS_DMA_CLOCK_ENABLE() X86_STUB
 #endif
-#ifndef LUOS_DMA
-    #define LUOS_DMA X86_STUB // STUB
+#ifndef ROBUS_DMA
+    #define ROBUS_DMA X86_STUB // STUB
 #endif
-#ifndef LUOS_DMA_CHANNEL
-    #define LUOS_DMA_CHANNEL X86_STUB // STUB
+#ifndef ROBUS_DMA_CHANNEL
+    #define ROBUS_DMA_CHANNEL X86_STUB // STUB
 #endif
-#ifndef LUOS_DMA_REMAP
-    #define LUOS_DMA_REMAP X86_STUB // STUB
+#ifndef ROBUS_DMA_REMAP
+    #define ROBUS_DMA_REMAP X86_STUB // STUB
 #endif
 
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#ifndef LUOS_TIMER_CLOCK_ENABLE
-    #define LUOS_TIMER_LOCK_ENABLE() // STUB
+#ifndef ROBUS_TIMER_CLOCK_ENABLE
+    #define ROBUS_TIMER_CLOCK_ENABLE() // STUB
 #endif
-#ifndef LUOS_TIMER
-    #define LUOS_TIMER X86_STUB // STUB
+#ifndef ROBUS_TIMER
+    #define ROBUS_TIMER X86_STUB // STUB
 #endif
-#ifndef LUOS_TIMER_IRQ
-    #define LUOS_TIMER_IRQ X86_STUB // STUB
+#ifndef ROBUS_TIMER_IRQ
+    #define ROBUS_TIMER_IRQ X86_STUB // STUB
 #endif
-#ifndef LUOS_TIMER_IRQHANDLER
-    #define LUOS_TIMER_IRQHANDLER() x86_Timer_IRQHandler()
+#ifndef ROBUS_TIMER_IRQHANDLER
+    #define ROBUS_TIMER_IRQHANDLER() x86_Timer_IRQHandler()
 #endif
 
 #endif /* _ROBUSHAL_CONFIG_H_ */

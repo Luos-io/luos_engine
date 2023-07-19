@@ -14,6 +14,7 @@
 #include "data_manager.h"
 #include "tiny-json.h"
 #include "bootloader_ex.h"
+#include "_routing_table.h"
 
 #define MAX_JSON_FIELDS 50
 

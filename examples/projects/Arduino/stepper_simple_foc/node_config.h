@@ -48,20 +48,20 @@
  ******************************************************************************/
 
 #define MAX_LOCAL_SERVICE_NUMBER 2
-#define MAX_MSG_NB         5
+#define MAX_MSG_NB               5
 
 #define ARDUINO_PTPA_PIN 19
 #define ARDUINO_PTPB_PIN 7
 
-#define LUOS_TIMER_LOCK_ENABLE()                                                                                                    \
+#define ROBUS_TIMER_LOCK_ENABLE()                                                                                                   \
     do                                                                                                                              \
     {                                                                                                                               \
         GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_TC4_TC5_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
         PM->APBCMASK.reg |= PM_APBCMASK_TC4;                                                                                        \
     } while (0U)
-#define LUOS_TIMER              TC4
-#define LUOS_TIMER_IRQ          TC4_IRQn
-#define LUOS_TIMER_IRQHANDLER() TC4_Handler()
+#define ROBUS_TIMER              TC4
+#define ROBUS_TIMER_IRQ          TC4_IRQn
+#define ROBUS_TIMER_IRQHANDLER() TC4_Handler()
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -82,19 +82,19 @@
  *    COM_RX                  | Rx USART Com Pin/Port/Alternate
  *    PINOUT_IRQHANDLER       | Callback function for Pin IRQ handler
 
- *    LUOS_COM_CLOCK_ENABLE   | Enable clock for USART
- *    LUOS_COM                | USART number
- *    LUOS_COM_IRQ            | USART IRQ number
- *    LUOS_COM_IRQHANDLER     | Callback function for USART IRQ handler
+ *    ROBUS_COM_CLOCK_ENABLE   | Enable clock for USART
+ *    ROBUS_COM                | USART number
+ *    ROBUS_COM_IRQ            | USART IRQ number
+ *    ROBUS_COM_IRQHANDLER     | Callback function for USART IRQ handler
 
- *    LUOS_DMA_CLOCK_ENABLE   | Enable clock for DMA
- *    LUOS_DMA                | DMA number
- *    LUOS_DMA_CHANNEL        | DMA channel (depending on MCU DMA may need special config)
+ *    ROBUS_DMA_CLOCK_ENABLE   | Enable clock for DMA
+ *    ROBUS_DMA                | DMA number
+ *    ROBUS_DMA_CHANNEL        | DMA channel (depending on MCU DMA may need special config)
 
- *    LUOS_TIMER_CLOCK_ENABLE | Enable clock for Timer
- *    LUOS_TIMER              | Timer number
- *    LUOS_TIMER_IRQ          | Timer IRQ number
- *    LUOS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
+ *    ROBUS_TIMER_CLOCK_ENABLE | Enable clock for Timer
+ *    ROBUS_TIMER              | Timer number
+ *    ROBUS_TIMER_IRQ          | Timer IRQ number
+ *    ROBUS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
 
  *    FLASH_SECTOR               | FLASH page size
  *    PAGE_SIZE               | FLASH page size

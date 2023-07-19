@@ -210,7 +210,7 @@ void RobusHAL_SetRxState(uint8_t Enable)
  * @param None
  * @return None
  ******************************************************************************/
-void LUOS_COM_IRQHANDLER()
+void ROBUS_COM_IRQHANDLER()
 {
 
     /*************************************************************************
@@ -468,7 +468,7 @@ void RobusHAL_ResetTimeout(uint16_t nbrbit)
  * @param None
  * @return None
  ******************************************************************************/
-void LUOS_TIMER_IRQHANDLER()
+void ROBUS_TIMER_IRQHANDLER()
 {
     /*************************************************************************
      * This is the callback function when a timout IRQ is raised.

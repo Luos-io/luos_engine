@@ -109,48 +109,48 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#ifndef LUOS_COM_CLOCK_ENABLE
-    #define LUOS_COM_CLOCK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
+#ifndef ROBUS_COM_CLOCK_ENABLE
+    #define ROBUS_COM_CLOCK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
 #endif
-#ifndef LUOS_COM
-    #define LUOS_COM USART1
+#ifndef ROBUS_COM
+    #define ROBUS_COM USART1
 #endif
-#ifndef LUOS_COM_IRQ
-    #define LUOS_COM_IRQ USART1_IRQn
+#ifndef ROBUS_COM_IRQ
+    #define ROBUS_COM_IRQ USART1_IRQn
 #endif
-#ifndef LUOS_COM_IRQHANDLER
-    #define LUOS_COM_IRQHANDLER() USART1_IRQHandler()
+#ifndef ROBUS_COM_IRQHANDLER
+    #define ROBUS_COM_IRQHANDLER() USART1_IRQHandler()
 #endif
 /*******************************************************************************
  * DMA CONFIG
  ******************************************************************************/
-#ifndef LUOS_DMA_CLOCK_ENABLE
-    #define LUOS_DMA_CLOCK_ENABLE() __HAL_RCC_DMA1_CLK_ENABLE();
+#ifndef ROBUS_DMA_CLOCK_ENABLE
+    #define ROBUS_DMA_CLOCK_ENABLE() __HAL_RCC_DMA1_CLK_ENABLE();
 #endif
-#ifndef LUOS_DMA
-    #define LUOS_DMA DMA1
+#ifndef ROBUS_DMA
+    #define ROBUS_DMA DMA1
 #endif
-#ifndef LUOS_DMA_CHANNEL
-    #define LUOS_DMA_CHANNEL LL_DMA_CHANNEL_2
+#ifndef ROBUS_DMA_CHANNEL
+    #define ROBUS_DMA_CHANNEL LL_DMA_CHANNEL_2
 #endif
-#ifndef LUOS_DMA_REQUEST
-    #define LUOS_DMA_REQUEST LL_DMA_REQUEST_3
+#ifndef ROBUS_DMA_REQUEST
+    #define ROBUS_DMA_REQUEST LL_DMA_REQUEST_3
 #endif
 
 /*******************************************************************************
  * COM TIMEOUT CONFIG
  ******************************************************************************/
-#ifndef LUOS_TIMER_CLOCK_ENABLE
-    #define LUOS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM6_CLK_ENABLE()
+#ifndef ROBUS_TIMER_CLOCK_ENABLE
+    #define ROBUS_TIMER_CLOCK_ENABLE() __HAL_RCC_TIM6_CLK_ENABLE()
 #endif
-#ifndef LUOS_TIMER
-    #define LUOS_TIMER TIM6
+#ifndef ROBUS_TIMER
+    #define ROBUS_TIMER TIM6
 #endif
-#ifndef LUOS_TIMER_IRQ
-    #define LUOS_TIMER_IRQ TIM6_IRQn
+#ifndef ROBUS_TIMER_IRQ
+    #define ROBUS_TIMER_IRQ TIM6_IRQn
 #endif
-#ifndef LUOS_TIMER_IRQHANDLER
-    #define LUOS_TIMER_IRQHANDLER() TIM6_DAC_IRQHandler()
+#ifndef ROBUS_TIMER_IRQHANDLER
+    #define ROBUS_TIMER_IRQHANDLER() TIM6_DAC_IRQHandler()
 #endif
 
 #endif /* _RobusHAL_CONFIG_H_ */
