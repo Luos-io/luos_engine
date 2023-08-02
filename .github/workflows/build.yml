@@ -48,7 +48,7 @@ jobs:
         run: |
             sudo apt-get install -y lcov
             lcov -d .pio/build/native/ -c -o lcov.info
-            lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' -o lcov.info
+            lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' '*/network/*' -o lcov.info
 
       - if: matrix.os == 'ubuntu-latest'
         name: Coveralls
