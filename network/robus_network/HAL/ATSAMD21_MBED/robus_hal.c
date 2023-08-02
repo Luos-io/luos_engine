@@ -93,19 +93,19 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     ROBUS_COM->USART.CTRLA.reg &= ~SERCOM_USART_CTRLA_ENABLE;
 
     /* Configure Baud Rate */
-    baud                     = 65536 - ((uint64_t)65536 * 16 * Baudrate) / MCUFREQ;
+    baud                      = 65536 - ((uint64_t)65536 * 16 * Baudrate) / MCUFREQ;
     ROBUS_COM->USART.BAUD.reg = SERCOM_USART_BAUD_BAUD(baud);
 
     // Configures USART Clock Mode/ TXPO and RXPO/ Data Order/ Standby Mode/ Sampling rate/ IBON
     ROBUS_COM->USART.CTRLA.reg = SERCOM_USART_CTRLA_MODE_USART_INT_CLK | SERCOM_USART_CTRLA_RXPO(COM_RX_POS)
-                                | SERCOM_USART_CTRLA_TXPO(COM_TX_POS) | SERCOM_USART_CTRLA_DORD
-                                | SERCOM_USART_CTRLA_IBON | SERCOM_USART_CTRLA_FORM(0x0)
-                                | SERCOM_USART_CTRLA_SAMPR(0);
+                                 | SERCOM_USART_CTRLA_TXPO(COM_TX_POS) | SERCOM_USART_CTRLA_DORD
+                                 | SERCOM_USART_CTRLA_IBON | SERCOM_USART_CTRLA_FORM(0x0)
+                                 | SERCOM_USART_CTRLA_SAMPR(0);
 
     // Configures RXEN/ TXEN/ CHSIZE/ Parity/ Stop bits
     ROBUS_COM->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0) | SERCOM_USART_CTRLB_SBMODE
-                                | SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN
-                                | SERCOM_USART_CTRLB_SFDE;
+                                 | SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN
+                                 | SERCOM_USART_CTRLB_SFDE;
 
     /* Enable the UART after the configurations */
     ROBUS_COM->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
@@ -131,13 +131,13 @@ void RobusHAL_ComInit(uint32_t Baudrate)
 #ifndef USE_TX_IT
     ROBUS_DMA_CLOCK_ENABLE();
 
-    ROBUS_DMA->BASEADDR.reg        = (uint32_t)&descriptor_section;
-    ROBUS_DMA->WRBADDR.reg         = (uint32_t)&write_back_section;
-    ROBUS_DMA->PRICTRL0.reg        = DMAC_PRICTRL0_LVLPRI0(1UL) | DMAC_PRICTRL0_RRLVLEN0 | DMAC_PRICTRL0_LVLPRI1(1UL) | DMAC_PRICTRL0_RRLVLEN1 | DMAC_PRICTRL0_LVLPRI2(1UL) | DMAC_PRICTRL0_RRLVLEN2 | DMAC_PRICTRL0_LVLPRI3(1UL) | DMAC_PRICTRL0_RRLVLEN3;
-    ROBUS_DMA->CHID.reg            = ROBUS_DMA_CHANNEL; // DMA Channel
-    ROBUS_DMA->CHCTRLB.reg         = DMAC_CHCTRLB_TRIGACT(2) | DMAC_CHCTRLB_TRIGSRC(ROBUS_DMA_TRIGGER) | DMAC_CHCTRLB_LVL(0);
+    ROBUS_DMA->BASEADDR.reg       = (uint32_t)&descriptor_section;
+    ROBUS_DMA->WRBADDR.reg        = (uint32_t)&write_back_section;
+    ROBUS_DMA->PRICTRL0.reg       = DMAC_PRICTRL0_LVLPRI0(1UL) | DMAC_PRICTRL0_RRLVLEN0 | DMAC_PRICTRL0_LVLPRI1(1UL) | DMAC_PRICTRL0_RRLVLEN1 | DMAC_PRICTRL0_LVLPRI2(1UL) | DMAC_PRICTRL0_RRLVLEN2 | DMAC_PRICTRL0_LVLPRI3(1UL) | DMAC_PRICTRL0_RRLVLEN3;
+    ROBUS_DMA->CHID.reg           = ROBUS_DMA_CHANNEL; // DMA Channel
+    ROBUS_DMA->CHCTRLB.reg        = DMAC_CHCTRLB_TRIGACT(2) | DMAC_CHCTRLB_TRIGSRC(ROBUS_DMA_TRIGGER) | DMAC_CHCTRLB_LVL(0);
     descriptor_section.BTCTRL.reg = DMAC_BTCTRL_BLOCKACT_INT | DMAC_BTCTRL_BEATSIZE_BYTE | DMAC_BTCTRL_VALID | DMAC_BTCTRL_SRCINC;
-    ROBUS_DMA->CTRL.reg            = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN0 | DMAC_CTRL_LVLEN1 | DMAC_CTRL_LVLEN2 | DMAC_CTRL_LVLEN3;
+    ROBUS_DMA->CTRL.reg           = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN0 | DMAC_CTRL_LVLEN1 | DMAC_CTRL_LVLEN2 | DMAC_CTRL_LVLEN3;
 #endif
 }
 /******************************************************************************
@@ -674,7 +674,8 @@ _CRITICAL void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     *(uint16_t *)crc ^= dbyte << 8;
     for (uint8_t j = 0; j < 8; ++j)
     {
-        uint16_t mix     = *(uint16_t *)crc & 0x8000;
+        uint16_t mix = *(uint16_t *)crc & 0x8000;
+
         *(uint16_t *)crc = (*(uint16_t *)crc << 1);
         if (mix)
             *(uint16_t *)crc = *(uint16_t *)crc ^ 0x0007;

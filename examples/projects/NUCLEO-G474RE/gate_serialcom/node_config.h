@@ -48,8 +48,8 @@
  ******************************************************************************/
 
 #define MAX_LOCAL_SERVICE_NUMBER 2
-#define MSG_BUFFER_SIZE    2048
-#define MAX_MSG_NB         40
+#define MSG_BUFFER_SIZE          2048
+#define MAX_MSG_NB               40
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION

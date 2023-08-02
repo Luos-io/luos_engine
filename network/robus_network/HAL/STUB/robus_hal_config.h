@@ -101,7 +101,7 @@
 #endif
 
 #ifndef PINOUT_IRQHANDLER
-//#define PINOUT_IRQHANDLER(PIN)
+// #define PINOUT_IRQHANDLER(PIN)
 #endif
 
 /*******************************************************************************

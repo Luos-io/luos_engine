@@ -125,7 +125,7 @@
  * DMA CONFIG
  ******************************************************************************/
 #ifndef ROBUS_DMA_CLOCK_ENABLE
-    #define ROBUS_DMA_CLOCK_ENABLE()         \
+    #define ROBUS_DMA_CLOCK_ENABLE()        \
         do                                  \
         {                                   \
             __HAL_RCC_DMA1_CLK_ENABLE();    \

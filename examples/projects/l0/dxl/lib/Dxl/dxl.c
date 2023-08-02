@@ -59,7 +59,7 @@ void Dxl_Init(void)
  ******************************************************************************/
 void Dxl_Loop(void)
 {
-    static int index                                = 0;
+    static int index                                      = 0;
     static uint32_t last_temp[MAX_LOCAL_SERVICE_NUMBER]   = {0};
     static uint32_t last_sample[MAX_LOCAL_SERVICE_NUMBER] = {0};
     // check motor values one by one

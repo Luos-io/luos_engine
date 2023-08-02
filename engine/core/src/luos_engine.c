@@ -349,7 +349,7 @@ int Luos_ReceiveData(service_t *service, const msg_t *msg, void *bin_data)
     // Manage buffer session (one per service)
     static uint32_t data_size[MAX_LOCAL_SERVICE_NUMBER]       = {0};
     static uint32_t total_data_size[MAX_LOCAL_SERVICE_NUMBER] = {0};
-    static uint16_t last_msg_size                       = 0;
+    static uint16_t last_msg_size                             = 0;
 
     // When this function receive a data from a NULL service it is an error and we should reinit the reception state
     if (service == NULL)

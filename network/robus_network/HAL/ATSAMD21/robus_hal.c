@@ -91,19 +91,19 @@ void RobusHAL_ComInit(uint32_t Baudrate)
     ROBUS_COM->USART_INT.SERCOM_CTRLA &= ~SERCOM_USART_INT_CTRLA_ENABLE_Msk;
 
     /* Configure Baud Rate */
-    baud                            = 65536 - ((uint64_t)65536 * 16 * Baudrate) / MCUFREQ;
+    baud                             = 65536 - ((uint64_t)65536 * 16 * Baudrate) / MCUFREQ;
     ROBUS_COM->USART_INT.SERCOM_BAUD = SERCOM_USART_INT_BAUD_BAUD(baud);
 
     // Configures USART Clock Mode/ TXPO and RXPO/ Data Order/ Standby Mode/ Sampling rate/ IBON
     ROBUS_COM->USART_INT.SERCOM_CTRLA = SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK | SERCOM_USART_INT_CTRLA_RXPO(COM_RX_POS)
-                                       | SERCOM_USART_INT_CTRLA_TXPO(COM_TX_POS) | SERCOM_USART_INT_CTRLA_DORD_Msk
-                                       | SERCOM_USART_INT_CTRLA_IBON_Msk | SERCOM_USART_INT_CTRLA_FORM(0x0)
-                                       | SERCOM_USART_INT_CTRLA_SAMPR(0);
+                                        | SERCOM_USART_INT_CTRLA_TXPO(COM_TX_POS) | SERCOM_USART_INT_CTRLA_DORD_Msk
+                                        | SERCOM_USART_INT_CTRLA_IBON_Msk | SERCOM_USART_INT_CTRLA_FORM(0x0)
+                                        | SERCOM_USART_INT_CTRLA_SAMPR(0);
 
     // Configures RXEN/ TXEN/ CHSIZE/ Parity/ Stop bits
     ROBUS_COM->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_CHSIZE_8_BIT | SERCOM_USART_INT_CTRLB_SBMODE_1_BIT
-                                       | SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk
-                                       | SERCOM_USART_INT_CTRLB_SFDE_Msk;
+                                        | SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk
+                                        | SERCOM_USART_INT_CTRLB_SFDE_Msk;
 
     /* Enable the UART after the configurations */
     ROBUS_COM->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_ENABLE_Msk;
@@ -128,13 +128,13 @@ void RobusHAL_ComInit(uint32_t Baudrate)
 #ifndef USE_TX_IT
     ROBUS_DMA_CLOCK_ENABLE();
 
-    ROBUS_DMA->DMAC_BASEADDR        = (uint32_t)&descriptor_section;
-    ROBUS_DMA->DMAC_WRBADDR         = (uint32_t)&write_back_section;
-    ROBUS_DMA->DMAC_PRICTRL0        = DMAC_PRICTRL0_LVLPRI0(1UL) | DMAC_PRICTRL0_RRLVLEN0_Msk | DMAC_PRICTRL0_LVLPRI1(1UL) | DMAC_PRICTRL0_RRLVLEN1_Msk | DMAC_PRICTRL0_LVLPRI2(1UL) | DMAC_PRICTRL0_RRLVLEN2_Msk | DMAC_PRICTRL0_LVLPRI3(1UL) | DMAC_PRICTRL0_RRLVLEN3_Msk;
-    ROBUS_DMA->DMAC_CHID            = ROBUS_DMA_CHANNEL; // DMA Channel
-    ROBUS_DMA->DMAC_CHCTRLB         = DMAC_CHCTRLB_TRIGACT(2) | DMAC_CHCTRLB_TRIGSRC(ROBUS_DMA_TRIGGER) | DMAC_CHCTRLB_LVL(0);
+    ROBUS_DMA->DMAC_BASEADDR       = (uint32_t)&descriptor_section;
+    ROBUS_DMA->DMAC_WRBADDR        = (uint32_t)&write_back_section;
+    ROBUS_DMA->DMAC_PRICTRL0       = DMAC_PRICTRL0_LVLPRI0(1UL) | DMAC_PRICTRL0_RRLVLEN0_Msk | DMAC_PRICTRL0_LVLPRI1(1UL) | DMAC_PRICTRL0_RRLVLEN1_Msk | DMAC_PRICTRL0_LVLPRI2(1UL) | DMAC_PRICTRL0_RRLVLEN2_Msk | DMAC_PRICTRL0_LVLPRI3(1UL) | DMAC_PRICTRL0_RRLVLEN3_Msk;
+    ROBUS_DMA->DMAC_CHID           = ROBUS_DMA_CHANNEL; // DMA Channel
+    ROBUS_DMA->DMAC_CHCTRLB        = DMAC_CHCTRLB_TRIGACT(2) | DMAC_CHCTRLB_TRIGSRC(ROBUS_DMA_TRIGGER) | DMAC_CHCTRLB_LVL(0);
     descriptor_section.DMAC_BTCTRL = DMAC_BTCTRL_BLOCKACT_INT | DMAC_BTCTRL_BEATSIZE_BYTE | DMAC_BTCTRL_VALID_Msk | DMAC_BTCTRL_SRCINC_Msk;
-    ROBUS_DMA->DMAC_CTRL            = DMAC_CTRL_DMAENABLE_Msk | DMAC_CTRL_LVLEN0_Msk | DMAC_CTRL_LVLEN1_Msk | DMAC_CTRL_LVLEN2_Msk | DMAC_CTRL_LVLEN3_Msk;
+    ROBUS_DMA->DMAC_CTRL           = DMAC_CTRL_DMAENABLE_Msk | DMAC_CTRL_LVLEN0_Msk | DMAC_CTRL_LVLEN1_Msk | DMAC_CTRL_LVLEN2_Msk | DMAC_CTRL_LVLEN3_Msk;
 #endif
 }
 /******************************************************************************
@@ -676,7 +676,8 @@ _CRITICAL void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     *(uint16_t *)crc ^= dbyte << 8;
     for (uint8_t j = 0; j < 8; ++j)
     {
-        uint16_t mix     = *(uint16_t *)crc & 0x8000;
+        uint16_t mix = *(uint16_t *)crc & 0x8000;
+
         *(uint16_t *)crc = (*(uint16_t *)crc << 1);
         if (mix)
             *(uint16_t *)crc = *(uint16_t *)crc ^ 0x0007;

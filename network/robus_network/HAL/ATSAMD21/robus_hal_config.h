@@ -120,7 +120,7 @@
  * COM CONFIG
  ******************************************************************************/
 #ifndef ROBUS_COM_CLOCK_ENABLE
-    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                       \
+    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                      \
         do                                                                                                                                \
         {                                                                                                                                 \
             GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM0_CORE_Val) | GCLK_CLKCTRL_GEN(0x0) | GCLK_CLKCTRL_CLKEN_Msk; \
@@ -140,7 +140,7 @@
  * DMA CONFIG
  ******************************************************************************/
 #ifndef ROBUS_DMA_CLOCK_ENABLE
-    #define ROBUS_DMA_CLOCK_ENABLE()                     \
+    #define ROBUS_DMA_CLOCK_ENABLE()                    \
         do                                              \
         {                                               \
             PM_REGS->PM_AHBMASK |= PM_AHBMASK_DMAC_Msk; \
@@ -159,7 +159,7 @@
  * COM TIMEOUT CONFIG
  ******************************************************************************/
 #ifndef ROBUS_TIMER_CLOCK_ENABLE
-    #define ROBUS_TIMER_CLOCK_ENABLE()                                                                                                 \
+    #define ROBUS_TIMER_CLOCK_ENABLE()                                                                                                \
         do                                                                                                                            \
         {                                                                                                                             \
             GCLK_REGS->GCLK_CLKCTRL = GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_TCC2_TC3_Val) | GCLK_CLKCTRL_GEN(0x0) | GCLK_CLKCTRL_CLKEN_Msk; \

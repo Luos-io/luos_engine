@@ -492,7 +492,8 @@ void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
         *(uint16_t *)crc ^= dbyte << 8;
         for (uint8_t j = 0; j < 8; ++j)
         {
-            uint16_t mix     = *(uint16_t *)crc & 0x8000;
+            uint16_t mix = *(uint16_t *)crc & 0x8000;
+
             *(uint16_t *)crc = (*(uint16_t *)crc << 1);
             if (mix)
                 *(uint16_t *)crc = *(uint16_t *)crc ^ 0x0007;

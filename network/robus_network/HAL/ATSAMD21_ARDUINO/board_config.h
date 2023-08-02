@@ -13,7 +13,7 @@
 #include <Arduino.h>
 
 #if defined(ARDUINO_SAMD_ZERO)
-    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                          \
+    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                         \
         do                                                                                                                                   \
         {                                                                                                                                    \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM0_CORE_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
@@ -29,7 +29,7 @@
      || defined(ARDUINO_SAMD_MKRWAN1300) || defined(ARDUINO_SAMD_MKRWAN1310) || defined(ARDUINO_SAMD_MKRGSM1400) \
      || defined(ARDUINO_SAMD_MKRNB1500) || defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_NANO_33_IOT)    \
      || defined(SAMD_MKRVIDOR4000))
-    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                          \
+    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                         \
         do                                                                                                                                   \
         {                                                                                                                                    \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM5_CORE_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
@@ -43,7 +43,7 @@
 #endif
 
 #if defined(SEEED_XIAO_M0)
-    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                          \
+    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                         \
         do                                                                                                                                   \
         {                                                                                                                                    \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM4_CORE_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
@@ -53,8 +53,8 @@
     #define ROBUS_COM_IRQ          SERCOM4_IRQn
     #define ROBUS_COM_IRQHANDLER() SERCOM4_Handler()
     #define ROBUS_DMA_TRIGGER      SERCOM4_DMAC_ID_TX
-    #define COM_TX_POS            0 // PAD0
-    #define COM_RX_POS            1 // PAD1
+    #define COM_TX_POS             0 // PAD0
+    #define COM_RX_POS             1 // PAD1
 
     #define ARDUINO_PTPA_PIN 1
     #define ARDUINO_PTPB_PIN 2

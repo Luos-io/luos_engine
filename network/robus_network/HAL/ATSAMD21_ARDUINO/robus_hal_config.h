@@ -143,7 +143,7 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
  * COM CONFIG
  ******************************************************************************/
 #ifndef ROBUS_COM_CLOCK_ENABLE
-    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                          \
+    #define ROBUS_COM_CLOCK_ENABLE()                                                                                                         \
         do                                                                                                                                   \
         {                                                                                                                                    \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM0_CORE_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
@@ -163,7 +163,7 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
  * DMA CONFIG
  ******************************************************************************/
 #ifndef ROBUS_DMA_CLOCK_ENABLE
-    #define ROBUS_DMA_CLOCK_ENABLE()              \
+    #define ROBUS_DMA_CLOCK_ENABLE()             \
         do                                       \
         {                                        \
             PM->APBCMASK.reg |= PM_AHBMASK_DMAC; \
@@ -182,7 +182,7 @@ DEFAULT RobusHAL ARDUINO PIN CONFIGURATION
  * COM TIMEOUT CONFIG
  ******************************************************************************/
 #ifndef ROBUS_TIMER_CLOCK_ENABLE
-    #define ROBUS_TIMER_CLOCK_ENABLE()                                                                                                     \
+    #define ROBUS_TIMER_CLOCK_ENABLE()                                                                                                   \
         do                                                                                                                               \
         {                                                                                                                                \
             GCLK->CLKCTRL.reg = (uint16_t)(GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_TCC2_TC3_Val) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN); \
