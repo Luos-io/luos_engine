@@ -101,7 +101,8 @@ uint64_t LuosHAL_GetTimestamp(void)
 #else
     clock_gettime(CLOCK_MONOTONIC, &time);
 #endif
-    return time.tv_nsec;
+    volatile uint64_t timestamp = time.tv_nsec + time.tv_sec * 1000000000;
+    return timestamp;
 }
 
 /******************************************************************************

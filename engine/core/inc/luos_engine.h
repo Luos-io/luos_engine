@@ -62,7 +62,7 @@ extern "C"
     // *** Timestamping management (in file `timestamp.c`)***
     time_luos_t Luos_Timestamp(void);
     bool Luos_IsMsgTimstamped(const msg_t *msg);
-    time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
+    time_luos_t Luos_GetMsgTimestamp(const msg_t *msg);
     error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp);
 
     // *** Pub/Sub management (in file `pub_sub.c`)***

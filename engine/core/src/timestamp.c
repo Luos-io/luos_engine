@@ -79,7 +79,7 @@ _CRITICAL inline bool Luos_IsMsgTimstamped(const msg_t *msg)
  * @param msg : Message to get the timestamp from
  * @return time_luos_t
  ******************************************************************************/
-time_luos_t Luos_GetMsgTimestamp(msg_t *msg)
+time_luos_t Luos_GetMsgTimestamp(const msg_t *msg)
 {
     LUOS_ASSERT(msg != NULL);
     time_luos_t timestamp = {0.0f};
