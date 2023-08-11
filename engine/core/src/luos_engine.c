@@ -12,7 +12,7 @@
 #include "service.h"
 #include "struct_engine.h"
 #include "luos_io.h"
-#include "luos_phy.h"
+#include "_luos_phy.h"
 #include "stats.h"
 
 /*******************************************************************************
@@ -524,12 +524,10 @@ void Luos_Detect(service_t *service)
         if (service->id == 0)
         {
             // We don't have any ID yet, let's create one at least for the detector
-            // Reset filters
-            Filter_IdInit();
             // Set the detection launcher id to 1
             service->id = 1;
             // Update the filter just to accept our detector id
-            Filter_AddServiceId(1, 1);
+            Phy_AddLocalServices(1, 1);
         }
 
         // Send ask detection message

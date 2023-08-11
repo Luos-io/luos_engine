@@ -10,8 +10,7 @@
 #include "string.h"
 #include "luos_hal.h"
 #include "msg_alloc.h"
-#include "filter.h"
-#include "luos_phy.h"
+#include "_luos_phy.h"
 
 /*******************************************************************************
  * Function
@@ -60,7 +59,7 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
     Luos_Init();
     // completely reinit the allocator
     MsgAlloc_Init(NULL);
-    Filter_IdInit(); // Mask filter for service ID
+    Phy_FiltersInit(); // Mask filter for service ID
     msg_t msg;
     msg.header.target_mode = BROADCAST;
     msg.header.target      = BROADCAST_VAL;

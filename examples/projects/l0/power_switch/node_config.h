@@ -48,7 +48,7 @@
  ******************************************************************************/
 #define MAX_LOCAL_SERVICE_NUMBER 1
 #define MAX_LOCAL_PROFILE_NUMBER 1
-#define MAX_MSG_NB               5
+#define MAX_MSG_NB               10
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION

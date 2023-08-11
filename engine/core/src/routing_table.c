@@ -33,8 +33,12 @@ static uint16_t RoutingTB_BigestNodeID(void);
 uint16_t RoutingTB_GetServiceIndex(uint16_t id);
 
 static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t *connection_table);
-static void RoutingTB_Share(service_t *service, uint16_t nb_node);
+static bool RoutingTB_Share(service_t *service, uint16_t nb_node);
 static void RoutingTB_SendEndDetection(service_t *service);
+static void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint16_t nb_node, connection_t *connection_table);
+static void RoutingTB_SendNodeIndexes(service_t *service, uint16_t node_id, uint8_t phy_index, uint8_t *node_indexes);
+static void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t node_index);
+static void RoutingTB_SendServiceIndexes(service_t *service, uint16_t node_id, uint8_t phy_index, uint8_t *service_indexes);
 
 // ************************ routing_table search tools ***************************
 
@@ -234,6 +238,8 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
                 detect_state_machine = 2;
                 return 0;
             }
+            // First compute the node indexes for this node and send it to it.
+            RoutingTB_ComputeNodeIndexes(service, last_node_id, nb_node, connection_table);
             try_nb++;
             intro_msg.header.cmd         = LOCAL_RTB;
             intro_msg.header.target_mode = NODEIDACK;
@@ -313,30 +319,38 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
 }
 
 /******************************************************************************
- * @brief Send the complete route table to each node on the network
+ * @brief Send the complete route table and all indexes to each node on the network
  * @param service : Service who send
  * @param nb_node : number of nodes on network
  * @return None
  ******************************************************************************/
-static void RoutingTB_Share(service_t *service, uint16_t nb_node)
+static bool RoutingTB_Share(service_t *service, uint16_t nb_node)
 {
+    static uint8_t detect_state_machine = 0;
     LUOS_ASSERT(service);
     // Make sure that the detection is not interrupted
     if (Node_GetState() == EXTERNAL_DETECTION)
     {
-        return;
+        return true;
     }
+
+    if (detect_state_machine == 0)
+    {
+        // Compute local indexes
+        RoutingTB_ComputeServiceIndexes(service, 0);
+        detect_state_machine++;
+        return false;
+    }
+
     // send route table to each nodes. Routing tables are commonly usable for each services of a node.
     msg_t intro_msg;
     intro_msg.header.cmd         = RTB;
     intro_msg.header.target_mode = NODEIDACK;
-
     for (uint16_t i = 2; i <= nb_node; i++) // don't send to ourself
     {
         intro_msg.header.target = i;
-
+        // Check if this node need to get the routing table.
         uint16_t node_idx;
-
         for (node_idx = i; node_idx < last_routing_table_entry; node_idx++)
         {
             if ((routing_table[node_idx].mode == NODE) && (routing_table[node_idx].node_id == i))
@@ -344,10 +358,269 @@ static void RoutingTB_Share(service_t *service, uint16_t nb_node)
                 break;
             }
         }
+        RoutingTB_ComputeServiceIndexes(service, node_idx);
         if ((routing_table[node_idx].node_info & (1 << 0)) == 0)
         {
             Luos_SendData(service, &intro_msg, routing_table, (last_routing_table_entry * sizeof(routing_table_t)));
         }
+    }
+    detect_state_machine = 0;
+    return true;
+}
+
+/******************************************************************************
+ * @brief Send the completed node indexes to a specific node
+ * @param service : Service who send
+ * @param node_id : node to send indexes
+ * @param phy_index : phy index in the node concerned by these indexes
+ * @param node_indexes : node indexes to send
+ * @return None
+ ******************************************************************************/
+void RoutingTB_SendNodeIndexes(service_t *service, uint16_t node_id, uint8_t phy_index, uint8_t *node_indexes)
+{
+    msg_t index_msg;
+    index_msg.header.target_mode = NODEIDACK;
+    index_msg.header.target      = node_id;
+    LUOS_ASSERT(phy_index != 0xFF);
+    uint8_t data[MAX_NODE_NUMBER / 8 + 1];
+
+    // First we send the phy index allowing the target to know where to store the indexes
+    index_msg.header.cmd = PHY_ID;
+    Luos_SendData(service, &index_msg, &phy_index, sizeof(uint8_t));
+    // Then we evaluate how many bytes we need to send the node indexes
+    volatile uint16_t i = 0;
+    for (i = (MAX_NODE_NUMBER / 8) + 1; i > 0; i--)
+    {
+        if (node_indexes[i - 1] != 0)
+        {
+            break;
+        }
+    }
+    // Send the node indexes
+    index_msg.header.cmd = NODE_INDEXES;
+    memcpy(data, node_indexes, i);
+    Luos_SendData(service, &index_msg, data, i);
+}
+
+/******************************************************************************
+ * @brief Compute indexes of nodes on the network and send it to them
+ * @param node_id : node id to compute indexes
+ * @return None
+ ******************************************************************************/
+void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint16_t nb_node, connection_t *connection_table)
+{
+    /*
+     * To get all the nodes indexes of the provided node ID, we have to parse the routing table and use the connection informations to know how to dispatch all the nodes.
+     * Each node is connected to all the other nodes, we "just" have to find out trough which phy we can reach them.
+     * Because node ID are contiguous the next node in the routing table (if it exist) will always have a connection information indicating trough which phy we can reach it. Let's say it phy 1.
+     * Then we will look at all the following nodes connections informations, if those informations doesn't involve our node we can consider taht they are accessible trough phy 1.
+     * We we encounter a node with connection informations that involve our node, this means that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
+     * When we reach the end of the routing table, we have 2 options:
+     * - If the phy we were indexing is the same as our parent phy, we have to add all the parents nodes in the same phy indexing then send it.
+     * - If the phy we were indexing is different from our parent phy, we have to send the phy indexing and start a new one dedicated to the phy described by the parent node connection informations we have.
+     */
+    uint16_t node_idx;
+    uint8_t nodes_indexes[MAX_NODE_NUMBER / 8 + 1] = {0};
+    int node_phy                                   = -1;
+    // Start from the provided node index and parse the connection table until the end.
+    for (node_idx = node_index + 1; node_idx < nb_node; node_idx++)
+    {
+        // Check if the connection informations involve our node.
+        if (connection_table[node_idx].parent.node_id == node_index + 1)
+        {
+            // This node consider our node as its parent!
+            // This means that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
+            if (node_phy != -1)
+            {
+                // We have to send the indexes we completed.
+                RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
+            }
+
+            // We have to reset the indexes table and set the node_phy to the index of the concerned phy.
+            memset(nodes_indexes, 0, sizeof(nodes_indexes));
+            node_phy = connection_table[node_idx].parent.phy_id;
+        }
+        LUOS_ASSERT(node_phy != -1);
+        // Add the node index to the nodes_indexes table.
+        uint8_t bit_index = node_idx;
+        nodes_indexes[bit_index / 8] |= 1 << (bit_index % 8);
+    }
+
+    // We reached the end of the routing table!
+    // Check if the node index if the root of the routing table. If it is we just have to send the indexes and we are done.
+    if (node_index == 0)
+    {
+        if (node_phy != -1)
+        {
+            // We have to send the indexes we completed.
+            RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
+        }
+        return;
+    }
+    // Compare the current node_phy to the current node index connection informations.
+    if (node_phy != connection_table[node_index].child.phy_id)
+    {
+        if (node_phy != -1)
+        {
+            // We were indexing another phy, we can consider it as done and send it. Then we have to start a new for connection_table[node_index].child.phy_id.
+            RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
+        }
+        // We have to reset the indexes table and set the node_phy to the index of the concerned phy.
+        memset(nodes_indexes, 0, sizeof(nodes_indexes));
+        node_phy = connection_table[node_index].child.phy_id;
+    }
+
+    // Now we can put all the parent slots in the current indexes table.
+    for (node_idx = 0; node_idx < node_index; node_idx++)
+    {
+        // Add the node index to the nodes_indexes table.
+        uint8_t bit_index = node_idx;
+        nodes_indexes[bit_index / 8] |= 1 << (bit_index % 8);
+    }
+
+    if (node_phy != -1)
+    {
+        // Send the last phy indexes.
+        RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
+    }
+}
+
+/******************************************************************************
+ * @brief Send the completed service indexes to a specific node
+ * @param service : Service who send
+ * @param node_id : node to send indexes
+ * @param phy_index : phy index in the node concerned by these indexes
+ * @param node_indexes : node indexes to send
+ * @param service_indexes : service indexes to send
+ * @return None
+ ******************************************************************************/
+void RoutingTB_SendServiceIndexes(service_t *service, uint16_t node_id, uint8_t phy_index, uint8_t *service_indexes)
+{
+    msg_t index_msg;
+    index_msg.header.target_mode = NODEIDACK;
+    index_msg.header.target      = node_id;
+    LUOS_ASSERT(phy_index != 0xFF);
+    uint8_t data[MAX_SERVICE_NUMBER / 8 + 1];
+
+    // First we send the phy index allowing the target to know where to store the indexes
+    index_msg.header.cmd = PHY_ID;
+    Luos_SendData(service, &index_msg, &phy_index, sizeof(uint8_t));
+    // Then we evaluate how many bytes we need to send the node indexes
+    volatile uint16_t i = 0;
+    for (i = (MAX_SERVICE_NUMBER / 8) + 1; i > 0; i--)
+    {
+        if (service_indexes[i - 1] != 0)
+        {
+            break;
+        }
+    }
+    // Send the service indexes
+    index_msg.header.cmd = SERVICE_INDEXES;
+    memcpy(data, service_indexes, i);
+    Luos_SendData(service, &index_msg, data, i);
+}
+
+/******************************************************************************
+ * @brief Compute indexes of nodes on the network and send it to them
+ * @param node_id : node id to compute indexes
+ * @return None
+ ******************************************************************************/
+void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t node_index)
+{
+    /*
+     * To get all the nodes indexes of the provided node ID, we have to parse the routing table and use the connection informations to know how to dispatch all the nodes.
+     * Each node is connected to all the other nodes, we "just" have to find out trough which phy we can reach them.
+     * Because node ID are contiguous the next node in the routing table (if it exist) will always have a connection information indicating trough which phy we can reach it. Let's say it phy 1.
+     * Then we will look at all the following nodes connections informations, if those informations doesn't involve our node we can consider taht they are accessible trough phy 1.
+     * We we encounter a node with connection informations that involve our node, this means that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
+     * When we reach the end of the routing table, we have 2 options:
+     * - If the phy we were indexing is the same as our parent phy, we have to add all the parents nodes in the same phy indexing then send it.
+     * - If the phy we were indexing is different from our parent phy, we have to send the phy indexing and start a new one dedicated to the phy described by the parent node connection informations we have.
+     */
+    LUOS_ASSERT((node_index < last_routing_table_entry) && (routing_table[node_index].mode == NODE));
+    uint16_t node_idx;
+    uint8_t services_indexes[MAX_SERVICE_NUMBER / 8 + 1] = {0};
+    int node_phy                                         = -1;
+    // Start from the provided node index and parse the routing table until the end.
+    for (node_idx = node_index + 1; node_idx < last_routing_table_entry; node_idx++)
+    {
+        switch (routing_table[node_idx].mode)
+        {
+            case NODE:
+                // This is a node slot, check if the connection informations involve our node.
+                if (routing_table[node_idx].connection.parent.node_id == routing_table[node_index].node_id)
+                {
+                    // This node consider our node as its parent!
+                    // This means that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
+                    if (node_phy != -1)
+                    {
+                        // We have to send the indexes we completed.
+                        RoutingTB_SendServiceIndexes(service, routing_table[node_index].node_id, node_phy, services_indexes);
+                    }
+
+                    // We have to reset the indexes table and set the node_phy to the index of the concerned phy.
+                    memset(services_indexes, 0, sizeof(services_indexes));
+                    node_phy = routing_table[node_idx].connection.parent.phy_id;
+                }
+                LUOS_ASSERT(node_phy != -1);
+                break;
+            case SERVICE:
+                // This is a service slot.
+                // if a node phy is set, this service is accessible trough this phy, we have to add it to the services_indexes table.
+                // else this service is a local one (already referenced by Luos_engine phy), we don't care.
+                if (node_phy != -1)
+                {
+                    // Add the service index to the services_indexes table.
+                    uint8_t bit_index = routing_table[node_idx].id - 1; // Because 1 represent bit index 0.
+                    services_indexes[bit_index / 8] |= 1 << (bit_index % 8);
+                }
+                break;
+            case CLEAR:
+            default:
+                LUOS_ASSERT(0);
+                break;
+        }
+    }
+
+    // We reached the end of the routing table!
+    // Check if the node index is the root of the routing table. If it is we just have to send the indexes and we are done.
+    if (node_index == 0)
+    {
+        if (node_phy != -1)
+        {
+            // We have to send the indexes we completed.
+            RoutingTB_SendServiceIndexes(service, routing_table[node_index].node_id, node_phy, services_indexes);
+        }
+        return;
+    }
+    // Compare the current node_phy to the current node index connection informations.
+    if (node_phy != routing_table[node_index].connection.child.phy_id)
+    {
+        if (node_phy != -1)
+        {
+            // We were indexing another phy, we can consider it as done and send it. Then we have to start a new one for routing_table[node_index].connection.child.phy_id.
+            RoutingTB_SendServiceIndexes(service, routing_table[node_index].node_id, node_phy, services_indexes);
+        }
+        // We have to reset the indexes table and set the node_phy to the index of the concerned phy.
+        memset(services_indexes, 0, sizeof(services_indexes));
+        node_phy = routing_table[node_index].connection.child.phy_id;
+    }
+
+    // Now we can put all the parent slots in the current indexes table.
+    for (node_idx = 0; node_idx < node_index; node_idx++)
+    {
+        if (routing_table[node_idx].mode == SERVICE)
+        {
+            // Add the service index to the services_indexes table.
+            uint8_t bit_index = routing_table[node_idx].id - 1; // Because 1 represent bit index 0.
+            services_indexes[bit_index / 8] |= 1 << (bit_index % 8);
+        }
+    }
+
+    if (node_phy != -1)
+    {
+        // Send the last phy indexes.
+        RoutingTB_SendServiceIndexes(service, routing_table[node_index].node_id, node_phy, services_indexes);
     }
 }
 
@@ -427,8 +700,16 @@ bool RoutingTB_DetectServices(service_t *service)
                 detect_state_machine = 0;
                 return true;
             }
+            detect_state_machine++;
+        case 3:
             // We have a complete routing table now share it with others.
-            RoutingTB_Share(service, nb_node);
+            if (RoutingTB_Share(service, nb_node))
+            {
+                detect_state_machine++;
+            }
+            return false;
+            break;
+        case 4:
             // Send a message to indicate the end of the detection
             RoutingTB_SendEndDetection(service);
             // Clear statistic of node who start the detction

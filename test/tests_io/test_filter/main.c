@@ -7,10 +7,10 @@ void unittest_Filter_ServiceId()
     uint16_t service_number = 10;
     NEW_TEST_CASE("Basic Service ID mask test");
     {
-        Filter_IdInit();
+        Phy_FiltersInit();
         TRY
         {
-            Filter_AddServiceId(7, service_number);
+             Phy_AddLocalServices(7, service_number);
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(7));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(7 + service_number - 1));
         }
@@ -21,7 +21,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(8, service_number);
+             Phy_AddLocalServices(8, service_number);
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(7));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(8));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(8 + service_number - 1));
@@ -33,7 +33,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(9, service_number);
+             Phy_AddLocalServices(9, service_number);
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(8));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(9));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(9 + service_number - 1));
@@ -45,7 +45,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(9, 0);
+             Phy_AddLocalServices(9, 0);
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(8));
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(9));
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(9 + service_number - 1));
@@ -59,11 +59,11 @@ void unittest_Filter_ServiceId()
     service_number = MAX_LOCAL_SERVICE_NUMBER;
     NEW_TEST_CASE("Service ID mask test with max services");
     {
-        Filter_IdInit();
+        Phy_FiltersInit();
 
         TRY
         {
-            Filter_AddServiceId(7, service_number);
+             Phy_AddLocalServices(7, service_number);
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(7));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(7 + service_number - 1));
         }
@@ -74,7 +74,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(8, service_number);
+             Phy_AddLocalServices(8, service_number);
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(7));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(8));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(8 + service_number - 1));
@@ -86,7 +86,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(9, service_number);
+             Phy_AddLocalServices(9, service_number);
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(8));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(9));
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(9 + service_number - 1));
@@ -98,7 +98,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(9, 0);
+             Phy_AddLocalServices(9, 0);
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(8));
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(9));
             TEST_ASSERT_EQUAL(false, Filter_ServiceID(9 + service_number - 1));
@@ -111,10 +111,10 @@ void unittest_Filter_ServiceId()
 
     NEW_TEST_CASE("Overlap the MAX_LOCAL_SERVICE_NUMBER");
     {
-        Filter_IdInit();
+        Phy_FiltersInit();
         TRY
         {
-            Filter_AddServiceId(1, MAX_LOCAL_SERVICE_NUMBER + 1);
+             Phy_AddLocalServices(1, MAX_LOCAL_SERVICE_NUMBER + 1);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -122,10 +122,10 @@ void unittest_Filter_ServiceId()
 
     NEW_TEST_CASE("Test the id 4096 Limit");
     {
-        Filter_IdInit();
+        Phy_FiltersInit();
         TRY
         {
-            Filter_AddServiceId(4096 - MAX_LOCAL_SERVICE_NUMBER, service_number);
+             Phy_AddLocalServices(4096 - MAX_LOCAL_SERVICE_NUMBER, service_number);
             TEST_ASSERT_EQUAL(true, Filter_ServiceID(4096 - MAX_LOCAL_SERVICE_NUMBER));
         }
         CATCH
@@ -135,7 +135,7 @@ void unittest_Filter_ServiceId()
 
         TRY
         {
-            Filter_AddServiceId(4096 - MAX_LOCAL_SERVICE_NUMBER + 1, service_number);
+             Phy_AddLocalServices(4096 - MAX_LOCAL_SERVICE_NUMBER + 1, service_number);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
 
@@ -149,10 +149,10 @@ void unittest_Filter_ServiceId()
 
     NEW_TEST_CASE("Test the id 0 Limit");
     {
-        Filter_IdInit();
+        Phy_FiltersInit();
         TRY
         {
-            Filter_AddServiceId(0, service_number);
+             Phy_AddLocalServices(0, service_number);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -366,7 +366,7 @@ void unittest_Filter_Type()
     {
         TRY
         {
-            Filter_Type(4096 + 1);
+            Phy_FilterType(4096 + 1);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -377,10 +377,10 @@ void unittest_Filter_Type()
         TRY
         {
             service_ctx.number = 0;
-            TEST_ASSERT_EQUAL(false, Filter_Type(0));
-            TEST_ASSERT_EQUAL(false, Filter_Type(1));
-            TEST_ASSERT_EQUAL(false, Filter_Type(2));
-            TEST_ASSERT_EQUAL(false, Filter_Type(12));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(0));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(1));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(2));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(12));
         }
         CATCH
         {
@@ -394,10 +394,10 @@ void unittest_Filter_Type()
         {
             service_ctx.number       = 1;
             service_ctx.list[0].type = 0;
-            TEST_ASSERT_EQUAL(true, Filter_Type(0));
-            TEST_ASSERT_EQUAL(false, Filter_Type(1));
-            TEST_ASSERT_EQUAL(false, Filter_Type(2));
-            TEST_ASSERT_EQUAL(false, Filter_Type(12));
+            TEST_ASSERT_EQUAL(true, Phy_FilterType(0));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(1));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(2));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(12));
         }
         CATCH
         {
@@ -408,10 +408,10 @@ void unittest_Filter_Type()
         {
             service_ctx.number       = 1;
             service_ctx.list[0].type = 1;
-            TEST_ASSERT_EQUAL(false, Filter_Type(0));
-            TEST_ASSERT_EQUAL(true, Filter_Type(1));
-            TEST_ASSERT_EQUAL(false, Filter_Type(2));
-            TEST_ASSERT_EQUAL(false, Filter_Type(12));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(0));
+            TEST_ASSERT_EQUAL(true, Phy_FilterType(1));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(2));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(12));
         }
         CATCH
         {
@@ -422,10 +422,10 @@ void unittest_Filter_Type()
         {
             service_ctx.number       = 1;
             service_ctx.list[0].type = 12;
-            TEST_ASSERT_EQUAL(false, Filter_Type(0));
-            TEST_ASSERT_EQUAL(false, Filter_Type(1));
-            TEST_ASSERT_EQUAL(false, Filter_Type(2));
-            TEST_ASSERT_EQUAL(true, Filter_Type(12));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(0));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(1));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(2));
+            TEST_ASSERT_EQUAL(true, Phy_FilterType(12));
         }
         CATCH
         {
@@ -437,10 +437,10 @@ void unittest_Filter_Type()
             service_ctx.number       = 2;
             service_ctx.list[0].type = 1;
             service_ctx.list[1].type = 12;
-            TEST_ASSERT_EQUAL(false, Filter_Type(0));
-            TEST_ASSERT_EQUAL(true, Filter_Type(1));
-            TEST_ASSERT_EQUAL(false, Filter_Type(2));
-            TEST_ASSERT_EQUAL(true, Filter_Type(12));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(0));
+            TEST_ASSERT_EQUAL(true, Phy_FilterType(1));
+            TEST_ASSERT_EQUAL(false, Phy_FilterType(2));
+            TEST_ASSERT_EQUAL(true, Phy_FilterType(12));
         }
         CATCH
         {
@@ -449,7 +449,7 @@ void unittest_Filter_Type()
     }
 }
 
-void unittest_Filter_GetPhyTarget()
+void unittest_Phy_ComputeTargets()
 {
     header_t header;
     NEW_TEST_CASE("Test a wrong header target_mode");
@@ -457,7 +457,7 @@ void unittest_Filter_GetPhyTarget()
         TRY
         {
             header.target_mode = 0x0f;
-            Filter_GetPhyTarget(&header);
+            Phy_ComputeTargets(&header);
         }
         TEST_ASSERT_TRUE(!IS_ASSERT());
         END_TRY;
@@ -467,11 +467,11 @@ void unittest_Filter_GetPhyTarget()
     {
         TRY
         {
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
             header.target_mode = SERVICEIDACK;
             header.target      = 1;
             // We should have Luos only
-            TEST_ASSERT_EQUAL(0x01, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x01, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -480,11 +480,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
             header.target_mode = SERVICEIDACK;
             header.target      = 2;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -493,11 +493,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
             header.target_mode = SERVICEID;
             header.target      = 1;
             // We should have Luos only
-            TEST_ASSERT_EQUAL(0x01, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x01, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -506,11 +506,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
             header.target_mode = SERVICEID;
             header.target      = 2;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -519,11 +519,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 2);
+             Phy_AddLocalServices(1, 2);
             header.target_mode = SERVICEIDACK;
             header.target      = 2;
             // We should have Luos only
-            TEST_ASSERT_EQUAL(0x01, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x01, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -532,11 +532,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 2);
+             Phy_AddLocalServices(1, 2);
             header.target_mode = SERVICEIDACK;
             header.target      = 3;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -545,11 +545,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 2);
+             Phy_AddLocalServices(1, 2);
             header.target_mode = SERVICEID;
             header.target      = 2;
             // We should have Luos only
-            TEST_ASSERT_EQUAL(0x01, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x01, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -558,11 +558,11 @@ void unittest_Filter_GetPhyTarget()
 
         TRY
         {
-            Filter_AddServiceId(1, 2);
+             Phy_AddLocalServices(1, 2);
             header.target_mode = SERVICEID;
             header.target      = 3;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -579,7 +579,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode       = TYPE;
             header.target            = 0;
             // We should have Luos and Robus
-            TEST_ASSERT_EQUAL(0x03, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x03, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -593,7 +593,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode       = TYPE;
             header.target            = 1;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -608,7 +608,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode = BROADCAST;
             header.target      = BROADCAST_VAL;
             // We should have Luos and Robus
-            TEST_ASSERT_EQUAL(0x03, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x03, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -620,7 +620,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode = BROADCAST;
             header.target      = 1;
             // We should have Luos and Robus
-            TEST_ASSERT_EQUAL(0x03, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x03, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -636,7 +636,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode  = NODEIDACK;
             header.target       = 1;
             // We should have Luos only
-            TEST_ASSERT_EQUAL(0x01, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x01, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -649,7 +649,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode  = NODEIDACK;
             header.target       = 2;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -662,7 +662,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode  = NODEID;
             header.target       = 1;
             // We should have Luos only
-            TEST_ASSERT_EQUAL(0x01, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x01, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -675,7 +675,7 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode  = NODEID;
             header.target       = 2;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -692,10 +692,10 @@ void unittest_Filter_GetPhyTarget()
             header.target_mode = TOPIC;
             header.target      = 3;
             // We should have Luos and Robus
-            TEST_ASSERT_EQUAL(0x03, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x03, Phy_ComputeTargets(&header));
             header.target = 2;
             // We should have Robus only
-            TEST_ASSERT_EQUAL(0x02, Filter_GetPhyTarget(&header));
+            TEST_ASSERT_EQUAL(0x02, Phy_ComputeTargets(&header));
         }
         CATCH
         {
@@ -711,7 +711,7 @@ int main(int argc, char **argv)
     RUN_TEST(unittest_Filter_ServiceId);
     RUN_TEST(unittest_Filter_Topic);
     RUN_TEST(unittest_Filter_Type);
-    RUN_TEST(unittest_Filter_GetPhyTarget);
+    RUN_TEST(unittest_Phy_ComputeTargets);
 
     UNITY_END();
 }

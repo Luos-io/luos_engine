@@ -6,7 +6,7 @@
  ******************************************************************************/
 #include <string.h>
 #include "service.h"
-#include "filter.h"
+#include "_luos_phy.h"
 #include "node.h"
 #include "luos_utils.h"
 #include "luos_hal.h"
@@ -82,7 +82,7 @@ void Service_ResetStatistics(void)
 void Service_GenerateId(uint16_t base_id)
 {
     LUOS_ASSERT(base_id > 0);
-    Filter_AddServiceId(base_id, service_ctx.number);
+    Phy_AddLocalServices(base_id, service_ctx.number);
     if (base_id == 1)
     {
         // If base_id is 1, it means that the node is a detector.

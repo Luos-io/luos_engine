@@ -699,7 +699,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = BASE_PROTOCOL;
@@ -740,7 +740,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -781,7 +781,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = BASE_PROTOCOL;
@@ -822,7 +822,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -863,7 +863,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -903,7 +903,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-            Filter_AddServiceId(1, 1);
+             Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;

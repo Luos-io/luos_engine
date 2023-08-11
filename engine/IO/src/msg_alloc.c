@@ -281,6 +281,12 @@ _CRITICAL uint8_t *MsgAlloc_Alloc(uint16_t data_size, uint8_t phy_filter)
     return returned_ptr;
 }
 
+/******************************************************************************
+ * @brief Reference a message
+ * @param uint8_t *rx_data
+ * @param phy_target_t phy_filter
+ * _CRITICAL function call in IRQ
+ ******************************************************************************/
 _CRITICAL void MsgAlloc_Reference(uint8_t *rx_data, uint8_t phy_filter)
 {
     LUOS_ASSERT((rx_data < &msg_buffer[MSG_BUFFER_SIZE]) && (rx_data >= &msg_buffer[0]) && (phy_filter != 0));

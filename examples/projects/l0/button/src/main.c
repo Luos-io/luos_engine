@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
 #include "serial_network.h"
+#include "robus_network.h"
 #include "button.h"
 /* USER CODE END Includes */
 
@@ -92,6 +93,7 @@ int main(void)
     /* USER CODE BEGIN 2 */
     Luos_Init();
     Serial_Init();
+    Robus_Init();
     Button_Init();
     /* USER CODE END 2 */
 
@@ -101,6 +103,7 @@ int main(void)
     {
         Luos_Loop();
         Serial_Loop();
+        Robus_Loop();
         Button_Loop();
         /* USER CODE END WHILE */
 

@@ -63,8 +63,11 @@ typedef struct luos_phy_t
         volatile uint8_t rx_ack : 1;       // True if we need to generate an acknoledgement for this message.
     };
 
-    // RX Private data
-    phy_target_t rx_phy_filter; // The phy concerned by this message.
+    // *** RX Private data ***
+    // Filters
+    phy_target_t rx_phy_filter;                   // The phy concerned by this message. Each bit represent a phy.
+    uint8_t services[MAX_SERVICE_NUMBER / 8 + 1]; // Store the indexation data of the phy. This is allowing to filter message based on service index.
+    uint8_t nodes[MAX_NODE_NUMBER / 8 + 1];       // Store the indexation data of the phy. This is allowing to filter message based on node index.
 
     // *************** TX informations ***************
     // Jobs are used to send messages. during the message send phy may save a job pointer so we cann't move any job in the job list.
@@ -74,10 +77,12 @@ typedef struct luos_phy_t
     uint16_t oldest_job_index;    // Index of the oldest job.
     uint16_t available_job_index; // Index of the next available job.
 
+    // *************** Phy filters ***************
+
+    // *************** Phy callbacks ***************
     void (*job_cb)(struct luos_phy_t *phy_ptr, phy_job_t *job);              // Callback
     error_return_t (*run_topo)(struct luos_phy_t *phy_ptr, uint8_t *portId); // try to find another node on branches, return success if a node is found and the id of the port were we detect this node.
     void (*reset_phy)(struct luos_phy_t *phy_ptr);                           // Reset the phy transmission reception and topology.
-
 } luos_phy_t;
 
 typedef struct __attribute__((__packed__))

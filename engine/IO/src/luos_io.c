@@ -69,7 +69,7 @@ void LuosIO_Reset(luos_phy_t *phy_ptr)
 void LuosIO_Init(void)
 {
     // Init filter
-    Filter_IdInit();
+    Phy_FiltersInit();
     Filter_TopicInit();
     Stats_Init();
     memory_stats_t *memory_stats = Stats_GetMemory();
@@ -233,7 +233,10 @@ int LuosIO_TopologyDetection(service_t *service, connection_t *connection_table)
             }
             // Setup local node
             Node_Get()->node_id = 1;
-            last_node           = 1;
+            // Add this node id in the Luos phy filter allowing us to receive node messages
+            memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
+            Phy_IndexSet(luos_phy->nodes, 1);
+            last_node = 1;
             // Setup sending service id
             service->id = 1;
             // Consider this node as ready
@@ -344,6 +347,7 @@ static int LuosIO_StartTopologyDetection(service_t *service)
 
             // Reinit our node id
             Node_Get()->node_id = 0;
+            memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
             Node_SetState(LOCAL_DETECTION);
             detect_state_machine = 0;
             return 1;
@@ -368,6 +372,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
     dead_target_t *dead_target = (dead_target_t *)input->data;
     uint16_t base_id           = 0;
     routing_table_t *route_tab = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
+    static luos_phy_t *phy_ptr = NULL;
 
     switch (input->header.cmd)
     {
@@ -383,7 +388,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 // Now send the new generated node_id
                 output_msg.header.cmd         = NODE_ID;
                 output_msg.header.size        = sizeof(uint16_t);
-                output_msg.header.target      = 0; // We target the node_id 0 becanse the node receiving this message don't have a node_id yet. This node need to be the only one to receive it.
+                output_msg.header.target      = 0; // We target the node_id 0 because the node receiving this message don't have a node_id yet. This node need to be the only one to receive it.
                 output_msg.header.target_mode = NODEIDACK;
                 memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
                 Luos_SendMsg(service, &output_msg);
@@ -422,6 +427,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 // We didn't received the start detection message
                 // Reinit our node id
                 Node_Get()->node_id = 0;
+                memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
                 // A phy have already been detected, so we can't reset everything
                 // Just reset LuosIO and Phy jobs.
                 LuosIO_Reset(luos_phy);
@@ -433,6 +439,9 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             uint16_t node_id;
             memcpy(&node_id, input->data, sizeof(uint16_t));
             Node_Get()->node_id = node_id;
+            // Add this node id in the Luos phy filter allowing us to receive node messages
+            memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
+            Phy_IndexSet(luos_phy->nodes, node_id);
             // Now we need to send back the input part of the connection data.
             port_t *input_port  = Phy_GetTopologysource();
             input_port->node_id = Node_Get()->node_id;
@@ -464,7 +473,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 case 0:
                     // send back a local routing table
                     output_msg.header.cmd         = RTB;
-                    output_msg.header.target_mode = SERVICEIDACK;
+                    output_msg.header.target_mode = NODEIDACK;
                     output_msg.header.target      = input->header.source;
                     LuosIO_TransmitLocalRoutingTable(0, &output_msg);
                     break;
@@ -488,9 +497,46 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             return SUCCEED;
             break;
 
+        case PHY_ID:
+            // We receive a phy id. We have to save it, because we will need it to save the indexes in the good phy.
+            base_id = 0;
+            memcpy(&base_id, input->data, sizeof(uint8_t));
+            phy_ptr = Phy_GetPhyFromId((uint8_t)base_id);
+            // This message have been consumed
+            return SUCCEED;
+            break;
+
+        case NODE_INDEXES:
+            // We are receiving a node index table
+            LUOS_ASSERT(phy_ptr != NULL);
+            base_id = Luos_ReceiveData(service, input, (void *)phy_ptr->nodes);
+            if (base_id > 0)
+            {
+                LUOS_ASSERT(base_id <= sizeof(phy_ptr->nodes)); // The MAX_NODE_NUMBER of the detecting node is bigger than the one we have
+                // We finished to receive the phy indexes
+                phy_ptr = NULL;
+            }
+            // This message have been consumed
+            return SUCCEED;
+            break;
+
+        case SERVICE_INDEXES:
+            // We are receiving a service index table
+            LUOS_ASSERT(phy_ptr != NULL);
+            base_id = Luos_ReceiveData(service, input, (void *)phy_ptr->services);
+            if (base_id > 0)
+            {
+                LUOS_ASSERT(base_id <= sizeof(phy_ptr->services)); // The MAX_SERVICE_NUMBER of the detecting node is bigger than the one we have
+                // We finished to receive the phy indexes
+                phy_ptr = NULL;
+            }
+            // This message have been consumed
+            return SUCCEED;
+            break;
+
         case START_DETECTION:
             // Reset All phy
-            Phy_ResetAll();
+            Phy_ResetAllNeeded();
             // This message have been consumed
             return SUCCEED;
             break;

@@ -47,17 +47,16 @@
 #include <string.h>
 #include "luos_phy.h"
 #include "_luos_phy.h"
-#include "filter.h"
 #include "msg_alloc.h"
 #include "luos_hal.h"
 #include "_timestamp.h"
 #include "luos_io.h"
-// #include "service.h"
+#include "service.h"
+#include "filter.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define PHY_NB 2
 
 typedef struct __attribute__((__packed__))
 {
@@ -75,10 +74,11 @@ typedef struct
     IRQ_STATE phy_irq_states[PHY_NB]; // Store the irq state functions of phys aving one.
 
     // ******************** Topology management ********************
-    port_t topology_source; // The source port. Where we receive the topological detection signal from.
-    uint32_t topology_done; // We put bits to 1 when a phy ended the topology detection.
-    bool topology_running;  // We put bits to 1 when a phy is running the topology detection.
-    bool find_next_node_job;
+    port_t topology_source;  // The source port. Where we receive the topological detection signal from.
+    uint32_t topology_done;  // We put this bits to 1 when a phy ended the topology detection.
+    bool topology_running;   // We put this bits to 1 when a phy is running the topology detection.
+    bool find_next_node_job; // We put this bits to 1 to indicate that we will need to find another node.
+    bool resetAllNeed;       // We put this bits to 1 to indicate that we will need to reset all the nodes. We need it to avoid to reset all phy at reset message reception, allowing the phy's to send their reset message.
 
     // ******************** Job management ********************
     // io_jobs are stores from the newest to the oldest.
@@ -95,6 +95,10 @@ static void Phy_ManageFailedJob(void);
 static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job);
 static int Phy_GetJobId(luos_phy_t *phy_ptr, phy_job_t *job);
 static int Phy_GetPhyId(luos_phy_t *phy_ptr);
+// Filtering functions
+static bool Phy_IndexFilter(uint8_t *index, uint16_t id);
+static bool Phy_Need(luos_phy_t *phy_ptr, header_t *header);
+static phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header);
 
 /*******************************************************************************
  * Variables
@@ -113,7 +117,8 @@ luos_phy_ctx_t phy_ctx;
 void Phy_Init(void)
 {
     Phy_Reset();
-    phy_ctx.phy_nb = 1;
+    phy_ctx.phy_nb = 1; // Only Luos_engine can have the first place in the phy table. To be sure to have it we consider that we have it already, when it will be initialized it will take the first place. If other phy start before they will get the second slots.
+    // Reset all IRQ pointers
     memset(phy_ctx.phy_irq_states, 0, sizeof(phy_ctx.phy_irq_states));
 }
 
@@ -129,17 +134,27 @@ void Phy_Reset(void)
     phy_ctx.io_job_nb = 0;
     memset((void *)phy_ctx.failed_job, 0, sizeof(phy_ctx.failed_job));
     phy_ctx.failed_job_nb = 0;
-    for (uint8_t i = 0; i < phy_ctx.phy_nb; i++)
+    phy_ctx.resetAllNeed  = false;
+    for (uint8_t i = 0; i < PHY_NB; i++)
     {
+        Luos_SetIrqState(false);
         memset((void *)&phy_ctx.phy[i].job, 0, sizeof(phy_ctx.phy[0].job));
-        phy_ctx.phy[i].job_nb              = 0;
+        phy_ctx.phy[i].job_nb = 0;
+        Luos_SetIrqState(true);
         phy_ctx.phy[i].oldest_job_index    = 0;
         phy_ctx.phy[i].available_job_index = 0;
+        memset((void *)&phy_ctx.phy[i].services, 0, sizeof(phy_ctx.phy[0].services));
+        memset((void *)&phy_ctx.phy[i].nodes, 0, sizeof(phy_ctx.phy[0].nodes));
     }
     memset((void *)&phy_ctx.topology_source, 0xFFFF, sizeof(phy_ctx.topology_source));
     phy_ctx.topology_done      = 0;
     phy_ctx.topology_running   = false;
     phy_ctx.find_next_node_job = false;
+}
+
+void Phy_ResetAllNeeded(void)
+{
+    phy_ctx.resetAllNeed = true;
 }
 
 /******************************************************************************
@@ -174,12 +189,25 @@ bool Phy_Busy(void)
  ******************************************************************************/
 void Phy_Loop(void)
 {
+    if (phy_ctx.resetAllNeed == true)
+    {
+        if (Phy_TxAllComplete() == SUCCEED)
+        {
+            Phy_ResetAll();
+            phy_ctx.resetAllNeed = false;
+        }
+        else
+        {
+            // We don't do anything else, avoiding any other transmission or reception.
+            return;
+        }
+    }
     // Manage received data allocation
-    // This is only needed for external phy for now.
     if (phy_ctx.phy[1].rx_alloc_job)
     {
         Phy_alloc(&phy_ctx.phy[1]);
     }
+    // Manage failed job
     Phy_ManageFailedJob();
     // Manage complete message received dispatching
     Phy_Dispatch();
@@ -210,6 +238,7 @@ void Phy_Loop(void)
  ******************************************************************************/
 luos_phy_t *Phy_Create(JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
 {
+    LUOS_ASSERT(phy_ctx.phy_nb < PHY_NB);
     return Phy_Get(phy_ctx.phy_nb++, job_cb, run_topo, reset_phy);
 }
 
@@ -265,6 +294,7 @@ _CRITICAL void Phy_TopologyNext(void)
 {
     phy_ctx.find_next_node_job = true;
 }
+
 /******************************************************************************
  * @brief Try to find the next node connected a phy port
  * @return SUCCESS if a node is found, FAILED if not
@@ -355,8 +385,18 @@ void Phy_TopologySource(luos_phy_t *phy_ptr, uint8_t port_id)
     // We don't have the node id yet, we will fill it out when we will receive it from the master.
     // Put a flag to indicate that we are waiting for a node id.
     Node_WillGetId();
+
+    // We also know that this phy is liked to the detecting node.
+    // To enable any communication with it we have to set the nodes and services filter of this phy allowing us to communicate with it.
+    Phy_IndexSet(phy_ptr->nodes, 0x01);
+    Phy_IndexSet(phy_ptr->services, 0x01);
 }
 
+/******************************************************************************
+ * @brief A phy port detection is finished
+ * @param phy_ptr pointer on the phy that have finished its detection
+ * @return None
+ ******************************************************************************/
 void Phy_TopologyDone(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT(phy_ptr != NULL);
@@ -365,7 +405,7 @@ void Phy_TopologyDone(luos_phy_t *phy_ptr)
 }
 
 /******************************************************************************
- * @brief A phy port have been detected
+ * @brief return the source port that raise the topology detection
  * @return pointer on the input port
  ******************************************************************************/
 port_t *Phy_GetTopologysource(void)
@@ -390,8 +430,20 @@ luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY rese
     phy_ctx.phy[id].job_cb    = job_cb;
     phy_ctx.phy[id].run_topo  = run_topo;
     phy_ctx.phy[id].reset_phy = reset_phy;
+    phy_ctx.phy[id].job_nb    = 0;
     // Return the phy pointer
     return &phy_ctx.phy[id];
+}
+
+/******************************************************************************
+ * @brief return a local physical layer pointer (only used by LuosIO, this function is private)
+ * @param id of the phy we want
+ * @return luos_phy_t pointer on the phy
+ ******************************************************************************/
+luos_phy_t *Phy_GetPhyFromId(uint8_t phy_id)
+{
+    LUOS_ASSERT(phy_id <= PHY_NB);
+    return &phy_ctx.phy[phy_id];
 }
 
 /******************************************************************************
@@ -417,17 +469,8 @@ _CRITICAL void Phy_ComputeHeader(luos_phy_t *phy_ptr)
     {
         phy_ptr->rx_size += sizeof(time_luos_t);
     }
-
-    // Compute the phy concerned by this message
-    phy_ptr->rx_phy_filter = Filter_GetPhyTarget((header_t *)phy_ptr->rx_buffer_base);
-    // Remove the phy asking to compute the header to avoid to retransmit it, except for Luos because Luos can do localhost.
-    uint32_t index = Phy_GetPhyId(phy_ptr);
-    if (index != 0)
-    {
-        // remove the phy asking to compute the header, except if it is Luos because Luos can do localhost.
-        phy_ptr->rx_phy_filter &= ~(0x01 << index);
-    }
-    if (phy_ptr->rx_phy_filter != 0)
+    // Compute if we need to keep this message
+    if (Phy_Need(phy_ptr, (header_t *)phy_ptr->rx_buffer_base))
     {
         // Someone need to receive this message
         phy_ptr->rx_keep      = true;
@@ -442,6 +485,157 @@ _CRITICAL void Phy_ComputeHeader(luos_phy_t *phy_ptr)
         phy_ptr->rx_ack       = false;
         return;
     }
+}
+
+/******************************************************************************
+ * @brief Compute if some of our phy is concerned by this message
+ * @param phy_ptr Pointer to the phy receiving this message
+ * @param header Pointer to the header of the message
+ * @return true if we need to keep this message, false if not
+ ******************************************************************************/
+bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
+{
+    // This function just check if we need to keep this message or not
+    // To avoid to spend precious computing time, instead of checking all the phy we will only check if this concern only the receiving phy.
+    // We need to keep this message only if the message target is not only for the phy_ptr, except if it is Luos because Luos can do localhost.
+
+    // If this phy is Luos phy, we need to keep all the messages
+    if (Phy_GetPhyId(phy_ptr) == 0)
+    {
+        return true;
+    }
+    // Message is not comming from Luos phy, we need to check if the receiving phy is the only one concerned by this message.
+    switch (header->target_mode)
+    {
+        case BROADCAST:
+        case TOPIC:
+        case TYPE:
+            // This concerns Luos phy and all external phy
+            return true;
+            break;
+        case SERVICEIDACK:
+        case SERVICEID:
+            // If the target is not the phy_ptr, we need to keep this message
+            return !Phy_IndexFilter(phy_ptr->services, header->target);
+            break;
+        case NODEIDACK:
+        case NODEID:
+            // If the target is not the phy_ptr, we need to keep this message
+            return !Phy_IndexFilter(phy_ptr->nodes, header->target);
+            break;
+        default:
+            // This message is wrong, trash it.
+            return false;
+            break;
+    }
+}
+
+/******************************************************************************
+ * @brief Parse msg to find the targetted phy
+ * @param header of message
+ * @return None
+ ******************************************************************************/
+inline phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header)
+{
+    // Find if we are concerned by this message.
+    // check if we need to filter all the messages
+    volatile phy_target_t target = 0x00;
+
+    switch (header->target_mode)
+    {
+        case SERVICEIDACK:
+        case SERVICEID:
+            // Check all phy service id
+            for (int i = 0; i < phy_ctx.phy_nb; i++)
+            {
+                if (Phy_IndexFilter(phy_ctx.phy[i].services, header->target))
+                {
+                    target |= (0x01 << i);
+                    break;
+                }
+            }
+            break;
+        case NODEIDACK:
+        case NODEID:
+            // If the target is our node and our node have a node_id or if we don't have a node_id and we are waiting for one.
+            if (((header->target == Node_Get()->node_id) && (header->target != 0))
+                || ((header->target == 0) && (Node_WaitId() == true)))
+            {
+                // This concerns Luos phy only
+                if ((phy_ctx.topology_running == true) && (header->source != 1))
+                {
+                    // We are performing a topology and this message is for us.
+                    // We need to store the node that send us this in our index allowing us to communicate with it later.
+                    Phy_IndexSet(phy_ptr->nodes, header->source);
+                }
+                target = 0x01;
+            }
+            else
+            {
+                if (header->target == 0)
+                {
+                    // This concerns all phy except Luos
+                    for (int i = 1; i < phy_ctx.phy_nb; i++)
+                    {
+                        target |= (0x01 << i);
+                    }
+                    break;
+                }
+                else
+                {
+                    // Find the concerned phy
+                    for (int i = 1; i < phy_ctx.phy_nb; i++)
+                    {
+                        if (Phy_IndexFilter(phy_ctx.phy[i].nodes, header->target))
+                        {
+                            target |= (0x01 << i);
+                            break;
+                        }
+                    }
+                }
+            }
+            break;
+        case TYPE:
+            // Check if Luos_engine is concerned by this type
+            target = Phy_FilterType(header->target);
+            // We also add all the external phy
+            for (int i = 1; i < phy_ctx.phy_nb; i++)
+            {
+                target |= (0x01 << i);
+            }
+            break;
+        case BROADCAST:
+            // This concerns Luos phy and all external phy
+            for (int i = 0; i < phy_ctx.phy_nb; i++)
+            {
+                target |= (0x01 << i);
+            }
+            break;
+        case TOPIC:
+            if (Filter_Topic(header->target))
+            {
+                // This concerns Luos
+                target = 0x01;
+            }
+            // We also have to add all the external phy
+            for (int i = 1; i < phy_ctx.phy_nb; i++)
+            {
+                target |= (0x01 << i);
+            }
+            break;
+        default:
+            // We can be here in case of corrupted message.
+            // In this case nobody is concerned by this message.
+            return 0x00;
+            break;
+    }
+    // Remove the phy asking to compute the header to avoid to retransmit it in the line, except for Luos because Luos can do localhost.
+    uint32_t index = Phy_GetPhyId(phy_ptr);
+    if (index != 0)
+    {
+        target &= ~(0x01 << index);
+    }
+    return target;
 }
 
 /******************************************************************************
@@ -553,6 +747,15 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
     // Now we can check if we need to store the received data
     if (phy_ptr->rx_keep)
     {
+        // Compute the rx_phy_filter
+        phy_ptr->rx_phy_filter = Phy_ComputeTargets(phy_ptr, (header_t *)phy_ptr->rx_buffer_base);
+        if (phy_ptr->rx_phy_filter == 0)
+        {
+            // We probably have been reseted in the meantime. Just drop the message.
+            phy_ptr->rx_alloc_job = false;
+            return;
+        }
+
         // We need to store the received data.
         // Update the informations allowing reception to continue and directly copy the data into the allocated buffer
         Phy_SetIrqState(false);
@@ -896,4 +1099,91 @@ error_return_t Phy_TxAllComplete(void)
         }
     }
     return SUCCEED;
+}
+
+/*******************************************************************************
+ * Filtering functions
+ ******************************************************************************/
+
+/******************************************************************************
+ * @brief Reset Masks
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Phy_FiltersInit(void)
+{
+    for (int i = 0; i < PHY_NB; i++)
+    {
+        // Service ID init
+        memset(phy_ctx.phy[i].services, 0, sizeof(phy_ctx.phy[i].services));
+        // Node ID init
+        memset(phy_ctx.phy[i].nodes, 0, sizeof(phy_ctx.phy[i].nodes));
+    }
+}
+
+/******************************************************************************
+ * @brief luos phy service ID index calculation
+ * @param service_id ID of the first service
+ * @param service_number Number of the services on the node
+ * @return None
+ ******************************************************************************/
+void Phy_AddLocalServices(uint16_t service_id, uint16_t service_number)
+{
+    LUOS_ASSERT((service_id > 0)
+                && (service_id <= 4096 - MAX_LOCAL_SERVICE_NUMBER)
+                && (service_number <= MAX_LOCAL_SERVICE_NUMBER));
+
+    // Reset Luos services filter
+    memset(phy_ctx.phy[0].services, 0, sizeof(phy_ctx.phy[0].services));
+    // Create the bit field corresponding to ID number in the phy.services
+    for (uint16_t i = 0; i < service_number; i++)
+    {
+        Phy_IndexSet(phy_ctx.phy[0].services, service_id + i);
+    }
+}
+
+/******************************************************************************
+ * @brief check if the given id value concern this phy index
+ * @param index Pointer to the index of the node
+ * @param id id of the service concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
+{
+    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF));
+    uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
+    return (index[bit_index / 8] & (1 << (bit_index % 8)));
+}
+
+/******************************************************************************
+ * @brief Set a given id value in the index
+ * @param index Pointer to the index of the node
+ * @param id id of the service concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_IndexSet(uint8_t *index, uint16_t id)
+{
+    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF));
+    uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
+    index[bit_index / 8] |= 1 << (bit_index % 8);
+}
+
+/******************************************************************************
+ * @brief Parse all services type to find if target exists
+ * @param type_id of message
+ * @return bool true if there is one false if not
+ * We can't do this the same way others are done because identifiers don't have any continuity
+ ******************************************************************************/
+inline bool Phy_FilterType(uint16_t type_id)
+{
+    LUOS_ASSERT(type_id <= 4096);
+    // Check all service type
+    for (int i = 0; i < Service_GetNumber(); i++)
+    {
+        if (type_id == Service_GetTable()[i].type)
+        {
+            return true;
+        }
+    }
+    return false;
 }

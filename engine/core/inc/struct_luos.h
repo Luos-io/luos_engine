@@ -36,6 +36,9 @@ typedef enum
     END_DETECTION,   // Detect the end of a detection
     LOCAL_RTB,       // Ask(size == 0), generate(size == 2) a local routing_table.
     RTB,             // Receive a routing_table.
+    PHY_ID,          // indicate a phy id. This is used to indicate for witch phy the indexes are.
+    NODE_INDEXES,    // Send the node indexes of a specific phy allowing us to compute the message switching (the route of the messages).
+    SERVICE_INDEXES, // Send the service indexes of a specific phy allowing us to compute the message switching (the route of the messages).
     WRITE_ALIAS,     // Get and save a new given alias.
     UPDATE_PUB,      // Ask to update a sensor value each time duration to the sender
     ASK_DETECTION,   // Ask Luos to launch a detection

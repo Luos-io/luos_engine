@@ -48,7 +48,7 @@
  ******************************************************************************/
 
 #define MAX_LOCAL_SERVICE_NUMBER 2
-#define MAX_MSG_NB               5
+#define MAX_MSG_NB               10
 
 #define ARDUINO_PTPA_PIN 19
 #define ARDUINO_PTPB_PIN 7
