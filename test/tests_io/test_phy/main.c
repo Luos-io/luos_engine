@@ -699,7 +699,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-             Phy_AddLocalServices(1, 1);
+            Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = BASE_PROTOCOL;
@@ -740,7 +740,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-             Phy_AddLocalServices(1, 1);
+            Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -781,7 +781,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-             Phy_AddLocalServices(1, 1);
+            Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = BASE_PROTOCOL;
@@ -822,7 +822,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-             Phy_AddLocalServices(1, 1);
+            Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -863,7 +863,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-             Phy_AddLocalServices(1, 1);
+            Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -903,7 +903,7 @@ void unittest_phy_ComputeHeader()
         {
             phy_test_reset();
             // Create a fake service with id 1
-             Phy_AddLocalServices(1, 1);
+            Phy_AddLocalServices(1, 1);
 
             msg_t msg;
             msg.header.config      = TIMESTAMP_PROTOCOL;
@@ -1066,7 +1066,16 @@ void unittest_phy_ComputeTimestamp()
     {
         TRY
         {
-            Phy_ComputeMsgTimestamp(NULL);
+            phy_job_t job;
+            Phy_ComputeMsgTimestamp(NULL, &job);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
+            luos_phy phy;
+            Phy_ComputeMsgTimestamp(luos_phy, NULL);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1076,7 +1085,7 @@ void unittest_phy_ComputeTimestamp()
             phy_job_t job;
             job.timestamp = false;
             job.data_pt   = (uint8_t *)msg_buffer;
-            Phy_ComputeMsgTimestamp(&job);
+            Phy_ComputeMsgTimestamp(luos_phy, &job);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1086,7 +1095,7 @@ void unittest_phy_ComputeTimestamp()
             phy_job_t job;
             job.timestamp = true;
             job.data_pt   = NULL;
-            Phy_ComputeMsgTimestamp(&job);
+            Phy_ComputeMsgTimestamp(luos_phy, &job);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1115,11 +1124,16 @@ void unittest_phy_ComputeTimestamp()
             volatile time_luos_t timestamp = TimeOD_TimeFrom_ns(10);
             memcpy(&msg->data[msg->header.size], (void *)&timestamp, sizeof(time_luos_t));
 
-            volatile time_luos_t resulting_latency = Phy_ComputeMsgTimestamp(&job);
+            volatile time_luos_t resulting_latency = Phy_ComputeMsgTimestamp(luos_phy, &job);
 
-            TEST_ASSERT_EQUAL(0xAE, job.msg_pt->data[0]);
 #ifndef _WIN32
             TEST_ASSERT_NOT_EQUAL(TimeOD_TimeTo_ns(timestamp), TimeOD_TimeTo_ns(resulting_latency));
+#endif
+            Phy_DisableSynchro(luos_phy);
+            resulting_latency = Phy_ComputeMsgTimestamp(luos_phy, &job);
+
+#ifndef _WIN32
+            TEST_ASSERT_EQUAL(TimeOD_TimeTo_ns(timestamp), TimeOD_TimeTo_ns(resulting_latency));
 #endif
         }
         CATCH

@@ -187,7 +187,7 @@ _CRITICAL void Transmit_Process()
             {
 
                 // Convert date to a sendable timestamp and put it on the encapsulation
-                jobEncaps->timestamp = Phy_ComputeMsgTimestamp(job);
+                jobEncaps->timestamp = Phy_ComputeMsgTimestamp(robus_phy, job);
 
                 jobEncaps->timestamped_crc = ll_crc_compute(jobEncaps->unmaped, sizeof(time_luos_t), crc_val);
                 jobEncaps->size            = sizeof(time_luos_t) + CRC_SIZE;

@@ -32,6 +32,7 @@ extern "C"
 
     // Phy creation
     luos_phy_t *Phy_Create(JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy); // Use it to reference your phy to Luos.
+    void Phy_DisableSynchro(luos_phy_t *phy_ptr);                                  // Use it to disable the luos synchronisation mechanism with this phy.
 
     // Topology management
     void Phy_TopologyNext(void);                                   // Use it to find the next node that need to be detected accross phys.
@@ -44,9 +45,9 @@ extern "C"
     void Phy_ResetMsg(luos_phy_t *phy_ptr);      // Call this function to reset the rx process.
 
     // Tx management
-    time_luos_t Phy_ComputeMsgTimestamp(phy_job_t *job); // Use it to compute the timestamp of the message to send.
-    uint64_t Phy_GetTimestamp(void);                     // Use it to get the current timestamp in ns.
-    uint16_t Phy_GetNodeId(void);                        // Use it to get your current node id. (This can be used to compute priority or controled latency avoiding infinite collision condition)
+    time_luos_t Phy_ComputeMsgTimestamp(luos_phy_t *phy_ptr, phy_job_t *job); // Use it to compute the timestamp of the message to send.
+    uint64_t Phy_GetTimestamp(void);                                          // Use it to get the current timestamp in ns.
+    uint16_t Phy_GetNodeId(void);                                             // Use it to get your current node id. (This can be used to compute priority or controled latency avoiding infinite collision condition)
 
     // Job management
     void Phy_FailedJob(luos_phy_t *phy_ptr, phy_job_t *job); // If some messages failed to be sent, call this function to consider the target as dead

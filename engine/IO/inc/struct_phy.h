@@ -61,6 +61,7 @@ typedef struct luos_phy_t
         volatile uint8_t rx_alloc_job : 1; // If true, Luosio_Loop funciton will need to filter already received data, if filter is ok, set rx_keep, alloc needed space, move *rx_data to point at the good place on allocator, put the number of bytes remaining on rx_size, and copy already received data in the allocated space.
         volatile uint8_t rx_keep : 1;      // True if we want to keep the received data.
         volatile uint8_t rx_ack : 1;       // True if we need to generate an acknoledgement for this message.
+        uint8_t enable_synchro : 1;        // True if we want Luos to manage time synchronisation for this phy.
     };
 
     // *** RX Private data ***

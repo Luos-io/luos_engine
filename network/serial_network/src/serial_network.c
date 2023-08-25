@@ -344,7 +344,7 @@ _CRITICAL void Serial_Send(void)
         if (job->timestamp)
         {
             // Convert date to a sendable timestamp and put it in the end of the message
-            time_luos_t timestamp = Phy_ComputeMsgTimestamp(job);
+            time_luos_t timestamp = Phy_ComputeMsgTimestamp(phy_serial, job);
             memcpy(&TX_data[sizeof(SerialHeader_t) + job->size - +sizeof(timestamp)], &timestamp, sizeof(time_luos_t));
             TX_data[sizeof(SerialHeader_t) + job->size] = SERIAL_FOOTER;
         }

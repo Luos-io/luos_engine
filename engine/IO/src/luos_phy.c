@@ -431,8 +431,20 @@ luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY rese
     phy_ctx.phy[id].run_topo  = run_topo;
     phy_ctx.phy[id].reset_phy = reset_phy;
     phy_ctx.phy[id].job_nb    = 0;
+    // By default enable synchronisation for all phys
+    phy_ctx.phy[id].enable_synchro = true;
     // Return the phy pointer
     return &phy_ctx.phy[id];
+}
+
+/******************************************************************************
+ * @brief Disable synchronisation for a specific phy. Use it if your network already manage synchronisation.
+ * @param phy_ptr pointer on the phy we want to disable synchronisation
+ * @return None
+ ******************************************************************************/
+void Phy_DisableSynchro(luos_phy_t *phy_ptr)
+{
+    phy_ptr->enable_synchro = false;
 }
 
 /******************************************************************************
@@ -694,9 +706,16 @@ _CRITICAL void Phy_ResetMsg(luos_phy_t *phy_ptr)
  * @param job Pointer to the job concerned by this message
  * @return None
  ******************************************************************************/
-time_luos_t Phy_ComputeMsgTimestamp(phy_job_t *job)
+time_luos_t Phy_ComputeMsgTimestamp(luos_phy_t *phy_ptr, phy_job_t *job)
 {
-    LUOS_ASSERT((job != NULL) && (job->msg_pt != NULL) && (job->timestamp == true));
+    LUOS_ASSERT((job != NULL) && (job->msg_pt != NULL) && (job->timestamp == true) && (phy_ptr != NULL));
+    if (phy_ptr->enable_synchro == false)
+    {
+        // We don't want to synchronize this phy, just return the timestamp
+        time_luos_t timestamp_date;
+        memcpy(&timestamp_date, &job->msg_pt->data[job->msg_pt->header.size], sizeof(time_luos_t));
+        return timestamp_date;
+    }
     return Timestamp_ConvertToLatency(job->msg_pt);
 }
 
