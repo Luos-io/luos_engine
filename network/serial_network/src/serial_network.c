@@ -276,6 +276,12 @@ void Serial_Loop(void)
             phy_serial->rx_buffer_base = rx_buffer_base_bkp;
             // The message have been consumed, we can move the rx buffer pointer
             Serial_MoveRxPtr(header.size + 1);
+            // If we still have data in the buffer after this message we need to move the phy_serial->rx_timestamp accordingly allowing the next message to be correctly timed.
+            if (rx_size > 0)
+            {
+                // Add to the original timestamp value the time needed to receive all the bytes of the current message.
+                phy_serial->rx_timestamp += (header.size + sizeof(SerialHeader_t) + 1) * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE;
+            }
         }
     }
 }
