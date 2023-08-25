@@ -5,6 +5,7 @@ import click
 from os.path import join, realpath
 Import('env')
 
+click.secho("")
 click.secho("Robus network build configuration:", underline=True)
 # Find the appropriate hal
 find_HAL = False
