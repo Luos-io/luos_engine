@@ -46,12 +46,6 @@
 #ifndef SERIAL_COM_CLOCK_DISABLE
     #define SERIAL_COM USART3
 #endif
-#ifndef SERIAL_COM_IRQ
-    #define SERIAL_COM_IRQ USART3_4_IRQn
-#endif
-#ifndef SERIAL_COM_IRQHANDLER
-    #define SERIAL_COM_IRQHANDLER() USART3_4_IRQHandler()
-#endif
 
 // RX DMA configuration
 #ifndef SERIAL_RX_DMA_CLOCK_ENABLE

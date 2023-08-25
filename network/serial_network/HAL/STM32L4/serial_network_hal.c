@@ -15,8 +15,6 @@
 #include "stm32l4xx_ll_system.h"
 #include "stm32l4xx_hal.h"
 
-
-
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -80,12 +78,6 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
         ;
     LL_USART_Enable(SERIAL_COM);
 
-    LL_USART_ClearFlag_IDLE(SERIAL_COM);
-    LL_USART_EnableIT_IDLE(SERIAL_COM);
-
-    HAL_NVIC_EnableIRQ(SERIAL_COM_IRQ);
-    HAL_NVIC_SetPriority(SERIAL_COM_IRQ, 1, 1);
-
     RX_PrevPointerPosition = 0;
 
     ///////////////////////////////
@@ -141,6 +133,27 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
  ******************************************************************************/
 void SerialHAL_Loop(void)
 {
+    uint16_t size               = 0;
+    uint16_t RX_PointerPosition = 0;
+    if (LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL) == 0)
+    {
+        return;
+    }
+
+    RX_PointerPosition = rx_buffer_size - LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL);
+
+    if (SERIAL_RX_DMA_TC(SERIAL_RX_DMA) != RESET) // DMA buffer overflow
+    {
+        SERIAL_RX_DMA_CLEAR_TC(SERIAL_RX_DMA);
+        size = (rx_buffer_size - RX_PrevPointerPosition) + RX_PointerPosition;
+    }
+    else
+    {
+        size = RX_PointerPosition - RX_PrevPointerPosition;
+    }
+    RX_PrevPointerPosition = RX_PointerPosition;
+    // Send the received data and size to the serial stack to deencapsulate it and send it to luos_phy
+    Serial_ReceptionIncrease(size);
 }
 
 /******************************************************************************
@@ -155,42 +168,6 @@ void SerialHAL_Send(uint8_t *data, uint16_t size)
     LL_DMA_SetMemoryAddress(SERIAL_TX_DMA, SERIAL_TX_DMA_CHANNEL, (uint32_t)data);
     LL_DMA_SetDataLength(SERIAL_TX_DMA, SERIAL_TX_DMA_CHANNEL, size);
     LL_DMA_EnableChannel(SERIAL_TX_DMA, SERIAL_TX_DMA_CHANNEL);
-}
-
-/******************************************************************************
- * @brief RX Serial IRQ handler
- * @param None
- * @return None
- ******************************************************************************/
-void SERIAL_COM_IRQHANDLER()
-{
-    uint16_t size               = 0;
-    uint16_t RX_PointerPosition = 0;
-
-    // check if we receive an IDLE on usart3
-    if (LL_USART_IsActiveFlag_IDLE(SERIAL_COM))
-    {
-        LL_USART_ClearFlag_IDLE(SERIAL_COM);
-        if (LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL) == 0)
-        {
-            return;
-        }
-
-        RX_PointerPosition = rx_buffer_size - LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL);
-
-        if (SERIAL_RX_DMA_TC(SERIAL_RX_DMA) != RESET) // DMA buffer overflow
-        {
-            SERIAL_RX_DMA_CLEAR_TC(SERIAL_RX_DMA);
-            size = (rx_buffer_size - RX_PrevPointerPosition) + RX_PointerPosition;
-        }
-        else
-        {
-            size = RX_PointerPosition - RX_PrevPointerPosition;
-        }
-        RX_PrevPointerPosition = RX_PointerPosition;
-        // Send the received data and size to the serial stack to deencapsulate it and send it to luos_phy
-        Serial_ReceptionEnd(size);
-    }
 }
 
 /******************************************************************************

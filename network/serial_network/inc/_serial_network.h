@@ -12,7 +12,7 @@
 #include "serial_config.h"
 
 void Serial_TransmissionEnd(void);
-void Serial_ReceptionAdd(uint8_t *data, uint32_t size);
-void Serial_ReceptionEnd(uint32_t size);
+void Serial_ReceptionWrite(uint8_t *data, uint32_t size);
+void Serial_ReceptionIncrease(uint32_t size);
 
 #endif /* __SERIAL_H_ */

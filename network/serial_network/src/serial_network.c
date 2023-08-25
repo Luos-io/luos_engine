@@ -358,7 +358,7 @@ _CRITICAL void Serial_Send(void)
  * @param size size of the data
  * @return None
  *****************************************************************************/
-_CRITICAL void Serial_ReceptionAdd(uint8_t *data, uint32_t size)
+_CRITICAL void Serial_ReceptionWrite(uint8_t *data, uint32_t size)
 {
     if (rx_size == 0)
     {
@@ -390,7 +390,7 @@ _CRITICAL void Serial_ReceptionAdd(uint8_t *data, uint32_t size)
  * @param None
  * @return None
  ******************************************************************************/
-_CRITICAL void Serial_ReceptionEnd(uint32_t size)
+_CRITICAL void Serial_ReceptionIncrease(uint32_t size)
 {
     // Reception is finished, we can parse the message
     rx_size += size;

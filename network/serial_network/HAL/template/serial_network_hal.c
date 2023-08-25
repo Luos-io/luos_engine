@@ -35,8 +35,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     // TODO: Init the Serial TX DMA interface, use it in normal mode and make it raise an IRQ when finished.
 
     // TODO: Init RX pin with the given pin and port and set it as rx for the usart. Select the appropriate alternate function.
-    // TODO: Init the serial RX DMA interface to move RX bytes in the rx_buffer, use it in circular mode and make it loop on buffer_size. Do not make it raise an IRQ when finished.
-    // TODO: Enable the serial RX Idle IRQ to raise an interrupt when a the RX line is idle
+    // TODO: Init the serial RX DMA interface to move RX bytes in the rx_buffer, use it in circular mode and make it loop on buffer_size. Do not make it raise ayn IRQ.
 }
 
 /******************************************************************************
@@ -46,7 +45,9 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
  ******************************************************************************/
 void SerialHAL_Loop(void)
 {
-    // If you want to receive data here, you can.
+    // Here youhave to manage your received data, you choose between those function depending on your reception methods :
+    //  - Write the received data into the buffer using Serial_ReceptionWrite function. This is usefull if your hardware have a dedicated buffer
+    //  - Increse the reception pointer using Serial_ReceptionIncrease function. This is used if your hardware directly write into the rx_buffer
 }
 
 /******************************************************************************
@@ -58,23 +59,6 @@ void SerialHAL_Loop(void)
 void SerialHAL_Send(uint8_t *data, uint16_t size)
 {
     // TODO: Start the DMA transfert to transmit data from data[0] to data[size]
-}
-
-/******************************************************************************
- * @brief RX Serial IRQ handler
- * @param None
- * @return None
- ******************************************************************************/
-void SERIAL_COM_IRQHANDLER(void)
-{
-    // Check if this IRQ is due to RX Idle
-    if (/*TODO: Check if this IRQ means that RX is Idle*/)
-    {
-        // TODO: Clear the RX idle IRQ flag
-        uint32_t received_data = rx_buffer_size - /* TODO: Get the size of the data received by the DMA*/;
-        // Send the received data and size to the serial stack to deencapsulate it and send it to luos_phy
-        Serial_ReceptionEnd(received_data);
-    }
 }
 
 /******************************************************************************

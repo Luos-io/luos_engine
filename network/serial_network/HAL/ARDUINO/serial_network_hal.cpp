@@ -41,7 +41,7 @@ void SerialHAL_Loop(void)
     while (Serial.available() > 0)
     {
         data = Serial.read();
-        Serial_ReceptionAdd(&data, 1);
+        Serial_ReceptionWrite(&data, 1);
     }
 }
 

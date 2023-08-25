@@ -46,12 +46,6 @@
 #ifndef SERIAL_COM
     #define SERIAL_COM LPUART1
 #endif
-#ifndef SERIAL_COM_IRQ
-    #define SERIAL_COM_IRQ LPUART1_IRQn
-#endif
-#ifndef SERIAL_COM_IRQHANDLER
-    #define SERIAL_COM_IRQHANDLER() LPUART1_IRQHandler()
-#endif
 
 // RX DMA configuration
 #ifndef SERIAL_RX_DMA_CLOCK_ENABLE

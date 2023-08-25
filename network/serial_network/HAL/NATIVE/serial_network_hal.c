@@ -297,7 +297,7 @@ void SerialHAL_Loop(void)
 #endif
     if (bytesRead > 0)
     {
-        Serial_ReceptionAdd((uint8_t *)recvData, (uint32_t)bytesRead);
+        Serial_ReceptionWrite((uint8_t *)recvData, (uint32_t)bytesRead);
     }
 }
 
