@@ -11,6 +11,9 @@
 #include "luos_hal.h"
 #include "msg_alloc.h"
 #include "_luos_phy.h"
+#if (defined _WIN32) || (defined _WIN64) || (defined __linux__) || (defined __APPLE__) || (defined __unix__) || (defined __CYGWIN__) || (defined __MINGW32__) || (defined __MINGW64__)
+    #include <stdio.h>
+#endif
 
 /*******************************************************************************
  * Function
@@ -56,6 +59,10 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
 {
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.
+
+    #if (defined _WIN32) || (defined _WIN64) || (defined __linux__) || (defined __APPLE__) || (defined __unix__) || (defined __CYGWIN__) || (defined __MINGW32__) || (defined __MINGW64__)
+    printf("ASSERT: %s:%d\n", file, line);
+    #endif
     Luos_Init();
     // completely reinit the allocator
     MsgAlloc_Init(NULL);
