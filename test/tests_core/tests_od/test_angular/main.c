@@ -11,13 +11,13 @@ void unittest_Od_angularPosition(void)
 
         NEW_STEP("Angular position FROM deg test");
         angular_pos = AngularOD_PositionFrom_deg(90);
-        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref._private, (uint32_t)angular_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref.raw, (uint32_t)angular_pos.raw);
         NEW_STEP("Angular position FROM rev test");
         angular_pos = AngularOD_PositionFrom_rev(0.25);
-        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref._private, (uint32_t)angular_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref.raw, (uint32_t)angular_pos.raw);
         NEW_STEP("Angular position FROM rad test");
         angular_pos = AngularOD_PositionFrom_rad(1.5707963267948966);
-        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref._private, (uint32_t)angular_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref.raw, (uint32_t)angular_pos.raw);
     }
     NEW_TEST_CASE("Angular position TO test");
     {
@@ -45,12 +45,12 @@ void unittest_Od_angularPosition(void)
         msg_ref.header.size = sizeof(angular_position_t);
         memcpy(msg_ref.data, &angular_pos_ref, sizeof(angular_position_t));
         AngularOD_PositionFromMsg(&angular_pos, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref._private, (uint32_t)angular_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_pos_ref.raw, (uint32_t)angular_pos.raw);
         NEW_STEP("Angular position msg conversion TO test");
         AngularOD_PositionToMsg(&angular_pos_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((angular_position_t *)msg_ref.data)->_private, (uint32_t)((angular_position_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((angular_position_t *)msg_ref.data)->raw, (uint32_t)((angular_position_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Angular position msg conversion wrong values test");
     {
@@ -93,16 +93,16 @@ void unittest_Od_angularSpeed(void)
 
         NEW_STEP("Angular speed FROM deg/s test");
         angular_speed = AngularOD_SpeedFrom_deg_s(90);
-        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref._private, (uint32_t)angular_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref.raw, (uint32_t)angular_speed.raw);
         NEW_STEP("Angular speed FROM rev/s test");
         angular_speed = AngularOD_SpeedFrom_rev_s(0.25);
-        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref._private, (uint32_t)angular_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref.raw, (uint32_t)angular_speed.raw);
         NEW_STEP("Angular speed FROM rev/min test");
         angular_speed = AngularOD_SpeedFrom_rev_min(0.25 * 60);
-        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref._private, (uint32_t)angular_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref.raw, (uint32_t)angular_speed.raw);
         NEW_STEP("Angular speed FROM rad/s test");
         angular_speed = AngularOD_SpeedFrom_rad_s(1.5707963267948966);
-        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref._private, (uint32_t)angular_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref.raw, (uint32_t)angular_speed.raw);
     }
     NEW_TEST_CASE("Angular speed TO test");
     {
@@ -133,12 +133,12 @@ void unittest_Od_angularSpeed(void)
         msg_ref.header.size = sizeof(angular_speed_t);
         memcpy(msg_ref.data, &angular_speed_ref, sizeof(angular_speed_t));
         AngularOD_SpeedFromMsg(&angular_speed, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref._private, (uint32_t)angular_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)angular_speed_ref.raw, (uint32_t)angular_speed.raw);
         NEW_STEP("Angular speed msg conversion TO test");
         AngularOD_SpeedToMsg(&angular_speed_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((angular_speed_t *)msg_ref.data)->_private, (uint32_t)((angular_speed_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((angular_speed_t *)msg_ref.data)->raw, (uint32_t)((angular_speed_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Angular speed msg conversion wrong values test");
     {

@@ -11,28 +11,28 @@ void unittest_Od_forceMoment(void)
 
         NEW_STEP("Force moment FROM Nm test");
         moment = ForceOD_MomentFrom_N_m(90.5);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM Nmm test");
         moment = ForceOD_MomentFrom_N_mm(90500);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM Ncm test");
         moment = ForceOD_MomentFrom_N_cm(9050);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM Kgf/mm test");
         moment = ForceOD_MomentFrom_kgf_mm(9228.43172745);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM Kgf/cm test");
         moment = ForceOD_MomentFrom_kgf_cm(922.843172745);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM Kgf/m test");
         moment = ForceOD_MomentFrom_kgf_m(9.22843172745);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM ozf/in test");
         moment = ForceOD_MomentFrom_ozf_in(12815.87956868);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment FROM lbf/in test");
         moment = ForceOD_MomentFrom_lbf_in(800.9924635902);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
     }
     NEW_TEST_CASE("Force moment TO test");
     {
@@ -75,12 +75,12 @@ void unittest_Od_forceMoment(void)
         msg_ref.header.size = sizeof(moment_t);
         memcpy(msg_ref.data, &moment_ref, sizeof(moment_t));
         ForceOD_MomentFromMsg(&moment, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)moment_ref._private, (uint32_t)moment._private);
+        TEST_ASSERT_EQUAL((uint32_t)moment_ref.raw, (uint32_t)moment.raw);
         NEW_STEP("Force moment msg conversion TO test");
         ForceOD_MomentToMsg(&moment_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((moment_t *)msg_ref.data)->_private, (uint32_t)((moment_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((moment_t *)msg_ref.data)->raw, (uint32_t)((moment_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Force moment msg conversion wrong values test");
     {
@@ -123,16 +123,16 @@ void unittest_Od_forceForce(void)
 
         NEW_STEP("Force force FROM N test");
         force = ForceOD_ForceFrom_N(90.5);
-        TEST_ASSERT_EQUAL((uint32_t)force_ref._private, (uint32_t)force._private);
+        TEST_ASSERT_EQUAL((uint32_t)force_ref.raw, (uint32_t)force.raw);
         NEW_STEP("Force force FROM Kgf test");
         force = ForceOD_ForceFrom_kgf(9.22843172745);
-        TEST_ASSERT_EQUAL((uint32_t)force_ref._private, (uint32_t)force._private);
+        TEST_ASSERT_EQUAL((uint32_t)force_ref.raw, (uint32_t)force.raw);
         NEW_STEP("Force force FROM ozf test");
         force = ForceOD_ForceFrom_ozf(325.52334961);
-        TEST_ASSERT_EQUAL((uint32_t)force_ref._private, (uint32_t)force._private);
+        TEST_ASSERT_EQUAL((uint32_t)force_ref.raw, (uint32_t)force.raw);
         NEW_STEP("Force force FROM lbf test");
         force = ForceOD_ForceFrom_lbf(20.345209351);
-        TEST_ASSERT_EQUAL((uint32_t)force_ref._private, (uint32_t)force._private);
+        TEST_ASSERT_EQUAL((uint32_t)force_ref.raw, (uint32_t)force.raw);
     }
     NEW_TEST_CASE("Force force TO test");
     {
@@ -163,12 +163,12 @@ void unittest_Od_forceForce(void)
         msg_ref.header.size = sizeof(force_t);
         memcpy(msg_ref.data, &force_ref, sizeof(force_t));
         ForceOD_ForceFromMsg(&force, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)force_ref._private, (uint32_t)force._private);
+        TEST_ASSERT_EQUAL((uint32_t)force_ref.raw, (uint32_t)force.raw);
         NEW_STEP("Force force msg conversion TO test");
         ForceOD_ForceToMsg(&force_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((force_t *)msg_ref.data)->_private, (uint32_t)((force_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((force_t *)msg_ref.data)->raw, (uint32_t)((force_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Force force msg conversion wrong values test");
     {

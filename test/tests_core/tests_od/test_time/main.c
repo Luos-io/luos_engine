@@ -11,25 +11,25 @@ void unittest_Od_time(void)
 
         NEW_STEP("Time FROM seconds test");
         time = TimeOD_TimeFrom_s(1000.5f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time FROM ms test");
         time = TimeOD_TimeFrom_ms(1000500.0f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time FROM us test");
         time = TimeOD_TimeFrom_us(1000500000.0f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time FROM ns test");
         time = TimeOD_TimeFrom_ns(1000500000000.0f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time FROM min test");
         time = TimeOD_TimeFrom_min(16.675f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time FROM hour test");
         time = TimeOD_TimeFrom_h(0.2779166666666667f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time FROM day test");
         time = TimeOD_TimeFrom_day(0.0115798611f);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
     }
     NEW_TEST_CASE("Time TO test");
     {
@@ -69,12 +69,12 @@ void unittest_Od_time(void)
         msg_ref.header.size = sizeof(time_luos_t);
         memcpy(msg_ref.data, &time_ref, sizeof(time_luos_t));
         TimeOD_TimeFromMsg(&time, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
         NEW_STEP("Time msg conversion TO test");
         TimeOD_TimeToMsg(&time, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)time_ref._private, (uint32_t)time._private);
+        TEST_ASSERT_EQUAL((uint32_t)time_ref.raw, (uint32_t)time.raw);
     }
     NEW_TEST_CASE("Time msg conversion wrong values test");
     {

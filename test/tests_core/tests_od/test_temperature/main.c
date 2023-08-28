@@ -11,13 +11,13 @@ void unittest_Od_temperature(void)
 
         NEW_STEP("Temperature FROM degree C test");
         temperature = TemperatureOD_TemperatureFrom_deg_c(1000.0f);
-        TEST_ASSERT_EQUAL((uint32_t)temperature_ref._private, (uint32_t)temperature._private);
+        TEST_ASSERT_EQUAL((uint32_t)temperature_ref.raw, (uint32_t)temperature.raw);
         NEW_STEP("Temperature FROM degree F test");
         temperature = TemperatureOD_TemperatureFrom_deg_f(1832.0f);
-        TEST_ASSERT_EQUAL((uint32_t)temperature_ref._private, (uint32_t)temperature._private);
+        TEST_ASSERT_EQUAL((uint32_t)temperature_ref.raw, (uint32_t)temperature.raw);
         NEW_STEP("Temperature FROM degree K test");
         temperature = TemperatureOD_TemperatureFrom_deg_k(1273.15f);
-        TEST_ASSERT_EQUAL((uint32_t)temperature_ref._private, (uint32_t)temperature._private);
+        TEST_ASSERT_EQUAL((uint32_t)temperature_ref.raw, (uint32_t)temperature.raw);
     }
     NEW_TEST_CASE("Temperature TO test");
     {
@@ -45,12 +45,12 @@ void unittest_Od_temperature(void)
         msg_ref.header.size = sizeof(temperature_t);
         memcpy(msg_ref.data, &temperature_ref, sizeof(temperature_t));
         TemperatureOD_TemperatureFromMsg(&temperature, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)temperature_ref._private, (uint32_t)temperature._private);
+        TEST_ASSERT_EQUAL((uint32_t)temperature_ref.raw, (uint32_t)temperature.raw);
         NEW_STEP("Temperature msg conversion TO test");
         TemperatureOD_TemperatureToMsg(&temperature_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((temperature_t *)msg_ref.data)->_private, (uint32_t)((temperature_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((temperature_t *)msg_ref.data)->raw, (uint32_t)((temperature_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Temperature msg conversion wrong values test");
     {

@@ -13,17 +13,17 @@
  ******************************************************************************/
 typedef struct
 {
-    float _private;
+    float raw;
 } voltage_t;
 
 typedef struct
 {
-    float _private;
+    float raw;
 } current_t;
 
 typedef struct
 {
-    float _private;
+    float raw;
 } power_t;
 /*******************************************************************************
  * Variables
@@ -38,26 +38,26 @@ typedef struct
 // mv
 static inline float ElectricOD_VoltageTo_mV(voltage_t self)
 {
-    return self._private * 1000.0f;
+    return self.raw * 1000.0f;
 }
 
 static inline voltage_t ElectricOD_VoltageFrom_mV(float mv)
 {
     voltage_t self;
-    self._private = mv / 1000.0f;
+    self.raw = mv / 1000.0f;
     return self;
 }
 
 // v
 static inline float ElectricOD_VoltageTo_V(voltage_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline voltage_t ElectricOD_VoltageFrom_V(float v)
 {
     voltage_t self;
-    self._private = v;
+    self.raw = v;
     return self;
 }
 
@@ -84,26 +84,26 @@ static inline void ElectricOD_VoltageFromMsg(voltage_t *const self, const msg_t 
 // ma
 static inline float ElectricOD_CurrentTo_mA(current_t self)
 {
-    return self._private * 1000.0f;
+    return self.raw * 1000.0f;
 }
 
 static inline current_t ElectricOD_CurrentFrom_mA(float ma)
 {
     current_t self;
-    self._private = ma / 1000.0f;
+    self.raw = ma / 1000.0f;
     return self;
 }
 
 // A
 static inline float ElectricOD_CurrentTo_A(current_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline current_t ElectricOD_CurrentFrom_A(float a)
 {
     current_t self;
-    self._private = a;
+    self.raw = a;
     return self;
 }
 
@@ -130,26 +130,26 @@ static inline void ElectricOD_CurrentFromMsg(current_t *const self, const msg_t 
 // mw
 static inline float ElectricOD_PowerTo_mW(power_t self)
 {
-    return self._private * 1000.0f;
+    return self.raw * 1000.0f;
 }
 
 static inline power_t ElectricOD_PowerFrom_mW(float mw)
 {
     power_t self;
-    self._private = mw / 1000.0f;
+    self.raw = mw / 1000.0f;
     return self;
 }
 
 // A
 static inline float ElectricOD_PowerTo_W(power_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline power_t ElectricOD_PowerFrom_W(float w)
 {
     power_t self;
-    self._private = w;
+    self.raw = w;
     return self;
 }
 

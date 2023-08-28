@@ -11,31 +11,31 @@ void unittest_Od_linearPosition(void)
 
         NEW_STEP("Linear position FROM m test");
         linear_pos = LinearOD_PositionFrom_m(90);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM nm test");
         linear_pos = LinearOD_PositionFrom_nm(90000000000);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM um test");
         linear_pos = LinearOD_PositionFrom_um(90000000);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM mm test");
         linear_pos = LinearOD_PositionFrom_mm(90000);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM cm test");
         linear_pos = LinearOD_PositionFrom_cm(9000);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM km test");
         linear_pos = LinearOD_PositionFrom_km(0.09);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM in test");
         linear_pos = LinearOD_PositionFrom_in(3543.31);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM ft test");
         linear_pos = LinearOD_PositionFrom_ft(295.275833333);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position FROM mi test");
         linear_pos = LinearOD_PositionFrom_mi(0.05592345328276514954);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
     }
     NEW_TEST_CASE("Linear position TO test");
     {
@@ -81,12 +81,12 @@ void unittest_Od_linearPosition(void)
         msg_ref.header.size = sizeof(linear_position_t);
         memcpy(msg_ref.data, &linear_pos_ref, sizeof(linear_position_t));
         LinearOD_PositionFromMsg(&linear_pos, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref._private, (uint32_t)linear_pos._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_pos_ref.raw, (uint32_t)linear_pos.raw);
         NEW_STEP("Linear position msg conversion TO test");
         LinearOD_PositionToMsg(&linear_pos_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((linear_position_t *)msg_ref.data)->_private, (uint32_t)((linear_position_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((linear_position_t *)msg_ref.data)->raw, (uint32_t)((linear_position_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Linear position msg conversion wrong values test");
     {
@@ -129,19 +129,19 @@ void unittest_Od_linearSpeed(void)
 
         NEW_STEP("Linear speed FROM m/s test");
         linear_speed = LinearOD_SpeedFrom_m_s(90.5);
-        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref._private, (uint32_t)linear_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref.raw, (uint32_t)linear_speed.raw);
         NEW_STEP("Linear speed FROM mm/s test");
         linear_speed = LinearOD_SpeedFrom_mm_s(90500);
-        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref._private, (uint32_t)linear_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref.raw, (uint32_t)linear_speed.raw);
         NEW_STEP("Linear speed FROM km/h test");
         linear_speed = LinearOD_SpeedFrom_km_h(324);
-        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref._private, (uint32_t)linear_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref.raw, (uint32_t)linear_speed.raw);
         NEW_STEP("Linear speed FROM in/s test");
         linear_speed = LinearOD_SpeedFrom_in_s(3543.307086614173);
-        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref._private, (uint32_t)linear_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref.raw, (uint32_t)linear_speed.raw);
         NEW_STEP("Linear speed FROM mph test");
         linear_speed = LinearOD_SpeedFrom_mi_h(202.4427);
-        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref._private, (uint32_t)linear_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref.raw, (uint32_t)linear_speed.raw);
     }
     NEW_TEST_CASE("Linear speed TO test");
     {
@@ -175,12 +175,12 @@ void unittest_Od_linearSpeed(void)
         msg_ref.header.size = sizeof(linear_speed_t);
         memcpy(msg_ref.data, &linear_speed_ref, sizeof(linear_speed_t));
         LinearOD_SpeedFromMsg(&linear_speed, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref._private, (uint32_t)linear_speed._private);
+        TEST_ASSERT_EQUAL((uint32_t)linear_speed_ref.raw, (uint32_t)linear_speed.raw);
         NEW_STEP("Linear speed msg conversion TO test");
         LinearOD_SpeedToMsg(&linear_speed_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((linear_speed_t *)msg_ref.data)->_private, (uint32_t)((linear_speed_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((linear_speed_t *)msg_ref.data)->raw, (uint32_t)((linear_speed_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Linear speed msg conversion wrong values test");
     {

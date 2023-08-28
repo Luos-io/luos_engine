@@ -11,7 +11,7 @@ void unittest_Od_illuminance_illuminance(void)
 
         NEW_STEP("Illuminance FROM lux test");
         illuminance = IlluminanceOD_IlluminanceFrom_Lux(100);
-        TEST_ASSERT_EQUAL((uint32_t)illuminance_ref._private, (uint32_t)illuminance._private);
+        TEST_ASSERT_EQUAL((uint32_t)illuminance_ref.raw, (uint32_t)illuminance.raw);
     }
     NEW_TEST_CASE("Illuminance TO test");
     {
@@ -33,12 +33,12 @@ void unittest_Od_illuminance_illuminance(void)
         msg_ref.header.size = sizeof(illuminance_t);
         memcpy(msg_ref.data, &illuminance_ref, sizeof(illuminance_t));
         IlluminanceOD_IlluminanceFromMsg(&illuminance, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)illuminance_ref._private, (uint32_t)illuminance._private);
+        TEST_ASSERT_EQUAL((uint32_t)illuminance_ref.raw, (uint32_t)illuminance.raw);
         NEW_STEP("Illuminance msg conversion TO test");
         IlluminanceOD_IlluminanceToMsg(&illuminance_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((illuminance_t *)msg_ref.data)->_private, (uint32_t)((illuminance_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((illuminance_t *)msg_ref.data)->raw, (uint32_t)((illuminance_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Illuminance msg conversion wrong values test");
     {

@@ -11,13 +11,13 @@ void unittest_Od_pressure(void)
 
         NEW_STEP("Pressure FROM Pa test");
         pressure = PressureOD_PressureFrom_Pa(1000.0f);
-        TEST_ASSERT_EQUAL((uint32_t)pressure_ref._private, (uint32_t)pressure._private);
+        TEST_ASSERT_EQUAL((uint32_t)pressure_ref.raw, (uint32_t)pressure.raw);
         NEW_STEP("Pressure FROM bars test");
         pressure = PressureOD_PressureFrom_Bars(0.01f);
-        TEST_ASSERT_EQUAL((uint32_t)pressure_ref._private, (uint32_t)pressure._private);
+        TEST_ASSERT_EQUAL((uint32_t)pressure_ref.raw, (uint32_t)pressure.raw);
         NEW_STEP("Pressure FROM hPa test");
         pressure = PressureOD_PressureFrom_hPa(10.0f);
-        TEST_ASSERT_EQUAL((uint32_t)pressure_ref._private, (uint32_t)pressure._private);
+        TEST_ASSERT_EQUAL((uint32_t)pressure_ref.raw, (uint32_t)pressure.raw);
     }
     NEW_TEST_CASE("Pressure TO test");
     {
@@ -45,12 +45,12 @@ void unittest_Od_pressure(void)
         msg_ref.header.size = sizeof(pressure_t);
         memcpy(msg_ref.data, &pressure_ref, sizeof(pressure_t));
         PressureOD_PressureFromMsg(&pressure, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)pressure_ref._private, (uint32_t)pressure._private);
+        TEST_ASSERT_EQUAL((uint32_t)pressure_ref.raw, (uint32_t)pressure.raw);
         NEW_STEP("Pressure msg conversion TO test");
         PressureOD_PressureToMsg(&pressure_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((pressure_t *)msg_ref.data)->_private, (uint32_t)((pressure_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((pressure_t *)msg_ref.data)->raw, (uint32_t)((pressure_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Pressure msg conversion wrong values test");
     {

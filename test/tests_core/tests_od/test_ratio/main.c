@@ -11,7 +11,7 @@ void unittest_Od_ratio(void)
 
         NEW_STEP("Ratio FROM Percent test");
         ratio = RatioOD_RatioFrom_Percent(95.0f);
-        TEST_ASSERT_EQUAL((uint32_t)ratio_ref._private, (uint32_t)ratio._private);
+        TEST_ASSERT_EQUAL((uint32_t)ratio_ref.raw, (uint32_t)ratio.raw);
     }
     NEW_TEST_CASE("Ratio TO test");
     {
@@ -33,12 +33,12 @@ void unittest_Od_ratio(void)
         msg_ref.header.size = sizeof(ratio_t);
         memcpy(msg_ref.data, &ratio_ref, sizeof(ratio_t));
         RatioOD_RatioFromMsg(&ratio, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)ratio_ref._private, (uint32_t)ratio._private);
+        TEST_ASSERT_EQUAL((uint32_t)ratio_ref.raw, (uint32_t)ratio.raw);
         NEW_STEP("Ratio msg conversion TO test");
         RatioOD_RatioToMsg(&ratio_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((ratio_t *)msg_ref.data)->_private, (uint32_t)((ratio_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((ratio_t *)msg_ref.data)->raw, (uint32_t)((ratio_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Ratio msg conversion wrong values test");
     {

@@ -11,10 +11,10 @@ void unittest_Od_electricVoltage(void)
 
         NEW_STEP("Electric voltage FROM V test");
         voltage = ElectricOD_VoltageFrom_V(1.0);
-        TEST_ASSERT_EQUAL((uint32_t)voltage_ref._private, (uint32_t)voltage._private);
+        TEST_ASSERT_EQUAL((uint32_t)voltage_ref.raw, (uint32_t)voltage.raw);
         NEW_STEP("Electric voltage FROM mV test");
         voltage = ElectricOD_VoltageFrom_mV(1000);
-        TEST_ASSERT_EQUAL((uint32_t)voltage_ref._private, (uint32_t)voltage._private);
+        TEST_ASSERT_EQUAL((uint32_t)voltage_ref.raw, (uint32_t)voltage.raw);
     }
     NEW_TEST_CASE("Electric voltage TO test");
     {
@@ -39,12 +39,12 @@ void unittest_Od_electricVoltage(void)
         msg_ref.header.size = sizeof(voltage_t);
         memcpy(msg_ref.data, &voltage_ref, sizeof(voltage_t));
         ElectricOD_VoltageFromMsg(&voltage, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)voltage_ref._private, (uint32_t)voltage._private);
+        TEST_ASSERT_EQUAL((uint32_t)voltage_ref.raw, (uint32_t)voltage.raw);
         NEW_STEP("Electric voltage msg conversion TO test");
         ElectricOD_VoltageToMsg(&voltage_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((voltage_t *)msg_ref.data)->_private, (uint32_t)((voltage_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((voltage_t *)msg_ref.data)->raw, (uint32_t)((voltage_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Electric voltage msg conversion wrong values test");
     {
@@ -87,10 +87,10 @@ void unittest_Od_electricCurrent(void)
 
         NEW_STEP("Electric current FROM A test");
         current = ElectricOD_CurrentFrom_A(1.0);
-        TEST_ASSERT_EQUAL((uint32_t)current_ref._private, (uint32_t)current._private);
+        TEST_ASSERT_EQUAL((uint32_t)current_ref.raw, (uint32_t)current.raw);
         NEW_STEP("Electric current FROM mA test");
         current = ElectricOD_CurrentFrom_mA(1000);
-        TEST_ASSERT_EQUAL((uint32_t)current_ref._private, (uint32_t)current._private);
+        TEST_ASSERT_EQUAL((uint32_t)current_ref.raw, (uint32_t)current.raw);
     }
     NEW_TEST_CASE("Electric current TO test");
     {
@@ -115,12 +115,12 @@ void unittest_Od_electricCurrent(void)
         msg_ref.header.size = sizeof(current_t);
         memcpy(msg_ref.data, &current_ref, sizeof(current_t));
         ElectricOD_CurrentFromMsg(&current, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)current_ref._private, (uint32_t)current._private);
+        TEST_ASSERT_EQUAL((uint32_t)current_ref.raw, (uint32_t)current.raw);
         NEW_STEP("Electric current msg conversion TO test");
         ElectricOD_CurrentToMsg(&current_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((current_t *)msg_ref.data)->_private, (uint32_t)((current_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((current_t *)msg_ref.data)->raw, (uint32_t)((current_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Electric current msg conversion wrong values test");
     {
@@ -163,10 +163,10 @@ void unittest_Od_electricPower(void)
 
         NEW_STEP("Electric power FROM W test");
         power = ElectricOD_PowerFrom_W(1.0);
-        TEST_ASSERT_EQUAL((uint32_t)power_ref._private, (uint32_t)power._private);
+        TEST_ASSERT_EQUAL((uint32_t)power_ref.raw, (uint32_t)power.raw);
         NEW_STEP("Electric power FROM mW test");
         power = ElectricOD_PowerFrom_mW(1000);
-        TEST_ASSERT_EQUAL((uint32_t)power_ref._private, (uint32_t)power._private);
+        TEST_ASSERT_EQUAL((uint32_t)power_ref.raw, (uint32_t)power.raw);
     }
     NEW_TEST_CASE("Electric power TO test");
     {
@@ -191,12 +191,12 @@ void unittest_Od_electricPower(void)
         msg_ref.header.size = sizeof(power_t);
         memcpy(msg_ref.data, &power_ref, sizeof(power_t));
         ElectricOD_PowerFromMsg(&power, &msg_ref);
-        TEST_ASSERT_EQUAL((uint32_t)power_ref._private, (uint32_t)power._private);
+        TEST_ASSERT_EQUAL((uint32_t)power_ref.raw, (uint32_t)power.raw);
         NEW_STEP("Electric power msg conversion TO test");
         ElectricOD_PowerToMsg(&power_ref, &msg);
         TEST_ASSERT_EQUAL(msg_ref.header.cmd, msg.header.cmd);
         TEST_ASSERT_EQUAL(msg_ref.header.size, msg.header.size);
-        TEST_ASSERT_EQUAL((uint32_t)((power_t *)msg_ref.data)->_private, (uint32_t)((power_t *)msg.data)->_private);
+        TEST_ASSERT_EQUAL((uint32_t)((power_t *)msg_ref.data)->raw, (uint32_t)((power_t *)msg.data)->raw);
     }
     NEW_TEST_CASE("Electric power msg conversion wrong values test");
     {

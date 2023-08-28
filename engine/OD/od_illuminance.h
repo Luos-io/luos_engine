@@ -13,7 +13,7 @@
  ******************************************************************************/
 typedef struct
 {
-    float _private;
+    float raw;
 } illuminance_t;
 
 // GPIO struct
@@ -44,13 +44,13 @@ typedef struct __attribute__((__packed__))
 // lx
 static inline float IlluminanceOD_IlluminanceTo_Lux(illuminance_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline illuminance_t IlluminanceOD_IlluminanceFrom_Lux(float lx)
 {
     illuminance_t self;
-    self._private = lx;
+    self.raw = lx;
     return self;
 }
 
