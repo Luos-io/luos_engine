@@ -28,7 +28,10 @@ void Led_Init(void)
 {
     pinMode(LED_BUILTIN, OUTPUT);
 
-    revision_t revision = {.major = 1, .minor = 0, .build = 0};
+    revision_t revision;
+    revision.major = 1;
+    revision.minor = 0;
+    revision.build = 0;
     Luos_CreateService(Led_MsgHandler, STATE_TYPE, "led_mod", revision);
 }
 /******************************************************************************

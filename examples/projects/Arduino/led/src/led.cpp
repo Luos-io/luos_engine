@@ -1,17 +1,7 @@
 #include <Arduino.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "luos_engine.h"
 #include "serial_network.h"
 #include "led.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 /******************************************************************************
  * @brief Setup ardiuno

@@ -5,7 +5,10 @@
  ******************************************************************************/
 #ifndef LUOS_ENGINE_H
 #define LUOS_ENGINE_H
-
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 #include <stdint.h>
 #include <stdbool.h>
 #include "luos_utils.h"
@@ -23,60 +26,63 @@
 
 #define LUOS_RUN() Luos_Run();
 
-/*******************************************************************************
- * Function
- ******************************************************************************/
-void Luos_Init(void);
-void Luos_Loop(void);
-void Luos_ResetStatistic(void);
-const revision_t *Luos_GetVersion(void);
-void Luos_SetIrqState(bool state);
+    /*******************************************************************************
+     * Function
+     ******************************************************************************/
+    void Luos_Init(void);
+    void Luos_Loop(void);
+    void Luos_ResetStatistic(void);
+    const revision_t *Luos_GetVersion(void);
+    void Luos_SetIrqState(bool state);
 
-// ***************** Node management *****************
-uint32_t Luos_GetSystick(void);
-bool Luos_IsDetected(void);
+    // ***************** Node management *****************
+    uint32_t Luos_GetSystick(void);
+    bool Luos_IsDetected(void);
 
-// ***************** Package management *****************
-void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
-void Luos_Run(void);
+    // ***************** Package management *****************
+    void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
+    void Luos_Run(void);
 
-// ***************** Service management *****************
-service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *alias, revision_t revision);
-error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size);
-void Luos_Detect(service_t *service);
-void Luos_ServicesClear(void);
+    // ***************** Service management *****************
+    service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *alias, revision_t revision);
+    error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size);
+    void Luos_Detect(service_t *service);
+    void Luos_ServicesClear(void);
 
-// ***************** Messaging management *****************
+    // ***************** Messaging management *****************
 
-void Luos_Flush(void);
+    void Luos_Flush(void);
 
 // *** Streaming management ***
 #include "streaming.h"
-void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
-void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
-error_return_t Luos_ReceiveStreaming(service_t *service, const msg_t *msg, streaming_channel_t *stream);
+    void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
+    void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
+    error_return_t Luos_ReceiveStreaming(service_t *service, const msg_t *msg, streaming_channel_t *stream);
 
-// *** Timestamping management (in file `timestamp.c`)***
-time_luos_t Luos_Timestamp(void);
-bool Luos_IsMsgTimstamped(const msg_t *msg);
-time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
-error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp);
+    // *** Timestamping management (in file `timestamp.c`)***
+    time_luos_t Luos_Timestamp(void);
+    bool Luos_IsMsgTimstamped(const msg_t *msg);
+    time_luos_t Luos_GetMsgTimestamp(msg_t *msg);
+    error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp);
 
-// *** Pub/Sub management (in file `pub_sub.c`)***
-error_return_t Luos_Subscribe(service_t *service, uint16_t topic);
-error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic);
+    // *** Pub/Sub management (in file `pub_sub.c`)***
+    error_return_t Luos_Subscribe(service_t *service, uint16_t topic);
+    error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic);
 
-// *** Big data management ***
-void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
-int Luos_ReceiveData(service_t *service, const msg_t *msg, void *bin_data);
+    // *** Big data management ***
+    void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
+    int Luos_ReceiveData(service_t *service, const msg_t *msg, void *bin_data);
 
-// *** Basic transmission management ***
-error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
-error_return_t Luos_TxComplete(void);
+    // *** Basic transmission management ***
+    error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
+    error_return_t Luos_TxComplete(void);
 
-// *** Polling reception management ***
-error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write);
-error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_to_write);
-uint16_t Luos_NbrAvailableMsg(void);
+    // *** Polling reception management ***
+    error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write);
+    error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_to_write);
+    uint16_t Luos_NbrAvailableMsg(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* LUOS_ENGINE_H */
