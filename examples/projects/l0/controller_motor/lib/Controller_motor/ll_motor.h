@@ -7,7 +7,7 @@
 #ifndef _LL_MOTOR_H
 #define _LL_MOTOR_H
 
-#include "float.h"
+#include "luos_engine.h"
 #include "stdio.h"
 
 /*******************************************************************************
@@ -44,11 +44,11 @@ typedef struct motor_config
     // motor configuration
     float *motor_reduction;
     float *resolution;
-    float *wheel_diameter;
+    linear_position_t *wheel_diameter;
 
     // hardware limits
-    float *limit_ratio;
-    float *limit_current;
+    ratio_t *limit_ratio;
+    current_t *limit_current;
 } motor_config_t;
 /*******************************************************************************
  * Variables
