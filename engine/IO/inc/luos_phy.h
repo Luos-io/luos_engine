@@ -41,7 +41,7 @@ void Phy_ResetMsg(luos_phy_t *phy_ptr);      // Call this function to reset the 
 
 // Tx management
 time_luos_t Phy_ComputeMsgTimestamp(phy_job_t *job); // Use it to compute the timestamp of the message to send.
-time_luos_t Phy_GetTimestamp(void);                  // Use it to get the current timestamp.
+uint64_t Phy_GetTimestamp(void);                     // Use it to get the current timestamp in ns.
 uint16_t Phy_GetNodeId(void);                        // Use it to get your current node id. (This can be used to compute priority or controled latency avoiding infinite collision condition)
 
 // Job management

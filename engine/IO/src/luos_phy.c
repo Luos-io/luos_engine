@@ -470,7 +470,7 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         uint16_t my_job = phy_ctx.io_job_nb++;
         Phy_SetIrqState(true);
         // Now copy the data in the job
-        phy_ctx.io_job[my_job].timestamp  = (uint64_t)TimeOD_TimeTo_ns(phy_ptr->rx_timestamp);
+        phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
         phy_ctx.io_job[my_job].alloc_msg  = (msg_t *)phy_ptr->rx_data;
         phy_ctx.io_job[my_job].phy_filter = phy_ptr->rx_phy_filter;
         phy_ctx.io_job[my_job].size       = phy_ptr->rx_size;
@@ -511,9 +511,9 @@ time_luos_t Phy_ComputeMsgTimestamp(phy_job_t *job)
  * @param None
  * @return Timestamp value
  ******************************************************************************/
-_CRITICAL time_luos_t Phy_GetTimestamp(void)
+_CRITICAL uint64_t Phy_GetTimestamp(void)
 {
-    return TimeOD_TimeFrom_ns((double)LuosHAL_GetTimestamp());
+    return LuosHAL_GetTimestamp();
 }
 
 /******************************************************************************

@@ -47,8 +47,8 @@ typedef uint8_t phy_target_t;
 typedef struct luos_phy_t
 {
     // *************** RX information ***************
-    volatile time_luos_t rx_timestamp; // Timestamp of the last received message. We will use it to compute the date based on received latency.
-    uint8_t *rx_buffer_base;           // Pointer to the base of the buffer where we will store the begining of received data.
+    volatile uint64_t rx_timestamp; // Timestamp of the last received message. We will use it to compute the date based on received latency. This value need to be stored in ns.
+    uint8_t *rx_buffer_base;        // Pointer to the base of the buffer where we will store the begining of received data.
     union
     {
         volatile uint8_t *rx_data; // Pointer to write received bytes.

@@ -82,8 +82,7 @@ void Serial_Init(void)
     Serial_Reset(phy_serial);
     SerialHAL_Init(RX_data, SERIAL_RX_BUFFER_SIZE);
 
-    phy_serial->rx_timestamp = TimeOD_TimeFrom_s(0.0);
-    ;
+    phy_serial->rx_timestamp   = 0;
     phy_serial->rx_buffer_base = RX_data;
     phy_serial->rx_data        = RX_data; // In our case we don't need to use this pointer because we use DMA to receive complete messages in one time.
     phy_serial->rx_keep        = true;
@@ -365,7 +364,7 @@ _CRITICAL void Serial_ReceptionAdd(uint8_t *data, uint32_t size)
     {
         // This is probably the first data we received for this message, we need to timestamp the reception date.
         // Watch out, if the loop is executed very slowly we may receive multiple messages in the same loop. This could result in a wrong timestamp for the second message. Their is no way to avoid this problem, so we need to accept it. Anyway we even didn't have any way to store multiple timestamp...
-        phy_serial->rx_timestamp = TimeOD_TimeFrom_ns(TimeOD_TimeTo_ns(Phy_GetTimestamp()) - (size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE)); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
+        phy_serial->rx_timestamp = Phy_GetTimestamp() - (size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
     }
     uint32_t copy_size = (uintptr_t)&RX_data + sizeof(RX_data) - (uintptr_t)phy_serial->rx_buffer_base + rx_size;
     if (copy_size > size)
@@ -397,7 +396,7 @@ _CRITICAL void Serial_ReceptionEnd(uint32_t size)
     rx_size += size;
     // We consider this as the end of a complete message
     // If we received multiple messages in this call, this could result in a wrong timestamp for the second message. Their is no way to avoid this problem, so we need to accept it.
-    phy_serial->rx_timestamp = TimeOD_TimeFrom_ns(TimeOD_TimeTo_ns(Phy_GetTimestamp()) - (rx_size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE)); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
+    phy_serial->rx_timestamp = Phy_GetTimestamp() - (rx_size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
     LUOS_ASSERT(rx_size < sizeof(RX_data));
     if ((wait_reception == true) && (size >= sizeof(SerialHeader_t) + 1))
     {
