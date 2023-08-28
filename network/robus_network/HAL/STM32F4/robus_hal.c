@@ -34,7 +34,7 @@ CRC_HandleTypeDef hcrc;
 #endif
 GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV; //(freq MCU/freq timer)/divider timer clock source
+uint32_t Timer_Prescaler = (MCUFREQ / ROBUS_NETWORK_BAUDRATE) / TIMERDIV; //(freq MCU/freq timer)/divider timer clock source
 
 typedef struct
 {
@@ -72,7 +72,7 @@ void RobusHAL_Init(void)
     RobusHAL_CRCInit();
 
     // Com Initialization
-    RobusHAL_ComInit(DEFAULTBAUDRATE);
+    RobusHAL_ComInit(ROBUS_NETWORK_BAUDRATE);
 }
 
 /******************************************************************************

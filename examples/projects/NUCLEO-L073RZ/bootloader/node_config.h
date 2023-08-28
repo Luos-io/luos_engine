@@ -37,7 +37,7 @@
  *******************************************************************************
  *    Define                | Default Value              | Description
  *    :---------------------|------------------------------------------------------
- *    DEFAULTBAUDRATE       |          1000000           | Robus Network Baudrate b/s
+ *    ROBUS_NETWORK_BAUDRATE       |          1000000           | Robus Network Baudrate b/s
  *    MAX_LOCAL_SERVICE_NUMBER    |              5             | Service number in the node
  *    MAX_NODE_NUMBER.      |              20            | Node number in the device
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
@@ -47,7 +47,7 @@
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
  ******************************************************************************/
-#define DEFAULTBAUDRATE 500000
+#define ROBUS_NETWORK_BAUDRATE 500000
 #define MSG_BUFFER_SIZE 512
 
 /*******************************************************************************

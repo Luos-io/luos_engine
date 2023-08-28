@@ -9,12 +9,7 @@
 #include "_serial_network.h"
 // TODO: Include the needed files
 
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-#ifndef SERIAL_COM_DEFAULTBAUDRATE
-    #define SERIAL_COM_DEFAULTBAUDRATE 1000000
-#endif
+
 
 /*******************************************************************************
  * Variables
@@ -35,7 +30,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
 {
     rx_buffer_size = buffer_size;
     // Init the serial peripheral
-    // TODO: Init the used usart peripheral using the SERIAL_COM_DEFAULTBAUDRATE baudrate.
+    // TODO: Init the used usart peripheral using the SERIAL_NETWORK_BAUDRATE baudrate.
     // TODO: Init TX pin with the given pin and port and set it as tx for the usart. Select the appropriate alternate function.
     // TODO: Init the Serial TX DMA interface, use it in normal mode and make it raise an IRQ when finished.
 

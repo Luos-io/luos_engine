@@ -59,7 +59,7 @@ void RobusHAL_Init(void)
     RobusHAL_CRCInit();
 
     // Com Initialization
-    RobusHAL_ComInit(DEFAULTBAUDRATE);
+    RobusHAL_ComInit(ROBUS_NETWORK_BAUDRATE);
 }
 
 /******************************************************************************

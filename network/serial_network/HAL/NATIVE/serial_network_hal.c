@@ -23,14 +23,6 @@
 #endif
 
 /*******************************************************************************
- * Definitions
- ******************************************************************************/
-
-#ifndef SERIAL_COM_DEFAULTBAUDRATE
-    #define SERIAL_COM_DEFAULTBAUDRATE 1000000
-#endif
-
-/*******************************************************************************
  * Variables
  ******************************************************************************/
 static uint32_t rx_buffer_size;
@@ -193,7 +185,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     memcpy(portname, SERIAL_PORT, strlen(SERIAL_PORT));
 #endif
     stripStr(portname);
-    printf("Connection on serial port %s at %d baud\n", portname, SERIAL_COM_DEFAULTBAUDRATE);
+    printf("Connection on serial port %s at %d baud\n", portname, SERIAL_NETWORK_BAUDRATE);
 
 // Open the serial port
 #ifdef _WIN32
@@ -271,7 +263,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
 
     // Bypass baudrate speed limitations of termios by using ioctl
     #define IOSSIOSPEED 0x80045402
-    speed_t speed = SERIAL_COM_DEFAULTBAUDRATE;
+    speed_t speed = SERIAL_NETWORK_BAUDRATE;
     if (ioctl(serial_port, IOSSIOSPEED, &speed) < 0)
     {
         printf("Error setting baudrate attributes\n");

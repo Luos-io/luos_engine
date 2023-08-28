@@ -16,12 +16,7 @@
 #include "stm32g4xx_ll_system.h"
 #include "stm32g4xx_hal.h"
 
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-#ifndef SERIAL_COM_DEFAULTBAUDRATE
-    #define SERIAL_COM_DEFAULTBAUDRATE 1000000
-#endif
+
 
 /*******************************************************************************
  * Variables
@@ -76,7 +71,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     LL_LPUART_InitTypeDef LPUART_InitStruct;
     // Initialise USART3
     LL_LPUART_Disable(SERIAL_COM);
-    LPUART_InitStruct.BaudRate            = SERIAL_COM_DEFAULTBAUDRATE;
+    LPUART_InitStruct.BaudRate            = SERIAL_NETWORK_BAUDRATE;
     LPUART_InitStruct.PrescalerValue      = LL_LPUART_PRESCALER_DIV1;
     LPUART_InitStruct.DataWidth           = LL_LPUART_DATAWIDTH_8B;
     LPUART_InitStruct.StopBits            = LL_LPUART_STOPBITS_1;

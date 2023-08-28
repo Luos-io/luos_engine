@@ -28,6 +28,7 @@ for item in envdefs:
 
         env.Append(CPPPATH=[realpath("HAL/" + item[1])])
         env.Append(CPPPATH=[realpath("inc/")])
+        env.Append(CPPPATH=[realpath(".")])
         env.Append(
             SRC_FILTER=["+<*.c>, +<../HAL/%s/*.c>, ++<../HAL/%s/*.cpp>" % (item[1], item[1])])
 
@@ -52,5 +53,6 @@ if (find_HAL == False):
 
             env.Append(CPPPATH=[realpath("HAL/" + item[1])])
             env.Append(CPPPATH=[realpath("inc/")])
+            env.Append(CPPPATH=[realpath(".")])
             env.Append(
                 SRC_FILTER=["+<*.c>, +<../HAL/%s/*.c>, ++<../HAL/%s/*.cpp>" % (item[1], item[1])])

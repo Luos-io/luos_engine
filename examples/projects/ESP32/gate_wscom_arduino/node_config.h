@@ -48,7 +48,7 @@
 #define MAX_LOCAL_SERVICE_NUMBER 2
 #define MAX_MSG_NB               20
 #define MSG_BUFFER_SIZE          1024
-#define DEFAULTBAUDRATE          500000
+#define ROBUS_NETWORK_BAUDRATE   500000
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION

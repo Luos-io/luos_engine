@@ -15,12 +15,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-#ifndef SERIAL_COM_DEFAULTBAUDRATE
-    #define SERIAL_COM_DEFAULTBAUDRATE 1000000
-#endif
 
 /*******************************************************************************
  * Function
@@ -33,7 +27,7 @@ extern "C"
  * ****************************************************************************/
 void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
 {
-    Serial.begin(SERIAL_COM_DEFAULTBAUDRATE);
+    Serial.begin(SERIAL_NETWORK_BAUDRATE);
 }
 
 /******************************************************************************

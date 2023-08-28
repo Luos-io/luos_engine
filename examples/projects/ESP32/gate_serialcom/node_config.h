@@ -45,9 +45,9 @@
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
 
-#define MSG_BUFFER_SIZE      1024
-#define PIPE_SERIAL_BAUDRATE 115200
-#define DEFAULTBAUDRATE      500000
+#define MSG_BUFFER_SIZE        1024
+#define PIPE_SERIAL_BAUDRATE   115200
+#define ROBUS_NETWORK_BAUDRATE 500000
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION

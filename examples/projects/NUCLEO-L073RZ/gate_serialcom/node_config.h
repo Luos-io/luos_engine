@@ -46,7 +46,7 @@
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
  ******************************************************************************/
-#define DEFAULTBAUDRATE          500000
+#define ROBUS_NETWORK_BAUDRATE   500000
 #define MAX_LOCAL_SERVICE_NUMBER 2
 #define MSG_BUFFER_SIZE          2048
 #define MAX_MSG_NB               40

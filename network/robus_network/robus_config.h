@@ -13,8 +13,11 @@
 
 #define TIMEOUT_VAL 2
 
-#ifndef DEFAULTBAUDRATE
-    #define DEFAULTBAUDRATE 1000000
+#ifdef DEFAULTBAUDRATE
+    #error 'DEFAULTBAUDRATE' configuration is deprecated and have been replaced by ROBUS_NETWORK_BAUDRATE.
+#endif
+#ifndef ROBUS_NETWORK_BAUDRATE
+    #define ROBUS_NETWORK_BAUDRATE 1000000
 #endif
 
 #ifndef NBR_RETRY

@@ -9,6 +9,7 @@
 #define __SERIAL_H_
 
 #include <stdint.h>
+#include "serial_config.h"
 
 void Serial_TransmissionEnd(void);
 void Serial_ReceptionAdd(uint8_t *data, uint32_t size);

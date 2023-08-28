@@ -27,7 +27,7 @@
  * Variables
  ******************************************************************************/
 //(freq MCU/freq timer)/divider timer clock source
-uint32_t Timer_Prescaler = (MCUFREQ / DEFAULTBAUDRATE) / TIMERDIV;
+uint32_t Timer_Prescaler = (MCUFREQ / ROBUS_NETWORK_BAUDRATE) / TIMERDIV;
 
 typedef struct
 {
@@ -62,7 +62,7 @@ void RobusHAL_Init(void)
     RobusHAL_CRCInit();
 
     // Com Initialization
-    RobusHAL_ComInit(DEFAULTBAUDRATE);
+    RobusHAL_ComInit(ROBUS_NETWORK_BAUDRATE);
 }
 
 /******************************************************************************
@@ -97,7 +97,7 @@ void RobusHAL_ComInit(uint32_t Baudrate)
      * datawith : 8 bits
      * stopbit : 1 bits
      * parity  : none
-     * Bauderate : DEFAULTBAUDRATE
+     * Bauderate : ROBUS_NETWORK_BAUDRATE
      *
      * Don't forget to :
      * enable clock for USART

@@ -14,12 +14,7 @@
 #include "stm32f0xx_ll_dma.h"
 #include "stm32f0xx_ll_system.h"
 
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-#ifndef SERIAL_COM_DEFAULTBAUDRATE
-    #define SERIAL_COM_DEFAULTBAUDRATE 1000000
-#endif
+
 
 /*******************************************************************************
  * Variables
@@ -73,7 +68,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     LL_USART_InitTypeDef USART_InitStruct;
     // Initialise USART3
     LL_USART_Disable(SERIAL_COM);
-    USART_InitStruct.BaudRate            = SERIAL_COM_DEFAULTBAUDRATE;
+    USART_InitStruct.BaudRate            = SERIAL_NETWORK_BAUDRATE;
     USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_8B;
     USART_InitStruct.StopBits            = LL_USART_STOPBITS_1;
     USART_InitStruct.Parity              = LL_USART_PARITY_NONE;

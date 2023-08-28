@@ -42,7 +42,7 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint32_t Timer_Prescaler = (uint32_t)(MCUFREQ / DEFAULTBAUDRATE); //(freq MCU/freq timer)/divider timer clock source
+uint32_t Timer_Prescaler = (uint32_t)(MCUFREQ / ROBUS_NETWORK_BAUDRATE); //(freq MCU/freq timer)/divider timer clock source
 
 typedef struct
 {
@@ -103,7 +103,7 @@ void RobusHAL_Init(void)
     RobusHAL_CRCInit();
 
     // Com Initialization
-    RobusHAL_ComInit(DEFAULTBAUDRATE);
+    RobusHAL_ComInit(ROBUS_NETWORK_BAUDRATE);
 
     // Reference the IRQ manafement function of Robus
     Phy_SetIrqStateFunciton(RobusHAL_SetIrqState);
