@@ -206,6 +206,7 @@ typedef struct service_t
     uint8_t alias[MAX_ALIAS_SIZE];         /*!< service alias. */
     revision_t revision;                   /*!< service firmware version. */
     access_t access;                       /*!< service read write access. */
+    void *user_context;                    /*!< Pointer to the user context. */
 
     // Callback
     void (*service_cb)(struct service_t *service, const msg_t *msg);
