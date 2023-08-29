@@ -4,11 +4,13 @@
 #include "gate.h"
 #include <pthread.h>
 
-#include <execinfo.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#ifndef WIN32
+    #include <execinfo.h>
+    #include <signal.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <unistd.h>
+#endif
 
 void *Gate_Pipe_LoopThread(void *vargp)
 {
@@ -19,7 +21,7 @@ void *Gate_Pipe_LoopThread(void *vargp)
     }
     return NULL;
 }
-
+#ifndef _WIN32
 void handler(int sig)
 {
     void *array[10];
@@ -33,10 +35,13 @@ void handler(int sig)
     backtrace_symbols_fd(array, size, STDERR_FILENO);
     exit(1);
 }
+#endif
 
 int main(void)
 {
+#ifndef _WIN32
     signal(SIGSEGV, handler); // install our handler
+#endif
     Luos_Init();
     Serial_Init();
     Pipe_Init();

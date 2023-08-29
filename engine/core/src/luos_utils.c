@@ -5,6 +5,7 @@
  * @version 0.0.0
  ******************************************************************************/
 #include <stdbool.h>
+#include <stdlib.h>
 #include "luos_utils.h"
 #include "luos_engine.h"
 #include "string.h"
@@ -60,9 +61,6 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.
 
-    #if (defined _WIN32) || (defined _WIN64) || (defined __linux__) || (defined __APPLE__) || (defined __unix__) || (defined __CYGWIN__) || (defined __MINGW32__) || (defined __MINGW64__)
-    printf("ASSERT: %s:%d\n", file, line);
-    #endif
     Luos_Init();
     // completely reinit the allocator
     MsgAlloc_Init(NULL);
@@ -88,6 +86,11 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
     Luos_JumpToBootloader();
     #endif
     Phy_SetIrqState(false);
+
+    #if (defined _WIN32) || (defined _WIN64) || (defined __linux__) || (defined __APPLE__) || (defined __unix__) || (defined __CYGWIN__) || (defined __MINGW32__) || (defined __MINGW64__)
+    printf("ASSERT: %s:%d\n", file, line);
+    exit(1);
+    #endif
     while (1)
     {
     }

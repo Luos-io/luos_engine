@@ -20,6 +20,9 @@
     #include <termios.h>
     #include <errno.h>
     #include <sys/ioctl.h>
+    #ifdef __linux__
+        #include <linux/serial.h>
+    #endif
 #endif
 
 /*******************************************************************************
@@ -64,35 +67,28 @@ char *stripStr(char *string)
 }
 
 #ifdef _WIN32
-void set_serial_raw_mode(HANDLE hSerial)
+void set_serial_raw_mode()
 {
-    DCB dcbSerialParams       = {0};
-    dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+    DCB dcb;
+    SecureZeroMemory(&dcb, sizeof(DCB));
+    dcb.DCBlength = sizeof(DCB);
 
-    if (!GetCommState(hSerial, &dcbSerialParams))
+    if (!GetCommState(hSerial, &dcb))
     {
-        perror("Error getting serial port state");
+        printf("GetCommState failed with error %d.\n", GetLastError());
         LUOS_ASSERT(0);
         return;
     }
 
-    dcbSerialParams.BaudRate     = SERIAL_NETWORK_BAUDRATE;
-    dcbSerialParams.ByteSize     = 8;
-    dcbSerialParams.StopBits     = ONESTOPBIT;
-    dcbSerialParams.Parity       = NOPARITY;
-    dcbSerialParams.fBinary      = TRUE;
-    dcbSerialParams.fRtsControl  = RTS_CONTROL_DISABLE;
-    dcbSerialParams.fOutxCtsFlow = FALSE;
-    dcbSerialParams.fDtrControl  = DTR_CONTROL_DISABLE;
-    dcbSerialParams.fOutxDsrFlow = FALSE;
-    dcbSerialParams.fOutX        = FALSE;
-    dcbSerialParams.fInX         = FALSE;
-    // dcbSerialParams.XonChar = 17; // ASCII XON (Ctrl-Q)
-    // dcbSerialParams.XoffChar = 19; // ASCII XOFF (Ctrl-S)
+    dcb.BaudRate = SERIAL_NETWORK_BAUDRATE;
+    dcb.ByteSize = 8;
+    dcb.StopBits = ONESTOPBIT;
+    dcb.Parity   = NOPARITY;
+    dcb.fBinary  = TRUE;
 
-    if (!SetCommState(hSerial, &dcbSerialParams))
+    if (!SetCommState(hSerial, &dcb))
     {
-        perror("Error setting serial port state");
+        printf("SetCommState failed with error %d.\n", GetLastError());
         LUOS_ASSERT(0);
         return;
     }
@@ -179,7 +175,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     #else
     printf("Please enter the serial port name (ex: /dev/ttyUSB0): ");
     #endif
-    fgets(portname, sizeof(portname), stdin);
+    char *unused = fgets(portname, sizeof(portname), stdin);
 #else
     printf("Using default serial port: %s\n", SERIAL_PORT);
     memcpy(portname, SERIAL_PORT, strlen(SERIAL_PORT));
@@ -189,41 +185,41 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
 
 // Open the serial port
 #ifdef _WIN32
-    HANDLE hSerial;
     hSerial = CreateFile(
         portname,
         GENERIC_READ | GENERIC_WRITE,
         0,    // exclusive access
         NULL, // no security
         OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
-        0);
+        0, //  not overlapped I/O
+        NULL);
     if (hSerial == INVALID_HANDLE_VALUE)
     {
-        printf("Error opening serial port\n");
+        printf("CreateFile failed with error %d.\n", GetLastError());
         LUOS_ASSERT(0);
     }
     // Set serial port parameters
-    set_serial_raw_mode(hSerial);
+    set_serial_raw_mode();
 
-    // DCB dcbSerialParams       = {0};
-    // dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-    // if (!GetCommState(hSerial, &dcbSerialParams))
+    // DCB dcb       = {0};
+    // dcb.DCBlength = sizeof(dcb);
+    // if (!GetCommState(hSerial, &dcb))
     // {
     //     printf("Error getting serial port state\n");
     //     CloseHandle(hSerial);
     //     LUOS_ASSERT(0);
     // }
-    // dcbSerialParams.BaudRate = SERIAL_NETWORK_BAUDRATE;
-    // dcbSerialParams.ByteSize = 8;
-    // dcbSerialParams.StopBits = ONESTOPBIT;
-    // dcbSerialParams.Parity   = NOPARITY;
-    // if (!SetCommState(hSerial, &dcbSerialParams))
+    // dcb.BaudRate = SERIAL_NETWORK_BAUDRATE;
+    // dcb.ByteSize = 8;
+    // dcb.StopBits = ONESTOPBIT;
+    // dcb.Parity   = NOPARITY;
+    // if (!SetCommState(hSerial, &dcb))
     // {
     //     printf("Error setting serial port state\n");
     //     CloseHandle(hSerial);
     //     LUOS_ASSERT(0);
     // }
+    Sleep(2);
 #else
     serial_port = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (serial_port < 0)
@@ -251,6 +247,10 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     // Set output/ input to be non-blocking
     // tty.c_cc[VMIN]  = 0;
     // tty.c_cc[VTIME] = 0;
+    // #if defined(__linux__)
+    // tty.c_ispeed = SERIAL_NETWORK_BAUDRATE;
+    // tty.c_ospeed = SERIAL_NETWORK_BAUDRATE;
+    // #endif
 
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0)
     {
@@ -261,8 +261,9 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     }
     tcflush(serial_port, TCIOFLUSH);
 
-    // Bypass baudrate speed limitations of termios by using ioctl
-    #define IOSSIOSPEED 0x80045402
+    #if defined(__APPLE__)
+        // Bypass baudrate speed limitations of termios by using ioctl
+        #define IOSSIOSPEED 0x80045402
     speed_t speed = SERIAL_NETWORK_BAUDRATE;
     if (ioctl(serial_port, IOSSIOSPEED, &speed) < 0)
     {
@@ -271,8 +272,45 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
         close(serial_port);
         LUOS_ASSERT(0);
     }
-#endif
+    #else
+    // Set the baudrate
+    struct termios2
+    {
+        tcflag_t c_iflag;
+        tcflag_t c_oflag;
+        tcflag_t c_cflag;
+        tcflag_t c_lflag;
+        cc_t c_line;
+        cc_t c_cc[19];
+        speed_t c_ispeed;
+        speed_t c_ospeed;
+    };
+
+    // Get current serial port settings
+    struct termios2 serial_settings;
+    if (ioctl(serial_port, TCGETS2, &serial_settings) != 0)
+    {
+        perror("Error getting current settings");
+        close(serial_port);
+        LUOS_ASSERT(0);
+    }
+
+        // Set new baud rate
+        #define BOTHER 0x1000
+    serial_settings.c_cflag &= ~CBAUD;                  // Clear existing baud rate settings
+    serial_settings.c_cflag |= BOTHER;                  // Set custom baud rate
+    serial_settings.c_ispeed = SERIAL_NETWORK_BAUDRATE; // Input baud rate
+    serial_settings.c_ospeed = SERIAL_NETWORK_BAUDRATE; // Output baud rate
+
+    if (ioctl(serial_port, TCSETS2, &serial_settings) != 0)
+    {
+        perror("Error setting baud rate");
+        close(serial_port);
+        LUOS_ASSERT(0);
+    }
+    #endif
     sleep(2);
+#endif
 }
 
 /******************************************************************************
@@ -287,7 +325,7 @@ void SerialHAL_Loop(void)
     DWORD bytesRead;
     if (!ReadFile(hSerial, recvData, sizeof(recvData), &bytesRead, NULL))
     {
-        printf("Error reading from serial port\n");
+        printf("Error reading from serial port, ERROR_CODE : %d\n", GetLastError());
         CloseHandle(hSerial);
         LUOS_ASSERT(0);
     }
@@ -313,7 +351,7 @@ void SerialHAL_Send(uint8_t *data, uint16_t size)
     DWORD bytesWritten;
     if (!WriteFile(hSerial, data, size, &bytesWritten, NULL))
     {
-        printf("Error writing to serial port\n");
+        printf("Error writing to serial port, ERROR_CODE : %d\n", GetLastError());
         CloseHandle(hSerial);
         LUOS_ASSERT(0);
     }
