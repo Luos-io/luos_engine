@@ -83,6 +83,9 @@ void LuosIO_Init(void)
     luos_phy = Phy_Get(0, LuosIO_MsgHandler, LuosIO_RunTopo, LuosIO_Reset);
     // Set the irq management function
     Phy_SetIrqStateFunciton(LuosHAL_SetIrqState);
+
+    // Detection init
+    Flag_DetectServices = false;
 }
 
 /******************************************************************************
@@ -310,6 +313,8 @@ static int LuosIO_StartTopologyDetection(service_t *service)
             }
             detect_state_machine++;
         case 2:
+            // Reinit Phy (this will call LuosIO_Reset)
+            Phy_ResetAll();
             // Wait 2ms to be sure all previous messages are received and treated by nodes
             start_tick = LuosHAL_GetSystick();
             detect_state_machine++;
