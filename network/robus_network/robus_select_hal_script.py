@@ -45,12 +45,10 @@ if (find_HAL == False):
                     hal_script_path = realpath(
                         "HAL/" + item[1] + "/hal_script.py")
                     env.SConscript(hal_script_path, exports="env")
-                click.secho("")
 
             else:
                 click.secho("\t* %s Robus network HAL not found" %
                             item[1], fg="red")
-                click.secho("")
 
             env.Append(CPPPATH=[realpath("HAL/" + item[1])])
             env.Append(CPPPATH=[realpath("inc/")])

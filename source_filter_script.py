@@ -66,6 +66,7 @@ for item in envdefs:
 # Native only => we should put this on a specific script on engine/HAL/STUB
 for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
     if (item == 'UNIT_TEST'):
+        click.secho("")
         click.secho("Native unit testing:", underline=True)
         current_os = pf.system()
         click.secho("\t* Native Mock HAL for %s is selected for Luos." %
@@ -80,25 +81,6 @@ for item in env.ParseFlags(env['BUILD_FLAGS'])["CPPDEFINES"]:
 
         if (current_os == 'Linux') or (current_os == 'Windows'):
             env.Append(LINKFLAGS=["-lgcov", "--coverage", "-fprofile-arcs"])
-        # CODE COVERAGE WILL BE ADDED SOON
-        # if (current_os == 'Linux') or (current_os == 'Darwin') or (current_os == 'Windows'):
-        #     env.Append(LINKFLAGS=["-lgcov"])
-        #     env.Append(LINKFLAGS=["--coverage"])
-        #     env.Append(LINKFLAGS=["-fprofile-arcs"])
-
-        #     def generateCoverageInfo(source, target, env):
-        #         for file in os.listdir("test"):
-        #             env.Execute(".pio/build/native/program test/"+file)
-        #         env.Execute("lcov -d .pio/build/native/ -c -o lcov.info")
-        #         env.Execute(
-        #             "lcov --remove lcov.info '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' -o filtered_lcov.info")
-        #         env.Execute(
-        #             "genhtml filtered_lcov.info -o cov/ --demangle-cpp")
-
-        # Generate code coverage when testing workflow is ended
-        # env.AddPostAction(".pio/build/native/program", generateCoverageInfo)
-        # else:
-        #     click.echo("Unit tests are not supported on your os ", current_os)
         break
 
 if not visited_key in global_env:
