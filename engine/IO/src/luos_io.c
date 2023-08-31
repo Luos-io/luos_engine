@@ -310,13 +310,11 @@ static int LuosIO_StartTopologyDetection(service_t *service)
             }
             detect_state_machine++;
         case 2:
-            // Reinit Phy (this will call LuosIO_Reset)
-            Phy_ResetAll();
-            // Wait 2ms to be sure all previous messages are received and treated by other nodes
+            // Wait 2ms to be sure all previous messages are received and treated by nodes
             start_tick = LuosHAL_GetSystick();
             detect_state_machine++;
         case 3:
-            // Wait 2ms  for the other to manage the message
+            // Wait 2ms  for all nodes to manage the message
             if (LuosHAL_GetSystick() - start_tick < 2)
             {
                 return 0;
@@ -339,8 +337,8 @@ static int LuosIO_StartTopologyDetection(service_t *service)
             start_tick = LuosHAL_GetSystick();
             detect_state_machine++;
         case 6:
-            // Wait 2ms to be sure all previous messages are received and treated by other nodes
-            if (LuosHAL_GetSystick() - start_tick < 2)
+            // Wait 10ms to be sure all previous messages are received and treated by all the nodes
+            if (LuosHAL_GetSystick() - start_tick < 10)
             {
                 return 0;
             }

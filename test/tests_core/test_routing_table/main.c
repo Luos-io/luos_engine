@@ -307,7 +307,7 @@ void unittest_RoutingTB_ConvertServiceToRoutingTable(void)
             routing_table_t entry;
             service_t service;
             service.id = 10;
-            strcpy(service.alias, "Dummy_App");
+            strcpy((char *)service.alias, "Dummy_App");
             service.type = DISTANCE_TYPE;
 
             RoutingTB_ConvertServiceToRoutingTable(&entry, &service);
