@@ -48,7 +48,7 @@
  *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
  ******************************************************************************/
 #define ROBUS_NETWORK_BAUDRATE 500000
-#define MSG_BUFFER_SIZE 512
+#define MSG_BUFFER_SIZE        512
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
