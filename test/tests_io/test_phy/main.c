@@ -2,6 +2,7 @@
 #include "../src/luos_phy.c"
 #include "../src/msg_alloc.c"
 #include "../src/luos_io.c"
+#include <default_scenario.h>
 
 luos_phy_t *robus_phy;
 uint8_t buffer[512];
@@ -48,6 +49,7 @@ void reset_cb(luos_phy_t *phy_ptr)
 static void phy_test_reset(void)
 {
     Phy_Init();
+    //  Init default scenario context
     luos_phy = Phy_Get(0, phy_luos_MsgHandler, reset_cb, topo_cb);
     TEST_ASSERT_EQUAL(&phy_ctx.phy[0], luos_phy);
     TEST_ASSERT_EQUAL(1, phy_ctx.phy_nb);
@@ -725,7 +727,6 @@ void unittest_phy_ComputeHeader()
             TEST_ASSERT_EQUAL(true, luos_phy->rx_keep);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_ack);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_alloc_job);
-            TEST_ASSERT_EQUAL(0x01, luos_phy->rx_phy_filter); // A luos service is targeted
         }
         CATCH
         {
@@ -766,7 +767,6 @@ void unittest_phy_ComputeHeader()
             TEST_ASSERT_EQUAL(true, luos_phy->rx_keep);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_ack);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_alloc_job);
-            TEST_ASSERT_EQUAL(0x01, luos_phy->rx_phy_filter); // A luos service is targeted
         }
         CATCH
         {
@@ -807,7 +807,6 @@ void unittest_phy_ComputeHeader()
             TEST_ASSERT_EQUAL(true, luos_phy->rx_keep);
             TEST_ASSERT_EQUAL(false, luos_phy->rx_ack);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_alloc_job);
-            TEST_ASSERT_EQUAL(0x01, luos_phy->rx_phy_filter); // A luos service is targeted
         }
         CATCH
         {
@@ -848,7 +847,6 @@ void unittest_phy_ComputeHeader()
             TEST_ASSERT_EQUAL(true, luos_phy->rx_keep);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_ack);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_alloc_job);
-            TEST_ASSERT_EQUAL(0x01, luos_phy->rx_phy_filter); // A luos service is targeted
         }
         CATCH
         {
@@ -888,7 +886,6 @@ void unittest_phy_ComputeHeader()
             TEST_ASSERT_EQUAL(true, luos_phy->rx_keep);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_ack);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_alloc_job);
-            TEST_ASSERT_EQUAL(0x02, luos_phy->rx_phy_filter); // A Robus node is targeted
         }
         CATCH
         {
@@ -926,10 +923,9 @@ void unittest_phy_ComputeHeader()
             robus_phy->rx_phy_filter = 0x00;
             Phy_ComputeHeader(robus_phy);
             TEST_ASSERT_EQUAL(MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t), luos_phy->rx_size);
-            TEST_ASSERT_EQUAL(false, robus_phy->rx_keep);
-            TEST_ASSERT_EQUAL(false, robus_phy->rx_ack);
-            TEST_ASSERT_EQUAL(false, robus_phy->rx_alloc_job);
-            TEST_ASSERT_EQUAL(0x00, robus_phy->rx_phy_filter); // No service is targeted
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_keep); // By default at this stage we don't check all the node so we consider this as valid
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_alloc_job);
         }
         CATCH
         {
@@ -969,7 +965,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_alloc_job  = false;
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x02; // A Robus node is targeted
-            luos_phy->rx_timestamp  = TimeOD_TimeFrom_ns(10.0f);
+            luos_phy->rx_timestamp  = 10;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1006,7 +1002,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_alloc_job  = false;
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x02; // A Robus node is targeted
-            luos_phy->rx_timestamp  = TimeOD_TimeFrom_ns(10.0f);
+            luos_phy->rx_timestamp  = 10;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1024,10 +1020,17 @@ void unittest_phy_ValidMsg()
         TRY
         {
             phy_test_reset();
+            Init_Context();
             memory_stats_t memory_stats;
             MsgAlloc_Init(&memory_stats);
 
             msg_t msg;
+            msg.header.config      = TIMESTAMP_PROTOCOL;
+            msg.header.target_mode = SERVICEIDACK;
+            msg.header.target      = 2;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 600;
+            msg.data[0]            = 0xAE;
             // Save message information in the Luos phy struct
             // Robus cannot target himself.
             luos_phy->rx_buffer_base = (uint8_t *)&msg;
@@ -1038,8 +1041,8 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_ack        = true;
             luos_phy->rx_alloc_job  = true;
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
-            luos_phy->rx_phy_filter = 0x02; // A Robus node is targeted
-            luos_phy->rx_timestamp  = TimeOD_TimeFrom_ns(10.0f);
+            luos_phy->rx_phy_filter = 0x00;
+            luos_phy->rx_timestamp  = 10;
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1047,10 +1050,11 @@ void unittest_phy_ValidMsg()
             TEST_ASSERT_EQUAL(10, phy_ctx.io_job[0].timestamp);
             TEST_ASSERT_EQUAL(false, luos_phy->rx_alloc_job);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.io_job[0].alloc_msg);
-            TEST_ASSERT_EQUAL(0x02, phy_ctx.io_job[0].phy_filter);
+            TEST_ASSERT_EQUAL(0x01, phy_ctx.io_job[0].phy_filter);
             TEST_ASSERT_EQUAL(MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t), phy_ctx.io_job[0].size);
             TEST_ASSERT_EQUAL(0, luos_phy->received_data);
             TEST_ASSERT_EQUAL(luos_phy->rx_buffer_base, luos_phy->rx_data);
+            TEST_ASSERT_EQUAL(0x01, luos_phy->rx_phy_filter); // A Robus node is targeted
         }
         CATCH
         {
@@ -1074,7 +1078,6 @@ void unittest_phy_ComputeTimestamp()
 
         TRY
         {
-            luos_phy phy;
             Phy_ComputeMsgTimestamp(luos_phy, NULL);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
