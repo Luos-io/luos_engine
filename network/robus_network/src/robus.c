@@ -49,12 +49,15 @@ void Robus_Init(void)
     // Init transmission
     Transmit_Init();
 
+    // Init Receiption
+    Recep_Init();
+
     // Instantiate the phy struct
     phy_robus = Phy_Create(Robus_JobHandler, Robus_RunTopology, Robus_Reset);
     LUOS_ASSERT(phy_robus);
 
-    // Init reception
-    Recep_Init(phy_robus);
+    // Init reception of the phy
+    Recep_PhyInit(phy_robus);
 }
 
 /******************************************************************************

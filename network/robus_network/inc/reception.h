@@ -49,7 +49,8 @@ void Recep_Drop(luos_phy_t *phy_robus, volatile uint8_t *data);
 // Callbacks send
 void Recep_CatchAck(luos_phy_t *phy_robus, volatile uint8_t *data);
 
-void Recep_Init(luos_phy_t *phy_robus);
+void Recep_Init(void);
+void Recep_PhyInit(luos_phy_t *phy_robus);
 void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);

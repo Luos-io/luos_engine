@@ -73,13 +73,21 @@ uint16_t crc_val               = 0;   // CRC value
  * @param None
  * @return None
  ******************************************************************************/
-void Recep_Init(luos_phy_t *phy_robus)
+void Recep_Init()
+{
+    // Initialize the reception state machine
+    ctx.rx.status.unmap      = 0;
+    ctx.rx.callback          = Recep_GetHeader;
+    ctx.rx.status.identifier = 0xF;
+}
+/******************************************************************************
+ * @brief Reception init.
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Recep_PhyInit(luos_phy_t *phy_robus)
 {
     LUOS_ASSERT(phy_robus != NULL);
-    // Initialize the reception state machine
-    ctx.rx.status.unmap       = 0;
-    ctx.rx.callback           = Recep_GetHeader;
-    ctx.rx.status.identifier  = 0xF;
     phy_robus->rx_timestamp   = 0;
     phy_robus->rx_buffer_base = data_rx;
     phy_robus->rx_data        = data_rx;
