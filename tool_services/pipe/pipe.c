@@ -115,6 +115,7 @@ void node_assert(char *file, uint32_t line)
     // manage self crashing scenario
     char json[512];
     sprintf(json, "{\"assert\":{\"node_id\":1,\"file\":\"%s\",\"line\":%d}}\n", file, (unsigned int)line);
+    Streaming_ResetChannel(&tx_StreamChannel);
     Streaming_PutSample(&tx_StreamChannel, json, strlen(json));
 
     // Send the message
