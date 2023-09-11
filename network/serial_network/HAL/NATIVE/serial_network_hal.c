@@ -201,24 +201,6 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     // Set serial port parameters
     set_serial_raw_mode();
 
-    // DCB dcb       = {0};
-    // dcb.DCBlength = sizeof(dcb);
-    // if (!GetCommState(hSerial, &dcb))
-    // {
-    //     printf("Error getting serial port state\n");
-    //     CloseHandle(hSerial);
-    //     LUOS_ASSERT(0);
-    // }
-    // dcb.BaudRate = SERIAL_NETWORK_BAUDRATE;
-    // dcb.ByteSize = 8;
-    // dcb.StopBits = ONESTOPBIT;
-    // dcb.Parity   = NOPARITY;
-    // if (!SetCommState(hSerial, &dcb))
-    // {
-    //     printf("Error setting serial port state\n");
-    //     CloseHandle(hSerial);
-    //     LUOS_ASSERT(0);
-    // }
     Sleep(2);
 #else
     serial_port = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -227,8 +209,6 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
         printf("Error opening serial port\n");
         printf("Error code: %d\n", errno);
         LUOS_ASSERT(0);
-        while (1)
-            ;
     }
     struct termios tty;
     memset(&tty, 0, sizeof(tty));
@@ -241,16 +221,7 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     }
 
     // Set raw mode without any special handling of input/output
-    // cfmakeraw(&tty);
     set_termios_raw_mode(&tty);
-
-    // Set output/ input to be non-blocking
-    // tty.c_cc[VMIN]  = 0;
-    // tty.c_cc[VTIME] = 0;
-    // #if defined(__linux__)
-    // tty.c_ispeed = SERIAL_NETWORK_BAUDRATE;
-    // tty.c_ospeed = SERIAL_NETWORK_BAUDRATE;
-    // #endif
 
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0)
     {
@@ -361,10 +332,8 @@ void SerialHAL_Send(uint8_t *data, uint16_t size)
     int bytes_in_buffer;
     ssize_t bytesWritten;
     ioctl(serial_port, TIOCOUTQ, &bytes_in_buffer);
-    printf("%d bytes present before adding %d other.\n", bytes_in_buffer, size);
     bytesWritten = write(serial_port, data, size);
     LUOS_ASSERT(bytesWritten == size);
-    // tcdrain(serial_port);
     if (bytesWritten < 0)
     {
         printf("Error writing to serial port\n");
