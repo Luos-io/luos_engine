@@ -766,7 +766,11 @@ void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *s
  ******************************************************************************/
 void RoutingTB_RemoveNode(uint16_t nodeid)
 {
-    LUOS_ASSERT(nodeid != 0);
+    if (nodeid == 0)
+    {
+        // This mean that a node crashed before detection, we don't have to remove it.
+        return;
+    }
     // Instead of removing a node just remove all the service in it to make it unusable
     // We could add a param (CONTROL for example) to declare the node as STOP
     // find the node

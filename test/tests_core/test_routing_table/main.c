@@ -378,16 +378,6 @@ void unittest_RoutingTB_RemoveService(void)
 
 void unittest_RoutingTB_RemoveNode(void)
 {
-    NEW_TEST_CASE("Test RoutingTB_RemoveNode assert conditions");
-    {
-        TRY
-        {
-            RoutingTB_RemoveNode(0);
-        }
-        TEST_ASSERT_TRUE(IS_ASSERT());
-        END_TRY;
-    }
-
     NEW_TEST_CASE("check RoutingTB_RemoveNode return value");
     {
         TRY

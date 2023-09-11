@@ -772,6 +772,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
         {
             // We probably have been reseted in the meantime. Just drop the message.
             phy_ptr->rx_alloc_job = false;
+            phy_ptr->rx_keep      = false;
             return;
         }
 
