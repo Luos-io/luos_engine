@@ -366,6 +366,7 @@ _CRITICAL void Serial_Send(void)
  *****************************************************************************/
 _CRITICAL void Serial_ReceptionWrite(uint8_t *data, uint32_t size)
 {
+    LUOS_ASSERT((size < sizeof(RX_data)) && (data != NULL));
     if (rx_size == 0)
     {
         // This is probably the first data we received for this message, we need to timestamp the reception date.
