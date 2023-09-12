@@ -766,6 +766,12 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
     // Now we can check if we need to store the received data
     if (phy_ptr->rx_keep)
     {
+        Phy_SetIrqState(false);
+        if (phy_ptr->rx_alloc_job == false)
+        {
+            Phy_SetIrqState(true);
+            return;
+        }
         // Compute the rx_phy_filter
         phy_ptr->rx_phy_filter = Phy_ComputeTargets(phy_ptr, (header_t *)phy_ptr->rx_buffer_base);
         if (phy_ptr->rx_phy_filter == 0)
@@ -778,7 +784,6 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
 
         // We need to store the received data.
         // Update the informations allowing reception to continue and directly copy the data into the allocated buffer
-        Phy_SetIrqState(false);
         if (phy_ptr->rx_alloc_job)
         {
             uint16_t phy_stored_data_size = phy_ptr->received_data;
