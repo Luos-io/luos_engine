@@ -333,13 +333,13 @@ void SerialHAL_Send(uint8_t *data, uint16_t size)
     ssize_t bytesWritten;
     ioctl(serial_port, TIOCOUTQ, &bytes_in_buffer);
     bytesWritten = write(serial_port, data, size);
-    LUOS_ASSERT(bytesWritten == size);
     if (bytesWritten < 0)
     {
         printf("Error writing to serial port\n");
         close(serial_port);
         LUOS_ASSERT(0);
     }
+    LUOS_ASSERT(bytesWritten == size);
 #endif
     Serial_TransmissionEnd();
 }
