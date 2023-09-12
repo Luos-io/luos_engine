@@ -135,25 +135,23 @@ void SerialHAL_Loop(void)
 {
     uint16_t size               = 0;
     uint16_t RX_PointerPosition = 0;
-    if (LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL) == 0)
-    {
-        return;
-    }
 
     RX_PointerPosition = rx_buffer_size - LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL);
-
-    if (SERIAL_RX_DMA_TC(SERIAL_RX_DMA) != RESET) // DMA buffer overflow
+    if (RX_PointerPosition != RX_PrevPointerPosition)
     {
-        SERIAL_RX_DMA_CLEAR_TC(SERIAL_RX_DMA);
-        size = (rx_buffer_size - RX_PrevPointerPosition) + RX_PointerPosition;
+        if (SERIAL_RX_DMA_TC(SERIAL_RX_DMA) != RESET) // DMA buffer overflow
+        {
+            SERIAL_RX_DMA_CLEAR_TC(SERIAL_RX_DMA);
+            size = (rx_buffer_size - RX_PrevPointerPosition) + RX_PointerPosition;
+        }
+        else
+        {
+            size = RX_PointerPosition - RX_PrevPointerPosition;
+        }
+        RX_PrevPointerPosition = RX_PointerPosition;
+        // Send the received data and size to the serial stack to deencapsulate it and send it to luos_phy
+        Serial_ReceptionIncrease(size);
     }
-    else
-    {
-        size = RX_PointerPosition - RX_PrevPointerPosition;
-    }
-    RX_PrevPointerPosition = RX_PointerPosition;
-    // Send the received data and size to the serial stack to deencapsulate it and send it to luos_phy
-    Serial_ReceptionIncrease(size);
 }
 
 /******************************************************************************
