@@ -22,7 +22,7 @@ for item in env.get("CPPDEFINES", []):
             env.Append(
                 CPPPATH=[realpath(env.get("PROJECT_DIR")+"/lib/"+item[1])])
             env.Replace(SRC_FILTER=["+<*.c>, +<%s>" %
-                        env.get("PROJECT_DIR")+"/lib/"+item[1]])
+                        (env.get("PROJECT_DIR")+"/lib/"+item[1])])
         else:
             click.secho("\t* %s translation format not found." %
                         item[1], fg="red")
