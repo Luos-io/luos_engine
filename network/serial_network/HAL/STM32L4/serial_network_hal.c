@@ -141,6 +141,9 @@ void SerialHAL_Loop(void)
     {
         if (SERIAL_RX_DMA_TC(SERIAL_RX_DMA) != RESET) // DMA buffer overflow
         {
+            // Recompute the RX_PointerPosition to be sure to get the DMA buffer after the overflow.
+            // If the RX_PointerPosition was taken just before the overflow we may compute this with a wrong value.
+            RX_PointerPosition = rx_buffer_size - LL_DMA_GetDataLength(SERIAL_RX_DMA, SERIAL_RX_DMA_CHANNEL);
             SERIAL_RX_DMA_CLEAR_TC(SERIAL_RX_DMA);
             size = (rx_buffer_size - RX_PrevPointerPosition) + RX_PointerPosition;
         }
