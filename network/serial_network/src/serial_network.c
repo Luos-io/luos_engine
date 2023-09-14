@@ -130,11 +130,17 @@ static void Serial_MoveRxPtr(uint8_t size)
  ******************************************************************************/
 void Serial_Loop(void)
 {
+    static uint32_t timeout_systick = 0;
     SerialHAL_Loop();
 
     // Manage received data
     while (rx_size > 0)
     {
+        if (*phy_serial->rx_buffer_base != SERIAL_HEADER)
+        {
+            Serial_MoveRxPtr(1);
+            continue;
+        }
         /***********************************************
          * 1 - Receive the header and check if the message is complete
          *********************************************/
@@ -158,15 +164,37 @@ void Serial_Loop(void)
             // Header is continuous
             memcpy(&header, phy_serial->rx_buffer_base, sizeof(SerialHeader_t));
         }
+        if (header.size >= sizeof(msg_t))
+        {
+            // This data seems to be corrupted or at least we can't receive it with our buffer size, drop it.
+            Serial_MoveRxPtr(1);
+        }
         // Now we have the complete header, check if we receive the complete message
         if (rx_size < header.size + sizeof(SerialHeader_t) + 1)
         {
             // We don't receive the complete message yet.
+            // Manage a timeout to be sure we are not looking for a wrong message
+            if (timeout_systick == 0)
+            {
+                // Start the timeout counter
+                timeout_systick = LuosHAL_GetSystick();
+            }
+            else
+            {
+                // We already start the timeout
+                if ((LuosHAL_GetSystick() - timeout_systick) > 100)
+                {
+                    // We spend the 100ms timeout, remove the byte
+                    Serial_MoveRxPtr(1);
+                    timeout_systick = 0;
+                }
+            }
             return;
         }
         /***********************************************
          * 2 - Receive the message
          *********************************************/
+        timeout_systick          = 0;
         uint8_t *footer_position = &phy_serial->rx_buffer_base[header.size + sizeof(SerialHeader_t)];
         // Check if the footer address is after the end of the buffer
         if ((uintptr_t)footer_position >= (uintptr_t)RX_data + sizeof(RX_data))
