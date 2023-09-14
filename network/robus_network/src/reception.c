@@ -181,6 +181,8 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
                 // Send an Ack
                 Transmit_SendAck();
             }
+            // Remove the CRC additional byte
+            phy_robus->received_data--;
             // Valid the message
             Phy_ValidMsg(phy_robus);
         }
