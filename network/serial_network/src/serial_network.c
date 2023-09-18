@@ -157,7 +157,7 @@ void Serial_Loop(void)
             // We need to go back to the beginning of the buffer
             uint8_t buffer_end_size = ((uintptr_t)RX_data + sizeof(RX_data)) - (uintptr_t)(phy_serial->rx_buffer_base);
             memcpy(&header, phy_serial->rx_buffer_base, buffer_end_size);
-            memcpy(&header + buffer_end_size, RX_data, sizeof(SerialHeader_t) - buffer_end_size);
+            memcpy((void *)((uintptr_t)&header + buffer_end_size), RX_data, sizeof(SerialHeader_t) - buffer_end_size);
         }
         else
         {
