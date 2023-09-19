@@ -25,10 +25,11 @@ typedef struct __attribute__((__packed__))
             float p;
             float i;
             float d;
+            float ff0;
+            float ff1;
         };
-        unsigned char unmap[3 * sizeof(float)];
-        float table[3];
-    };
+        unsigned char unmap[5 * sizeof(float)];
+        float table[5];
 } asserv_pid_t;
 
 /*******************************************************************************
