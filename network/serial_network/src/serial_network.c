@@ -164,7 +164,7 @@ void Serial_Loop(void)
             // Header is continuous
             memcpy(&header, phy_serial->rx_buffer_base, sizeof(SerialHeader_t));
         }
-        if (header.size >= sizeof(msg_t))
+        if (header.size > sizeof(msg_t))
         {
             // This data seems to be corrupted or at least we can't receive it with our buffer size, drop it.
             Serial_MoveRxPtr(1);
@@ -182,7 +182,7 @@ void Serial_Loop(void)
             else
             {
                 // We already start the timeout
-                if ((LuosHAL_GetSystick() - timeout_systick) > 100)
+                if ((LuosHAL_GetSystick() - timeout_systick) > 200)
                 {
                     // We spend the 100ms timeout, remove the byte
                     Serial_MoveRxPtr(1);
