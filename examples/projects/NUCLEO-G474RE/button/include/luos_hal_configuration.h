@@ -14,12 +14,12 @@
  * PINOUT CONFIG
  ******************************************************************************/
 #ifndef PORT_CLOCK_ENABLE
-#define PORT_CLOCK_ENABLE()           \
-    do                                \
-    {                                 \
-        __HAL_RCC_GPIOB_CLK_ENABLE(); \
-        __HAL_RCC_GPIOC_CLK_ENABLE(); \
-    } while (0U)
+    #define PORT_CLOCK_ENABLE()           \
+        do                                \
+        {                                 \
+            __HAL_RCC_GPIOB_CLK_ENABLE(); \
+            __HAL_RCC_GPIOC_CLK_ENABLE(); \
+        } while (0U)
 #endif
 
 // PTP pin definition
@@ -49,14 +49,14 @@
 /*******************************************************************************
  * COM CONFIG
  ******************************************************************************/
-#define LUOS_COM_CLOCK_ENABLE() __HAL_RCC_USART3_CLK_ENABLE()
-#define LUOS_COM                USART3
-#define LUOS_COM_IRQ            USART3_IRQn
-#define LUOS_COM_IRQHANDLER()   USART3_IRQHandler()
+#define ROBUS_COM_CLOCK_ENABLE() __HAL_RCC_USART3_CLK_ENABLE()
+#define ROBUS_COM                USART3
+#define ROBUS_COM_IRQ            USART3_IRQn
+#define ROBUS_COM_IRQHANDLER()   USART3_IRQHandler()
 
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
-#define LUOS_DMA_REQUEST LL_DMAMUX_REQ_USART3_TX
+#define ROBUS_DMA_REQUEST LL_DMAMUX_REQ_USART3_TX
 
 #endif /* _LUOSHAL_CONFIGURATION_H_ */

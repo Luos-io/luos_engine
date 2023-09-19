@@ -56,7 +56,7 @@ void Gate_Loop(void)
     static uint32_t last_time = 0;
 
     // Check the detection status.
-    if (Luos_IsNodeDetected() == false)
+    if (Luos_IsDetected() == false)
     {
 #ifndef GATE_POLLING
         update_time = TimeOD_TimeFrom_s(GATE_REFRESH_TIME_S);

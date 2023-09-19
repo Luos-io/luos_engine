@@ -20,7 +20,7 @@ uint8_t end_detection = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void AlarmController_MsgHandler(service_t *service, msg_t *msg);
+static void AlarmController_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -51,7 +51,7 @@ void AlarmController_Loop(void)
 
     // ********** hot plug management ************
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         if (end_detection)
         {
@@ -206,7 +206,7 @@ void AlarmController_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void AlarmController_MsgHandler(service_t *service, msg_t *msg)
+static void AlarmController_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GYRO_3D)
     {

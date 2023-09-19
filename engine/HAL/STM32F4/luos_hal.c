@@ -9,8 +9,6 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include "reception.h"
-#include "context.h"
 
 // MCU dependencies this HAL is for family STM32F4 you can find
 // the HAL stm32cubeF4 on ST web site
@@ -54,7 +52,7 @@ void LuosHAL_Init(void)
  * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
-_CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void LuosHAL_SetIrqState(bool Enable)
 {
     if (Enable == true)
     {
@@ -311,7 +309,7 @@ void LuosHAL_EraseMemory(uint32_t address, uint16_t size)
 
 /******************************************************************************
  * @brief Programm flash memory
- * @param address : Start address 
+ * @param address : Start address
  * @param size :: Data size
  * @param data : Pointer to data
  * @return

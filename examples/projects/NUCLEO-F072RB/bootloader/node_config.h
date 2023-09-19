@@ -37,10 +37,12 @@
  *******************************************************************************
  *    Define                | Default Value              | Description
  *    :---------------------|------------------------------------------------------
- *    MAX_SERVICE_NUMBER    |              5             | Service number in the node
+ *    MAX_LOCAL_SERVICE_NUMBER    |              5             | Service number in the node
+ *    MAX_NODE_NUMBER.      |              20            | Node number in the device
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
- *    MAX_MSG_NB            |   2*MAX_SERVICE_NUMBER     | Message number in Luos buffer
- *    MAX_RTB_ENTRY         |             40             | Max entries in the routing table
+ *    MAX_MSG_NB            |   2*MAX_LOCAL_SERVICE_NUMBER     | Message number in Luos buffer
+ *    MAX_NODE_NUMBER       |              20            | Node number in the device
+ *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
  ******************************************************************************/
@@ -66,19 +68,19 @@
  *    COM_RX                  | Rx USART Com Pin/Port/Alternate
  *    PINOUT_IRQHANDLER       | Callback function for Pin IRQ handler
 
- *    LUOS_COM_CLOCK_ENABLE   | Enable clock for USART
- *    LUOS_COM                | USART number
- *    LUOS_COM_IRQ            | USART IRQ number
- *    LUOS_COM_IRQHANDLER     | Callback function for USART IRQ handler
+ *    ROBUS_COM_CLOCK_ENABLE   | Enable clock for USART
+ *    ROBUS_COM                | USART number
+ *    ROBUS_COM_IRQ            | USART IRQ number
+ *    ROBUS_COM_IRQHANDLER     | Callback function for USART IRQ handler
 
- *    LUOS_DMA_CLOCK_ENABLE   | Enable clock for DMA
- *    LUOS_DMA                | DMA number
- *    LUOS_DMA_CHANNEL        | DMA channel (depending on MCU DMA may need special config)
+ *    ROBUS_DMA_CLOCK_ENABLE   | Enable clock for DMA
+ *    ROBUS_DMA                | DMA number
+ *    ROBUS_DMA_CHANNEL        | DMA channel (depending on MCU DMA may need special config)
 
- *    LUOS_TIMER_CLOCK_ENABLE | Enable clock for Timer
- *    LUOS_TIMER              | Timer number
- *    LUOS_TIMER_IRQ          | Timer IRQ number
- *    LUOS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
+ *    ROBUS_TIMER_CLOCK_ENABLE | Enable clock for Timer
+ *    ROBUS_TIMER              | Timer number
+ *    ROBUS_TIMER_IRQ          | Timer IRQ number
+ *    ROBUS_TIMER_IRQHANDLER   | Callback function for Timer IRQ handler
 
  *    BOOT_START_ADDRESS      |
  *    SHARED_MEMORY_ADDRESS   |

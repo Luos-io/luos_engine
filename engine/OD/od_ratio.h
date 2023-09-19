@@ -13,7 +13,7 @@
  ******************************************************************************/
 typedef struct
 {
-    float _private;
+    float raw;
 } ratio_t;
 
 /*******************************************************************************
@@ -29,13 +29,13 @@ typedef struct
 // percentage
 static inline float RatioOD_RatioTo_Percent(ratio_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline ratio_t RatioOD_RatioFrom_Percent(float percentage)
 {
     ratio_t self;
-    self._private = percentage;
+    self.raw = percentage;
     return self;
 }
 

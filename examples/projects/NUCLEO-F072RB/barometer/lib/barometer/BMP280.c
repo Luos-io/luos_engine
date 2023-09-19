@@ -86,10 +86,10 @@ float Pressure_temp2 = 0;
 float Temperature   = 0;
 pressure_t Pressure = {0.0};
 
-static void BMP280_MsgHandler(service_t *service, msg_t *msg);
+static void BMP280_MsgHandler(service_t *service, const msg_t *msg);
 
 /* Receive and reply to an external Message */
-static void BMP280_MsgHandler(service_t *service, msg_t *msg)
+static void BMP280_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {

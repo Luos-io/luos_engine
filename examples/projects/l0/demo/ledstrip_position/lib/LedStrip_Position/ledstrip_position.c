@@ -44,7 +44,7 @@ bool end_detection       = false;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void LedStripPosition_MsgHandler(service_t *service, msg_t *msg);
+static void LedStripPosition_MsgHandler(service_t *service, const msg_t *msg);
 static void distance_filtering(void);
 static void distance_frame_compute(void);
 static void glowing_fade(float target);
@@ -78,7 +78,7 @@ void LedStripPosition_Loop(void)
     static uint32_t lastframe_time_ms = 0;
     search_result_t result;
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected())
+    if (Luos_IsDetected())
     {
         if (end_detection)
         {
@@ -150,7 +150,7 @@ void LedStripPosition_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void LedStripPosition_MsgHandler(service_t *service, msg_t *msg)
+static void LedStripPosition_MsgHandler(service_t *service, const msg_t *msg)
 {
     search_result_t services_list;
     RTFilter_Reset(&services_list);

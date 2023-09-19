@@ -13,7 +13,7 @@
  ******************************************************************************/
 typedef struct
 {
-    float _private;
+    float raw;
 } pressure_t;
 
 /*******************************************************************************
@@ -29,39 +29,39 @@ typedef struct
 // Pa
 static inline float PressureOD_PressureTo_Pa(pressure_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline pressure_t PressureOD_PressureFrom_Pa(float Pa)
 {
     pressure_t self;
-    self._private = Pa;
+    self.raw = Pa;
     return self;
 }
 
 // Bars
 static inline float PressureOD_PressureTo_Bars(pressure_t self)
 {
-    return self._private / 100000.0f;
+    return self.raw / 100000.0f;
 }
 
 static inline pressure_t PressureOD_PressureFrom_Bars(float Bars)
 {
     pressure_t self;
-    self._private = Bars * (float)100000.0f;
+    self.raw = Bars * (float)100000.0f;
     return self;
 }
 
 // hPa
 static inline float PressureOD_PressureTo_hPa(pressure_t self)
 {
-    return self._private / (float)100.0f;
+    return self.raw / (float)100.0f;
 }
 
 static inline pressure_t PressureOD_PressureFrom_hPa(float hPa)
 {
     pressure_t self;
-    self._private = hPa * 100.0f;
+    self.raw = hPa * 100.0f;
     return self;
 }
 

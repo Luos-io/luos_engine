@@ -14,11 +14,18 @@ for item in env.get("CPPDEFINES", []):
         if (path.exists(item[1])):
             click.secho("\t* %s translation format selected." %
                         item[1], fg="green")
+            env.Append(CPPPATH=[realpath(item[1])])
+            env.Replace(SRC_FILTER=["+<*.c>, +<%s>" % item[1]])
+        elif (path.exists(env.get("PROJECT_DIR")+"/lib/"+item[1])):
+            click.secho("\t* %s translation format selected." %
+                        item[1], fg="green")
+            env.Append(
+                CPPPATH=[realpath(env.get("PROJECT_DIR")+"/lib/"+item[1])])
+            env.Replace(SRC_FILTER=["+<*.c>, +<%s>" %
+                        (env.get("PROJECT_DIR")+"/lib/"+item[1])])
         else:
             click.secho("\t* %s translation format not found." %
                         item[1], fg="red")
-        env.Append(CPPPATH=[realpath(item[1])])
-        env.Replace(SRC_FILTER=["+<*.c>, +<%s>" % item[1]])
         break
 
 if find_format == False:

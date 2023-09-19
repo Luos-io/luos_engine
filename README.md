@@ -28,7 +28,3 @@ Luos proposes organized and effective development practices, guaranteeing develo
 
 * → Try on your own with the [get started](https://www.luos.io/tutorials/get-started)
 * → Consult the full [documentation](https://www.luos.io/docs)
-
-## Disclaimer
-Using Platformio, this library compilation send some anonymous information to Luos allowing to improve Luos_engine experience.
-To disable the telemetry please add "-DNOTELEMETRY" as a compilation flag on your platformio.ini file.

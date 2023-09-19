@@ -51,7 +51,7 @@ void PipeCom_Loop(void)
     while (Serial.available() > 0)
     {
         data = Serial.read();
-        Stream_PutSample(Pipe_GetRxStreamChannel(), &data, 1);
+        Streaming_PutSample(Pipe_GetRxStreamChannel(), &data, 1);
     }
 }
 /******************************************************************************
@@ -75,7 +75,7 @@ void PipeCom_Send(void)
     while (size > 0)
     {
         Serial.write(SerialProtocol_GetDataToSend(), size);
-        Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
+        Streaming_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
         size = SerialProtocol_GetSizeToSend();
     }
 }

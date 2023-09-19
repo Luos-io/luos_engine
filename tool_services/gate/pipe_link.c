@@ -5,6 +5,7 @@
  ******************************************************************************/
 #include "pipe_link.h"
 #include "streaming.h"
+#include "_routing_table.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -40,7 +41,7 @@ void PipeLink_Send(service_t *service, void *data, uint32_t size)
     {
         // We have a localhost pipe
         // Copy the data directly into the local streaming channel without passing by Luos.
-        Stream_PutSample(PipeDirectPutSample, data, size);
+        Streaming_PutSample(PipeDirectPutSample, data, size);
         // Send a void set_cmd to strat data transmission on pipe.
         msg.header.size = 0;
         Luos_SendMsg(service, &msg);
@@ -56,7 +57,7 @@ uint16_t PipeLink_Find(service_t *service)
     search_result_t result;
     uint8_t localhost = false;
     // search a pipe type in localhost
-    RTFilter_Node(RTFilter_Type(RTFilter_Reset(&result), PIPE_TYPE), RoutingTB_NodeIDFromID(service->ll_service->id));
+    RTFilter_Node(RTFilter_Type(RTFilter_Reset(&result), PIPE_TYPE), RoutingTB_NodeIDFromID(service->id));
 
     if (result.result_nbr > 0)
     {
@@ -97,7 +98,7 @@ uint16_t PipeLink_Find(service_t *service)
             msg.header.target_mode = SERVICEIDACK;
             msg.header.cmd         = PARAMETERS;
             msg.header.size        = 0;
-            LUOS_ASSERT(service->ll_service->id != 0);
+            LUOS_ASSERT(service->id != 0);
             while (Luos_SendMsg(service, &msg) != SUCCEED)
                 ;
         }

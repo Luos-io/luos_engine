@@ -8,7 +8,6 @@
 #include "ll_motor.h"
 #include "profile_servo_motor.h"
 
-#include "luos_hal.h"
 #include "stdbool.h"
 #include "math.h"
 #include <float.h>
@@ -50,7 +49,7 @@ char speed_bootstrap = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void ControllerMotor_MsgHandler(service_t *service, msg_t *msg);
+static void ControllerMotor_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -106,8 +105,8 @@ void ControllerMotor_Init(void)
     servo_motor.control.unmap = 0; // PLAY and no REC
 
     // Init streaming channels
-    servo_motor.trajectory  = Stream_CreateStreamingChannel((float *)trajectory_buf, BUFFER_SIZE, sizeof(float));
-    servo_motor.measurement = Stream_CreateStreamingChannel((float *)measurement_buf, BUFFER_SIZE, sizeof(float));
+    servo_motor.trajectory  = Streaming_CreateChannel((float *)trajectory_buf, BUFFER_SIZE, sizeof(float));
+    servo_motor.measurement = Streaming_CreateChannel((float *)measurement_buf, BUFFER_SIZE, sizeof(float));
 
     last_position = AngularOD_PositionFrom_deg(0.0);
 
@@ -248,7 +247,7 @@ void ControllerMotor_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void ControllerMotor_MsgHandler(service_t *service, msg_t *msg)
+static void ControllerMotor_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {
@@ -259,11 +258,11 @@ static void ControllerMotor_MsgHandler(service_t *service, msg_t *msg)
         ll_motor_enable(servo_motor.mode.mode_compliant == 0);
         if (servo_motor.mode.mode_compliant == 0)
         {
-            LuosHAL_SetIrqState(false);
+            Luos_SetIrqState(false);
             last_position = servo_motor.angular_position;
             errAngleSum   = 0.0;
             lastErrAngle  = 0.0;
-            LuosHAL_SetIrqState(true);
+            Luos_SetIrqState(true);
         }
         return;
     }
@@ -281,9 +280,9 @@ static void ControllerMotor_MsgHandler(service_t *service, msg_t *msg)
         if ((servo_motor.mode.mode_angular_position | servo_motor.mode.mode_angular_position) && (msg->header.size == sizeof(angular_position_t)))
         {
             // set the motor target angular position
-            LuosHAL_SetIrqState(false);
+            Luos_SetIrqState(false);
             last_position = servo_motor.angular_position;
-            LuosHAL_SetIrqState(true);
+            Luos_SetIrqState(true);
         }
         return;
     }
@@ -312,26 +311,26 @@ void HAL_SYSTICK_Motor_Callback(void)
     if (servo_motor.control.rec && ((Luos_GetSystick() - last_rec_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)))
     {
         // We have to save a sample of current position
-        Stream_PutSample(&servo_motor.measurement, (angular_position_t *)&servo_motor.angular_position, 1);
+        Streaming_PutSample(&servo_motor.measurement, (angular_position_t *)&servo_motor.angular_position, 1);
         last_rec_systick = Luos_GetSystick();
     }
     // ****** trajectory management *********
     static uint32_t last_systick = 0;
     if (servo_motor.control.flux == STOP)
     {
-        Stream_ResetStreamingChannel(&servo_motor.trajectory);
+        Streaming_ResetChannel(&servo_motor.trajectory);
     }
-    if ((Stream_GetAvailableSampleNB(&servo_motor.trajectory) > 0) && ((Luos_GetSystick() - last_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)) && (servo_motor.control.flux == PLAY))
+    if ((Streaming_GetAvailableSampleNB(&servo_motor.trajectory) > 0) && ((Luos_GetSystick() - last_systick) >= TimeOD_TimeTo_ms(servo_motor.sampling_period)) && (servo_motor.control.flux == PLAY))
     {
         if (servo_motor.mode.mode_linear_position == 1)
         {
             linear_position_t linear_position_tmp;
-            Stream_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
+            Streaming_GetSample(&servo_motor.trajectory, &linear_position_tmp, 1);
             servo_motor.target_angular_position = AngularOD_PositionFrom_deg((LinearOD_PositionTo_m(linear_position_tmp) * 360.0) / (3.141592653589793 * LinearOD_PositionTo_m(servo_motor.wheel_diameter)));
         }
         else
         {
-            Stream_GetSample(&servo_motor.trajectory, (angular_position_t *)&servo_motor.target_angular_position, 1);
+            Streaming_GetSample(&servo_motor.trajectory, (angular_position_t *)&servo_motor.target_angular_position, 1);
         }
         last_systick = Luos_GetSystick();
     }

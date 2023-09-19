@@ -4,10 +4,11 @@
  * @author Luos
  * @version 0.1.0
  ******************************************************************************/
+#include <stdio.h>
+#include "luos_engine.h"
 #include "pipe.h"
 #include "_pipe.h"
 #include "pipe_com.h"
-#include <stdio.h>
 
 /*******************************************************************************
  * Definitions
@@ -24,7 +25,7 @@ uint8_t tx_Buffer[PIPE_TX_BUFFER_SIZE] = {0};
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Pipe_MsgHandler(service_t *service, msg_t *msg);
+static void Pipe_MsgHandler(service_t *service, const msg_t *msg);
 /******************************************************************************
  * @brief init must be call in project init
  * @param None
@@ -32,8 +33,8 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg);
  ******************************************************************************/
 void Pipe_Init(void)
 {
-    rx_StreamChannel = Stream_CreateStreamingChannel(rx_Buffer, PIPE_RX_BUFFER_SIZE, 1);
-    tx_StreamChannel = Stream_CreateStreamingChannel(tx_Buffer, PIPE_TX_BUFFER_SIZE, 1);
+    rx_StreamChannel = Streaming_CreateChannel(rx_Buffer, PIPE_RX_BUFFER_SIZE, 1);
+    tx_StreamChannel = Streaming_CreateChannel(tx_Buffer, PIPE_TX_BUFFER_SIZE, 1);
     PipeCom_Init();
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Pipe_MsgHandler, PIPE_TYPE, "Pipe", revision);
@@ -53,7 +54,7 @@ void Pipe_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Pipe_MsgHandler(service_t *service, msg_t *msg)
+static void Pipe_MsgHandler(service_t *service, const msg_t *msg)
 {
     uint16_t size = 0;
 
@@ -101,6 +102,7 @@ static void Pipe_MsgHandler(service_t *service, msg_t *msg)
     {
         tx_StreamChannel.data_ptr   = tx_StreamChannel.ring_buffer;
         tx_StreamChannel.sample_ptr = tx_StreamChannel.data_ptr;
+
         rx_StreamChannel.data_ptr   = rx_StreamChannel.ring_buffer;
         rx_StreamChannel.sample_ptr = rx_StreamChannel.data_ptr;
         PipeCom_Init();
@@ -113,7 +115,8 @@ void node_assert(char *file, uint32_t line)
     // manage self crashing scenario
     char json[512];
     sprintf(json, "{\"assert\":{\"node_id\":1,\"file\":\"%s\",\"line\":%d}}\n", file, (unsigned int)line);
-    Stream_PutSample(&tx_StreamChannel, json, strlen(json));
+    Streaming_ResetChannel(&tx_StreamChannel);
+    Streaming_PutSample(&tx_StreamChannel, json, strlen(json));
 
     // Send the message
     PipeCom_Send();

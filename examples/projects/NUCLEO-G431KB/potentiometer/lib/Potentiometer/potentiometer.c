@@ -6,7 +6,6 @@
  ******************************************************************************/
 #include "main.h"
 #include "potentiometer.h"
-#include "timestamp.h"
 
 /*******************************************************************************
  * Definitions
@@ -21,7 +20,7 @@ time_luos_t angle_timestamp;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Potentiometer_MsgHandler(service_t *service, msg_t *msg);
+static void Potentiometer_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -46,7 +45,7 @@ void Potentiometer_Loop(void)
 {
     // read and save the angular position value
     angle           = PotentiometerDrv_Read();
-    angle_timestamp = Timestamp_now();
+    angle_timestamp = Luos_Timestamp();
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service
@@ -55,7 +54,7 @@ void Potentiometer_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Potentiometer_MsgHandler(service_t *service, msg_t *msg)
+static void Potentiometer_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {

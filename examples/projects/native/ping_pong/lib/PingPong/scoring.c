@@ -14,7 +14,7 @@ score_table_t score_table;
 
 void score_init(service_t *player, search_result_t *player_list)
 {
-    Luos_TopicSubscribe(player, SCORE_TOPIC);
+    Luos_Subscribe(player, SCORE_TOPIC);
     memset(scores, 0, sizeof(scores));
     score_table.player_nb = player_list->result_nbr;
     score_table.scores    = scores;
@@ -66,10 +66,10 @@ void score_increase(service_t *player, uint16_t winning_player_id)
     Luos_SendMsg(player, &msg);
 }
 
-void score_update(msg_t *msg)
+void score_update(const msg_t *msg)
 {
     score_t tmp_score[SCORE_TABLE_SIZE];
-    msg_score_t *msg_score = (msg_score_t *)msg->data;
+    const msg_score_t *msg_score = (const msg_score_t *)msg->data;
     // Transform the message value into a score table
     for (int i = 0; i < score_table.player_nb; i++)
     {

@@ -28,6 +28,8 @@
 #include "definitions.h" // SYS function prototypes
 
 #include "luos_engine.h"
+#include "robus_network.h"
+#include "luos_bootloader.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -40,6 +42,8 @@ int main(void)
     /* Initialize all modules */
     SYS_Initialize(NULL);
 
+    LUOS_ADD_PACKAGE(LuosBootloader)
+    LUOS_ADD_PACKAGE(Robus)
     // launch bootloader app
     while (1)
     {

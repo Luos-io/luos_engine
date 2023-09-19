@@ -6,7 +6,6 @@
  * @version 0.0.0
  ******************************************************************************/
 #include "luos_hal.h"
-#include "robus_hal.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -63,9 +62,10 @@ void LuosHAL_Init(void)
  * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
-_CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void LuosHAL_SetIrqState(bool Enable)
 {
-    RobusHAL_SetIrqState(Enable);
+    // We don't do anything here because we don't have any IRQ to disable on ESP
+    // Network will disable appropriate IRQ.
 }
 /******************************************************************************
  * @brief Luos HAL general systick tick at 1ms initialize

@@ -38,7 +38,6 @@ void Convert_VoidData(service_t *service);
 
 // Luos default information to Data convertion
 void Convert_AssertToData(service_t *service, uint16_t source, luos_assert_t assertion);
-void Convert_ExcludedServiceData(service_t *service);
 
 // Luos routing table information to Json convertion
 void Convert_RoutingTableData(service_t *service);

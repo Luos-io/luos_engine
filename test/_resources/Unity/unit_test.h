@@ -6,10 +6,9 @@
 #include <stdbool.h>
 #include "../../../.pio/libdeps/native/Unity/src/unity.h"
 #include "luos_hal.h"
-#include "robus_hal.h"
 #include "luos_engine.h"
+#include "robus_network.h"
 #include "luos_utils.h"
-#include "robus_struct.h"
 #include <setjmp.h>
 
 /*******************************************************************************
@@ -25,9 +24,15 @@
 
 extern jmp_buf err_ctx;
 extern bool try_state;
+extern uint16_t test_case_number;
 
 #ifndef UNIT_TEST_RUN
-    #define UNIT_TEST_RUN(f) RUN(#f, f)
+    #define UNIT_TEST_RUN(f)                                                                                                             \
+        printf("\n\n===============================================================================================================\n"); \
+        printf("Unit test function : %s\n", #f);                                                                                         \
+        printf("===============================================================================================================\n");     \
+        test_case_number = 0;                                                                                                            \
+        RUN_TEST(f)
 #endif
 
 #define TRY           \
@@ -35,6 +40,10 @@ extern bool try_state;
     if (!_SETJMP(err_ctx))
 
 #define CATCH else
+
+#define END_TRY        \
+    try_state = false; \
+    RESET_ASSERT()
 
 /*******************************************************************************
  * Function

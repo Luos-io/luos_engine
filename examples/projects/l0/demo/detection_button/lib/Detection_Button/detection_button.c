@@ -23,7 +23,7 @@ uint32_t last_detection_date_ms = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void DetectionButton_MsgHandler(service_t *service, msg_t *msg);
+static void DetectionButton_MsgHandler(service_t *service, const msg_t *msg);
 static void Setup_button(void);
 
 /******************************************************************************
@@ -48,7 +48,7 @@ void DetectionButton_Loop(void)
 
     // ********** hot plug management ************
     // Check if we have done the first init or if service Id have changed
-    if (Luos_IsNodeDetected() == false)
+    if (Luos_IsDetected() == false)
     {
         // We don't have any ID, meaning no detection occure or detection is occuring.
         if (previous_id == -1)
@@ -72,7 +72,7 @@ void DetectionButton_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void DetectionButton_MsgHandler(service_t *service, msg_t *msg)
+static void DetectionButton_MsgHandler(service_t *service, const msg_t *msg)
 {
     static uint8_t last_btn_state = 0;
     if (msg->header.cmd == IO_STATE)

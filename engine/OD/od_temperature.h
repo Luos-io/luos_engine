@@ -13,7 +13,7 @@
  ******************************************************************************/
 typedef struct
 {
-    float _private;
+    float raw;
 } temperature_t;
 
 /*******************************************************************************
@@ -29,39 +29,39 @@ typedef struct
 // °C
 static inline float TemperatureOD_TemperatureTo_deg_c(temperature_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline temperature_t TemperatureOD_TemperatureFrom_deg_c(float deg_c)
 {
     temperature_t self;
-    self._private = deg_c;
+    self.raw = deg_c;
     return self;
 }
 
 // °F
 static inline float TemperatureOD_TemperatureTo_deg_f(temperature_t self)
 {
-    return self._private * 1.8f + 32.0f;
+    return self.raw * 1.8f + 32.0f;
 }
 
 static inline temperature_t TemperatureOD_TemperatureFrom_deg_f(float deg_f)
 {
     temperature_t self;
-    self._private = (deg_f - 32.0f) / 1.8f;
+    self.raw = (deg_f - 32.0f) / 1.8f;
     return self;
 }
 
 // °K
 static inline float TemperatureOD_TemperatureTo_deg_k(temperature_t self)
 {
-    return self._private + 273.15f;
+    return self.raw + 273.15f;
 }
 
 static inline temperature_t TemperatureOD_TemperatureFrom_deg_k(float deg_k)
 {
     temperature_t self;
-    self._private = deg_k - 273.15f;
+    self.raw = deg_k - 273.15f;
     return self;
 }
 

@@ -4,15 +4,15 @@
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+#include <string.h>
 #include "_timestamp.h"
 #include "luos_hal.h"
-#include "string.h"
-#include "service_structs.h"
+#include "struct_luos.h"
 /******************************* Description of Timestamp process ************************************
  *
  * Timestamp is a mechanism which enables to track events in the system. To use it users have to get and save a timestamp in
  * a time_luos_t variable.
- * You can get a timestamp by calling the Timestamp_now() function. Then you can deal with the returned value as you want, allowing
+ * You can get a timestamp by calling the Luos_Timestamp() function. Then you can deal with the returned value as you want, allowing
  * you to tag a date in the past or in the future.
  *
  * Then you can send a message with a data and it's associated timestamp, luos can handle this by slighly modifiyng its
@@ -58,28 +58,32 @@
  * @param msg None
  * @return time_luos_t
  ******************************************************************************/
-time_luos_t Timestamp_now(void)
+time_luos_t Luos_Timestamp(void)
 {
     return TimeOD_TimeFrom_ns((double)LuosHAL_GetTimestamp());
 }
+
 /******************************************************************************
  * @brief Check if the message is a timestamp message
  * @param msg : Message to check
  * @return boolean it "True" if message is timestamped
  ******************************************************************************/
-_CRITICAL inline bool Timestamp_IsTimestampMsg(msg_t *msg)
+_CRITICAL inline bool Luos_IsMsgTimstamped(const msg_t *msg)
 {
+    LUOS_ASSERT(msg != NULL);
     return (msg->header.config == TIMESTAMP_PROTOCOL);
 }
+
 /******************************************************************************
  * @brief Get the timestamp associated to a message
  * @param msg : Message to get the timestamp from
  * @return time_luos_t
  ******************************************************************************/
-time_luos_t Timestamp_GetTimestamp(msg_t *msg)
+time_luos_t Luos_GetMsgTimestamp(const msg_t *msg)
 {
+    LUOS_ASSERT(msg != NULL);
     time_luos_t timestamp = {0.0f};
-    if (Timestamp_IsTimestampMsg(msg))
+    if (Luos_IsMsgTimstamped(msg))
     {
         // Timestamp is at the end of the message
         memcpy(&timestamp, (msg->data + msg->header.size), sizeof(time_luos_t));
@@ -96,6 +100,7 @@ time_luos_t Timestamp_GetTimestamp(msg_t *msg)
  ******************************************************************************/
 void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
 {
+    LUOS_ASSERT(msg != NULL);
     // Update message header protocol
     msg->header.config = TIMESTAMP_PROTOCOL;
     // Timestamp is at the end of the message copy it
@@ -107,22 +112,14 @@ void Timestamp_EncodeMsg(msg_t *msg, time_luos_t timestamp)
  * @param msg : Message that will be sent
  * @return None
  ******************************************************************************/
-_CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
+_CRITICAL time_luos_t Timestamp_ConvertToLatency(const msg_t *msg)
 {
-    static time_luos_t timestamp_date = {0.0f};
-    static msg_t *last_msg            = NULL;
-
-    if (last_msg != msg)
-    {
-        // This is a new message, backup the timestamp date
-        memcpy(&timestamp_date, &msg->data[msg->header.size], sizeof(time_luos_t));
-        // Keep the message pointer to know if we already manage this one or not.
-        last_msg = msg;
-    }
+    LUOS_ASSERT(msg != NULL);
+    time_luos_t timestamp_date;
+    memcpy(&timestamp_date, &msg->data[msg->header.size], sizeof(time_luos_t));
     // Compute the latency from date
-    time_luos_t latency = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(timestamp_date) - TimeOD_TimeTo_s(Timestamp_now()));
-    // Write latency on the message
-    memcpy(&msg->data[msg->header.size], &latency, sizeof(time_luos_t));
+    time_luos_t latency = TimeOD_TimeFrom_s(TimeOD_TimeTo_s(timestamp_date) - TimeOD_TimeTo_s(Luos_Timestamp()));
+    return latency;
 }
 
 /******************************************************************************
@@ -133,6 +130,7 @@ _CRITICAL void Timestamp_ConvertToLatency(msg_t *msg)
  ******************************************************************************/
 _CRITICAL inline void Timestamp_ConvertToDate(msg_t *msg, uint64_t reception_date)
 {
+    LUOS_ASSERT(msg != NULL);
     time_luos_t timestamp_latency = {0.0f};
     // Get latency
     memcpy(&timestamp_latency, &msg->data[msg->header.size], sizeof(time_luos_t));

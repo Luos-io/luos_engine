@@ -10,7 +10,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <luos_hal_config.h>
+#include <stdbool.h>
+#include "luos_hal_config.h"
 
 /*******************************************************************************
  * Definitions
@@ -38,7 +39,7 @@ typedef struct ll_timestamp
  * Function
  ******************************************************************************/
 void LuosHAL_Init(void);
-void LuosHAL_SetIrqState(uint8_t Enable);
+void LuosHAL_SetIrqState(bool Enable);
 uint32_t LuosHAL_GetSystick(void);
 
 // bootloader functions

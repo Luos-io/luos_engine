@@ -1,16 +1,7 @@
 #include <Arduino.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "luos_engine.h"
+#include "serial_network.h"
 #include "led.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 /******************************************************************************
  * @brief Setup ardiuno
@@ -20,6 +11,7 @@ extern "C"
 void setup()
 {
     Luos_Init();
+    Serial_Init();
     Led_Init();
 }
 /******************************************************************************
@@ -30,5 +22,6 @@ void setup()
 void loop()
 {
     Luos_Loop();
+    Serial_Loop();
     Led_Loop();
 }

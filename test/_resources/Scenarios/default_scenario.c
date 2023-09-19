@@ -6,6 +6,7 @@
  ******************************************************************************/
 #include <stdio.h>
 #include "default_scenario.h"
+#include "_routing_table.h"
 
 /*******************************************************************************
  * Variables
@@ -16,9 +17,9 @@ default_scenario_t default_sc;
  * Function
  ******************************************************************************/
 static void Detection(service_t *service);
-static void App_1_MsgHandler(service_t *service, msg_t *msg);
-static void App_2_MsgHandler(service_t *service, msg_t *msg);
-static void App_3_MsgHandler(service_t *service, msg_t *msg);
+static void App_1_MsgHandler(service_t *service, const msg_t *msg);
+static void App_2_MsgHandler(service_t *service, const msg_t *msg);
+static void App_3_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief Init scenario
@@ -32,6 +33,7 @@ void Init_Context(void)
     Luos_ServicesClear();
     RoutingTB_Erase(); // Delete RTB
     Luos_Init();
+    Robus_Init();
     if (IS_ASSERT())
     {
         printf("[FATAL] Can't reset scenario context\n");
@@ -41,6 +43,7 @@ void Init_Context(void)
 
     RESET_ASSERT();
     Luos_Init();
+    Robus_Init();
 
     // Create services
     revision_t revision  = {.major = 1, .minor = 0, .build = 0};
@@ -72,7 +75,7 @@ static void Detection(service_t *service)
     do
     {
         Luos_Loop();
-    } while (!Luos_IsNodeDetected());
+    } while (!Luos_IsDetected());
 
     RTFilter_Reset(&result);
     printf("[INFO] %d services are active\n", result.result_nbr);
@@ -85,7 +88,7 @@ static void Detection(service_t *service)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void App_1_MsgHandler(service_t *service, msg_t *msg)
+static void App_1_MsgHandler(service_t *service, const msg_t *msg)
 {
     memcpy(&default_sc.App_1.last_rx_msg, msg, sizeof(msg_t));
 }
@@ -96,7 +99,7 @@ static void App_1_MsgHandler(service_t *service, msg_t *msg)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void App_2_MsgHandler(service_t *service, msg_t *msg)
+static void App_2_MsgHandler(service_t *service, const msg_t *msg)
 {
     memcpy(&default_sc.App_2.last_rx_msg, msg, sizeof(msg_t));
 }
@@ -107,7 +110,7 @@ static void App_2_MsgHandler(service_t *service, msg_t *msg)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void App_3_MsgHandler(service_t *service, msg_t *msg)
+static void App_3_MsgHandler(service_t *service, const msg_t *msg)
 {
     memcpy(&default_sc.App_3.last_rx_msg, msg, sizeof(msg_t));
 }
