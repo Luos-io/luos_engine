@@ -371,11 +371,11 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
     LUOS_ASSERT(input != NULL);
     msg_t output_msg;
     time_luos_t time;
-    service_t *service         = Service_GetConcerned(&input->header);
-    dead_target_t *dead_target = (dead_target_t *)input->data;
-    uint16_t base_id           = 0;
-    routing_table_t *route_tab = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
-    static luos_phy_t *phy_ptr = NULL;
+    service_t *service               = Service_GetConcerned(&input->header);
+    dead_target_t *dead_target       = (dead_target_t *)input->data;
+    uint16_t base_id                 = 0;
+    routing_table_t *route_tab       = &RoutingTB_Get()[RoutingTB_GetLastEntry()];
+    static luos_phy_t *phy_index_ptr = NULL;
 
     switch (input->header.cmd)
     {
@@ -501,39 +501,44 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
 
         case PHY_ID:
+
             // We receive a phy id. We have to save it, because we will need it to save the indexes in the good phy.
             base_id = 0;
             memcpy(&base_id, input->data, sizeof(uint8_t));
-            phy_ptr = Phy_GetPhyFromId((uint8_t)base_id);
+            phy_index_ptr = Phy_GetPhyFromId((uint8_t)base_id);
             // This message have been consumed
+
             return SUCCEED;
             break;
 
         case NODE_INDEXES:
             // We are receiving a node index table
-            LUOS_ASSERT(phy_ptr != NULL);
-            base_id = Luos_ReceiveData(service, input, (void *)phy_ptr->nodes);
+            LUOS_ASSERT(phy_index_ptr != NULL);
+            base_id = Luos_ReceiveData(service, input, (void *)phy_index_ptr->nodes);
             if (base_id > 0)
             {
-                LUOS_ASSERT(base_id <= sizeof(phy_ptr->nodes)); // The MAX_NODE_NUMBER of the detecting node is bigger than the one we have
+                LUOS_ASSERT(base_id <= sizeof(phy_index_ptr->nodes)); // The MAX_NODE_NUMBER of the detecting node is bigger than the one we have
                 // We finished to receive the phy indexes
-                phy_ptr = NULL;
+                phy_index_ptr = NULL;
             }
             // This message have been consumed
+
             return SUCCEED;
             break;
 
         case SERVICE_INDEXES:
+
             // We are receiving a service index table
-            LUOS_ASSERT(phy_ptr != NULL);
-            base_id = Luos_ReceiveData(service, input, (void *)phy_ptr->services);
+            LUOS_ASSERT(phy_index_ptr != NULL);
+            base_id = Luos_ReceiveData(service, input, (void *)phy_index_ptr->services);
             if (base_id > 0)
             {
-                LUOS_ASSERT(base_id <= sizeof(phy_ptr->services)); // The MAX_SERVICE_NUMBER of the detecting node is bigger than the one we have
+                LUOS_ASSERT(base_id <= sizeof(phy_index_ptr->services)); // The MAX_SERVICE_NUMBER of the detecting node is bigger than the one we have
                 // We finished to receive the phy indexes
-                phy_ptr = NULL;
+                phy_index_ptr = NULL;
             }
             // This message have been consumed
+
             return SUCCEED;
             break;
 
