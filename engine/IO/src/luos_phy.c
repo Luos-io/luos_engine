@@ -678,11 +678,11 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         // Now we can create a phy_job to dispatch the tx_job later
         LUOS_ASSERT(phy_ctx.io_job_nb < MAX_MSG_NB);
         Phy_SetIrqState(false);
-        uint16_t my_job = phy_ctx.io_job_nb++;
+        uint16_t my_job                  = phy_ctx.io_job_nb++;
+        phy_ctx.io_job[my_job].alloc_msg = (msg_t *)phy_ptr->rx_data;
         Phy_SetIrqState(true);
         // Now copy the data in the job
         phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
-        phy_ctx.io_job[my_job].alloc_msg  = (msg_t *)phy_ptr->rx_data;
         phy_ctx.io_job[my_job].phy_filter = phy_ptr->rx_phy_filter;
         phy_ctx.io_job[my_job].size       = phy_ptr->rx_size;
 
@@ -983,10 +983,10 @@ static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job)
         phy_ptr->available_job_index = 0;
     }
     LUOS_ASSERT(phy_ptr->available_job_index != phy_ptr->oldest_job_index);
-    Phy_SetIrqState(true);
     phy_ptr->job_nb++;
     // Copy the actual job data to the allocated job
     *returned_job = *phy_job;
+    Phy_SetIrqState(true);
     return returned_job;
 }
 
