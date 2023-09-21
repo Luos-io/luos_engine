@@ -377,19 +377,24 @@ void Phy_TopologySource(luos_phy_t *phy_ptr, uint8_t port_id)
 {
     LUOS_ASSERT((phy_ptr != NULL)
                 && (port_id < 0xFF));
-    // This port is the source of a topology request. it become the input port.
-    // We have to save it in the node context.
-    phy_ctx.topology_source.phy_id  = Phy_GetPhyId(phy_ptr);
-    phy_ctx.topology_source.port_id = port_id;
-    phy_ctx.topology_source.node_id = 0xFFFF;
-    // We don't have the node id yet, we will fill it out when we will receive it from the master.
-    // Put a flag to indicate that we are waiting for a node id.
-    Node_WillGetId();
+    // First we need to be sure that this event is not a glitch. We should get it only after a start detection and ignore any other.
+    if (Node_Get()->node_id == 0)
+    {
+        // Our node id is not set yet, we are ready to receive this event.
+        // This port is the source of a topology request. it become the input port.
+        // We have to save it in the node context.
+        phy_ctx.topology_source.phy_id  = Phy_GetPhyId(phy_ptr);
+        phy_ctx.topology_source.port_id = port_id;
+        phy_ctx.topology_source.node_id = 0xFFFF;
+        // We don't have the node id yet, we will fill it out when we will receive it from the master.
+        // Put a flag to indicate that we are waiting for a node id.
+        Node_WillGetId();
 
-    // We also know that this phy is liked to the detecting node.
-    // To enable any communication with it we have to set the nodes and services filter of this phy allowing us to communicate with it.
-    Phy_IndexSet(phy_ptr->nodes, 0x01);
-    Phy_IndexSet(phy_ptr->services, 0x01);
+        // We also know that this phy is linked to the detecting node.
+        // To enable any communication with it we have to set the nodes and services filter of this phy allowing us to communicate with it.
+        Phy_IndexSet(phy_ptr->nodes, 0x01);
+        Phy_IndexSet(phy_ptr->services, 0x01);
+    }
 }
 
 /******************************************************************************
