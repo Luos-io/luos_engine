@@ -445,6 +445,13 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             // Add this node id in the Luos phy filter allowing us to receive node messages
             memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
             Phy_IndexSet(luos_phy->nodes, node_id);
+            // Also add all node before our node_id in the philter of the source phy
+            port_t *source_port        = Phy_GetTopologysource();
+            luos_phy_t *source_phy_ptr = Phy_GetPhyFromId(source_port->phy_id);
+            for (uint16_t i = 0; i < node_id; i++)
+            {
+                Phy_IndexSet(source_phy_ptr->nodes, i);
+            }
             // Now we need to send back the input part of the connection data.
             port_t *input_port  = Phy_GetTopologysource();
             input_port->node_id = Node_Get()->node_id;

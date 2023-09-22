@@ -79,6 +79,7 @@ typedef struct
     bool topology_running;   // We put this bits to 1 when a phy is running the topology detection.
     bool find_next_node_job; // We put this bits to 1 to indicate that we will need to find another node.
     bool resetAllNeed;       // We put this bits to 1 to indicate that we will need to reset all the nodes. We need it to avoid to reset all phy at reset message reception, allowing the phy's to send their reset message.
+    bool PhyExeptSourceDone; // We put this bit to 1 when all the phys except the source one are done with their detection.
 
     // ******************** Job management ********************
     // io_jobs are stores from the newest to the oldest.
@@ -150,6 +151,7 @@ void Phy_Reset(void)
     phy_ctx.topology_done      = 0;
     phy_ctx.topology_running   = false;
     phy_ctx.find_next_node_job = false;
+    phy_ctx.PhyExeptSourceDone = true;
 }
 
 void Phy_ResetAllNeeded(void)
@@ -311,7 +313,8 @@ error_return_t Phy_FindNextNode(void)
             // This phy still have port to detect
             uint8_t port_id;
             // Check if a node is connected
-            phy_ctx.topology_running = true;
+            phy_ctx.topology_running   = true;
+            phy_ctx.PhyExeptSourceDone = false;
             if (phy_ctx.phy[i].run_topo(&phy_ctx.phy[i], &port_id) == SUCCEED)
             {
                 port_t output_port;
@@ -334,6 +337,7 @@ error_return_t Phy_FindNextNode(void)
         }
     }
     // We checked all the phys except the source one.
+    phy_ctx.PhyExeptSourceDone = true;
     // Check if the source phy still have port to detect
     if (phy_ctx.topology_done != (1 << phy_ctx.phy_nb) - 2)
     {
@@ -537,8 +541,15 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             break;
         case NODEIDACK:
         case NODEID:
-            // If the target is not the phy_ptr, we need to keep this message
-            return !Phy_IndexFilter(phy_ptr->nodes, header->target);
+            if (header->target == 0)
+            {
+                return Node_DoWeWaitId() || (phy_ctx.PhyExeptSourceDone == false); // or we are waiting for child branches ((phy_ctx.topology_running == true) && (header->source == 1))
+            }
+            else
+            {
+                // If the target is not the phy_ptr, we need to keep this message
+                return !Phy_IndexFilter(phy_ptr->nodes, header->target);
+            }
             break;
         default:
             // This message is wrong, trash it.
@@ -581,8 +592,8 @@ inline phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header)
                 // This concerns Luos phy only
                 if ((phy_ctx.topology_running == true) && (header->source != 1))
                 {
-                    // We are performing a topology and this message is for us.
-                    // We need to store the node that send us this in our index allowing us to communicate with it later.
+                    // We are performing a topology as master and this message is for us.
+                    // We need to store the node that send us this in our index allowing us to communicate with it later
                     Phy_IndexSet(phy_ptr->nodes, header->source);
                 }
                 target = 0x01;
