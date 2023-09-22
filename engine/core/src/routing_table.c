@@ -245,18 +245,18 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
             intro_msg.header.target_mode = NODEIDACK;
             // Target next unknown node
             intro_msg.header.target = last_node_id + 1;
-            // set the first service id it can use
+            // Set the first service id it can use
             intro_msg.header.size = 2;
             last_service_id       = RoutingTB_BigestID() + 1;
             memcpy(intro_msg.data, &last_service_id, sizeof(uint16_t));
-            // save the current last routing table entry allowing us to easily write the connection informations later
+            // Save the current last routing table entry allowing us to easily write the connection informations later
             rtb_next_node_index = RoutingTB_GetLastEntry();
             entry_bkp           = last_routing_table_entry;
             Luos_SendMsg(service, &intro_msg);
             timestamp = LuosHAL_GetSystick();
             detect_state_machine++;
         case 1:
-            if ((LuosHAL_GetSystick() - timestamp) >= 200)
+            if ((LuosHAL_GetSystick() - timestamp) >= 2000)
             {
                 // Time out is reached
                 // We don't get the answer
@@ -273,7 +273,7 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
             }
             // We get the answer
             // The node answer don't include connection because the node don't know it yet
-            // add this information to the routing table
+            // Add this information to the routing table
             LUOS_ASSERT(routing_table[rtb_next_node_index].mode == NODE);
             routing_table[rtb_next_node_index].connection = connection_table[last_node_id];
             last_node_id                                  = RoutingTB_BigestNodeID();
