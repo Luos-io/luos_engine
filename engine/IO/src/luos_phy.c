@@ -409,7 +409,7 @@ void Phy_TopologySource(luos_phy_t *phy_ptr, uint8_t port_id)
 void Phy_TopologyDone(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT(phy_ptr != NULL);
-    phy_ctx.topology_done    = (1 << Phy_GetPhyId(phy_ptr));
+    phy_ctx.topology_done |= (1 << Phy_GetPhyId(phy_ptr));
     phy_ctx.topology_running = false;
 }
 
