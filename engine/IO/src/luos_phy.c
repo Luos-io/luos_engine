@@ -555,7 +555,7 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             else
             {
                 // If the target is not the phy_ptr, we need to keep this message
-                return !Phy_IndexFilter(phy_ptr->nodes, header->target);
+                return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
             }
             break;
         default:
