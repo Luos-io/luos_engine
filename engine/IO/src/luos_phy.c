@@ -411,6 +411,13 @@ void Phy_TopologyDone(luos_phy_t *phy_ptr)
     LUOS_ASSERT(phy_ptr != NULL);
     phy_ctx.topology_done |= (1 << Phy_GetPhyId(phy_ptr));
     phy_ctx.topology_running = false;
+    // We need to check if we have to find another node
+    if (phy_ctx.topology_done != ((1 << phy_ctx.phy_nb) - 1 - 1))
+    {
+        // We don't have detected all the nodes on all the phys.
+        // We need to find the next node.
+        phy_ctx.find_next_node_job = true;
+    }
 }
 
 /******************************************************************************
