@@ -413,7 +413,7 @@ _CRITICAL void Serial_ReceptionWrite(uint8_t *data, uint32_t size)
     }
     rx_size += size;
     LUOS_ASSERT(rx_size < sizeof(RX_data));
-    if ((wait_reception == true) && (size >= sizeof(SerialHeader_t) + 1))
+    if ((wait_reception == true) && (rx_size >= sizeof(SerialHeader_t) + 1))
     {
         // We received the answer of a topology ping, just indicate that we receive it
         wait_reception = false;
@@ -428,12 +428,15 @@ _CRITICAL void Serial_ReceptionWrite(uint8_t *data, uint32_t size)
 _CRITICAL void Serial_ReceptionIncrease(uint32_t size)
 {
     // Reception is finished, we can parse the message
+    if (rx_size == 0)
+    {
+        // We consider this as the end of a complete message
+        // If we received multiple messages in this call, this could result in a wrong timestamp for the second message. Their is no way to avoid this problem, so we need to accept it.
+        phy_serial->rx_timestamp = Phy_GetTimestamp() - (size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
+    }
     rx_size += size;
-    // We consider this as the end of a complete message
-    // If we received multiple messages in this call, this could result in a wrong timestamp for the second message. Their is no way to avoid this problem, so we need to accept it.
-    phy_serial->rx_timestamp = Phy_GetTimestamp() - (rx_size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
     LUOS_ASSERT(rx_size < sizeof(RX_data));
-    if ((wait_reception == true) && (size >= sizeof(SerialHeader_t) + 1))
+    if ((wait_reception == true) && (rx_size >= sizeof(SerialHeader_t) + 1))
     {
         // We received the answer of a topology ping, just indicate that we receive it
         wait_reception = false;
