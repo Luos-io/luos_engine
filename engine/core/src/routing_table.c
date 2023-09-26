@@ -412,9 +412,9 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
     /*
      * To get all the nodes indexes of the provided node ID, we have to parse the routing table and use the connection informations to know how to dispatch all the nodes.
      * Each node is connected to all the other nodes, we "just" have to find out trough which phy we can reach them.
-     * Because node ID are contiguous the next node in the routing table (if it exist) will always have a connection information indicating trough which phy we can reach it. Let's say it phy 1.
-     * Then we will look at all the following nodes connections informations, if those informations doesn't involve our node we can consider taht they are accessible trough phy 1.
-     * We we encounter a node with connection informations that involve our node, this means that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
+     * Because node ID are contiguous the next node in the routing table (if it exist) will always have a connection information indicating trough which phy we can reach it. Let's say it is phy 1.
+     * We will look at all the following nodes connections informations, if those informations doesn't involve our node we can consider that they are accessible trough phy 1.
+     * If we encounter a node with connection informations that involve our node, this means that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
      * When we reach the end of the routing table, we have 2 options:
      * - If the phy we were indexing is the same as our parent phy, we have to add all the parents nodes in the same phy indexing then send it.
      * - If the phy we were indexing is different from our parent phy, we have to send the phy indexing and start a new one dedicated to the phy described by the parent node connection informations we have.
