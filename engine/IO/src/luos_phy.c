@@ -804,6 +804,8 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             phy_ptr->rx_keep      = false;
             return;
         }
+        Phy_SetIrqState(true);
+        Phy_SetIrqState(false);
 
         // We need to store the received data.
         // Update the informations allowing reception to continue and directly copy the data into the allocated buffer

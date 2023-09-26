@@ -114,12 +114,17 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
  ******************************************************************************/
 void MsgAlloc_Loop(void)
 {
+    static volatile uint8_t *last_data_ptr = NULL;
     // Compute buffer occupation rate
     uint8_t stat = 0;
-    stat         = (uint8_t)(((MSG_BUFFER_SIZE - MsgAlloc_BufferAvailableSpaceComputation()) * 100) / (MSG_BUFFER_SIZE));
-    if (stat > mem_stat->buffer_occupation_ratio)
+    if (data_ptr != last_data_ptr)
     {
-        mem_stat->buffer_occupation_ratio = stat;
+        last_data_ptr = data_ptr;
+        stat          = (uint8_t)(((MSG_BUFFER_SIZE - MsgAlloc_BufferAvailableSpaceComputation()) * 100) / (MSG_BUFFER_SIZE));
+        if (stat > mem_stat->buffer_occupation_ratio)
+        {
+            mem_stat->buffer_occupation_ratio = stat;
+        }
     }
 }
 
