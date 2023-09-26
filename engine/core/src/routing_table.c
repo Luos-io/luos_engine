@@ -440,7 +440,6 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
             memset(nodes_indexes, 0, sizeof(nodes_indexes));
             node_phy = connection_table[node_idx].parent.phy_id;
         }
-        LUOS_ASSERT(node_phy != -1);
         // Add the node index to the nodes_indexes table.
         uint8_t bit_index = node_idx;
         nodes_indexes[bit_index / 8] |= 1 << (bit_index % 8);
@@ -562,7 +561,6 @@ void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t node_index)
                     memset(services_indexes, 0, sizeof(services_indexes));
                     node_phy = routing_table[node_idx].connection.parent.phy_id;
                 }
-                LUOS_ASSERT(node_phy != -1);
                 break;
             case SERVICE:
                 // This is a service slot.
