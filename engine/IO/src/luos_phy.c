@@ -771,6 +771,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
     LUOS_ASSERT(phy_ptr != NULL);
     void *rx_data;
     void *copy_from;
+    static bool rx_phy_computed = false;
 
     Phy_SetIrqState(false);
     // Check if this phy really need to alloc
@@ -795,15 +796,19 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             Phy_SetIrqState(true);
             return;
         }
-        // Compute the rx_phy_filter
-        phy_ptr->rx_phy_filter = Phy_ComputeTargets(phy_ptr, (header_t *)phy_ptr->rx_buffer_base);
-        if (phy_ptr->rx_phy_filter == 0)
+        if (rx_phy_computed == false)
         {
-            // We probably have been reseted in the meantime. Just drop the message.
-            phy_ptr->rx_alloc_job = false;
-            phy_ptr->rx_keep      = false;
-            Phy_SetIrqState(true);
-            return;
+            // Compute the rx_phy_filter
+            phy_ptr->rx_phy_filter = Phy_ComputeTargets(phy_ptr, (header_t *)phy_ptr->rx_buffer_base);
+            if (phy_ptr->rx_phy_filter == 0)
+            {
+                // We probably have been reseted in the meantime. Just drop the message.
+                phy_ptr->rx_alloc_job = false;
+                phy_ptr->rx_keep      = false;
+                Phy_SetIrqState(true);
+                return;
+            }
+            rx_phy_computed = true;
         }
         Phy_SetIrqState(true);
         Phy_SetIrqState(false);
@@ -824,6 +829,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
                 // We don't successfully allocated the message we are trying to send.
                 // return and the transmitter will be able to wait to get more space...
                 phy_ptr->rx_keep = false;
+                rx_phy_computed  = false;
                 return;
             }
             LUOS_ASSERT(rx_data != NULL); // Assert if the allocation failed. We don't allow to loose a message comming from outside.
@@ -832,6 +838,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
 
             // Now we can copy the data already received
             memcpy(rx_data, copy_from, phy_stored_data_size);
+            rx_phy_computed = false;
             return;
         }
         Phy_SetIrqState(true);
@@ -841,6 +848,7 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
         // We don't want to keep it so we don't allocate it.
         phy_ptr->rx_alloc_job = false;
     }
+    rx_phy_computed = false;
 }
 
 /******************************************************************************
