@@ -50,10 +50,10 @@ static void phy_test_reset(void)
 {
     Phy_Init();
     //  Init default scenario context
-    luos_phy = Phy_Get(0, phy_luos_MsgHandler, reset_cb, topo_cb);
+    luos_phy = Phy_Get(0, phy_luos_MsgHandler, topo_cb, reset_cb);
     TEST_ASSERT_EQUAL(&phy_ctx.phy[0], luos_phy);
     TEST_ASSERT_EQUAL(1, phy_ctx.phy_nb);
-    robus_phy = Phy_Create(phy_robus_MsgHandler, reset_cb, topo_cb);
+    robus_phy = Phy_Create(phy_robus_MsgHandler, topo_cb, reset_cb);
     TEST_ASSERT_EQUAL(&phy_ctx.phy[1], robus_phy);
     TEST_ASSERT_EQUAL(2, phy_ctx.phy_nb);
 }
@@ -923,9 +923,9 @@ void unittest_phy_ComputeHeader()
             robus_phy->rx_phy_filter = 0x00;
             Phy_ComputeHeader(robus_phy);
             TEST_ASSERT_EQUAL(MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t), luos_phy->rx_size);
-            TEST_ASSERT_EQUAL(true, robus_phy->rx_keep); // By default at this stage we don't check all the node so we consider this as valid
-            TEST_ASSERT_EQUAL(true, robus_phy->rx_ack);
-            TEST_ASSERT_EQUAL(true, robus_phy->rx_alloc_job);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_alloc_job);
         }
         CATCH
         {
@@ -1068,14 +1068,7 @@ void unittest_phy_ComputeTimestamp()
 {
     NEW_TEST_CASE("Check ComputeTimestamp assertion conditions");
     {
-        TRY
-        {
-            phy_job_t job;
-            Phy_ComputeMsgTimestamp(NULL, &job);
-        }
-        TEST_ASSERT_TRUE(IS_ASSERT());
-        END_TRY;
-
+        phy_job_t job;
         TRY
         {
             Phy_ComputeMsgTimestamp(luos_phy, NULL);
@@ -1085,7 +1078,15 @@ void unittest_phy_ComputeTimestamp()
 
         TRY
         {
-            phy_job_t job;
+            job.timestamp = true;
+            job.data_pt   = (uint8_t *)msg_buffer;
+            Phy_ComputeMsgTimestamp(NULL, &job);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
             job.timestamp = false;
             job.data_pt   = (uint8_t *)msg_buffer;
             Phy_ComputeMsgTimestamp(luos_phy, &job);
@@ -1095,7 +1096,6 @@ void unittest_phy_ComputeTimestamp()
 
         TRY
         {
-            phy_job_t job;
             job.timestamp = true;
             job.data_pt   = NULL;
             Phy_ComputeMsgTimestamp(luos_phy, &job);
@@ -1143,6 +1143,7 @@ void unittest_phy_ComputeTimestamp()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1159,6 +1160,7 @@ void unittest_phy_GetNodeId()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1208,6 +1210,7 @@ void unittest_phy_AddJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1225,6 +1228,7 @@ void unittest_phy_AddJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1256,6 +1260,7 @@ void unittest_phy_GetJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1270,6 +1275,7 @@ void unittest_phy_GetJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1284,6 +1290,7 @@ void unittest_phy_GetJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1319,6 +1326,7 @@ void unittest_phy_GetNextJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         phy_job_t *job = NULL;
         TRY
@@ -1335,6 +1343,7 @@ void unittest_phy_GetNextJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1352,6 +1361,7 @@ void unittest_phy_GetNextJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1395,6 +1405,7 @@ void unittest_phy_GetJobId()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1407,6 +1418,7 @@ void unittest_phy_GetJobId()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1419,6 +1431,7 @@ void unittest_phy_GetJobId()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1455,6 +1468,7 @@ void unittest_phy_GetPhyId()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1517,6 +1531,7 @@ void unittest_phy_RmJob()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
@@ -1582,6 +1597,7 @@ void unittest_phy_TxAllComplete()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1598,6 +1614,7 @@ void unittest_phy_TxAllComplete()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
 
         TRY
         {
@@ -1610,6 +1627,7 @@ void unittest_phy_TxAllComplete()
         {
             TEST_ASSERT_TRUE(false);
         }
+        END_TRY;
     }
 }
 
