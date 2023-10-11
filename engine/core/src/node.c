@@ -49,7 +49,7 @@ void Node_WillGetId(void)
 }
 
 /******************************************************************************
- * @brief check if node is actually expecting an ID to come
+ * @brief check if node is actually expecting an ID to come and reset it
  * @param None
  * @return bool
  ******************************************************************************/
@@ -58,6 +58,16 @@ bool Node_WaitId(void)
     bool return_value = node_ctx.wait_id;
     node_ctx.wait_id  = false;
     return return_value;
+}
+
+/******************************************************************************
+ * @brief check if node is actually expecting an ID to come
+ * @param None
+ * @return bool
+ ******************************************************************************/
+bool Node_DoWeWaitId(void)
+{
+    return node_ctx.wait_id;
 }
 
 /******************************************************************************

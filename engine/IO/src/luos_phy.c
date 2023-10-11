@@ -79,6 +79,7 @@ typedef struct
     bool topology_running;   // We put this bits to 1 when a phy is running the topology detection.
     bool find_next_node_job; // We put this bits to 1 to indicate that we will need to find another node.
     bool resetAllNeed;       // We put this bits to 1 to indicate that we will need to reset all the nodes. We need it to avoid to reset all phy at reset message reception, allowing the phy's to send their reset message.
+    bool PhyExeptSourceDone; // We put this bit to 1 when all the phys except the source one are done with their detection.
 
     // ******************** Job management ********************
     // io_jobs are stores from the newest to the oldest.
@@ -150,6 +151,7 @@ void Phy_Reset(void)
     phy_ctx.topology_done      = 0;
     phy_ctx.topology_running   = false;
     phy_ctx.find_next_node_job = false;
+    phy_ctx.PhyExeptSourceDone = true;
 }
 
 void Phy_ResetAllNeeded(void)
@@ -311,7 +313,8 @@ error_return_t Phy_FindNextNode(void)
             // This phy still have port to detect
             uint8_t port_id;
             // Check if a node is connected
-            phy_ctx.topology_running = true;
+            phy_ctx.topology_running   = true;
+            phy_ctx.PhyExeptSourceDone = false;
             if (phy_ctx.phy[i].run_topo(&phy_ctx.phy[i], &port_id) == SUCCEED)
             {
                 port_t output_port;
@@ -334,6 +337,7 @@ error_return_t Phy_FindNextNode(void)
         }
     }
     // We checked all the phys except the source one.
+    phy_ctx.PhyExeptSourceDone = true;
     // Check if the source phy still have port to detect
     if (phy_ctx.topology_done != (1 << phy_ctx.phy_nb) - 2)
     {
@@ -377,19 +381,24 @@ void Phy_TopologySource(luos_phy_t *phy_ptr, uint8_t port_id)
 {
     LUOS_ASSERT((phy_ptr != NULL)
                 && (port_id < 0xFF));
-    // This port is the source of a topology request. it become the input port.
-    // We have to save it in the node context.
-    phy_ctx.topology_source.phy_id  = Phy_GetPhyId(phy_ptr);
-    phy_ctx.topology_source.port_id = port_id;
-    phy_ctx.topology_source.node_id = 0xFFFF;
-    // We don't have the node id yet, we will fill it out when we will receive it from the master.
-    // Put a flag to indicate that we are waiting for a node id.
-    Node_WillGetId();
+    // First we need to be sure that this event is not a glitch. We should get it only after a start detection and ignore any other.
+    if (Node_Get()->node_id == 0)
+    {
+        // Our node id is not set yet, we are ready to receive this event.
+        // This port is the source of a topology request. it become the input port.
+        // We have to save it in the node context.
+        phy_ctx.topology_source.phy_id  = Phy_GetPhyId(phy_ptr);
+        phy_ctx.topology_source.port_id = port_id;
+        phy_ctx.topology_source.node_id = 0xFFFF;
+        // We don't have the node id yet, we will fill it out when we will receive it from the master.
+        // Put a flag to indicate that we are waiting for a node id.
+        Node_WillGetId();
 
-    // We also know that this phy is liked to the detecting node.
-    // To enable any communication with it we have to set the nodes and services filter of this phy allowing us to communicate with it.
-    Phy_IndexSet(phy_ptr->nodes, 0x01);
-    Phy_IndexSet(phy_ptr->services, 0x01);
+        // We also know that this phy is linked to the detecting node.
+        // To enable any communication with it we have to set the nodes and services filter of this phy allowing us to communicate with it.
+        Phy_IndexSet(phy_ptr->nodes, 0x01);
+        Phy_IndexSet(phy_ptr->services, 0x01);
+    }
 }
 
 /******************************************************************************
@@ -400,8 +409,15 @@ void Phy_TopologySource(luos_phy_t *phy_ptr, uint8_t port_id)
 void Phy_TopologyDone(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT(phy_ptr != NULL);
-    phy_ctx.topology_done    = (1 << Phy_GetPhyId(phy_ptr));
+    phy_ctx.topology_done |= (1 << Phy_GetPhyId(phy_ptr));
     phy_ctx.topology_running = false;
+    // We need to check if we have to find another node
+    if (phy_ctx.topology_done != ((1 << phy_ctx.phy_nb) - 1 - 1))
+    {
+        // We don't have detected all the nodes on all the phys.
+        // We need to find the next node.
+        phy_ctx.find_next_node_job = true;
+    }
 }
 
 /******************************************************************************
@@ -532,8 +548,15 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             break;
         case NODEIDACK:
         case NODEID:
-            // If the target is not the phy_ptr, we need to keep this message
-            return !Phy_IndexFilter(phy_ptr->nodes, header->target);
+            if (header->target == 0)
+            {
+                return Node_DoWeWaitId() || (phy_ctx.PhyExeptSourceDone == false); // or we are waiting for child branches ((phy_ctx.topology_running == true) && (header->source == 1))
+            }
+            else
+            {
+                // If the target is not the phy_ptr, we need to keep this message
+                return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
+            }
             break;
         default:
             // This message is wrong, trash it.
@@ -576,8 +599,8 @@ inline phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header)
                 // This concerns Luos phy only
                 if ((phy_ctx.topology_running == true) && (header->source != 1))
                 {
-                    // We are performing a topology and this message is for us.
-                    // We need to store the node that send us this in our index allowing us to communicate with it later.
+                    // We are performing a topology as master and this message is for us.
+                    // We need to store the node that send us this in our index allowing us to communicate with it later
                     Phy_IndexSet(phy_ptr->nodes, header->source);
                 }
                 target = 0x01;
@@ -673,11 +696,11 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         // Now we can create a phy_job to dispatch the tx_job later
         LUOS_ASSERT(phy_ctx.io_job_nb < MAX_MSG_NB);
         Phy_SetIrqState(false);
-        uint16_t my_job = phy_ctx.io_job_nb++;
+        uint16_t my_job                  = phy_ctx.io_job_nb++;
+        phy_ctx.io_job[my_job].alloc_msg = (msg_t *)phy_ptr->rx_data;
         Phy_SetIrqState(true);
         // Now copy the data in the job
         phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
-        phy_ctx.io_job[my_job].alloc_msg  = (msg_t *)phy_ptr->rx_data;
         phy_ctx.io_job[my_job].phy_filter = phy_ptr->rx_phy_filter;
         phy_ctx.io_job[my_job].size       = phy_ptr->rx_size;
 
@@ -779,8 +802,11 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             // We probably have been reseted in the meantime. Just drop the message.
             phy_ptr->rx_alloc_job = false;
             phy_ptr->rx_keep      = false;
+            Phy_SetIrqState(true);
             return;
         }
+        Phy_SetIrqState(true);
+        Phy_SetIrqState(false);
 
         // We need to store the received data.
         // Update the informations allowing reception to continue and directly copy the data into the allocated buffer
@@ -978,10 +1004,10 @@ static phy_job_t *Phy_AddJob(luos_phy_t *phy_ptr, phy_job_t *phy_job)
         phy_ptr->available_job_index = 0;
     }
     LUOS_ASSERT(phy_ptr->available_job_index != phy_ptr->oldest_job_index);
-    Phy_SetIrqState(true);
     phy_ptr->job_nb++;
     // Copy the actual job data to the allocated job
     *returned_job = *phy_job;
+    Phy_SetIrqState(true);
     return returned_job;
 }
 

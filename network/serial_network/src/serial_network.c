@@ -157,14 +157,14 @@ void Serial_Loop(void)
             // We need to go back to the beginning of the buffer
             uint8_t buffer_end_size = ((uintptr_t)RX_data + sizeof(RX_data)) - (uintptr_t)(phy_serial->rx_buffer_base);
             memcpy(&header, phy_serial->rx_buffer_base, buffer_end_size);
-            memcpy(&header + buffer_end_size, RX_data, sizeof(SerialHeader_t) - buffer_end_size);
+            memcpy((void *)((uintptr_t)&header + buffer_end_size), RX_data, sizeof(SerialHeader_t) - buffer_end_size);
         }
         else
         {
             // Header is continuous
             memcpy(&header, phy_serial->rx_buffer_base, sizeof(SerialHeader_t));
         }
-        if (header.size >= sizeof(msg_t))
+        if (header.size > sizeof(msg_t))
         {
             // This data seems to be corrupted or at least we can't receive it with our buffer size, drop it.
             Serial_MoveRxPtr(1);
@@ -182,7 +182,7 @@ void Serial_Loop(void)
             else
             {
                 // We already start the timeout
-                if ((LuosHAL_GetSystick() - timeout_systick) > 100)
+                if ((LuosHAL_GetSystick() - timeout_systick) > 200)
                 {
                     // We spend the 100ms timeout, remove the byte
                     Serial_MoveRxPtr(1);
@@ -413,7 +413,7 @@ _CRITICAL void Serial_ReceptionWrite(uint8_t *data, uint32_t size)
     }
     rx_size += size;
     LUOS_ASSERT(rx_size < sizeof(RX_data));
-    if ((wait_reception == true) && (size >= sizeof(SerialHeader_t) + 1))
+    if ((wait_reception == true) && (rx_size >= sizeof(SerialHeader_t) + 1))
     {
         // We received the answer of a topology ping, just indicate that we receive it
         wait_reception = false;
@@ -428,12 +428,15 @@ _CRITICAL void Serial_ReceptionWrite(uint8_t *data, uint32_t size)
 _CRITICAL void Serial_ReceptionIncrease(uint32_t size)
 {
     // Reception is finished, we can parse the message
+    if (rx_size == 0)
+    {
+        // We consider this as the end of a complete message
+        // If we received multiple messages in this call, this could result in a wrong timestamp for the second message. Their is no way to avoid this problem, so we need to accept it.
+        phy_serial->rx_timestamp = Phy_GetTimestamp() - (size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
+    }
     rx_size += size;
-    // We consider this as the end of a complete message
-    // If we received multiple messages in this call, this could result in a wrong timestamp for the second message. Their is no way to avoid this problem, so we need to accept it.
-    phy_serial->rx_timestamp = Phy_GetTimestamp() - (rx_size * (uint32_t)10 * (uint32_t)1000000000 / (uint32_t)SERIAL_NETWORK_BAUDRATE); // now - (nbr_byte * 10bits * (1s in ns) / baudrate)
     LUOS_ASSERT(rx_size < sizeof(RX_data));
-    if ((wait_reception == true) && (size >= sizeof(SerialHeader_t) + 1))
+    if ((wait_reception == true) && (rx_size >= sizeof(SerialHeader_t) + 1))
     {
         // We received the answer of a topology ping, just indicate that we receive it
         wait_reception = false;

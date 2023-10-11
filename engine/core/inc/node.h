@@ -52,6 +52,7 @@ void Node_Loop(void);
 node_t *Node_Get(void);
 void Node_WillGetId(void);
 bool Node_WaitId(void);
+bool Node_DoWeWaitId(void);
 node_state_t Node_GetState(void);
 void Node_SetState(node_state_t);
 
