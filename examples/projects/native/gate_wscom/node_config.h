@@ -40,7 +40,8 @@
  *    Define                | Default Value              | Description
  *    :---------------------|------------------------------------------------------
  *    MAX_LOCAL_SERVICE_NUMBER    |              5             | Service number in the node
- *    MAX_NODE_NUMBER.      |              20            | Node number in the device
+ *    MAX_NODE_NUMBER       |              20            | Node number in the device
+ *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
  *    MAX_MSG_NB            |   2*MAX_LOCAL_SERVICE_NUMBER   | Message number in Luos buffer
  *    NBR_PORT              |              2             | PTP Branch number Max 8
@@ -100,8 +101,6 @@
  *******************************************************************************
  *    Define                    | Default Value              | Description
  *    :-------------------------|------------------------------------------------------
- *    MAX_NODE_NUMBER       |              20            | Node number in the device
- *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
  *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
  *    PIPE_RX_BUFFER_SIZE       |             1024           | Receive pipe buffer size
  *    PIPE_TX_BUFFER_SIZE       |             2048           | Transmit pipe buffer size

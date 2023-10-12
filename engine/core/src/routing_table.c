@@ -349,7 +349,6 @@ static bool RoutingTB_Share(service_t *service, uint16_t nb_node)
     for (uint16_t i = 2; i <= nb_node; i++) // don't send to ourself
     {
         intro_msg.header.target = i;
-        // Check if this node need to get the routing table.
         uint16_t node_idx;
         for (node_idx = i; node_idx < last_routing_table_entry; node_idx++)
         {
@@ -359,6 +358,7 @@ static bool RoutingTB_Share(service_t *service, uint16_t nb_node)
             }
         }
         RoutingTB_ComputeServiceIndexes(service, node_idx);
+        // Check if this node need to get the routing table.
         if ((routing_table[node_idx].node_info & (1 << 0)) == 0)
         {
             Luos_SendData(service, &intro_msg, routing_table, (last_routing_table_entry * sizeof(routing_table_t)));
