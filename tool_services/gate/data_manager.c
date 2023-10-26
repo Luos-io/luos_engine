@@ -176,12 +176,20 @@ void DataManager_Format(service_t *service)
                         // This message is a command from pipe
                         static char data_cmd[GATE_BUFF_SIZE];
                         // Convert the received data into Luos commands
-                        if (Luos_ReceiveData(service, &data_msg, data_cmd) > 0)
+                        int size = Luos_ReceiveData(service, &data_msg, data_cmd);
+                        if (size > 0)
                         {
                             // We finish to receive this data, execute the received command
+                            char *data_ptr = data_cmd;
                             if (data_msg.header.cmd == SET_CMD)
                             {
-                                Convert_DataToLuos(service, data_cmd);
+                                while (size > 0 && *data_ptr == '{')
+                                {
+                                    uint32_t data_consumed = strlen(data_ptr) + 1;
+                                    Convert_DataToLuos(service, data_ptr);
+                                    size -= data_consumed;
+                                    data_ptr += data_consumed;
+                                }
                             }
                         }
                     } while (Luos_ReadFromService(service, PipeLink_GetId(), &data_msg) == SUCCEED);
