@@ -47,9 +47,11 @@
  *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
  ******************************************************************************/
 
-#define MAX_LOCAL_SERVICE_NUMBER 1
-#define MAX_MSG_NB               10
-#define MAX_BUFFER_SIZE          512
+#define MSG_BUFFER_SIZE 2048
+#define MAX_MSG_NB      20
+#define NO_RTB
+#define MAX_NODE_NUMBER    40
+#define MAX_SERVICE_NUMBER 50
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
