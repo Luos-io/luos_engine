@@ -99,9 +99,14 @@ void Bootloader_JsonToLuos(service_t *service, char *bin_data, json_t const *boo
         // Get "command" json object
         json_t const *command_item = json_getProperty(bootloader_json, "command");
         // Parse all relevant values in json object
-        const char *type     = json_getPropertyValue(command_item, "type");
+        const char *type = json_getPropertyValue(command_item, "type");
+        if (json_getProperty(command_item, "topic") == NULL)
+        {
+            return;
+        }
         uint8_t topic_target = (uint8_t)json_getReal(json_getProperty(command_item, "topic"));
-        uint16_t node_id     = (uint16_t)json_getReal(json_getProperty(command_item, "node"));
+
+        uint16_t node_id = (uint16_t)json_getReal(json_getProperty(command_item, "node"));
 
         // Create a message to send to nodes
         msg_t boot_msg;
