@@ -554,7 +554,7 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             }
             else
             {
-                // If the target is not the phy_ptr, we need to keep this message
+                // If the target is not for the receiving phy, we need to keep this message
                 return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
             }
             break;
@@ -1218,7 +1218,7 @@ inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
  ******************************************************************************/
 inline void Phy_IndexSet(uint8_t *index, uint16_t id)
 {
-    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF));
+    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF) && (id != 0));
     uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
     index[bit_index / 8] |= 1 << (bit_index % 8);
 }
