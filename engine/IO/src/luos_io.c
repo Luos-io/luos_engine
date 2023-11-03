@@ -349,7 +349,7 @@ static int LuosIO_StartTopologyDetection(service_t *service)
             }
 
             // Reinit our node id
-            Node_Get()->node_id = 0;
+            Node_Get()->node_id = DEFAULTID;
             memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
             Node_SetState(LOCAL_DETECTION);
             detect_state_machine = 0;
@@ -429,7 +429,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             {
                 // We didn't received the start detection message
                 // Reinit our node id
-                Node_Get()->node_id = 0;
+                Node_Get()->node_id = DEFAULTID;
                 memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
                 // A phy have already been detected, so we can't reset everything
                 // Just reset LuosIO and Phy jobs.
