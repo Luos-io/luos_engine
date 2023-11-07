@@ -587,6 +587,7 @@ void unittest_phy_deadTarget()
             luos_phy->job_nb              = 3;
             luos_phy->oldest_job_index    = 0;
             luos_phy->available_job_index = 3;
+            luos_phy->rx_phy_filter       = 0;
             luos_phy->job[0].data_pt      = (uint8_t *)msg_buffer;
             luos_phy->job[1].data_pt      = (uint8_t *)&msg_buffer[20]; // This is a different target, it should not be removed
             luos_phy->job[2].data_pt      = (uint8_t *)msg_buffer;
@@ -1020,7 +1021,6 @@ void unittest_phy_ValidMsg()
         TRY
         {
             phy_test_reset();
-            Init_Context();
             memory_stats_t memory_stats;
             MsgAlloc_Init(&memory_stats);
 
@@ -1043,6 +1043,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x00;
             luos_phy->rx_timestamp  = 10;
+            robus_phy->services[0]  = 0x02; // Configure this service as accessible from Robus
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
             Phy_ValidMsg(luos_phy);
@@ -1050,11 +1051,10 @@ void unittest_phy_ValidMsg()
             TEST_ASSERT_EQUAL(10, phy_ctx.io_job[0].timestamp);
             TEST_ASSERT_EQUAL(false, luos_phy->rx_alloc_job);
             TEST_ASSERT_EQUAL(msg_buffer, phy_ctx.io_job[0].alloc_msg);
-            TEST_ASSERT_EQUAL(0x01, phy_ctx.io_job[0].phy_filter);
+            TEST_ASSERT_EQUAL(0x02, phy_ctx.io_job[0].phy_filter);
             TEST_ASSERT_EQUAL(MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t), phy_ctx.io_job[0].size);
             TEST_ASSERT_EQUAL(0, luos_phy->received_data);
             TEST_ASSERT_EQUAL(luos_phy->rx_buffer_base, luos_phy->rx_data);
-            TEST_ASSERT_EQUAL(0x01, luos_phy->rx_phy_filter); // A Robus node is targeted
         }
         CATCH
         {
