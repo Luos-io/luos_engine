@@ -162,8 +162,6 @@ _CRITICAL void Transmit_Process()
         if (Transmit_GetLockStatus() == false)
         {
             // We are free to transmit
-            // We will prepare to transmit something enable tx status with precomputed value of the initial_transmit_status
-            ctx.tx.status = initial_transmit_status;
             // Lock the bus
             ctx.tx.lock = true;
             RobusHAL_SetRxDetecPin(false);
@@ -199,8 +197,12 @@ _CRITICAL void Transmit_Process()
             if (Phy_GetJob(robus_phy) == job)
             {
                 LUOS_ASSERT((job->size + jobEncaps->size) >= 9);
+                Phy_SetIrqState(false);
+                // We will prepare to transmit something enable tx status with precomputed value of the initial_transmit_status
+                ctx.tx.status = initial_transmit_status;
                 // We still have something to send, no reset occured
                 RobusHAL_ComTransmit(tx_data, (job->size + jobEncaps->size));
+                Phy_SetIrqState(true);
             }
             else
             {

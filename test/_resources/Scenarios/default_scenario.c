@@ -39,11 +39,6 @@ void Init_Context(void)
         printf("[FATAL] Can't reset scenario context\n");
         TEST_ASSERT_TRUE(IS_ASSERT());
     }
-    Luos_Loop();
-
-    RESET_ASSERT();
-    Luos_Init();
-    Robus_Init();
 
     // Create services
     revision_t revision  = {.major = 1, .minor = 0, .build = 0};

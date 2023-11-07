@@ -325,10 +325,11 @@ void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size
 
         // Send message
         uint32_t tickstart = Luos_GetSystick();
+
         while (Luos_SendMsg(service, msg) == FAILED)
         {
             // No more memory space available
-            // 500ms of timeout after start trying to load our data in memory. Perhaps the buffer is full of RX messages try to increate the buffer size.
+            // 500ms of timeout after start trying to load our data in memory. Perhaps the buffer is full of RX messages try to increase the buffer size.
             LUOS_ASSERT(((volatile uint32_t)Luos_GetSystick() - tickstart) < 500);
         }
 

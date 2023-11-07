@@ -63,6 +63,8 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         // Got websocket frame. Received data is wm->data. save it into the Pipe streaming channel
         struct mg_ws_message *wm = (struct mg_ws_message *)ev_data;
         Streaming_PutSample(Pipe_GetRxStreamChannel(), wm->data.ptr, wm->data.len);
+        char end = 0;
+        Streaming_PutSample(Pipe_GetRxStreamChannel(), &end, 1);
     }
     else if (ev == MG_EV_CLOSE)
     {
@@ -123,6 +125,11 @@ void PipeCom_Send(void)
             while (Luos_GetSystick() - start_tick < 2)
                 ;
         }
+    }
+    else
+    {
+        // No connection, we have to drop the data
+        Streaming_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), Streaming_GetAvailableSampleNB(Pipe_GetTxStreamChannel()));
     }
 }
 

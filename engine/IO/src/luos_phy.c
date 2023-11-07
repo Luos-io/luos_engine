@@ -554,7 +554,7 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             }
             else
             {
-                // If the target is not the phy_ptr, we need to keep this message
+                // If the target is not for the receiving phy, we need to keep this message
                 return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
             }
             break;
@@ -702,6 +702,7 @@ _CRITICAL void Phy_ValidMsg(luos_phy_t *phy_ptr)
         // Now copy the data in the job
         phy_ctx.io_job[my_job].timestamp  = phy_ptr->rx_timestamp;
         phy_ctx.io_job[my_job].phy_filter = phy_ptr->rx_phy_filter;
+        phy_ptr->rx_phy_filter            = 0;
         phy_ctx.io_job[my_job].size       = phy_ptr->rx_size;
 
         // Then reset the phy to receive the next message
@@ -795,15 +796,18 @@ _CRITICAL static void Phy_alloc(luos_phy_t *phy_ptr)
             Phy_SetIrqState(true);
             return;
         }
-        // Compute the rx_phy_filter
-        phy_ptr->rx_phy_filter = Phy_ComputeTargets(phy_ptr, (header_t *)phy_ptr->rx_buffer_base);
         if (phy_ptr->rx_phy_filter == 0)
         {
-            // We probably have been reseted in the meantime. Just drop the message.
-            phy_ptr->rx_alloc_job = false;
-            phy_ptr->rx_keep      = false;
-            Phy_SetIrqState(true);
-            return;
+            // Compute the rx_phy_filter
+            phy_ptr->rx_phy_filter = Phy_ComputeTargets(phy_ptr, (header_t *)phy_ptr->rx_buffer_base);
+            if (phy_ptr->rx_phy_filter == 0)
+            {
+                // We probably have been reseted in the meantime, or the message is corrupted. Just drop it.
+                phy_ptr->rx_alloc_job = false;
+                phy_ptr->rx_keep      = false;
+                Phy_SetIrqState(true);
+                return;
+            }
         }
         Phy_SetIrqState(true);
         Phy_SetIrqState(false);
@@ -1214,7 +1218,7 @@ inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
  ******************************************************************************/
 inline void Phy_IndexSet(uint8_t *index, uint16_t id)
 {
-    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF));
+    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF) && (id != 0));
     uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
     index[bit_index / 8] |= 1 << (bit_index % 8);
 }

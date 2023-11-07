@@ -296,7 +296,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     {
         if ((property_type == JSON_REAL) || (property_type == JSON_INTEGER))
         {
-            linear_position_t linear_position = LinearOD_PositionFrom_mm((float)json_getReal(jobj));
+            linear_position_t linear_position = LinearOD_PositionFrom_m((float)json_getReal(jobj));
             LinearOD_PositionToMsg(&linear_position, msg);
             Luos_SendMsg(service, msg);
             return;

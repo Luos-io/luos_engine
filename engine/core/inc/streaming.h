@@ -33,13 +33,13 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-streaming_channel_t Streaming_CreateChannel(const void *ring_buffer, uint16_t ring_buffer_size, uint8_t data_size);
+streaming_channel_t Streaming_CreateChannel(const void *ring_buffer, uint32_t ring_buffer_size, uint8_t data_size);
 void Streaming_ResetChannel(streaming_channel_t *stream);
-uint16_t Streaming_PutSample(streaming_channel_t *stream, const void *data, uint16_t size);
-uint16_t Streaming_GetSample(streaming_channel_t *stream, void *data, uint16_t size);
-uint16_t Streaming_GetAvailableSampleNB(streaming_channel_t *stream);
-uint16_t Streaming_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream);
-uint16_t Streaming_AddAvailableSampleNB(streaming_channel_t *stream, uint16_t size);
-uint16_t Streaming_RmvAvailableSampleNB(streaming_channel_t *stream, uint16_t size);
+uint32_t Streaming_PutSample(streaming_channel_t *stream, const void *data, uint32_t size);
+uint32_t Streaming_GetSample(streaming_channel_t *stream, void *data, uint32_t size);
+uint32_t Streaming_GetAvailableSampleNB(streaming_channel_t *stream);
+uint32_t Streaming_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream);
+uint32_t Streaming_AddAvailableSampleNB(streaming_channel_t *stream, uint32_t size);
+uint32_t Streaming_RmvAvailableSampleNB(streaming_channel_t *stream, uint32_t size);
 
 #endif /* LUOS_H */

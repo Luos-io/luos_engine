@@ -349,7 +349,7 @@ static int LuosIO_StartTopologyDetection(service_t *service)
             }
 
             // Reinit our node id
-            Node_Get()->node_id = 0;
+            Node_Get()->node_id = DEFAULTID;
             memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
             Node_SetState(LOCAL_DETECTION);
             detect_state_machine = 0;
@@ -429,7 +429,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             {
                 // We didn't received the start detection message
                 // Reinit our node id
-                Node_Get()->node_id = 0;
+                Node_Get()->node_id = DEFAULTID;
                 memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
                 // A phy have already been detected, so we can't reset everything
                 // Just reset LuosIO and Phy jobs.
@@ -445,12 +445,12 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             // Add this node id in the Luos phy filter allowing us to receive node messages
             memset(luos_phy->nodes, 0, sizeof(luos_phy->nodes));
             Phy_IndexSet(luos_phy->nodes, node_id);
-            // Also add all node before our node_id in the philter of the source phy
+            // Also add all node before our node_id in the philter of the source phy allowing next node to reach our parents.
             port_t *source_port        = Phy_GetTopologysource();
             luos_phy_t *source_phy_ptr = Phy_GetPhyFromId(source_port->phy_id);
-            for (uint16_t i = 0; i < node_id; i++)
+            for (uint16_t id = 1; id < node_id; id++)
             {
-                Phy_IndexSet(source_phy_ptr->nodes, i);
+                Phy_IndexSet(source_phy_ptr->nodes, id);
             }
             // Now we need to send back the input part of the connection data.
             port_t *input_port  = Phy_GetTopologysource();

@@ -94,7 +94,7 @@ void Node_Init(void)
     // set node_info value
     node_ctx.info.node_info = 0;
 #ifdef NO_RTB
-    node_ctx.node_info |= 1 << 0;
+    node_ctx.info.node_info |= 1 << 0;
 #endif
     Node_SetState(NO_DETECTION);
     node_ctx.wait_id = false;
