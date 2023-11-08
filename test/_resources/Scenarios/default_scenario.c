@@ -67,9 +67,16 @@ static void Detection(service_t *service)
     search_result_t result;
 
     Luos_Detect(service);
+    uint32_t started_time = Luos_GetSystick();
     do
     {
         Luos_Loop();
+        if (Luos_GetSystick() - started_time > 10000)
+        {
+            printf("[FATAL] Detection failed\n");
+            TEST_ASSERT_TRUE(0);
+            return;
+        }
     } while (!Luos_IsDetected());
 
     RTFilter_Reset(&result);
