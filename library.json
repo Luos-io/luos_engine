@@ -8,7 +8,7 @@
         "url": "https://luos.io"
     },
     "homepage": "https://www.luos.io",
-    "license": "Apache-2.0",
+    "license": "MIT",
     "headers": "engine/core/inc/luos_engine.h",
     "build": {
         "srcDir": "engine/core/src",
