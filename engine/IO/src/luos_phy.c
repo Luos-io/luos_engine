@@ -100,6 +100,7 @@ static int Phy_GetPhyId(luos_phy_t *phy_ptr);
 static bool Phy_IndexFilter(uint8_t *index, uint16_t id);
 static bool Phy_Need(luos_phy_t *phy_ptr, header_t *header);
 static phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header);
+static void Phy_IndexRm(uint8_t *index, uint16_t id);
 
 /*******************************************************************************
  * Variables
@@ -1199,8 +1200,8 @@ void Phy_AddLocalServices(uint16_t service_id, uint16_t service_number)
 
 /******************************************************************************
  * @brief check if the given id value concern this phy index
- * @param index Pointer to the index of the node
- * @param id id of the service concerned by this message
+ * @param index Pointer to the index of the node or service
+ * @param id id of the node or service concerned by this message
  * @return phy concerned by this message
  ******************************************************************************/
 inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
@@ -1212,8 +1213,8 @@ inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
 
 /******************************************************************************
  * @brief Set a given id value in the index
- * @param index Pointer to the index of the node
- * @param id id of the service concerned by this message
+ * @param index Pointer to the index of the node or service
+ * @param id id of the node or service concerned by this message
  * @return phy concerned by this message
  ******************************************************************************/
 inline void Phy_IndexSet(uint8_t *index, uint16_t id)
@@ -1221,6 +1222,49 @@ inline void Phy_IndexSet(uint8_t *index, uint16_t id)
     LUOS_ASSERT((index != NULL) && (id <= 0x0FFF) && (id != 0));
     uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
     index[bit_index / 8] |= 1 << (bit_index % 8);
+}
+
+/******************************************************************************
+ * @brief Remove a given id value in the index
+ * @param index Pointer to the index of the node or service
+ * @param id id of the service concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_IndexRm(uint8_t *index, uint16_t id)
+{
+    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF) && (id != 0));
+    uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
+    index[bit_index / 8] &= ~(1 << (bit_index % 8));
+}
+
+/******************************************************************************
+ * @brief Remove a given service id value in the index of all phys
+ * @param id id of the service concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_ServiceIndexRm(uint16_t id)
+{
+    LUOS_ASSERT((id <= 0x0FFF) && (id != 0));
+    // for all phy
+    for (int i = 0; i < phy_ctx.phy_nb; i++)
+    {
+        Phy_IndexRm(phy_ctx.phy[i].services, id);
+    }
+}
+
+/******************************************************************************
+ * @brief Remove a given node id value in the index of all phys
+ * @param id id of the node concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_NodeIndexRm(uint16_t id)
+{
+    LUOS_ASSERT((id <= 0x0FFF) && (id != 0));
+    // for all phy
+    for (int i = 0; i < phy_ctx.phy_nb; i++)
+    {
+        Phy_IndexRm(phy_ctx.phy[i].nodes, id);
+    }
 }
 
 /******************************************************************************

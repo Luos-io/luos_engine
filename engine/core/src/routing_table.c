@@ -1030,12 +1030,12 @@ search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id)
     uint8_t entry_nbr = 0;
     // Check result pointer
     LUOS_ASSERT(result != 0);
-    // if we the result is not initialized return 0
+    // If the result is not initialized return 0
     if (RTFilter_InitCheck(result) == FAILED)
     {
         result->result_nbr = 0;
     }
-    // search all the entries of the research table
+    // Search all the entries of the research table
     while (entry_nbr < result->result_nbr)
     {
         // find a service with the wanted node_id

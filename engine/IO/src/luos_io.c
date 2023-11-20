@@ -476,12 +476,12 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             switch (input->header.size)
             {
                 case 2:
-                    // generate local ID
+                    // Generate local ID
                     RoutingTB_Erase();
                     memcpy(&base_id, &input->data[0], sizeof(uint16_t));
                     Service_GenerateId(base_id);
                 case 0:
-                    // send back a local routing table
+                    // Send back a local routing table
                     output_msg.header.cmd         = RTB;
                     output_msg.header.target_mode = NODEIDACK;
                     output_msg.header.target      = input->header.source;
@@ -582,10 +582,23 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
         case DEADTARGET:
             if (dead_target->node_id != 0)
             {
+                // Get all services of this node and remove them from the indexes
+                search_result_t result;
+                RTFilter_Node(RTFilter_Reset(&result), dead_target->node_id);
+                for (size_t i = 0; i < result.result_nbr; i++)
+                {
+                    Phy_ServiceIndexRm(result.result_table[i]->id);
+                }
+                // remove the node from the indexes
+                Phy_NodeIndexRm(dead_target->node_id);
+                // remove the node services from the routing table
                 RoutingTB_RemoveNode(dead_target->node_id);
             }
             if (dead_target->service_id != 0)
             {
+                // Remove the service from the indexes
+                Phy_ServiceIndexRm(dead_target->service_id);
+                // Remove the service from the routing table
                 RoutingTB_RemoveService(dead_target->service_id);
             }
             // This assert information could be usefull for services, do not remove it.
