@@ -149,6 +149,19 @@ void DataManager_Format(service_t *service)
                     i++;
                     continue;
                 }
+                if (data_msg.header.cmd == DEADTARGET)
+                {
+                    dead_target_t *dead_target = (dead_target_t *)data_msg.data;
+                    if (dead_target->node_id != 0)
+                    {
+                        Convert_DeadNodeToData(service, dead_target->node_id);
+                    }
+                    if (dead_target->service_id != 0)
+                    {
+                        Convert_DeadServiceToData(service, dead_target->service_id);
+                    }
+                    continue;
+                }
                 // check if a node send a bootloader message
                 if (data_msg.header.cmd >= BOOTLOADER_START && data_msg.header.cmd <= BOOTLOADER_ERROR_SIZE)
                 {
