@@ -100,6 +100,7 @@ static int Phy_GetPhyId(luos_phy_t *phy_ptr);
 static bool Phy_IndexFilter(uint8_t *index, uint16_t id);
 static bool Phy_Need(luos_phy_t *phy_ptr, header_t *header);
 static phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header);
+static void Phy_IndexRm(uint8_t *index, uint16_t id);
 
 /*******************************************************************************
  * Variables
@@ -527,7 +528,7 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
     // To avoid to spend precious computing time, instead of checking all the phy we will only check if this concern only the receiving phy.
     // We need to keep this message only if the message target is not only for the phy_ptr, except if it is Luos because Luos can do localhost.
 
-    // If this phy is Luos phy, we need to keep all the messages
+    // If this phy is Luos phy, we need to keep all the messages no matter what.
     if (Phy_GetPhyId(phy_ptr) == 0)
     {
         return true;
@@ -543,19 +544,27 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             break;
         case SERVICEIDACK:
         case SERVICEID:
-            // If the target is not the phy_ptr, we need to keep this message
-            return !Phy_IndexFilter(phy_ptr->services, header->target);
+            // If the target is not the phy_ptr, and the source service is known, we need to keep this message
+            return (!Phy_IndexFilter(phy_ptr->services, header->target)) && (Phy_IndexFilter(phy_ptr->services, header->source));
             break;
         case NODEIDACK:
         case NODEID:
             if (header->target == 0)
             {
-                return Node_DoWeWaitId() || (phy_ctx.PhyExeptSourceDone == false); // or we are waiting for child branches ((phy_ctx.topology_running == true) && (header->source == 1))
+                return Node_DoWeWaitId() || (phy_ctx.PhyExeptSourceDone == false);
             }
             else
             {
-                // If the target is not for the receiving phy, we need to keep this message
-                return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
+                if (Luos_IsDetected())
+                {
+                    // If the target is not for the receiving phy, and the source service is known, we need to keep this message
+                    return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0) && (Phy_IndexFilter(phy_ptr->services, header->source)));
+                }
+                else
+                {
+                    // If the target is not for the receiving phy, we need to keep this message
+                    return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
+                }
             }
             break;
         default:
@@ -1199,8 +1208,8 @@ void Phy_AddLocalServices(uint16_t service_id, uint16_t service_number)
 
 /******************************************************************************
  * @brief check if the given id value concern this phy index
- * @param index Pointer to the index of the node
- * @param id id of the service concerned by this message
+ * @param index Pointer to the index of the node or service
+ * @param id id of the node or service concerned by this message
  * @return phy concerned by this message
  ******************************************************************************/
 inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
@@ -1212,8 +1221,8 @@ inline bool Phy_IndexFilter(uint8_t *index, uint16_t id)
 
 /******************************************************************************
  * @brief Set a given id value in the index
- * @param index Pointer to the index of the node
- * @param id id of the service concerned by this message
+ * @param index Pointer to the index of the node or service
+ * @param id id of the node or service concerned by this message
  * @return phy concerned by this message
  ******************************************************************************/
 inline void Phy_IndexSet(uint8_t *index, uint16_t id)
@@ -1221,6 +1230,49 @@ inline void Phy_IndexSet(uint8_t *index, uint16_t id)
     LUOS_ASSERT((index != NULL) && (id <= 0x0FFF) && (id != 0));
     uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
     index[bit_index / 8] |= 1 << (bit_index % 8);
+}
+
+/******************************************************************************
+ * @brief Remove a given id value in the index
+ * @param index Pointer to the index of the node or service
+ * @param id id of the service concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_IndexRm(uint8_t *index, uint16_t id)
+{
+    LUOS_ASSERT((index != NULL) && (id <= 0x0FFF) && (id != 0));
+    uint8_t bit_index = id - 1; // Because 1 represent bit index 0.
+    index[bit_index / 8] &= ~(1 << (bit_index % 8));
+}
+
+/******************************************************************************
+ * @brief Remove a given service id value in the index of all phys
+ * @param id id of the service concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_ServiceIndexRm(uint16_t id)
+{
+    LUOS_ASSERT((id <= 0x0FFF) && (id != 0));
+    // for all phy
+    for (int i = 0; i < phy_ctx.phy_nb; i++)
+    {
+        Phy_IndexRm(phy_ctx.phy[i].services, id);
+    }
+}
+
+/******************************************************************************
+ * @brief Remove a given node id value in the index of all phys
+ * @param id id of the node concerned by this message
+ * @return phy concerned by this message
+ ******************************************************************************/
+inline void Phy_NodeIndexRm(uint16_t id)
+{
+    LUOS_ASSERT((id <= 0x0FFF) && (id != 0));
+    // for all phy
+    for (int i = 0; i < phy_ctx.phy_nb; i++)
+    {
+        Phy_IndexRm(phy_ctx.phy[i].nodes, id);
+    }
 }
 
 /******************************************************************************

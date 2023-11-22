@@ -27,6 +27,8 @@ void Phy_FiltersInit(void);
 void Phy_AddLocalServices(uint16_t service_id, uint16_t service_number);
 bool Phy_FilterType(uint16_t type_id);
 void Phy_IndexSet(uint8_t *index, uint16_t id);
+void Phy_NodeIndexRm(uint16_t id);
+void Phy_ServiceIndexRm(uint16_t id);
 void Phy_ResetAllNeeded(void);
 
 #endif /* _PRIVATE_LUOS_PHY_H_ */
