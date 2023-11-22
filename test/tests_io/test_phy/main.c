@@ -2,6 +2,7 @@
 #include "../src/luos_phy.c"
 #include "../src/msg_alloc.c"
 #include "../src/luos_io.c"
+#include "../../core/src/node.c"
 #include <default_scenario.h>
 
 luos_phy_t *robus_phy;
@@ -696,7 +697,7 @@ void unittest_phy_ComputeHeader()
         END_TRY;
     }
 
-    NEW_TEST_CASE("Check ComputeHeader for a non timestamped message needed by Luos");
+    NEW_TEST_CASE("Check ComputeHeader for a non timestamped message from Luos");
     {
         TRY
         {
@@ -723,11 +724,269 @@ void unittest_phy_ComputeHeader()
             luos_phy->rx_alloc_job  = false;
             luos_phy->rx_size       = 0;
             luos_phy->rx_phy_filter = 0x00;
-            Phy_ComputeHeader(luos_phy);
+            Phy_ComputeHeader(luos_phy); // Here, because we use luos_phy, the message is accepted no matter what.
             TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), luos_phy->rx_size);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_keep);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_ack);
             TEST_ASSERT_EQUAL(true, luos_phy->rx_alloc_job);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check ComputeHeader for a non timestamped message needed by Luos");
+    {
+        TRY
+        {
+            phy_test_reset();
+            // Create a fake service with id 1
+            Phy_AddLocalServices(1, 1);
+
+            msg_t msg;
+            msg.header.config      = BASE_PROTOCOL;
+            msg.header.target_mode = SERVICEIDACK;
+            msg.header.target      = 1;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 1;
+            msg.header.source      = 2;
+            msg.data[0]            = 0xAE;
+
+            // Configure the source in indexes
+            Phy_IndexSet(robus_phy->services, 2);
+            // Save message information in the Luos phy struct
+            robus_phy->rx_buffer_base = (uint8_t *)&msg;
+            robus_phy->rx_data        = luos_phy->rx_buffer_base;
+            // For now let just consider that we received the header allowing us to compute the message things based on it.
+            robus_phy->received_data = sizeof(header_t);
+            robus_phy->rx_keep       = true; // Tell phy that we want to keep this message
+            robus_phy->rx_ack        = false;
+            robus_phy->rx_alloc_job  = false;
+            robus_phy->rx_size       = 0;
+            robus_phy->rx_phy_filter = 0x00;
+            Phy_ComputeHeader(robus_phy); // Here, because we use luos_phy, the message is accepted no matter what.
+            TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), robus_phy->rx_size);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_alloc_job);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check ComputeHeader failure for a non referenced service source message needed by Luos");
+    {
+        TRY
+        {
+            phy_test_reset();
+            // Create a fake service with id 1
+            Phy_AddLocalServices(1, 1);
+
+            msg_t msg;
+            msg.header.config      = BASE_PROTOCOL;
+            msg.header.target_mode = SERVICEIDACK;
+            msg.header.target      = 1;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 1;
+            msg.header.source      = 3;
+            msg.data[0]            = 0xAE;
+
+            // Configure the source in indexes
+            Phy_IndexSet(robus_phy->services, 2);
+            // Save message information in the Luos phy struct
+            robus_phy->rx_buffer_base = (uint8_t *)&msg;
+            robus_phy->rx_data        = luos_phy->rx_buffer_base;
+            // For now let just consider that we received the header allowing us to compute the message things based on it.
+            robus_phy->received_data = sizeof(header_t);
+            robus_phy->rx_keep       = true; // Tell phy that we want to keep this message
+            robus_phy->rx_ack        = false;
+            robus_phy->rx_alloc_job  = false;
+            robus_phy->rx_size       = 0;
+            robus_phy->rx_phy_filter = 0x00;
+            Phy_ComputeHeader(robus_phy);
+            TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), robus_phy->rx_size);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_alloc_job);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check ComputeHeader failure for a non referenced service source node message needed by Luos during the detection");
+    {
+        TRY
+        {
+            phy_test_reset();
+            // Create a fake service with id 1
+            Phy_AddLocalServices(1, 1);
+
+            msg_t msg;
+            msg.header.config      = BASE_PROTOCOL;
+            msg.header.target_mode = NODEIDACK;
+            msg.header.target      = 2;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 1;
+            msg.header.source      = 2;
+            msg.data[0]            = 0xAE;
+            Node_Get()->node_id    = 0;
+
+            // Configure the source in indexes
+            Phy_IndexSet(robus_phy->services, 2);
+            // Save message information in the Luos phy struct
+            robus_phy->rx_buffer_base = (uint8_t *)&msg;
+            robus_phy->rx_data        = luos_phy->rx_buffer_base;
+            // For now let just consider that we received the header allowing us to compute the message things based on it.
+            robus_phy->received_data = sizeof(header_t);
+            robus_phy->rx_keep       = true; // Tell phy that we want to keep this message
+            robus_phy->rx_ack        = false;
+            robus_phy->rx_alloc_job  = false;
+            robus_phy->rx_size       = 0;
+            robus_phy->rx_phy_filter = 0x00;
+            Phy_ComputeHeader(robus_phy); // Here, because we don't have node_id yet, the message is rejected no matter what.
+            TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), robus_phy->rx_size);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_alloc_job);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check ComputeHeader failure for a non referenced service source node message needed by Luos before detection");
+    {
+        TRY
+        {
+            phy_test_reset();
+            // Create a fake service with id 1
+            Phy_AddLocalServices(1, 1);
+
+            msg_t msg;
+            msg.header.config      = BASE_PROTOCOL;
+            msg.header.target_mode = NODEIDACK;
+            msg.header.target      = 2;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 1;
+            msg.header.source      = 3;
+            msg.data[0]            = 0xAE;
+            Node_Get()->node_id    = 2;
+
+            // Configure the source in indexes
+            Phy_IndexSet(robus_phy->services, 2);
+            // Save message information in the Luos phy struct
+            robus_phy->rx_buffer_base = (uint8_t *)&msg;
+            robus_phy->rx_data        = luos_phy->rx_buffer_base;
+            // For now let just consider that we received the header allowing us to compute the message things based on it.
+            robus_phy->received_data = sizeof(header_t);
+            robus_phy->rx_keep       = true; // Tell phy that we want to keep this message
+            robus_phy->rx_ack        = false;
+            robus_phy->rx_alloc_job  = false;
+            robus_phy->rx_size       = 0;
+            robus_phy->rx_phy_filter = 0x00;
+            Phy_ComputeHeader(robus_phy); // Here, the source is not a referenced service, we have a node ID, but detection is not done, so the message is accepted.
+            TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), robus_phy->rx_size);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_alloc_job);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check ComputeHeader failure for a non referenced service source node message needed by Luos");
+    {
+        TRY
+        {
+            phy_test_reset();
+            // Create a fake service with id 1
+            Phy_AddLocalServices(1, 1);
+
+            msg_t msg;
+            msg.header.config      = BASE_PROTOCOL;
+            msg.header.target_mode = NODEIDACK;
+            msg.header.target      = 2;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 1;
+            msg.header.source      = 3;
+            msg.data[0]            = 0xAE;
+            Node_Get()->node_id    = 2;
+            node_ctx.state         = DETECTION_OK;
+
+            // Configure the source in indexes
+            Phy_IndexSet(robus_phy->services, 2);
+            // Save message information in the Luos phy struct
+            robus_phy->rx_buffer_base = (uint8_t *)&msg;
+            robus_phy->rx_data        = luos_phy->rx_buffer_base;
+            // For now let just consider that we received the header allowing us to compute the message things based on it.
+            robus_phy->received_data = sizeof(header_t);
+            robus_phy->rx_keep       = true; // Tell phy that we want to keep this message
+            robus_phy->rx_ack        = false;
+            robus_phy->rx_alloc_job  = false;
+            robus_phy->rx_size       = 0;
+            robus_phy->rx_phy_filter = 0x00;
+            Phy_ComputeHeader(robus_phy); // Here, the source is not a referenced service, we have a node ID, and detection is  done, so the message is rejected.
+            TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), robus_phy->rx_size);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(false, robus_phy->rx_alloc_job);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+
+    NEW_TEST_CASE("Check ComputeHeader failure for a referenced service source node message needed by Luos");
+    {
+        TRY
+        {
+            phy_test_reset();
+            // Create a fake service with id 1
+            Phy_AddLocalServices(1, 1);
+
+            msg_t msg;
+            msg.header.config      = BASE_PROTOCOL;
+            msg.header.target_mode = NODEIDACK;
+            msg.header.target      = 2;
+            msg.header.cmd         = IO_STATE;
+            msg.header.size        = 1;
+            msg.header.source      = 2;
+            msg.data[0]            = 0xAE;
+            Node_Get()->node_id    = 2;
+            node_ctx.state         = DETECTION_OK;
+
+            // Configure the source in indexes
+            Phy_IndexSet(robus_phy->services, 2);
+            // Save message information in the Luos phy struct
+            robus_phy->rx_buffer_base = (uint8_t *)&msg;
+            robus_phy->rx_data        = luos_phy->rx_buffer_base;
+            // For now let just consider that we received the header allowing us to compute the message things based on it.
+            robus_phy->received_data = sizeof(header_t);
+            robus_phy->rx_keep       = true; // Tell phy that we want to keep this message
+            robus_phy->rx_ack        = false;
+            robus_phy->rx_alloc_job  = false;
+            robus_phy->rx_size       = 0;
+            robus_phy->rx_phy_filter = 0x00;
+            Phy_ComputeHeader(robus_phy); // Here, the source service is referenced, we have a node Id, and detection is done. The message is accepted.
+            TEST_ASSERT_EQUAL(msg.header.size + sizeof(header_t), robus_phy->rx_size);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_keep);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_ack);
+            TEST_ASSERT_EQUAL(true, robus_phy->rx_alloc_job);
         }
         CATCH
         {
@@ -750,6 +1009,7 @@ void unittest_phy_ComputeHeader()
             msg.header.target      = 1;
             msg.header.cmd         = IO_STATE;
             msg.header.size        = 1;
+            msg.header.source      = 2;
             msg.data[0]            = 0xAE;
 
             // Save message information in the Luos phy struct
@@ -1028,6 +1288,7 @@ void unittest_phy_ValidMsg()
             msg.header.config      = TIMESTAMP_PROTOCOL;
             msg.header.target_mode = SERVICEIDACK;
             msg.header.target      = 2;
+            msg.header.source      = 1;
             msg.header.cmd         = IO_STATE;
             msg.header.size        = 600;
             msg.data[0]            = 0xAE;
@@ -1043,6 +1304,7 @@ void unittest_phy_ValidMsg()
             luos_phy->rx_size       = MAX_DATA_MSG_SIZE + sizeof(header_t) + sizeof(time_luos_t);
             luos_phy->rx_phy_filter = 0x00;
             luos_phy->rx_timestamp  = 10;
+            luos_phy->services[0]   = 0x01; // Configure service 1 as accessible from Luos
             robus_phy->services[0]  = 0x02; // Configure this service as accessible from Robus
 
             TEST_ASSERT_EQUAL(0, phy_ctx.io_job_nb);
