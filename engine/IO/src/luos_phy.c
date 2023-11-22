@@ -528,7 +528,7 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
     // To avoid to spend precious computing time, instead of checking all the phy we will only check if this concern only the receiving phy.
     // We need to keep this message only if the message target is not only for the phy_ptr, except if it is Luos because Luos can do localhost.
 
-    // If this phy is Luos phy, we need to keep all the messages
+    // If this phy is Luos phy, we need to keep all the messages no matter what.
     if (Phy_GetPhyId(phy_ptr) == 0)
     {
         return true;
@@ -544,19 +544,27 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             break;
         case SERVICEIDACK:
         case SERVICEID:
-            // If the target is not the phy_ptr, we need to keep this message
-            return !Phy_IndexFilter(phy_ptr->services, header->target);
+            // If the target is not the phy_ptr, and the source service is known, we need to keep this message
+            return (!Phy_IndexFilter(phy_ptr->services, header->target)) && (Phy_IndexFilter(phy_ptr->services, header->source));
             break;
         case NODEIDACK:
         case NODEID:
             if (header->target == 0)
             {
-                return Node_DoWeWaitId() || (phy_ctx.PhyExeptSourceDone == false); // or we are waiting for child branches ((phy_ctx.topology_running == true) && (header->source == 1))
+                return Node_DoWeWaitId() || (phy_ctx.PhyExeptSourceDone == false);
             }
             else
             {
-                // If the target is not for the receiving phy, we need to keep this message
-                return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
+                if (Luos_IsDetected())
+                {
+                    // If the target is not for the receiving phy, and the source service is known, we need to keep this message
+                    return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0) && (Phy_IndexFilter(phy_ptr->services, header->source)));
+                }
+                else
+                {
+                    // If the target is not for the receiving phy, we need to keep this message
+                    return (!Phy_IndexFilter(phy_ptr->nodes, header->target) && (Node_Get()->node_id != 0));
+                }
             }
             break;
         default:
