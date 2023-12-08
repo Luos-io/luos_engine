@@ -224,7 +224,7 @@ void LuosHAL_Reboot(void)
 {
 }
 
-#ifdef BOOTLOADER
+#if defined(BOOTLOADER) || defined(BOOTLOADER_UPDATER)
 /******************************************************************************
  * @brief Get node id saved in flash memory
  * @param Address

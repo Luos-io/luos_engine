@@ -248,7 +248,7 @@ uint8_t LuosHAL_GetMode(void)
     return (uint8_t)data;
 }
 
-#ifdef BOOTLOADER
+#if defined(BOOTLOADER) || defined(BOOTLOADER_UPDATER)
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param None

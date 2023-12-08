@@ -927,6 +927,24 @@ void Convert_AssertToData(service_t *service, uint16_t source, luos_assert_t ass
     PipeLink_Send(service, assert_json, strlen(assert_json));
 }
 
+// This function generate a Json about service exclusion and send it.
+void Convert_DeadServiceToData(service_t *service, uint16_t service_id)
+{
+    char dead_json[512];
+    sprintf(dead_json, "{\"dead_service\":%d}\n", service_id);
+    // Send the message to pipe
+    PipeLink_Send(service, dead_json, strlen(dead_json));
+}
+
+// This function generate a Json about node exclusion and send it.
+void Convert_DeadNodeToData(service_t *service, uint16_t node_id)
+{
+    char dead_json[512];
+    sprintf(dead_json, "{\"dead_node\":%d}\n", node_id);
+    // Send the message to pipe
+    PipeLink_Send(service, dead_json, strlen(dead_json));
+}
+
 /*******************************************************************************
  * Luos routing table information to Json convertion
  ******************************************************************************/

@@ -174,5 +174,5 @@ void LuosHAL_Reboot(void)
 {
 }
 
-#ifdef BOOTLOADER
+#if defined(BOOTLOADER) || defined(BOOTLOADER_UPDATER)
 #endif
