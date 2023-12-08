@@ -48,7 +48,7 @@ void LuosHAL_SaveNodeID(uint16_t);
 void LuosHAL_JumpToAddress(uint32_t);
 uint8_t LuosHAL_GetMode(void);
 
-#ifdef BOOTLOADER
+#if defined(BOOTLOADER) || defined(BOOTLOADER_UPDATER)
 void LuosHAL_DeInit(void);
 uint16_t LuosHAL_GetNodeID(void);
 void LuosHAL_EraseMemory(uint32_t, uint16_t);
