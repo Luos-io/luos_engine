@@ -36,7 +36,7 @@ time_luos_t update_time = {GATE_REFRESH_TIME_S};
  ******************************************************************************/
 void Gate_Init(void)
 {
-    revision_t revision = {.major = 1, .minor = 0, .build = 1};
+    revision_t revision = {.major = 2, .minor = 0, .build = 0};
     gate                = Luos_CreateService(0, GATE_TYPE, "gate", revision);
 #ifndef NODETECTION
     uint32_t init_timer = Luos_GetSystick();
