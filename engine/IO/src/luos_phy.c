@@ -69,9 +69,9 @@ typedef struct __attribute__((__packed__))
 typedef struct
 {
     // ******************** Phy management ********************
-    luos_phy_t phy[PHY_NB];           // phy[0] is the local phy, phy[1] is the remote phy.
-    uint8_t phy_nb;                   // Number of phy instantiated in the phy_ctx.phy array.
-    IRQ_STATE phy_irq_states[PHY_NB]; // Store the irq state functions of phys aving one.
+    luos_phy_t phy[LOCAL_PHY_NB + 1];           // phy[0] is the local phy, phy[1] is the remote phy.
+    uint8_t phy_nb;                             // Number of phy instantiated in the phy_ctx.phy array.
+    IRQ_STATE phy_irq_states[LOCAL_PHY_NB + 1]; // Store the irq state functions of phys aving one.
 
     // ******************** Topology management ********************
     port_t topology_source;  // The source port. Where we receive the topological detection signal from.
@@ -137,7 +137,7 @@ void Phy_Reset(void)
     memset((void *)phy_ctx.failed_job, 0, sizeof(phy_ctx.failed_job));
     phy_ctx.failed_job_nb = 0;
     phy_ctx.resetAllNeed  = false;
-    for (uint8_t i = 0; i < PHY_NB; i++)
+    for (uint8_t i = 0; i <= LOCAL_PHY_NB; i++)
     {
         Luos_SetIrqState(false);
         memset((void *)&phy_ctx.phy[i].job, 0, sizeof(phy_ctx.phy[0].job));
@@ -241,7 +241,7 @@ void Phy_Loop(void)
  ******************************************************************************/
 luos_phy_t *Phy_Create(JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
 {
-    LUOS_ASSERT(phy_ctx.phy_nb < PHY_NB);
+    LUOS_ASSERT(phy_ctx.phy_nb <= LOCAL_PHY_NB);
     return Phy_Get(phy_ctx.phy_nb++, job_cb, run_topo, reset_phy);
 }
 
@@ -256,7 +256,7 @@ void Phy_SetIrqStateFunciton(IRQ_STATE irq_state)
     while (phy_ctx.phy_irq_states[i] != NULL)
     {
         i++;
-        if (i >= PHY_NB)
+        if (i > LOCAL_PHY_NB)
         {
             // We exceed the number of phy
             LUOS_ASSERT(0);
@@ -280,7 +280,7 @@ void Phy_SetIrqState(bool state)
     {
         phy_ctx.phy_irq_states[i](state);
         i++;
-        if (i >= PHY_NB)
+        if (i > LOCAL_PHY_NB)
         {
             // We exceed the number of phy
             LUOS_ASSERT(0);
@@ -440,7 +440,7 @@ port_t *Phy_GetTopologysource(void)
  ******************************************************************************/
 luos_phy_t *Phy_Get(uint8_t id, JOB_CB job_cb, RUN_TOPO run_topo, RESET_PHY reset_phy)
 {
-    LUOS_ASSERT((id <= PHY_NB)
+    LUOS_ASSERT((id <= LOCAL_PHY_NB)
                 && (job_cb != NULL)
                 && (run_topo != NULL));
     // Set the callbacks
@@ -471,7 +471,7 @@ void Phy_DisableSynchro(luos_phy_t *phy_ptr)
  ******************************************************************************/
 luos_phy_t *Phy_GetPhyFromId(uint8_t phy_id)
 {
-    LUOS_ASSERT(phy_id <= PHY_NB);
+    LUOS_ASSERT(phy_id <= LOCAL_PHY_NB);
     return &phy_ctx.phy[phy_id];
 }
 
@@ -1093,7 +1093,7 @@ inline int Phy_GetJobId(luos_phy_t *phy_ptr, phy_job_t *job)
 inline int Phy_GetPhyId(luos_phy_t *phy_ptr)
 {
     LUOS_ASSERT((phy_ptr >= phy_ctx.phy)
-                && (phy_ptr < &phy_ctx.phy[PHY_NB]));
+                && (phy_ptr <= &phy_ctx.phy[LOCAL_PHY_NB]));
     return ((uintptr_t)phy_ptr - (uintptr_t)phy_ctx.phy) / sizeof(luos_phy_t);
 }
 
@@ -1176,7 +1176,7 @@ error_return_t Phy_TxAllComplete(void)
  ******************************************************************************/
 void Phy_FiltersInit(void)
 {
-    for (int i = 0; i < PHY_NB; i++)
+    for (int i = 0; i <= LOCAL_PHY_NB; i++)
     {
         // Service ID init
         memset(phy_ctx.phy[i].services, 0, sizeof(phy_ctx.phy[i].services));

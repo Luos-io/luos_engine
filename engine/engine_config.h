@@ -34,8 +34,6 @@
     #define LOCAL_PHY_NB 1 // The number of phy layer in the node, by default we have only Luos engine + 1 phy layer
 #endif
 
-#define PHY_NB (LOCAL_PHY_NB + 1) // The total number of phy layer in the node including Luos engine
-
 #ifdef MAX_RTB_ENTRY
     #error 'MAX_RTB_ENTRY' configuration is deprecated and have been replaced by MAX_NODE_NUMBER and MAX_SERVICE_NUMBER. MAX_RTB_ENTRY is now automatically calculated by the engine based on these values.
 #endif
