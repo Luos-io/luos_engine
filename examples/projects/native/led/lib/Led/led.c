@@ -51,7 +51,7 @@ const char led_OFF[768] = "\n"
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Led_MsgHandler(service_t *service, msg_t *msg);
+static void Led_MsgHandler(service_t *service, const msg_t *msg);
 
 void clear_screen(void)
 {
@@ -90,7 +90,7 @@ void Led_Loop(void) {}
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Led_MsgHandler(service_t *service, msg_t *msg)
+static void Led_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == IO_STATE)
     {

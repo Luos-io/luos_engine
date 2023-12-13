@@ -27,7 +27,7 @@ typedef struct
 
 void score_init(service_t *player, search_result_t *player_list);
 void score_increase(service_t *player, uint16_t winning_player_id);
-void score_update(msg_t *msg);
+void score_update(const msg_t *msg);
 score_table_t *get_score(void);
 
 #endif /* SCORING_H */

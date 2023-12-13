@@ -54,7 +54,7 @@ void LuosHAL_Init(void)
  * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
-void LuosHAL_SetIrqState(uint8_t Enable)
+void LuosHAL_SetIrqState(bool Enable)
 {
     /*************************************************************************
      * This function turn on and off all the IRQ in the MCU allowing atomic

@@ -20,7 +20,7 @@ int imgsize = MAX_LED_NUMBER;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void LedStrip_MsgHandler(service_t *service, msg_t *msg);
+static void LedStrip_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -53,7 +53,7 @@ void LedStrip_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void LedStrip_MsgHandler(service_t *service, msg_t *msg)
+static void LedStrip_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == COLOR)
     {

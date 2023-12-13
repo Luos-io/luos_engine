@@ -9,7 +9,8 @@
 #define _LUOSHAL_H_
 
 #include <stdint.h>
-#include <luos_hal_config.h>
+#include <stdbool.h>
+#include "luos_hal_config.h"
 
 /*******************************************************************************
  * Definitions
@@ -27,7 +28,7 @@
  * Function
  ******************************************************************************/
 void LuosHAL_Init(void);
-void LuosHAL_SetIrqState(uint8_t Enable);
+void LuosHAL_SetIrqState(bool Enable);
 uint32_t LuosHAL_GetSystick(void);
 void LuosHAL_FlashWriteLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);
 void LuosHAL_FlashReadLuosMemoryInfo(uint32_t addr, uint16_t size, uint8_t *data);

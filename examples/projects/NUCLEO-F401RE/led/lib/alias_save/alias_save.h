@@ -7,6 +7,8 @@
 #ifndef ALIAS_SAVE_H
 #define ALIAS_SAVE_H
 
+#include <stdint.h>
+
 /*******************************************************************************
  * FLASH CONFIG
  ******************************************************************************/
@@ -24,6 +26,6 @@
  * Function
  ******************************************************************************/
 int Alias_read(int slot, char *alias);
-void Alias_write(int slot, char *alias, size_t size);
+void Alias_write(int slot, const uint8_t *alias, size_t size);
 
 #endif /* ALIAS_SAVE_H */

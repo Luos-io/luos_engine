@@ -19,7 +19,7 @@ service_t *MotorDCservice2;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void MotorDC_MsgHandler(service_t *service, msg_t *msg);
+static void MotorDC_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -48,7 +48,7 @@ void MotorDC_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void MotorDC_MsgHandler(service_t *service, msg_t *msg)
+static void MotorDC_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == RATIO)
     {

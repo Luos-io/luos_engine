@@ -23,7 +23,7 @@ profile_voltage_t analog[ANALOG_NB];
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void GpioDev_callback(service_t *service, msg_t *msg);
+static void GpioDev_callback(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -85,7 +85,7 @@ void GpioDev_Loop(void)
  * @param None
  * @return None
  ******************************************************************************/
-static void GpioDev_callback(service_t *service, msg_t *msg)
+static void GpioDev_callback(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == IO_STATE)
     {

@@ -53,7 +53,7 @@ void LuosHAL_Init(void)
  * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
-_CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void LuosHAL_SetIrqState(bool Enable)
 {
     if (Enable == true)
     {
@@ -262,7 +262,7 @@ uint8_t LuosHAL_GetMode(void)
     return (uint8_t)data;
 }
 
-#ifdef BOOTLOADER
+#if defined(BOOTLOADER) || defined(BOOTLOADER_UPDATER)
 /******************************************************************************
  * @brief DeInit Bootloader peripherals
  * @param None

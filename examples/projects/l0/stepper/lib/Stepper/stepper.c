@@ -27,7 +27,7 @@ volatile int current_step_nb   = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Stepper_MsgHandler(service_t *service, msg_t *msg);
+static void Stepper_MsgHandler(service_t *service, const msg_t *msg);
 static void compute_speed(void);
 
 /******************************************************************************
@@ -95,7 +95,7 @@ void Stepper_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Stepper_MsgHandler(service_t *service, msg_t *msg)
+static void Stepper_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == PARAMETERS)
     {

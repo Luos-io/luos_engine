@@ -49,7 +49,7 @@ void PipeCom_Loop(void)
     {
         uart_hal_read_rxfifo(&uart_hal_context_log, &data[0], &size);
         uart_hal_rxfifo_rst(&uart_hal_context_log);
-        Stream_PutSample(Pipe_GetRxStreamChannel(), &data[0], size);
+        Streaming_PutSample(Pipe_GetRxStreamChannel(), &data[0], size);
     }
 }
 /******************************************************************************
@@ -75,7 +75,7 @@ void PipeCom_Send(void)
     while (size > 0)
     {
         uart_hal_write_txfifo(&uart_hal_context_log, (uint8_t *)SerialProtocol_GetDataToSend(), size, &wr_size);
-        Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), wr_size);
+        Streaming_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), wr_size);
         size = SerialProtocol_GetSizeToSend();
     }
 }

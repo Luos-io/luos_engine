@@ -205,16 +205,16 @@ void ll_motor_enable(char state)
  ******************************************************************************/
 void ll_motor_Command(uint16_t mode, float ratio)
 {
-    float current               = ll_motor_GetCurrent();
-    float currentfactor         = 1.0f;
-    currentfactor               = *motor_parameters.limit_current / (current * 2);
+    current_t current = ElectricOD_CurrentFrom_A(ll_motor_GetCurrent());
+    float currentfactor;
+    currentfactor               = motor_parameters.limit_current->raw / (current.raw * 2.0f);
     static float surpCurrentSum = 0.0;
-    float surpCurrent           = current - *motor_parameters.limit_current;
+    const float surpCurrent     = current.raw - motor_parameters.limit_current->raw;
     surpCurrentSum += surpCurrent;
     // If surpCurrentSum > 0 do a real coef
     if (surpCurrentSum > 0.0)
     {
-        currentfactor = *motor_parameters.limit_current / (*motor_parameters.limit_current + (surpCurrentSum / 1.5));
+        currentfactor = motor_parameters.limit_current->raw / (motor_parameters.limit_current->raw + (surpCurrentSum / 1.5));
     }
     else
     {
@@ -228,10 +228,10 @@ void ll_motor_Command(uint16_t mode, float ratio)
     }
 
     // limit power value
-    if (ratio < -*motor_parameters.limit_ratio)
-        ratio = -*motor_parameters.limit_ratio;
-    if (ratio > *motor_parameters.limit_ratio)
-        ratio = *motor_parameters.limit_ratio;
+    if (ratio < -motor_parameters.limit_ratio->raw)
+        ratio = -motor_parameters.limit_ratio->raw;
+    if (ratio > motor_parameters.limit_ratio->raw)
+        ratio = motor_parameters.limit_ratio->raw;
 
     // transform power ratio to timer value
     uint16_t pulse;
@@ -278,7 +278,7 @@ float ll_motor_GetAngularPosition(void)
  ******************************************************************************/
 float ll_motor_GetLinearPosition(float angular_position)
 {
-    return angular_position / 360.0 * M_PI * (*motor_parameters.wheel_diameter);
+    return angular_position / 360.0 * M_PI * LinearOD_PositionTo_m(*motor_parameters.wheel_diameter);
 }
 
 /******************************************************************************
@@ -294,11 +294,11 @@ void ll_motor_config(motor_config_t motor_config)
     motor_parameters.limit_ratio     = motor_config.limit_ratio;
     motor_parameters.limit_current   = motor_config.limit_current;
 
-    // default motor configuration
+    // Default motor configuration
     *motor_parameters.motor_reduction = 131;
     *motor_parameters.resolution      = 16;
-    *motor_parameters.wheel_diameter  = 0.100f;
-    // default motor hardware limits
-    *motor_parameters.limit_ratio   = 100.0;
-    *motor_parameters.limit_current = 6.0;
+    *motor_parameters.wheel_diameter  = LinearOD_PositionFrom_m(0.100f);
+    // Default motor hardware limits
+    *motor_parameters.limit_ratio   = RatioOD_RatioFrom_Percent(100.0f);
+    *motor_parameters.limit_current = ElectricOD_CurrentFrom_A(6.0f);
 }

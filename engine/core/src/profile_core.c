@@ -8,7 +8,7 @@
 #include "profile_core.h"
 
 // static initialization of profile table
-profile_core_t profile_table[MAX_PROFILE_NUMBER];
+profile_core_t profile_table[MAX_LOCAL_PROFILE_NUMBER];
 uint16_t available_index    = 0;
 uint16_t head_profile_index = 0;
 
@@ -39,7 +39,7 @@ profile_core_t *ProfileCore_GetNew(bool profile_mode)
         head_profile_index = available_index;
 
     // update available profile index
-    LUOS_ASSERT(available_index <= (MAX_PROFILE_NUMBER - 1));
+    LUOS_ASSERT(available_index <= (MAX_LOCAL_PROFILE_NUMBER - 1));
     available_index += 1;
     new_profile = &profile_table[available_index - 1];
 
@@ -76,7 +76,7 @@ void ProfileCore_OverrideConnectHandler(void)
  * @param msg : Messaged received
  * @return None
  ******************************************************************************/
-static void ProfileCore_Handler(service_t *service, msg_t *msg)
+static void ProfileCore_Handler(service_t *service, const msg_t *msg)
 {
     profile_core_t *head_profile = ProfileCore_GetFromService(service);
 

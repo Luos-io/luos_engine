@@ -73,7 +73,7 @@ void onWebSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t lengt
         case WStype_TEXT:
         case WStype_BIN:
             Serial.printf("[%u] Text: %s\n", num, payload);
-            Stream_PutSample(Pipe_GetRxStreamChannel(), payload, length);
+            Streaming_PutSample(Pipe_GetRxStreamChannel(), payload, length);
             break;
 
         // For everything else: do nothing
@@ -134,11 +134,11 @@ void PipeCom_Init(void)
  ******************************************************************************/
 uint16_t PipeCom_GetSizeToSend(void)
 {
-    if ((Stream_GetAvailableSampleNB(Pipe_GetTxStreamChannel())) > Stream_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel()))
+    if ((Streaming_GetAvailableSampleNB(Pipe_GetTxStreamChannel())) > Streaming_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel()))
     {
-        return Stream_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel());
+        return Streaming_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel());
     }
-    return Stream_GetAvailableSampleNB(Pipe_GetTxStreamChannel());
+    return Streaming_GetAvailableSampleNB(Pipe_GetTxStreamChannel());
 }
 /******************************************************************************
  * @brief We need to send something
@@ -153,7 +153,7 @@ void PipeCom_Send(void)
         while (size != 0)
         {
             webSocket.sendBIN(ws_cli, (uint8_t *)Pipe_GetTxStreamChannel()->sample_ptr, size);
-            Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
+            Streaming_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
             size = PipeCom_GetSizeToSend();
         }
     }
@@ -165,7 +165,7 @@ void PipeCom_Send(void)
  ******************************************************************************/
 uint8_t PipeCom_Receive(uint16_t *size)
 {
-    *size = Stream_GetAvailableSampleNB(Pipe_GetRxStreamChannel());
+    *size = Streaming_GetAvailableSampleNB(Pipe_GetRxStreamChannel());
     return (*size > 0);
 }
 /******************************************************************************

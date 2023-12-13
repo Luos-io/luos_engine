@@ -12,8 +12,7 @@
  *     with your need concerning among of data transiting through the network
  *     or network speed for example
  *
- *     Luos libraries can be use with a lot a MCU family. Luos compagny give you
- *     a default configuration, for specific MCU family, in robus_hal_config.h.
+ *     Luos libraries can be use with a lot a MCU family.
  *     This configuration can be modify here to fit with you design by
  *     preprocessor definitions of MCU Hardware needs
  *
@@ -33,16 +32,16 @@
  *******************************************************************************
  *    Define                | Default Value              | Description
  *    :---------------------|------------------------------------------------------
- *    MAX_SERVICE_NUMBER    |              5             | Service number in the node
+ *    MAX_LOCAL_SERVICE_NUMBER    |              5             | Service number in the node
  *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
- *    MAX_MSG_NB            |   2*MAX_SERVICE_NUMBER   | Message number in Luos buffer
+ *    MAX_MSG_NB            |   2*MAX_LOCAL_SERVICE_NUMBER   | Message number in Luos buffer
  *    NBR_PORT              |              2             | PTP Branch number Max 8
  *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
  ******************************************************************************/
 
-#define MAX_SERVICE_NUMBER 25
-#define MSG_BUFFER_SIZE    25 * sizeof(msg_t)
-#define MAX_MSG_NB         100
+#define MAX_LOCAL_SERVICE_NUMBER 25
+#define MSG_BUFFER_SIZE          25 * sizeof(msg_t)
+#define MAX_MSG_NB               100
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -87,7 +86,8 @@
  *******************************************************************************
  *    Define                    | Default Value              | Description
  *    :-------------------------|------------------------------------------------------
- *    MAX_RTB_ENTRY             |              40            | max number entry in routing table
+ *    MAX_NODE_NUMBER       |              20            | Node number in the device
+ *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
  *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
  *    PIPE_TX_BUFFER_SIZE  |             1024           | Receive pipe buffer size
  *    PIPE_RX_BUFFER_SIZE  |             2048           | Transmit pipe buffer size

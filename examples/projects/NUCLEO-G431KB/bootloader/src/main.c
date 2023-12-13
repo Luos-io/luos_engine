@@ -23,7 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "luos_engine.h"
-
+#include "robus_network.h"
+#include "luos_bootloader.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,6 +90,9 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+
+    LUOS_ADD_PACKAGE(LuosBootloader)
+    LUOS_ADD_PACKAGE(Robus)
     while (1)
     {
         /* USER CODE END WHILE */

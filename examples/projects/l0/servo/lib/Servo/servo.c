@@ -18,7 +18,7 @@ static service_t *service_servo[SERVONUMBER];
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Servo_MsgHandler(service_t *service, msg_t *msg);
+static void Servo_MsgHandler(service_t *service, const msg_t *msg);
 
 /******************************************************************************
  * @brief init must be call in project init
@@ -50,7 +50,7 @@ void Servo_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Servo_MsgHandler(service_t *service, msg_t *msg)
+static void Servo_MsgHandler(service_t *service, const msg_t *msg)
 {
     uint8_t i = 0;
     servo_t servo;

@@ -13,12 +13,12 @@
  ******************************************************************************/
 typedef struct
 {
-    float _private;
+    float raw;
 } angular_position_t;
 
 typedef struct
 {
-    float _private;
+    float raw;
 } angular_speed_t;
 
 /*******************************************************************************
@@ -34,39 +34,39 @@ typedef struct
 // deg
 static inline float AngularOD_PositionTo_deg(angular_position_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline angular_position_t AngularOD_PositionFrom_deg(float deg)
 {
     angular_position_t self;
-    self._private = deg;
+    self.raw = deg;
     return self;
 }
 
 // rev
 static inline float AngularOD_PositionTo_rev(angular_position_t self)
 {
-    return self._private / 360.0f;
+    return self.raw / 360.0f;
 }
 
 static inline angular_position_t AngularOD_PositionFrom_rev(float rev)
 {
     angular_position_t self;
-    self._private = rev * 360.0f;
+    self.raw = rev * 360.0f;
     return self;
 }
 
 // rad
 static inline float AngularOD_PositionTo_rad(angular_position_t self)
 {
-    return (self._private * 2.0f * 3.141592653589793f) / 360.0f;
+    return (self.raw * 2.0f * 3.141592653589793f) / 360.0f;
 }
 
 static inline angular_position_t AngularOD_PositionFrom_rad(float rad)
 {
     angular_position_t self;
-    self._private = (rad * 360.0f) / (2.0f * 3.141592653589793f);
+    self.raw = (rad * 360.0f) / (2.0f * 3.141592653589793f);
     return self;
 }
 
@@ -93,52 +93,52 @@ static inline void AngularOD_PositionFromMsg(angular_position_t *const self, con
 // deg_s
 static inline float AngularOD_SpeedTo_deg_s(angular_speed_t self)
 {
-    return self._private;
+    return self.raw;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_deg_s(float deg)
 {
     angular_speed_t self;
-    self._private = deg;
+    self.raw = deg;
     return self;
 }
 
 // rev_s
 static inline float AngularOD_SpeedTo_rev_s(angular_speed_t self)
 {
-    return self._private / 360.0f;
+    return self.raw / 360.0f;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_rev_s(float rev_s)
 {
     angular_speed_t self;
-    self._private = rev_s * 360.0f;
+    self.raw = rev_s * 360.0f;
     return self;
 }
 
 // rev_min
 static inline float AngularOD_SpeedTo_rev_min(angular_speed_t self)
 {
-    return self._private * 60.0f / 360.0f;
+    return self.raw * 60.0f / 360.0f;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_rev_min(float rev_min)
 {
     angular_speed_t self;
-    self._private = rev_min * 360.0f / 60.0f;
+    self.raw = rev_min * 360.0f / 60.0f;
     return self;
 }
 
 // rad_s
 static inline float AngularOD_SpeedTo_rad_s(angular_speed_t self)
 {
-    return (self._private * 2.0f * 3.141592653589793f) / 360.0f;
+    return (self.raw * 2.0f * 3.141592653589793f) / 360.0f;
 }
 
 static inline angular_speed_t AngularOD_SpeedFrom_rad_s(float rad_s)
 {
     angular_speed_t self;
-    self._private = (rad_s * 360.0f) / (2.0f * 3.141592653589793f);
+    self.raw = (rad_s * 360.0f) / (2.0f * 3.141592653589793f);
     return self;
 }
 

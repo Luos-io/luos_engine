@@ -92,7 +92,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
     {
         // Got websocket frame. Received data is wm->data. save it into the Pipe streaming channel
         struct mg_ws_message *wm = (struct mg_ws_message *)ev_data;
-        Stream_PutSample(Pipe_GetRxStreamChannel(), wm->data.ptr, wm->data.len);
+        Streaming_PutSample(Pipe_GetRxStreamChannel(), wm->data.ptr, wm->data.len);
     }
     else if (ev == MG_EV_ERROR)
     {
@@ -256,11 +256,11 @@ void PipeCom_Init(void)
  ******************************************************************************/
 uint16_t PipeCom_GetSizeToSend(void)
 {
-    if ((Stream_GetAvailableSampleNB(Pipe_GetTxStreamChannel())) > Stream_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel()))
+    if ((Streaming_GetAvailableSampleNB(Pipe_GetTxStreamChannel())) > Streaming_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel()))
     {
-        return Stream_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel());
+        return Streaming_GetAvailableSampleNBUntilEndBuffer(Pipe_GetTxStreamChannel());
     }
-    return Stream_GetAvailableSampleNB(Pipe_GetTxStreamChannel());
+    return Streaming_GetAvailableSampleNB(Pipe_GetTxStreamChannel());
 }
 
 /******************************************************************************
@@ -276,7 +276,7 @@ void PipeCom_Send(void)
         while (size != 0)
         {
             mg_ws_send(ws_connection, (const char *)Pipe_GetTxStreamChannel()->sample_ptr, size, WEBSOCKET_OP_BINARY);
-            Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
+            Streaming_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size);
             size = PipeCom_GetSizeToSend();
         }
     }
@@ -288,7 +288,7 @@ void PipeCom_Send(void)
  ******************************************************************************/
 uint8_t PipeCom_Receive(uint16_t *size)
 {
-    *size = Stream_GetAvailableSampleNB(Pipe_GetRxStreamChannel());
+    *size = Streaming_GetAvailableSampleNB(Pipe_GetRxStreamChannel());
     return (*size > 0);
 }
 

@@ -13,7 +13,7 @@
  * @param msg : The received message
  * @return None
  ******************************************************************************/
-void ProfileMotor_Handler(service_t *service, msg_t *msg)
+void ProfileMotor_Handler(service_t *service, const msg_t *msg)
 {
     profile_core_t *profile        = ProfileCore_GetFromService(service);
     profile_motor_t *profile_motor = (profile_motor_t *)profile->profile_data;

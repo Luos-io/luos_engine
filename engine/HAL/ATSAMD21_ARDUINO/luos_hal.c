@@ -53,7 +53,7 @@ void LuosHAL_Init(void)
  * @param Enable : Set to "True" to enable IRQ, "False" otherwise
  * @return None
  ******************************************************************************/
-_CRITICAL void LuosHAL_SetIrqState(uint8_t Enable)
+_CRITICAL void LuosHAL_SetIrqState(bool Enable)
 {
     if (Enable == true)
     {
@@ -159,7 +159,7 @@ void LuosHAL_Reboot(void)
 {
 }
 
-#ifdef BOOTLOADER
+#if defined(BOOTLOADER) || defined(BOOTLOADER_UPDATER)
 /******************************************************************************
  * @brief Get node id saved in flash memory
  * @param Address

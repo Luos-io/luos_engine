@@ -22,7 +22,7 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-static void Button_MsgHandler(service_t *service, msg_t *msg);
+static void Button_MsgHandler(service_t *service, const msg_t *msg);
 /******************************************************************************
  * @brief init must be call in project init
  * @param None
@@ -57,7 +57,7 @@ void Button_Loop(void)
  * @param Msg receive
  * @return None
  ******************************************************************************/
-static void Button_MsgHandler(service_t *service, msg_t *msg)
+static void Button_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {

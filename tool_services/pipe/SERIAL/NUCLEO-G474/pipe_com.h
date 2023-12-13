@@ -38,14 +38,24 @@
     #define PIPE_COM_IRQ            LPUART1_IRQn
     #define PIPE_COM_IRQHANDLER()   LPUART1_IRQHandler()
 
-    #define PIPE_RX_DMA_CLOCK_ENABLE()        __HAL_RCC_DMA1_CLK_ENABLE();
+    #define PIPE_RX_DMA_CLOCK_ENABLE()      \
+        do                                  \
+        {                                   \
+            __HAL_RCC_DMA1_CLK_ENABLE();    \
+            __HAL_RCC_DMAMUX1_CLK_ENABLE(); \
+        } while (0U)
     #define PIPE_RX_DMA                       DMA1
     #define PIPE_RX_DMA_CHANNEL               LL_DMA_CHANNEL_3
     #define PIPE_RX_DMA_REQUEST               LL_DMAMUX_REQ_LPUART1_RX
     #define PIPE_RX_DMA_TC(PIPE_RX_DMA)       LL_DMA_IsActiveFlag_TC3(PIPE_RX_DMA)
     #define PIPE_RX_DMA_CLEAR_TC(PIPE_RX_DMA) LL_DMA_ClearFlag_TC3(PIPE_RX_DMA)
 
-    #define PIPE_TX_DMA_CLOCK_ENABLE()        __HAL_RCC_DMA1_CLK_ENABLE();
+    #define PIPE_TX_DMA_CLOCK_ENABLE()      \
+        do                                  \
+        {                                   \
+            __HAL_RCC_DMA1_CLK_ENABLE();    \
+            __HAL_RCC_DMAMUX1_CLK_ENABLE(); \
+        } while (0U)
     #define PIPE_TX_DMA                       DMA1
     #define PIPE_TX_DMA_CHANNEL               LL_DMA_CHANNEL_4
     #define PIPE_TX_DMA_REQUEST               LL_DMAMUX_REQ_LPUART1_TX

@@ -14,6 +14,7 @@
 #include "data_manager.h"
 #include "tiny-json.h"
 #include "bootloader_ex.h"
+#include "_routing_table.h"
 
 #define MAX_JSON_FIELDS 50
 
@@ -295,7 +296,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     {
         if ((property_type == JSON_REAL) || (property_type == JSON_INTEGER))
         {
-            linear_position_t linear_position = LinearOD_PositionFrom_mm((float)json_getReal(jobj));
+            linear_position_t linear_position = LinearOD_PositionFrom_m((float)json_getReal(jobj));
             LinearOD_PositionToMsg(&linear_position, msg);
             Luos_SendMsg(service, msg);
             return;
@@ -925,15 +926,23 @@ void Convert_AssertToData(service_t *service, uint16_t source, luos_assert_t ass
     // Send the message to pipe
     PipeLink_Send(service, assert_json, strlen(assert_json));
 }
-// This function generate a Json about excluded services and send it.
-void Convert_ExcludedServiceData(service_t *service)
+
+// This function generate a Json about service exclusion and send it.
+void Convert_DeadServiceToData(service_t *service, uint16_t service_id)
 {
-    char json[300];
-    search_result_t result;
-    RTFilter_ID(RTFilter_Reset(&result), service->ll_service->dead_service_spotted);
-    sprintf(json, "{\"dead_service\":\"%s\"}\n", result.result_table[0]->alias);
+    char dead_json[512];
+    sprintf(dead_json, "{\"dead_service\":%d}\n", service_id);
     // Send the message to pipe
-    PipeLink_Send(service, json, strlen(json));
+    PipeLink_Send(service, dead_json, strlen(dead_json));
+}
+
+// This function generate a Json about node exclusion and send it.
+void Convert_DeadNodeToData(service_t *service, uint16_t node_id)
+{
+    char dead_json[512];
+    sprintf(dead_json, "{\"dead_node\":%d}\n", node_id);
+    // Send the message to pipe
+    PipeLink_Send(service, dead_json, strlen(dead_json));
 }
 
 /*******************************************************************************
@@ -957,34 +966,15 @@ void Convert_RoutingTableData(service_t *service)
         {
             sprintf(json_ptr, "{\"node_id\":%d", routing_table[i].node_id);
             json_ptr += strlen(json_ptr);
-            if (routing_table[i].certified)
-            {
-                sprintf(json_ptr, ",\"certified\":true");
-                json_ptr += strlen(json_ptr);
-            }
-            else
-            {
-                sprintf(json_ptr, ",\"certified\":false");
-                json_ptr += strlen(json_ptr);
-            }
-            sprintf(json_ptr, ",\"port_table\":[");
-            json_ptr += strlen(json_ptr);
-            // Port loop
-            for (int port = 0; port < 4; port++)
-            {
-                if (routing_table[i].port_table[port])
-                {
-                    sprintf(json_ptr, "%d,", routing_table[i].port_table[port]);
-                    json_ptr += strlen(json_ptr);
-                }
-                else
-                {
-                    // remove the last "," char
-                    *(--json_ptr) = '\0';
-                    break;
-                }
-            }
-            sprintf(json_ptr, "],\"services\":[");
+
+            sprintf(json_ptr, ",\"con\":{\"child\":[%d,%d,%d],\"parent\":[%d,%d,%d]},\"services\":[",
+                    routing_table[i].connection.child.node_id,
+                    routing_table[i].connection.child.phy_id,
+                    routing_table[i].connection.child.port_id,
+                    routing_table[i].connection.parent.node_id,
+                    routing_table[i].connection.parent.phy_id,
+                    routing_table[i].connection.parent.port_id);
+
             json_ptr += strlen(json_ptr);
             i++;
             // Services loop
@@ -1014,6 +1004,8 @@ void Convert_RoutingTableData(service_t *service)
     *(--json_ptr) = '\0';
     // End the Json message
     sprintf(json_ptr, "]}\n");
+    // Run loop before to flush residual msg on the pipe
+    Luos_Loop();
     // reset all the msg in pipe link
     PipeLink_Reset(service);
     // call Luos loop to generap a Luos Task with this msg

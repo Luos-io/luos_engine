@@ -211,7 +211,7 @@ void PIPE_COM_IRQHANDLER()
         RX_PrevPointerPosition = RX_PointerPosition;
         if (size != 0)
         {
-            Stream_AddAvailableSampleNB(Pipe_GetRxStreamChannel(), size);
+            Streaming_AddAvailableSampleNB(Pipe_GetRxStreamChannel(), size);
         }
     }
 }
@@ -229,7 +229,7 @@ void PIPE_TX_DMA_IRQHANDLER()
     {
         PIPE_TX_DMA_CLEAR_TC(PIPE_TX_DMA);
 
-        Stream_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size_to_send);
+        Streaming_RmvAvailableSampleNB(Pipe_GetTxStreamChannel(), size_to_send);
         size       = SerialProtocol_GetSizeToSend();
         is_sending = false;
         if (size > 0)

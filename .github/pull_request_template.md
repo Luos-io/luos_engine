@@ -1,4 +1,4 @@
-By submiting this PR, you agree with the associated license ([Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or [MIT](http://choosealicense.com/licenses/mit/)) and with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/) (CLA).
+By submiting this PR, you agree with the associated license [MIT](http://choosealicense.com/licenses/mit/)) and with our [Contributor License Agreement](https://github.com/Luos-io/luos_engine/) (CLA).
 
 ## Before to begin
 

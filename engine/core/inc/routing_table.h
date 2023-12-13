@@ -7,13 +7,12 @@
 #ifndef TABLE
 #define TABLE
 
-#include "luos_engine.h"
+#include "struct_luos.h"
+#include "luos_list.h"
+#include "node.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#ifndef MAX_RTB_ENTRY
-    #define MAX_RTB_ENTRY 40
-#endif
 
 typedef enum
 {
@@ -21,9 +20,6 @@ typedef enum
     SERVICE, // Contain a service informations
     NODE,    // Contain a node informations
 } entry_mode_t;
-/*******************************************************************************
- * Variables
- ******************************************************************************/
 
 /* This structure is used to receive or send messages between services in slave
  * and master mode.
@@ -53,9 +49,9 @@ typedef struct __attribute__((__packed__))
                 uint16_t certified : 4; // True if the node have a certificate
                 uint8_t node_info;      // node info can contain info such as the saving of routing table
             };
-            uint16_t port_table[(MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t) - 2) / 2]; // Node link table
+            connection_t connection; // Node connection source
         };
-        uint8_t unmap_data[MAX_ALIAS_SIZE + 2 + 2 + sizeof(uint8_t)];
+        uint8_t unmap_data[MAX_ALIAS_SIZE + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint8_t)];
     };
 } routing_table_t;
 
@@ -72,21 +68,6 @@ typedef struct
 /*******************************************************************************
  * Function
  ******************************************************************************/
-// ********************* routing_table search tools ************************
-uint16_t RoutingTB_NodeIDFromID(uint16_t id);
-
-// ********************* routing_table management tools ************************
-void RoutingTB_ComputeRoutingTableEntryNB(void);
-void RoutingTB_DetectServices(service_t *service);
-void RoutingTB_ConvertNodeToRoutingTable(routing_table_t *entry, node_t *node);
-void RoutingTB_ConvertServiceToRoutingTable(routing_table_t *entry, service_t *service);
-void RoutingTB_RemoveNode(uint16_t nodeid);
-void RoutingTB_RemoveOnRoutingTable(uint16_t id);
-void RoutingTB_Erase(void);
-routing_table_t *RoutingTB_Get(void);
-uint16_t RoutingTB_GetLastService(void);
-uint16_t *RoutingTB_GetLastNode(void);
-uint16_t RoutingTB_GetLastEntry(void);
 
 // ********************* routing table  filtering ********************************
 error_return_t RTFilter_InitCheck(search_result_t *result);
