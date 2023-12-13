@@ -1710,7 +1710,7 @@ void unittest_phy_GetPhyId()
 
         TRY
         {
-            int value = Phy_GetPhyId(&phy_ctx.phy[PHY_NB]);
+            int value = Phy_GetPhyId(&phy_ctx.phy[LOCAL_PHY_NB + 1]);
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
@@ -1720,7 +1720,7 @@ void unittest_phy_GetPhyId()
     {
         TRY
         {
-            for (int i = 0; i < PHY_NB; i++)
+            for (int i = 0; i <= LOCAL_PHY_NB; i++)
             {
                 int value = Phy_GetPhyId(&phy_ctx.phy[i]);
                 TEST_ASSERT_EQUAL(i, value);
