@@ -227,6 +227,33 @@ void DataManager_Format(service_t *service)
             }
             i++;
         }
+        if (Luos_NbrAvailableMsg() != 0)
+        {
+            // We still have messages.This could be because we received some during the execution of the last loop.Or this could be because the gate have been excluded from the routing table, let's try to catch some message for the Gate service.
+            // Luos_ReadFromService(service, BROADCAST_VAL, &data_msg);
+            if (Luos_ReadFromCmd(service, DEADTARGET, &data_msg) == SUCCEED)
+            {
+                dead_target_t *dead_target = (dead_target_t *)data_msg.data;
+                if (dead_target->node_id != 0)
+                {
+                    Convert_DeadNodeToData(service, dead_target->node_id);
+                }
+                if (dead_target->service_id != 0)
+                {
+                    if (dead_target->service_id == service->id)
+                    {
+                        // This is the exclusion of our Gate service!
+                        // This mean that the gate is not able to communicate with anything anymore and looks like dead.
+                        // To avoid it we will remake the detection.
+                        Luos_Detect(service);
+                    }
+                    else
+                    {
+                        Convert_DeadServiceToData(service, dead_target->service_id);
+                    }
+                }
+            }
+        }
         if (data_ok)
         {
             Convert_EndData(service, data, data_ptr);
