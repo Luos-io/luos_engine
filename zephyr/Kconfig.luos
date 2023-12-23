@@ -1,0 +1,37 @@
+config LUOS
+	select RING_BUFFER
+	select SERIAL
+	select UART_INTERRUPT_DRIVEN
+	select COUNTER
+	select LOG
+
+	bool "LUOS real-time orchestrator engine"
+	help
+	  This option enables the LUOS real-time orchestrator engine.
+
+if LUOS
+	config LUOS_TIMEOUT_USEC
+		int "Network timeout in microseconds"
+		default 100000
+
+	config LUOS_RING_BUF_SIZE
+		int "LUOS ring buffer size in bytes"
+		default 1024
+
+	config PTPA_PIN_NBR
+		int "PTPA Pin number"
+		default 0
+
+	config PTPB_PIN_NBR
+		int "PTPB Pin number"
+		default 1
+
+	config TX_PIN_NBR
+		int "Serial comm TX Pin number"
+		default 2
+
+	config RX_PIN_NBR
+		int "Serial comm RX Pin number"
+		default 3
+
+endif
