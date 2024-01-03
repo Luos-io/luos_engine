@@ -80,6 +80,7 @@ extern "C"
     // *** Polling reception management ***
     error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write);
     error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_to_write);
+    error_return_t Luos_ReadFromCmd(service_t *service, uint8_t cmd, msg_t *msg_to_write);
     uint16_t Luos_NbrAvailableMsg(void);
 
 #ifdef __cplusplus

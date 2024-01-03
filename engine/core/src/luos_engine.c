@@ -286,6 +286,47 @@ error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_
 }
 
 /******************************************************************************
+ * @brief Read last msg with a specific command
+ * @param service : The service asking for a message
+ * @param cmd : Who sent the message we are looking for
+ * @param msg_to_write : Message where the received message will be copied
+ * @return SUCCEED : If a message is passed to the user, else FAILED
+ ******************************************************************************/
+error_return_t Luos_ReadFromCmd(service_t *service, uint8_t cmd, msg_t *msg_to_write)
+{
+
+    LUOS_ASSERT((msg_to_write != 0) && (service != 0));
+    phy_job_t *job        = NULL;
+    uint8_t service_index = Service_GetIndex(service);
+    LUOS_MUTEX_LOCK
+    while (LuosIO_GetNextJob(&job) != FAILED)
+    {
+        // We got a job
+        // Check if our service is concerned by this job and if the command is the one we are looking for
+        if ((*(service_filter_t *)job->phy_data >> service_index & 0x01) && (job->msg_pt->header.cmd == cmd))
+        {
+            // This job is for our service, copy the job message to the user message
+            if (Luos_IsMsgTimstamped(job->msg_pt) == true)
+            {
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size + sizeof(time_luos_t));
+            }
+            else
+            {
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size);
+            }
+            // Remove this service from the job filter
+            *(service_filter_t *)job->phy_data &= ~(1 << service_index);
+            // Services consume this job. try to remove it
+            LuosIO_RmJob(job);
+            LUOS_MUTEX_UNLOCK
+            return SUCCEED;
+        }
+    }
+    LUOS_MUTEX_UNLOCK
+    return FAILED;
+}
+
+/******************************************************************************
  * @brief Send large among of data and formating to send into multiple msg
  * @param service : Who send
  * @param message : Message to send
