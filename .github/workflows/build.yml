@@ -101,7 +101,7 @@ jobs:
                           examples/projects/NUCLEO-F072RB,
                           examples/projects/NUCLEO-L073RZ,
                           examples/projects/STM32L4S5_discovery,
-                          # examples/projects/ESP32,
+                          examples/projects/ESP32,
                           examples/projects/native
                           ]
         os: [macos-latest, windows-latest, ubuntu-latest]
