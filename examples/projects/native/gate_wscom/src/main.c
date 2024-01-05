@@ -1,5 +1,9 @@
 #include "luos_engine.h"
-#include "serial_network.h"
+#ifndef WS
+    #include "serial_network.h"
+#else
+    #include "ws_network.h"
+#endif
 #include "pipe.h"
 #include "gate.h"
 #include <pthread.h>
@@ -43,7 +47,11 @@ int main(void)
     signal(SIGSEGV, handler); // install our handler
 #endif
     Luos_Init();
+#ifndef WS
     Serial_Init();
+#else
+    Ws_Init();
+#endif
     Pipe_Init();
     Gate_Init();
     // Create a thread to convert messages into Json and steam them using Websocket
@@ -52,7 +60,11 @@ int main(void)
     while (1)
     {
         Luos_Loop();
+#ifndef WS
         Serial_Loop();
+#else
+        Ws_Loop();
+#endif
         Pipe_Loop();
         Gate_Loop();
     }

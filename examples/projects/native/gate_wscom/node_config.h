@@ -50,6 +50,7 @@
 #define MAX_LOCAL_SERVICE_NUMBER 2
 #define MAX_LOCAL_PROFILE_NUMBER 1
 #define MAX_MSG_NB               200
+#define MSG_BUFFER_SIZE          2048
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
