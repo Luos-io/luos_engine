@@ -14,7 +14,7 @@ Import("env")
 visited_key = "__LUOS_CORE_SCRIPT_CALLED"
 global_env = DefaultEnvironment()
 
-if not visited_key in global_env:
+if env.get("UPLOAD_PROTOCOL") == "custom" and not visited_key in global_env:
     click.secho("")
     click.secho("Luos engine build configuration:", underline=True)
     # install pyluos
