@@ -21,3 +21,9 @@ if os.name == 'nt':
     env.Append(CPPDEFINES=["_POSIX_C_SOURCE=200000L"])
     env.Append(LIBS=["ws2_32"])
 click.secho("\t* mongoose 7.8 lib ready.", fg="green")
+
+# Websocket configurations override
+if os.environ.get("WS_NETWORK_BROKER_ADDR"):
+    env.Append(CPPDEFINES=[("WS_NETWORK_BROKER_ADDR","\\\""+os.environ["WS_NETWORK_BROKER_ADDR"]+"\\\"")])
+if os.environ.get(""):
+    env.Append(CPPDEFINES=[("PIPE_WS_SERVER_ADDR","\\\""+os.environ["PIPE_WS_SERVER_ADDR"]+"\\\"")])
