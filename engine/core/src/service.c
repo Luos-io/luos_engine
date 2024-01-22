@@ -271,8 +271,10 @@ error_return_t Service_Deliver(phy_job_t *job)
     // This means that this job already contain a service filter.
     // We just have to loop in the service list, filter it, call the callback and remove it from the service filter.
     error_return_t error = SUCCEED;
+    MSGALLOC_MUTEX_LOCK
     LUOS_ASSERT(job);
     service_filter_t *service_filter = (service_filter_t *)job->phy_data;
+    MSGALLOC_MUTEX_UNLOCK
     for (int i = 0; i < service_ctx.number; i++)
     {
         if (((*service_filter) >> i) & 0x01)

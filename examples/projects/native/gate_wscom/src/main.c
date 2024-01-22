@@ -55,8 +55,8 @@ int main(void)
     Pipe_Init();
     Gate_Init();
     // Create a thread to convert messages into Json and steam them using Websocket
-    // pthread_t thread_id;
-    // pthread_create(&thread_id, NULL, Gate_Pipe_LoopThread, NULL);
+    pthread_t thread_id;
+    pthread_create(&thread_id, NULL, Gate_Pipe_LoopThread, NULL);
     while (1)
     {
         Luos_Loop();
@@ -65,7 +65,7 @@ int main(void)
 #else
         Ws_Loop();
 #endif
-        Pipe_Loop();
-        Gate_Loop();
+        // Pipe_Loop();
+        // Gate_Loop();
     }
 }
