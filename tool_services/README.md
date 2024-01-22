@@ -8,8 +8,6 @@
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/luos_engine.svg)](https://registry.platformio.org/libraries/luos_engine/luos_engine)
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
-[![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
-[![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
 [![](https://img.shields.io/badge/LinkedIn-Share-0077B5?style=social&logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fluos-io)
 
 # Tool services
@@ -17,11 +15,12 @@
 In this section you will find really usefull embedded tool App services provided by Luos.
 
 ## To learn more
+
 This section details the features of Luos technology as an embedded development platform, following these subjects:
 
-* Let's test through the [Luos get started](https://www.luos.io/tutorials/get-started), to build, flash, run, and control your very first Luos code.
-* The [Basics of Luos](https://www.luos.io/docs/luos-technology/basics), explaining the general concepts and the project organization.
-* Definition of [Nodes](https://www.luos.io/docs/luos-technology/node), and the relation between Luos and the physical world.
-* Definition of [Packages](https://www.luos.io/docs/luos-technology/package), and how to make a portable and reusable development.
-* Definition of [Services](https://www.luos.io/docs/luos-technology/services), how to create and declare features in your product.
-* Definition of [Messages](https://www.luos.io/docs/luos-technology/message), when, why, and how to handle them, explaining the more advanced features of Luos.
+- Let's test through the [Luos get started](https://www.luos.io/tutorials/get-started), to build, flash, run, and control your very first Luos code.
+- The [Basics of Luos](https://www.luos.io/docs/luos-technology/basics), explaining the general concepts and the project organization.
+- Definition of [Nodes](https://www.luos.io/docs/luos-technology/node), and the relation between Luos and the physical world.
+- Definition of [Packages](https://www.luos.io/docs/luos-technology/package), and how to make a portable and reusable development.
+- Definition of [Services](https://www.luos.io/docs/luos-technology/services), how to create and declare features in your product.
+- Definition of [Messages](https://www.luos.io/docs/luos-technology/message), when, why, and how to handle them, explaining the more advanced features of Luos.

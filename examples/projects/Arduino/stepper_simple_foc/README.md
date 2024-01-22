@@ -7,17 +7,19 @@
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/luos_engine.svg)](https://registry.platformio.org/libraries/luos/luos_engine)
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
-[![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
 
 Version: 2.7.0
 
 # Hardware specification
+
 ## Board​
+
 - Arduino zero board to drive the motor
 - L298N driver
 - Stepper motor ref. MT-1704HS168A
 
 ## Luos network on arduino board​
+
 - PTPA: PIN19
 - PTPB: PIN7
 - RX_EN: 2
@@ -29,8 +31,6 @@ Version: 2.7.0
 
 ![Wiring Stepper](https://raw.githubusercontent.com/Luos-io/Documentation/main/static/assets/images/stepper_wiring.drawio.png)
 
-
 ## Join Luos Community
 
-* → Join the [Luos Discord server](http://discord.gg/luos)
-* → Join the [Luos subreddit](https://www.reddit.com/r/Luos)
+- → Join the [Luos Discord server](http://discord.gg/luos)
