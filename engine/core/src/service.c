@@ -193,7 +193,7 @@ void Service_AutoUpdateManager(void)
                     updt_msg.header.config      = BASE_PROTOCOL;
                     updt_msg.header.target      = service_ctx.auto_refresh[i].service->id;
                     updt_msg.header.source      = service_ctx.auto_refresh[i].target;
-                    updt_msg.header.target_mode = NODEIDACK;
+                    updt_msg.header.target_mode = SERVICEIDACK;
                     updt_msg.header.cmd         = GET_CMD;
                     updt_msg.header.size        = 0;
                     if ((service_ctx.auto_refresh[i].service->service_cb != 0))
