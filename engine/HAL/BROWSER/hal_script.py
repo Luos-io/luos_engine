@@ -8,6 +8,20 @@ Import("env")
  # Global env, use it if you call this script from a library.json file
 genv = DefaultEnvironment()
 
+
+def shared_lib(source, target, env):
+    # Try to find the luos_engine.a somwhere on $BUILD_DIR/*/ archive and save it to a libPath variable
+    libPath = None
+    for root, dirs, files in os.walk(env.subst("$BUILD_DIR")):
+        for file in files:
+            if file.endswith("luos_engine.a"):
+                libPath = os.path.join(root, file)
+                break
+        if libPath is not None:
+            break
+    # Convert the luos_engine.a archive to a wasm shared library
+    env.Execute("gcc -O2 -o $BUILD_DIR/libluos_engine.bc " + libPath)
+
  # Get the cheerp bin folder
 cheerp_bin_path = None
 if  platform.system() == 'Windows':
@@ -51,3 +65,6 @@ for e in [env, genv]:
     # Replace the output filename with the appropriate extension
     e.Replace(PROGNAME="program.bc")
 
+# Add the shared_lib callback to the buildprog post action
+print("Adding the shared_lib callback to the buildprog post action")
+genv.AddPostAction("$PROGPATH", shared_lib)
