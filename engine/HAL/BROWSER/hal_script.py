@@ -20,7 +20,7 @@ def shared_lib(source, target, env):
         if libPath is not None:
             break
     # Convert the luos_engine.a archive to a wasm shared library
-    env.Execute("gcc -O2 -o $BUILD_DIR/libluos_engine.bc " + libPath)
+    env.Execute("gcc -cheerp-pretty-code -O2 -o $BUILD_DIR/libluos_engine.js " + libPath)
 
  # Get the cheerp bin folder
 cheerp_bin_path = None
@@ -56,14 +56,14 @@ for e in [env, genv]:
     e.Append(CCFLAGS=["--target=cheerp-wasm"])
 
     # Add the cheerp-wasm target to the linker flags
-    e.Append(LINKFLAGS=["--target=cheerp-wasm"])
+    e.Append(LINKFLAGS=["--target=cheerp-wasm", "-cheerp-pretty-code"])
 
     # Replace the ar and ranlib commands with the appropriate llvm-ar command
     e.Replace(AR=cheerp_bin_path + "/llvm-ar",
             RANLIB=cheerp_bin_path + "/llvm-ar s")
 
     # Replace the output filename with the appropriate extension
-    e.Replace(PROGNAME="program.bc")
+    e.Replace(PROGNAME="program.js")
 
 # Add the shared_lib callback to the buildprog post action
 print("Adding the shared_lib callback to the buildprog post action")
