@@ -185,8 +185,10 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
 
 // Open the serial port
 #ifdef _WIN32
+    char tmp[128];
+    sprintf(tmp, "\\\\.\\%s", portname);
     hSerial = CreateFile(
-        portname,
+        tmp,
         GENERIC_READ | GENERIC_WRITE,
         0,    // exclusive access
         NULL, // no security
