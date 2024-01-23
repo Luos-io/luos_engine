@@ -35,6 +35,7 @@ void Service_ResetStatistics(void);
 void Service_GenerateId(uint16_t base_id);
 void Service_ClearId(void);
 uint16_t Service_GetIndex(service_t *service);
+void Service_AddAutoUpdateTarget(service_t *service, uint16_t target, uint16_t time_ms);
 void Service_RmAutoUpdateTarget(uint16_t service_id);
 void Service_AutoUpdateManager(void);
 error_return_t Service_Deliver(phy_job_t *job);

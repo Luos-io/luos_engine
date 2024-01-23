@@ -12,7 +12,7 @@
 #ifndef SECRET_SSID
     #warning "You must define SECRET_SSID and SECRET_PASS in your node_config.h"
 #endif
-#ifndef SECRESECRET_PASST_SSID
+#ifndef SECRET_PASS
     #warning "You must define SECRET_SSID and SECRET_PASS in your node_config.h"
 #endif
 #endif /* _WS_CONFIG_H_ */

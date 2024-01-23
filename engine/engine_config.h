@@ -22,6 +22,10 @@
     #define MAX_LOCAL_SERVICE_NUMBER 5 // The maximum number of local services
 #endif
 
+#ifndef MAX_AUTO_REFRESH_NUMBER
+    #define MAX_AUTO_REFRESH_NUMBER MAX_LOCAL_SERVICE_NUMBER // The maximum number of auto refresh in the node
+#endif
+
 #ifndef MAX_SERVICE_NUMBER
     #define MAX_SERVICE_NUMBER 20 // The maximum number of services in the complete architecture
 #endif
