@@ -68,7 +68,7 @@ void clear_screen(void)
  * @param None
  * @return None
  ******************************************************************************/
-void Led_Init(void)
+PUBLIC void Led_Init(void)
 {
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Led_MsgHandler, STATE_TYPE, "led", revision);
@@ -82,7 +82,7 @@ void Led_Init(void)
  * @param None
  * @return None
  ******************************************************************************/
-void Led_Loop(void) {}
+PUBLIC void Led_Loop(void) {}
 
 /******************************************************************************
  * @brief Msg manager callback when a msg receive for this service

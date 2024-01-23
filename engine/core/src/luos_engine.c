@@ -34,7 +34,7 @@ static inline void Luos_PackageLoop(void);
  * @param None
  * @return None
  ******************************************************************************/
-void Luos_Init(void)
+PUBLIC void Luos_Init(void)
 {
     Service_Init();
     Node_Init();
@@ -56,7 +56,7 @@ void Luos_Init(void)
  * @param None
  * @return None
  ******************************************************************************/
-void Luos_Loop(void)
+PUBLIC void Luos_Loop(void)
 {
     static uint32_t last_loop_date;
     phy_job_t *job = NULL;

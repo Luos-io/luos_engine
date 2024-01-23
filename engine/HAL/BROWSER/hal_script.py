@@ -8,7 +8,6 @@ Import("env")
  # Global env, use it if you call this script from a library.json file
 genv = DefaultEnvironment()
 
-
 def shared_lib(source, target, env):
     # Try to find the luos_engine.a somwhere on $BUILD_DIR/*/ archive and save it to a libPath variable
     libPath = None
@@ -31,18 +30,17 @@ if platform.system() == 'Linux':
 if platform.system() == 'Darwin':
     cheerp_bin_path = '/Applications/cheerp/bin'
 
-if platform.system() == 'Darwin':
-    # Create a symlink to Cheerp clang++ in gcc
-    try:
-        os.symlink(cheerp_bin_path + '/clang++', cheerp_bin_path + '/gcc')
-    except FileExistsError:
-        pass
+# Create a symlink to Cheerp clang++ in gcc
+try:
+    os.symlink(cheerp_bin_path + '/clang++', cheerp_bin_path + '/gcc')
+except FileExistsError:
+    pass
 
-    # Create a symlink to Cheerp clang++ in g++
-    try:
-        os.symlink(cheerp_bin_path + '/clang++', cheerp_bin_path + '/g++')
-    except FileExistsError:
-        pass
+# Create a symlink to Cheerp clang++ in g++
+try:
+    os.symlink(cheerp_bin_path + '/clang++', cheerp_bin_path + '/g++')
+except FileExistsError:
+    pass
 
 # Add the cheerp fake gcc path at the beginning of the PATH environment variable than platformio will use it by default
 current_path = os.environ.get('PATH', '')
@@ -53,7 +51,7 @@ print("GCC used by platformio is :" + os.popen("which gcc").read())
 
 for e in [env, genv]:
     # Add the cheerp-wasm target to the compiler flags
-    e.Append(CCFLAGS=["--target=cheerp-wasm"])
+    e.Append(CCFLAGS=["--target=cheerp-wasm", "-Wno-cheerp", "-DPUBLIC=__attribute__\(\(cheerp_jsexport\)\)"])
 
     # Add the cheerp-wasm target to the linker flags
     e.Append(LINKFLAGS=["--target=cheerp-wasm", "-cheerp-pretty-code"])
@@ -66,5 +64,4 @@ for e in [env, genv]:
     e.Replace(PROGNAME="program.js")
 
 # Add the shared_lib callback to the buildprog post action
-print("Adding the shared_lib callback to the buildprog post action")
 genv.AddPostAction("$PROGPATH", shared_lib)
