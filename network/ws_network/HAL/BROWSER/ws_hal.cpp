@@ -1,14 +1,20 @@
 /******************************************************************************
- * @file robusHAL
- * @brief Robus Hardware Abstration Layer. Describe Low layer fonction
+ * @file wsHAL
+ * @brief WebSocket Hardware Abstration Layer. Describe Low layer fonction
  * @Family x86/Linux/Mac
  * @author Luos
  * @version 0.0.0
  ******************************************************************************/
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 #include "ws_hal.h"
 #include "_ws_network.h"
 #include "luos_utils.h"
-
+#ifdef __cplusplus
+}
+#endif
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
