@@ -1,5 +1,3 @@
-
-
 /******************************************************************************
  * @file node_config.h
  * @brief This file allow you to use standard preprocessor definitions to
@@ -40,17 +38,18 @@
  *    Define                | Default Value              | Description
  *    :---------------------|------------------------------------------------------
  *    MAX_LOCAL_SERVICE_NUMBER    |              5             | Service number in the node
+ *    MAX_NODE_NUMBER.      |              20            | Node number in the device
+ *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
+ *    MAX_MSG_NB            |   2*MAX_LOCAL_SERVICE_NUMBER     | Message number in Luos buffer
  *    MAX_NODE_NUMBER       |              20            | Node number in the device
  *    MAX_SERVICE_NUMBER    |              20            | Service number in the device
- *    MSG_BUFFER_SIZE       | 3*SIZE_MSG_MAX (405 Bytes) | Size in byte of the Luos buffer TX and RX
- *    MAX_MSG_NB            |   2*MAX_LOCAL_SERVICE_NUMBER   | Message number in Luos buffer
  *    NBR_PORT              |              2             | PTP Branch number Max 8
- *    NBR_RETRY             |              10            | Send Retry number in case of NACK or collision
+ *    NBR_RETRY             |             10             | Send Retry number in case of NACK or collision
  ******************************************************************************/
-#define MAX_LOCAL_SERVICE_NUMBER 2
-#define MAX_LOCAL_PROFILE_NUMBER 1
-#define MAX_MSG_NB               200
-#define MSG_BUFFER_SIZE          8192
+
+#define MAX_LOCAL_SERVICE_NUMBER 1
+#define MAX_MSG_NB               50
+#define MSG_BUFFER_SIZE          2048
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -60,7 +59,7 @@
  *    MCUFREQ                 | Put your the MCU frequency (value in Hz)
  *    TIMERDIV                | Timer divider clock (see your clock configuration)
  *    USE_CRC_HW              | define to 0 if there is no Module CRC in your MCU
- *    USE_TX_IT               | define to 1 to not use DMA transfers for Luos Tx
+ *    USE_TX_IT               | define to 1 to not use DMA transfert for Luos Tx
  *
  *    PORT_CLOCK_ENABLE       | Enable clock for port
  *    PTPx                    | A,B,C,D etc. PTP Branch Pin/Port/IRQ
@@ -94,25 +93,7 @@
  *    BOOT_START_ADDRESS    | FLASH_BASE = 0x8000000     | Start address of Bootloader in flash
  *    SHARED_MEMORY_ADDRESS | 0x0800C000                 | Start address of shared memory to save boot flag
  *    APP_START_ADDRESS     | 0x0800C800                 | Start address of application with bootloader
- *    APP_END_ADDRESS       | FLASH_BANK1_END=0x0801FFFF | End address of application with bootloader
+ *    APP_END_ADDRESS       | FLASH_END                  | End address of application with bootloader
  ******************************************************************************/
-
-/*******************************************************************************
- * GATE SERIAL COM DEFINITION
- *******************************************************************************
- *    Define                    | Default Value              | Description
- *    :-------------------------|------------------------------------------------------
- *    GATE_BUFF_SIZE            |             1024           | Json receive buffer size
- *    PIPE_RX_BUFFER_SIZE       |             1024           | Receive pipe buffer size
- *    PIPE_TX_BUFFER_SIZE       |             2048           | Transmit pipe buffer size
- *    INIT_TIME                 |              150           | Wait init time before first detection
- ******************************************************************************/
-#define GATE_BUFF_SIZE        65000
-#define PIPE_RX_BUFFER_SIZE   65000
-#define PIPE_TX_BUFFER_SIZE   65000
-#define SERIAL_RX_BUFFER_SIZE 65000
-#define INIT_TIME             150
-#define GATE_REFRESH_TIME_S   0.05f
-#define SERIAL_PORT           "/dev/cu.usbmodem1102" // "/dev/cu.usbserial-D308N897"
 
 #endif /* _NODE_CONFIG_H_ */

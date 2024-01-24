@@ -75,6 +75,14 @@ void Convert_CustomJsonToMsg(service_t *service, uint16_t target_id, char *prope
         Luos_SendMsg(service, &msg);
         return;
     }
+    if (property && !strcmp(property, "sampling_freq"))
+    {
+        float freq         = (float)json_getReal(jobj);
+        time_luos_t period = TimeOD_TimeFrom_s(1.0f / freq);
+        TimeOD_TimeToMsg(&period, &msg);
+        Luos_SendMsg(service, &msg);
+        return;
+    }
 }
 
 // This function is called by the gate to convert a message into a piece of Json.
