@@ -902,9 +902,11 @@ static void Phy_Dispatch(void)
                 phy_job.phy_data  = NULL;
 
                 // Write the job in the phy queue and get back the pointer to it
+                MSGALLOC_MUTEX_LOCK
                 phy_job_t *job_ptr = Phy_AddJob(&phy_ctx.phy[y], &phy_job);
                 // Notify this phy that a job is available and give it the concerned job on his queue
                 phy_ctx.phy[y].job_cb(&phy_ctx.phy[y], job_ptr);
+                MSGALLOC_MUTEX_UNLOCK
             }
         }
         Phy_SetIrqState(false);
