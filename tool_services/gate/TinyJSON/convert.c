@@ -12,9 +12,9 @@
 #include "gate_config.h"
 #include "pipe_link.h"
 #include "data_manager.h"
-#include "tiny-json.h"
 #include "bootloader_ex.h"
 #include "_routing_table.h"
+#include "custom-json.h"
 
 #define MAX_JSON_FIELDS 50
 
@@ -25,6 +25,41 @@ static const char *Convert_StringFromType(luos_type_t type);
 /*******************************************************************************
  * Tools
  ******************************************************************************/
+
+/******************************************************************************
+ * @brief This function can be redefined by users to manage custom Json command to msg
+ * @param service the service that will need to transmit the message
+ * @param target_id the id of the targetted service
+ * @param property the property name
+ * @param jobj the json object containing the data of the property
+ * @param json_str the complete json string. You may need to use it to extract binary data in the end of the string (after \r)
+ * @return None
+ ******************************************************************************/
+__attribute__((weak)) void Convert_CustomJsonToMsg(service_t *service, uint16_t target_id, char *property, const json_t *jobj, char *json_str)
+{
+    return;
+}
+
+/******************************************************************************
+ * @brief This function can be redefined by users to manage custom msg command to Json
+ * @param None
+ * @return None
+ ******************************************************************************/
+__attribute__((weak)) void Convert_CustomMsgToJson(msg_t *msg, char *data)
+{
+    return;
+}
+
+/******************************************************************************
+ * @brief This function can be redefined by users to manage custom type to string
+ * @param type the type to convert
+ * @return None
+ ******************************************************************************/
+__attribute__((weak)) const char *Convert_CustomStringFromType(luos_type_t type)
+{
+    return NULL;
+}
+
 // This function reduce Float to string convertion without FPU to 1/3 of normal time.
 // This function have been inspired by Benoit Blanchon Blog : https://blog.benoitblanchon.fr/lightweight-float-to-string/
 const char *Convert_Float(float value)
@@ -506,8 +541,8 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     if ((property && !strcmp(property, "rename")) && (property_type == JSON_TEXT))
     {
         // In this case we need to send the message as system message
-        int i            = 0;
-        char *alias      = (char *)json_getValue(jobj);
+        int i           = 0;
+        char *alias     = (char *)json_getValue(jobj);
         msg.header.size = strlen(alias);
         // Change size to fit into 16 characters
         if (msg.header.size > 15)
@@ -522,7 +557,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
             msg.data[i] = alias[i];
         }
         msg.data[msg.header.size] = '\0';
-        msg.header.cmd             = WRITE_ALIAS;
+        msg.header.cmd            = WRITE_ALIAS;
         Luos_SendMsg(service, &msg);
         return;
     }
@@ -654,6 +689,10 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
         Luos_SendMsg(service, &msg);
         return;
     }
+
+    // If we reach the end of this function, this is because this command is not known by the gate.
+    // So we call the optional custom function to manage it.
+    Convert_CustomJsonToMsg(service, id, property, jobj, bin_data);
 }
 
 /*******************************************************************************
@@ -881,6 +920,9 @@ uint16_t Convert_MsgToData(msg_t *msg, char *data)
             }
             break;
         default:
+            // If we reach this point, this is because the command is not known by the gate.
+            // So we call the optional custom function to manage it.
+            Convert_CustomMsgToJson(msg, data);
             break;
     }
     return (uint16_t)strlen(data);
@@ -1063,6 +1105,10 @@ const char *Convert_StringFromType(luos_type_t type)
             return "Pressure";
             break;
         default:
+            if (Convert_CustomStringFromType(type) != NULL)
+            {
+                return Convert_CustomStringFromType(type);
+            }
             return "Unknown";
             break;
     }
