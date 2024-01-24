@@ -4,7 +4,6 @@
 [![](https://img.shields.io/github/license/luos-io/luos)](https://github.com/luos-io/luos_engine/blob/main/LICENSE)
 
 [![](https://img.shields.io/badge/luos-documentation-34A3B4)](https://www.luos.io)
-[![](http://certified.luos.io)](https://www.luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/Luos.svg)](https://registry.platformio.org/libraries/luos/luos_engine)
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](https://discord.gg/luos)
