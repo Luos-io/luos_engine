@@ -14,6 +14,8 @@
 #include "led.h"
 #include <stdlib.h>
 
+#include <cheerp/clientlib.h>
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -55,12 +57,8 @@ static void Led_MsgHandler(service_t *service, const msg_t *msg);
 
 void clear_screen(void)
 {
-#ifdef _WIN32
-    system("cls");
-#else
-    // Assume POSIX
-    system("clear");
-#endif
+    // clear the console
+    printf("\x1B[2J\x1B[H");
 }
 
 /******************************************************************************
