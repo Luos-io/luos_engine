@@ -26,7 +26,7 @@ typedef struct
 } servo_parameters_t;
 
 // Luos data to Luos messages convertion
-void Convert_DataToLuos(service_t *service, char *data);
+void Convert_DataToMsg(service_t *service, char *data);
 
 // Luos service information to Data convertion
 uint16_t Convert_StartData(char *data);
