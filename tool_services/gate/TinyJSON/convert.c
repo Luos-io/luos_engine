@@ -200,6 +200,11 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
             int i = 0;
             // this is a trajectory
             int size = (int)json_getInteger(json_getChild(jobj));
+            if (size == 0)
+            {
+                // This trajaectory is empty
+                return;
+            }
             // find the first \r of the current buf
             for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
@@ -308,6 +313,11 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
             int i = 0;
             // this is a trajectory
             int size = (int)json_getInteger(json_getChild(jobj));
+            if (size == 0)
+            {
+                // This trajaectory is empty
+                return;
+            }
             // find the first \r of the current buf
             for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
@@ -341,6 +351,11 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
             int i = 0;
             // this is a trajectory
             int size = (int)json_getInteger(json_getChild(jobj));
+            if (size == 0)
+            {
+                // This trajaectory is empty
+                return;
+            }
             // find the first \r of the current buf
             for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
@@ -492,6 +507,11 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
             int i = 0;
             // This is a binary
             int size = (int)json_getInteger(item);
+            if (size == 0)
+            {
+                // This trajaectory is empty
+                return;
+            }
             // find the first \r of the current buf
             for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
@@ -620,6 +640,11 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
                 int i = 0;
                 // This is a binary
                 unsigned int size = (int)json_getInteger(jobj);
+                if (size == 0)
+                {
+                    // This trajaectory is empty
+                    return;
+                }
                 // find the first \r of the current buf
                 for (i = 0; i < GATE_BUFF_SIZE; i++)
                 {
@@ -663,6 +688,11 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
             int i = 0;
             // This is a binary
             unsigned int size = (int)json_getInteger(item);
+            if (size == 0)
+            {
+                // This trajaectory is empty
+                return;
+            }
             // find the first \r of the current buf
             for (i = 0; i < GATE_BUFF_SIZE; i++)
             {
