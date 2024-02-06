@@ -17,7 +17,7 @@ class Point_2D(Service):
         Service.__init__(self, 'Point_2D', id, alias, device)
         self._point = (0, 0)
         self._control = 0
-        self._buffer_mode = _SINGLE
+        self._buffer_mode = self._SINGLE
         self._sampling_freq = 100.0
 
     @property
@@ -75,7 +75,7 @@ class Point_2D(Service):
     @sampling_freq.setter
     def sampling_freq(self, sampling_freq):
         self._sampling_freq = sampling_freq
-        self._push_value("time", 1.0 / sampling_freq)
+        self._push_value("sampling_freq", sampling_freq)
 
 
     def _update(self, new_state):
