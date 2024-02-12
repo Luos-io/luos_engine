@@ -1049,11 +1049,13 @@ void Convert_RoutingTableData(service_t *service)
 
             json_ptr += strlen(json_ptr);
             i++;
+            bool find_service = false;
             // Services loop
             while (i < last_entry)
             {
                 if (routing_table[i].mode == SERVICE)
                 {
+                    find_service = true;
                     // Create service description
                     sprintf(json_ptr, "{\"type\":\"%s\",\"id\":%d,\"alias\":\"%s\"},", Convert_StringFromType(routing_table[i].type), routing_table[i].id, routing_table[i].alias);
                     json_ptr += strlen(json_ptr);
@@ -1062,8 +1064,11 @@ void Convert_RoutingTableData(service_t *service)
                 else
                     break;
             }
-            // remove the last "," char
-            *(--json_ptr) = '\0';
+            if (find_service)
+            {
+                // remove the last "," char
+                *(--json_ptr) = '\0';
+            }
             sprintf(json_ptr, "]},");
             json_ptr += strlen(json_ptr);
         }

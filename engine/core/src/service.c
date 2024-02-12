@@ -120,6 +120,11 @@ void Service_ClearId(void)
  ******************************************************************************/
 uint16_t Service_GetIndex(service_t *service)
 {
+    if (service_ctx.number == 0)
+    {
+        // We don't have any service just return 0 by default.
+        return 0;
+    }
     LUOS_ASSERT((service >= service_ctx.list) && (service < &service_ctx.list[service_ctx.number]));
     return ((uintptr_t)service - (uintptr_t)service_ctx.list) / sizeof(service_t);
 }
