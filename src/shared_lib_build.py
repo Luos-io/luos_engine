@@ -30,13 +30,15 @@ def shared_lib(source, target, env):
             env.Execute("gcc -shared -fPIC -o $BUILD_DIR/libluos_engine.so " + libPath)
             click.secho("* Luos engine shared library available in " + str(env.subst("$BUILD_DIR")) + "/libluos_engine.so .", fg="green")
         elif (pf.system() == 'Darwin'):
-            for networklib in networklibs:
-                env.Execute("gcc -v -shared -fPIC -o $BUILD_DIR/" + os.path.basename(networklib)[0:-10] + "_luos_engine.dylib " + libPath + " " + networklib)
+            #for networklib in networklibs:
+                #env.Execute("gcc -v -dynamiclib -install_name $BUILD_DIR/" + os.path.basename(networklib)[0:-10] + "_luos_engine.dylib -o $BUILD_DIR/" + os.path.basename(networklib)[0:-10] + "_luos_engine.dylib " + libPath + " " + networklib)
+
+            env.Execute("gcc -v -dynamiclib -fPIC -fvisibility=default -install_name $BUILD_DIR -o $BUILD_DIR/libluos_engine.dylib " + libPath)
             click.secho("\n")
             click.secho("Luos engine shared libraries available in " + str(env.subst("$BUILD_DIR")) + "/ :", underline=True)
             for networklib in networklibs:
                 click.secho("\t* " + os.path.basename(networklib)[0:-10] + "_luos_engine.dylib ", fg="green")
 
 env.AddPostAction("$PROGPATH", shared_lib)
-env.Append(LINKFLAGS=["-fPIC"])
-env.Append(BUILD_FLAGS=["-fPIC"])
+env.Append(LINKFLAGS=["-fPIC", "-fvisibility=default"])
+env.Append(BUILD_FLAGS=["-fPIC", "-fvisibility=default"])
