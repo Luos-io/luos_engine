@@ -39,5 +39,4 @@ examples/projects/ESP32/button/sdkconfig.esp32dev
 examples/projects/ESP32/led/sdkconfig.esp32dev
 tool_services/pipe/WS/ARDUINO/arduinoWebSockets/
 mongoose/
-examples/projects/browser/**/node_modules/
 *.pyc
