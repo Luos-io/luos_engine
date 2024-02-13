@@ -41,11 +41,11 @@ for e in [env, genv]:
     e.Append(CCFLAGS=["--target=cheerp-wasm", "-Wno-cheerp", "-DPUBLIC=__attribute__\(\(cheerp_jsexport\)\)"])
 
     # Add the cheerp-wasm target to the linker flags
-    e.Append(LINKFLAGS=["--target=cheerp-wasm", "-cheerp-make-module=commonjs", "-cheerp-pretty-code"])
+    e.Append(LINKFLAGS=["--target=cheerp-wasm", "-cheerp-make-module=es6", "-cheerp-pretty-code"])
 
     # Replace the ar and ranlib commands with the appropriate llvm-ar command
     e.Replace(AR=cheerp_bin_path + "/llvm-ar",
             RANLIB=cheerp_bin_path + "/llvm-ar s")
 
     # Replace the output filename with the appropriate extension
-    e.Replace(PROGNAME="program.js")
+    e.Replace(PROGNAME="program.mjs")

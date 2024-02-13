@@ -21,6 +21,11 @@ extern "C"
 
 using namespace client;
 
+namespace [[cheerp::genericjs]] client
+{
+    Promise *import(const String &path);
+}
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -63,10 +68,10 @@ void WsHAL_ReceptionWeb(const std::vector<uint8_t> &data)
     clientWebsocket->send(arrayBufferView);
 }
 
-[[cheerp::genericjs]] void WsHAL_InitWeb()
+[[cheerp::genericjs]] void WsHAL_AddWsEventHandlers()
 {
-    __asm__("const WebSocket = require('ws')");
     clientWebsocket = new WebSocket(s_url);
+    clientWebsocket->set_binaryType("arraybuffer");
     clientWebsocket->addEventListener(
         "open",
         cheerp::Callback(openEventCallback));
@@ -76,18 +81,34 @@ void WsHAL_ReceptionWeb(const std::vector<uint8_t> &data)
     clientWebsocket->addEventListener(
         "error",
         cheerp::Callback(errorEventCallback));
-
     clientWebsocket->addEventListener(
         "message",
-        cheerp::Callback(
-            [](MessageEvent *e)
-            {
-                auto *dataArray = (Uint8Array *)e->get_data();
-                std::vector<uint8_t> wasmData(dataArray->get_length());                               // allocate some linear memory
-                Uint8Array *wasmDataArray = cheerp::MakeTypedArray(wasmData.data(), wasmData.size()); // create a Uint8Array wrapper ove the linear memory held by the vector
-                wasmDataArray->set(dataArray);                                                        // copy the data with the builtin set() function. A for() loop with element-wise copy would do but this is faster
-                WsHAL_ReceptionWeb(wasmData);                                                         // NOTE: this now takes a const std::vector<uint8_t>& (or a std::vector<uint8_t> if you want to pass ownership)
-            }));
+        cheerp::Callback([](MessageEvent *e)
+                         {
+            auto *dataBuffer = (ArrayBuffer *)e->get_data();
+            auto *dataArray = new Uint8Array(dataBuffer);
+            std::vector<uint8_t> wasmData(dataArray->get_length());
+            Uint8Array *wasmDataArray = cheerp::MakeTypedArray(wasmData.data(), wasmData.size());
+            wasmDataArray->set(dataArray);
+            WsHAL_ReceptionWeb(wasmData); }));
+}
+
+[[cheerp::genericjs]] void WsHAL_InitWeb()
+{
+    bool isBrowser;
+    __asm__("typeof %1 !== 'undefined'" : "=r"(isBrowser) : "r"(&client::window));
+    if (isBrowser)
+    {
+        WsHAL_AddWsEventHandlers();
+    }
+    else
+    {
+        client::import("ws")
+            ->then(cheerp::Callback([](client::Object *lib)
+                                    { __asm__("globalThis.WebSocket=%0.WebSocket" ::"r"(lib)); }))
+            ->then(cheerp::Callback([]()
+                                    { WsHAL_AddWsEventHandlers(); }));
+    }
 }
 
 /////////////////////////Luos Library Needed function///////////////////////////
