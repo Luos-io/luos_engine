@@ -11,15 +11,21 @@
 
 # The complete product example :bulb:
 
-This project demonstrate how to deal with a real life project using Luos_engine. This project deal with custom project type, custom message commands, and demonstrate how to adapt your gate and pyluos to properly handle it.
+This example demonstrates how to deal with a real life project using Luos_engine. This code folder deals with custom types, custom messages commands, and demonstrate how to adapt your gate and pyluos to properly handle it.
 
-This project is a laser Galvo controller that can be use in an engraving machine, a small surface laser cutter or a laser show device.
-This have been tested with the great [interface board made by the opengalvo OPAL project](https://github.com/leswright1977/OPAL_PCB)
+This project is a laser Galvo controller example that can be used in an engraving machine, a small surface laser cutter or a laser show device.
+This has been tested with the great [interface board made by the opengalvo OPAL project](https://github.com/leswright1977/OPAL_PCB) on STM32-L476RG and a simple cat laser pointer toy.
+
+![The demonstration of a running galvo with a nucleo-L476RG.](galvo_demo.gif)
 
 This product is composed of multiple nodes:
 
 - A gate node called `custom_gate` running on your computer
-- A laser Galvo node called `laser_galvo` running on a microcontroller (tested on nucleo_l476rg but should work on most of the STM32 family)
+- A laser Galvo node called `laser_galvo` running on a microcontroller (tested on STM32-L476RG, but it should work on most microcontrollers within the STM32 family).
+
+In this folder, you can also find a Python notebook `laser_galvo_control.ipynb` to control the laser Galvo.
+
+To learn more about how to deal with complete product project with Luos please read our [code organization documentation](https://www.luos.io/docs/luos-technology/basics/organization).
 
 ## How to use :computer:
 
@@ -34,6 +40,5 @@ This product is composed of multiple nodes:
 
 ## Don't hesitate to read [our documentation](https://www.luos.io/docs/luos-technology), or to post your questions/issues on the [Luos' community](https://discord.gg/luos). :books:
 
-[![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://discord.gg/luos)
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io)
 [![](https://img.shields.io/badge/LinkedIn-Follow%20us-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/company/luos)
