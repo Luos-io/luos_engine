@@ -12,7 +12,8 @@
 // Definition of a custom service type
 typedef enum
 {
-    POINT_2D = LUOS_LAST_TYPE
+    POINT_2D = LUOS_LAST_TYPE,
+    POWER_TYPE
 } custom_service_type_t;
 
 // Definition of a custom service command

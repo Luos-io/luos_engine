@@ -1,0 +1,14 @@
+{
+    "name": "Laser",
+    "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,service,ST",
+    "description": "a laser driver",
+    "version": "1.0.0",
+    "authors": {
+        "name": "Luos",
+        "url": "https://luos.io"
+    },
+    "dependencies": {
+	"luos_engine": "^3.1.0"
+    },
+    "licence": "MIT"
+}

@@ -94,4 +94,9 @@
     #define GALVO_BUFFER_SIZE 8000 // Buffer size need to be a multiple of 40
 #endif
 
+// ********************* DEFAULT VALUES *********************
+#ifndef DEFAULT_SAMPLE_FREQUENCY
+    #define DEFAULT_SAMPLE_FREQUENCY 10000.0
+#endif
+
 #endif /* _GALVO_HAL_CONFIG_H_ */
