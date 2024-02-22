@@ -12,9 +12,9 @@
 [![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
 [![](https://img.shields.io/badge/LinkedIn-Share-0077B5?style=social&logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fluos-io)
 
-# Led project example :bulb:
+# Led project web assembly example :bulb:
 
-This project demonstrate how to make and use a simple button through Luos. Feel free to use electronics and code example as you want.
+This project demonstrate how to make and use a simple led in web assembly (wasm) through Luos.
 
 ## How to compile the code :computer:
 
@@ -23,13 +23,12 @@ This project demonstrate how to make and use a simple button through Luos. Feel 
 3.  Open this folder into Platformio
 4.  Build (Platformio will do the rest)
 
-## How to open the electronic design :electric_plug:
+## How to use :electric_plug:
 
-You can open [a working example electronic design](https://github.com/Luos-io/luos_engine/tree/main/examples/hardware) with Kicad. This design use Luos_components library for more information to install and use it read [our doc](https://www.luos.io/docs/).
+- Run `npx http-server -o ./src/main.html` to execute the example in your browser.
+- Run `node src/main.mjs` to execute the example in your terminal.
 
-## Linked driver
-
-This project is linked to the [Button driver](../../Drivers/button).
+Like other examples you will need to have other services interacting with it.
 
 ## Don't hesitate to read [our documentation](https://www.luos.io/docs/), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
 
