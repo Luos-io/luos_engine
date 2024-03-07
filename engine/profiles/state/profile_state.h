@@ -30,5 +30,6 @@ typedef struct
  ******************************************************************************/
 void ProfileState_link(uint8_t profile_mode, profile_state_t *profile_state);
 service_t *ProfileState_CreateService(profile_state_t *, SERVICE_CB, const char *, revision_t);
+profile_state_t *ProfileState_GetFromService(service_t *);
 
 #endif /* PROFILE_STATE_H_ */

@@ -106,3 +106,22 @@ service_t *ProfileVoltage_CreateService(profile_voltage_t *profile_voltage, SERV
     // Start profile
     return ProfileCore_StartService(callback, alias, revision);
 }
+
+/******************************************************************************
+ * @brief Get the profile data from a service pointer
+ * @param service : Service pointer
+ * @return profile_voltage_t pointer
+ ******************************************************************************/
+profile_voltage_t *ProfileVoltage_GetFromService(service_t *service)
+{
+    profile_core_t *profile = ProfileCore_GetFromService(service);
+    if (profile == 0)
+    {
+        return 0;
+    }
+    if (profile->type != VOLTAGE_TYPE)
+    {
+        return 0;
+    }
+    return (profile_voltage_t *)profile->profile_data;
+}
