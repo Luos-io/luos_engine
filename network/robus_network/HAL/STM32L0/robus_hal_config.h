@@ -136,6 +136,9 @@
 #ifndef ROBUS_DMA_REQUEST
     #define ROBUS_DMA_REQUEST LL_DMA_REQUEST_3
 #endif
+#ifndef ROBUS_DMA_REMAP
+    #define ROBUS_DMA_REMAP LL_SYSCFG_USART1TX_RMP_DMA1CH2
+#endif
 
 /*******************************************************************************
  * COM TIMEOUT CONFIG
