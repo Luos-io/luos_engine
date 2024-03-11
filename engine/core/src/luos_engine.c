@@ -264,14 +264,20 @@ error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_
         // Check if our service is concerned by this job
         if ((*(service_filter_t *)job->phy_data >> service_index & 0x01) && (job->msg_pt->header.source == id))
         {
+            uint16_t msg_size = job->msg_pt->header.size;
             // This job is for our service, copy the job message to the user message
+            if (msg_size > MAX_DATA_MSG_SIZE)
+            {
+                msg_size = MAX_DATA_MSG_SIZE;
+            }
             if (Luos_IsMsgTimstamped(job->msg_pt) == true)
             {
-                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size + sizeof(time_luos_t));
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + msg_size + sizeof(time_luos_t));
             }
             else
             {
-                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size);
+                // memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size);
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + msg_size);
             }
             // Remove this service from the job filter
             *(service_filter_t *)job->phy_data &= ~(1 << service_index);
@@ -305,14 +311,19 @@ error_return_t Luos_ReadFromCmd(service_t *service, uint8_t cmd, msg_t *msg_to_w
         // Check if our service is concerned by this job and if the command is the one we are looking for
         if ((*(service_filter_t *)job->phy_data >> service_index & 0x01) && (job->msg_pt->header.cmd == cmd))
         {
+            uint16_t msg_size = job->msg_pt->header.size;
             // This job is for our service, copy the job message to the user message
+            if (msg_size > MAX_DATA_MSG_SIZE)
+            {
+                msg_size = MAX_DATA_MSG_SIZE;
+            }
             if (Luos_IsMsgTimstamped(job->msg_pt) == true)
             {
-                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size + sizeof(time_luos_t));
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + msg_size + sizeof(time_luos_t));
             }
             else
             {
-                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + job->msg_pt->header.size);
+                memcpy(msg_to_write, job->msg_pt, sizeof(header_t) + msg_size);
             }
             // Remove this service from the job filter
             *(service_filter_t *)job->phy_data &= ~(1 << service_index);
