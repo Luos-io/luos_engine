@@ -136,7 +136,7 @@ uint16_t Service_GetIndex(service_t *service)
  ******************************************************************************/
 void Service_AddAutoUpdateTarget(service_t *service, uint16_t target, uint16_t time_ms)
 {
-    LUOS_ASSERT(service && (time_ms > 0) && (target != 0));
+    LUOS_ASSERT(service && (target != 0));
     for (uint16_t i = 0; i < MAX_AUTO_REFRESH_NUMBER; i++)
     {
         if (service_ctx.auto_refresh[i].time_ms == 0)
