@@ -53,7 +53,9 @@ void Gate_Init(void)
  ******************************************************************************/
 void Gate_Loop(void)
 {
+#ifndef GATE_POLLING
     static uint32_t last_time = 0;
+#endif
 
     // Check the detection status.
     if (Luos_IsDetected() == false)
@@ -68,11 +70,11 @@ void Gate_Loop(void)
         if (gate_running == RUNNING)
         {
             // Manage input and output data
+            DataManager_Run(gate);
+#ifndef GATE_POLLING
             if ((Luos_GetSystick() - last_time >= TimeOD_TimeTo_ms(update_time)) && (Luos_GetSystick() > last_time))
             {
                 last_time = Luos_GetSystick();
-                DataManager_Run(gate);
-#ifndef GATE_POLLING
                 if (first_conversion == true)
                 {
                     // This is the first time we perform a convertion
@@ -95,8 +97,8 @@ void Gate_Loop(void)
                     DataManager_collect(gate);
                     first_conversion = false;
                 }
-#endif
             }
+#endif
         }
         else
         {
