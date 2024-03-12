@@ -87,5 +87,6 @@ typedef struct
  ******************************************************************************/
 void ProfileServo_link(uint8_t, profile_servo_motor_t *);
 service_t *ProfileServo_CreateService(profile_servo_motor_t *, SERVICE_CB, const char *, revision_t);
+profile_servo_motor_t *ProfileServo_GetFromService(service_t *service);
 
 #endif /* PROFILE_SERVO_MOTOR_H_ */

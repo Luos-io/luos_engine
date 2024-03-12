@@ -301,3 +301,22 @@ service_t *ProfileServo_CreateService(profile_servo_motor_t *profile_servo_motor
     // Start service with the linked profile
     return ProfileCore_StartService(callback, alias, revision);
 }
+
+/******************************************************************************
+ * @brief Get profile from a service
+ * @param service : target service
+ * @return profile pointer
+ ******************************************************************************/
+profile_servo_motor_t *ProfileServo_GetFromService(service_t *service)
+{
+    profile_core_t *profile = ProfileCore_GetFromService(service);
+    if (profile == 0)
+    {
+        return 0;
+    }
+    if (profile->type != SERVO_MOTOR_TYPE)
+    {
+        return 0;
+    }
+    return (profile_servo_motor_t *)profile->profile_data;
+}
