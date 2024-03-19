@@ -49,7 +49,6 @@ static inline void SerialProtocol_Init(void)
 
 static inline void SerialProtocol_CreateTxMsg(void)
 {
-    static char *last_data_end = NULL;
     // Evaluate size
     // We want to evaluate the size of the last message only. To do that we create a fake StreamChannel with the same properties as the serialTx_StreamChannel but with the sample_ptr pointing to the begining of our message.
     streaming_channel_t fake_StreamChannel = *serialTx_StreamChannel;
@@ -70,7 +69,6 @@ static inline void SerialProtocol_CreateTxMsg(void)
         size_to_update[0] = size & 0xFF;
         size_to_update[1] = size >> 8;
     }
-    last_data_end = (char *)serialTx_StreamChannel->data_ptr;
     // Write footer and  header + size of the next message into the buffer
     SerialProtocol_t SerialProtocol = {
         SERIAL_FOOTER,
