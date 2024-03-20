@@ -13,7 +13,7 @@ RUN pip install --upgrade pip setuptools wheel platformio && \
   rm -rf /root/.cache/pip
 
 RUN platformio run \
-  --environment native \
+  --environment native_ws \
   -d ./examples/projects/native/gate_wscom
 
-CMD [ "./examples/projects/native/gate_wscom/.pio/build/native/program"]
+CMD [ "./examples/projects/native/gate_wscom/.pio/build/native_ws/program"]
