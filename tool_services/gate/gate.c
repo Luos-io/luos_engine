@@ -66,21 +66,6 @@ void Gate_Loop(void)
             if (first_conversion == true)
             {
                 // This is the first time we perform a convertion
-#ifdef GATE_REFRESH_AUTOSCALE
-                // Evaluate the time needed to convert all the data of this configuration and update refresh rate
-                search_result_t result;
-                RTFilter_Reset(&result);
-                // find the biggest id
-                if (result.result_table[result.result_nbr - 1]->id)
-                {
-                    // update time is related to the biggest id
-                    update_time = TimeOD_TimeFrom_s((float)result.result_table[result.result_nbr - 1]->id * 0.001);
-                }
-                else
-                {
-                    update_time = TimeOD_TimeFrom_s(GATE_REFRESH_TIME_S);
-                }
-#endif
                 // Update refresh rate for all services of the network
                 DataManager_collect(gate);
                 first_conversion = false;
