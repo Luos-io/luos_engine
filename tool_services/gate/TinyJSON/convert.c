@@ -45,7 +45,7 @@ __attribute__((weak)) void Convert_CustomJsonToMsg(service_t *service, uint16_t 
  * @param None
  * @return None
  ******************************************************************************/
-__attribute__((weak)) void Convert_CustomMsgToJson(msg_t *msg, char *data)
+__attribute__((weak)) void Convert_CustomMsgToJson(const msg_t *msg, char *data)
 {
     return;
 }
@@ -741,7 +741,7 @@ uint16_t Convert_StartServiceData(char *data, char *alias)
     return (uint16_t)strlen(data);
 }
 // This function create the Json content from a message and return the string size.
-uint16_t Convert_MsgToData(msg_t *msg, char *data)
+uint16_t Convert_MsgToData(const msg_t *msg, char *data)
 {
     float fdata;
     switch (msg->header.cmd)
@@ -1081,12 +1081,6 @@ void Convert_RoutingTableData(service_t *service)
     *(--json_ptr) = '\0';
     // End the Json message
     sprintf(json_ptr, "]}\n");
-    // Run loop before to flush residual msg on the pipe
-    Luos_Loop();
-    // reset all the msg in pipe link
-    PipeLink_Reset(service);
-    // call Luos loop to generap a Luos Task with this msg
-    Luos_Loop();
     // Send the message to pipe
     PipeLink_Send(service, json, strlen(json));
 }

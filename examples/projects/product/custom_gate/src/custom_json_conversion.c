@@ -92,7 +92,7 @@ void Convert_CustomJsonToMsg(service_t *service, uint16_t target_id, char *prope
 // This function is called by the gate to convert a message into a piece of Json.
 // This is typically used when a message is received by the gate with an unknown command.
 // You can use it to compose your own piece of Json out of the message data.
-void Convert_CustomMsgToJson(msg_t *msg, char *data)
+void Convert_CustomMsgToJson(const msg_t *msg, char *data)
 {
     if (msg->header.cmd == LINEAR_POSITION_2D)
     {

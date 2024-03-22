@@ -9,5 +9,5 @@
 #include "luos_engine.h"
 
 void Convert_CustomJsonToMsg(service_t *service, uint16_t target_id, char *property, const json_t *jobj, char *json_str);
-void Convert_CustomMsgToJson(msg_t *msg, char *data);
+void Convert_CustomMsgToJson(const msg_t *msg, char *data);
 const char *Convert_CustomStringFromType(luos_type_t type);

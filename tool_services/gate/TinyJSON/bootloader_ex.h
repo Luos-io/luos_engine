@@ -20,7 +20,7 @@
 /*******************************************************************************
  * Function
  ******************************************************************************/
-uint16_t Bootloader_LuosToJson(msg_t *, char *);
+uint16_t Bootloader_LuosToJson(const msg_t *, char *);
 void Bootloader_JsonToLuos(service_t *, char *, json_t const *);
 uint16_t Bootloader_StartData(char *);
 void Bootloader_EndData(service_t *, char *, char *);

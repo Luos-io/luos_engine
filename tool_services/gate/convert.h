@@ -31,7 +31,7 @@ void Convert_DataToMsg(service_t *service, char *data);
 // Luos service information to Data convertion
 uint16_t Convert_StartData(char *data);
 uint16_t Convert_StartServiceData(char *data, char *alias);
-uint16_t Convert_MsgToData(msg_t *msg, char *data);
+uint16_t Convert_MsgToData(const msg_t *msg, char *data);
 uint16_t Convert_EndServiceData(char *data);
 void Convert_EndData(service_t *service, char *data, char *data_ptr);
 void Convert_VoidData(service_t *service);

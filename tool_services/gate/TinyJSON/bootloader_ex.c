@@ -39,7 +39,7 @@ uint16_t Bootloader_StartData(char *data)
  * @param service pointer, luos message
  * @return None
  ******************************************************************************/
-uint16_t Bootloader_LuosToJson(msg_t *msg, char *data)
+uint16_t Bootloader_LuosToJson(const msg_t *msg, char *data)
 {
     uint16_t response_cmd = msg->header.cmd;
     uint16_t node_id      = RoutingTB_NodeIDFromID(msg->header.source);

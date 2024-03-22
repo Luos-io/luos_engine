@@ -34,9 +34,9 @@ extern volatile bool first_conversion;
 void DataManager_collect(service_t *service);
 
 // This function manage entirely data conversion
-void DataManager_Run(service_t *service);
+void DataManager_Run(service_t *service, const msg_t *data_msg);
 
 // This function manage only commande incoming from pipe
-void DataManager_RunPipeOnly(service_t *service);
+void DataManager_RunPipeOnly(service_t *service, const msg_t *data_msg);
 
 #endif /* DATA_MNGR_H */
