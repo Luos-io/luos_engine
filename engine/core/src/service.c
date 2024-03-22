@@ -139,6 +139,14 @@ void Service_AddAutoUpdateTarget(service_t *service, uint16_t target, uint16_t t
     LUOS_ASSERT(service && (target != 0));
     for (uint16_t i = 0; i < MAX_AUTO_REFRESH_NUMBER; i++)
     {
+        // If this target ask something from this service just update the value
+        if ((service_ctx.auto_refresh[i].service == service) && (service_ctx.auto_refresh[i].target == target))
+        {
+            service_ctx.auto_refresh[i].time_ms     = time_ms;
+            service_ctx.auto_refresh[i].last_update = LuosHAL_GetSystick();
+            return;
+        }
+        // If this slot is empty this mean that we didn't find the target in the list, just add it.
         if (service_ctx.auto_refresh[i].time_ms == 0)
         {
             service_ctx.auto_refresh[i].service     = service;
