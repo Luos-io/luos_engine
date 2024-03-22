@@ -18,13 +18,7 @@ void DataManager_collect(service_t *service)
 {
     msg_t update_msg;
     search_result_t result;
-#ifdef GATE_POLLING
-    update_msg.header.cmd         = GET_CMD;
-    update_msg.header.target_mode = SERVICEID;
-    update_msg.header.size        = 0;
-#else
     update_msg.header.target_mode = SERVICEIDACK;
-#endif
     RTFilter_Reset(&result);
     // ask services to publish datas
     for (uint8_t i = 0; i < result.result_nbr; i++)
@@ -32,28 +26,12 @@ void DataManager_collect(service_t *service)
         // Check if this service is a sensor
         if ((DataManager_ServiceIsSensor(result.result_table[i]->type)) || (result.result_table[i]->type >= LUOS_LAST_TYPE))
         {
-#ifdef GATE_POLLING
-            // This service is a sensor so create a msg and send it
-            update_msg.header.target = result.result_table[i]->id;
-            Luos_SendMsg(service, &update_msg);
-    #ifdef GATE_TIMEOUT
-            // Get the current number of message available
-            int back_nbr_msg = Luos_NbrAvailableMsg();
-            // Get the current time
-            uint32_t send_time = Luos_GetSystick();
-            // Wait for a reply before continuing
-            while ((back_nbr_msg == Luos_NbrAvailableMsg()) & (send_time == Luos_GetSystick()))
-            {
-                Luos_Loop();
-            }
-    #endif
-#else
             // This service is a sensor so create a msg to enable auto update
 
+            update_msg.header.target = result.result_table[i]->id;
             TimeOD_TimeToMsg(&update_time, &update_msg);
             update_msg.header.cmd = UPDATE_PUB;
             Luos_SendMsg(service, &update_msg);
-#endif
         }
     }
 }
@@ -61,9 +39,6 @@ void DataManager_collect(service_t *service)
 // This function manage entirely data conversion
 void DataManager_Run(service_t *service)
 {
-#ifdef GATE_POLLING
-    DataManager_collect(service);
-#endif
     DataManager_Format(service);
 }
 // This function manage only commands incoming from pipe
@@ -103,10 +78,8 @@ void DataManager_RunPipeOnly(service_t *service)
                 // Generate routing table datas
                 Convert_RoutingTableData(service);
                 // Run the gate
-                gate_running = RUNNING;
-#ifndef GATE_POLLING
+                gate_running     = RUNNING;
                 first_conversion = true;
-#endif
             }
         }
     }

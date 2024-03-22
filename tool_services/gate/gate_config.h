@@ -14,7 +14,6 @@
  *    Define                  | Description
  *    :-----------------------|-----------------------------------------------
  *    GATE_BUFF_SIZE          | Formatted Data Buffer. Max size of 1 msg
- *    GATE_POLLING            | No autorefresh always ask data (more intensive to Luos bandwidth.)
  *    NODETECTION             | Gate not perform a network detection a power up
  *    GATE_REFRESH_TIME_S     | Default refresh Gate recalculate optimal rate at first command
  *    INIT_TIME               | Delay before first detection, to verify that all boards are connected

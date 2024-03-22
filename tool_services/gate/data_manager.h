@@ -24,9 +24,7 @@ typedef enum
  ******************************************************************************/
 extern time_luos_t update_time;
 extern volatile gate_state_t gate_running;
-#ifndef GATE_POLLING
 extern volatile bool first_conversion;
-#endif
 
 /*******************************************************************************
  * Function
