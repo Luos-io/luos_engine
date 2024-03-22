@@ -185,8 +185,10 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
 
 // Open the serial port
 #ifdef _WIN32
+    char tmp[128];
+    sprintf(tmp, "\\\\.\\%s", portname);
     hSerial = CreateFile(
-        portname,
+        tmp,
         GENERIC_READ | GENERIC_WRITE,
         0,    // exclusive access
         NULL, // no security
@@ -342,7 +344,7 @@ void SerialHAL_Send(uint8_t *data, uint16_t size)
     while (bytesWritten < size)
     {
         // Wait for the buffer to be empty
-        usleep(100);
+        usleep(1000);
         ioctl(serial_port, TIOCOUTQ, &bytes_in_buffer);
         bytesWritten += write(serial_port, &data[bytesWritten], size - bytesWritten);
         if (bytesWritten < 0)

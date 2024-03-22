@@ -1,1 +1,0 @@
-simple_websocket_server==0.4.2

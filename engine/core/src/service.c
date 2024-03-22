@@ -20,6 +20,7 @@ typedef struct
 {
     service_t list[MAX_LOCAL_SERVICE_NUMBER];
     uint16_t number;
+    timed_update_t auto_refresh[MAX_AUTO_REFRESH_NUMBER]; /*!< service auto refresh context. */
 } service_ctx_t;
 
 /*******************************************************************************
@@ -107,11 +108,9 @@ void Service_ClearId(void)
 {
     for (uint16_t i = 0; i < service_ctx.number; i++)
     {
-        service_ctx.list[i].id                       = DEFAULTID;
-        service_ctx.list[i].auto_refresh.target      = 0;
-        service_ctx.list[i].auto_refresh.time_ms     = 0;
-        service_ctx.list[i].auto_refresh.last_update = 0;
+        service_ctx.list[i].id = DEFAULTID;
     }
+    memset((void *)service_ctx.auto_refresh, 0, sizeof(timed_update_t) * MAX_AUTO_REFRESH_NUMBER);
 }
 
 /******************************************************************************
@@ -121,6 +120,11 @@ void Service_ClearId(void)
  ******************************************************************************/
 uint16_t Service_GetIndex(service_t *service)
 {
+    if (service_ctx.number == 0)
+    {
+        // We don't have any service just return 0 by default.
+        return 0;
+    }
     LUOS_ASSERT((service >= service_ctx.list) && (service < &service_ctx.list[service_ctx.number]));
     return ((uintptr_t)service - (uintptr_t)service_ctx.list) / sizeof(service_t);
 }
@@ -130,15 +134,36 @@ uint16_t Service_GetIndex(service_t *service)
  * @param service_id
  * @return None
  ******************************************************************************/
+void Service_AddAutoUpdateTarget(service_t *service, uint16_t target, uint16_t time_ms)
+{
+    LUOS_ASSERT(service && (target != 0));
+    for (uint16_t i = 0; i < MAX_AUTO_REFRESH_NUMBER; i++)
+    {
+        if (service_ctx.auto_refresh[i].time_ms == 0)
+        {
+            service_ctx.auto_refresh[i].service     = service;
+            service_ctx.auto_refresh[i].target      = target;
+            service_ctx.auto_refresh[i].time_ms     = time_ms;
+            service_ctx.auto_refresh[i].last_update = LuosHAL_GetSystick();
+            return;
+        }
+    }
+    // No more space for auto update
+    LUOS_ASSERT(0);
+}
+
+/******************************************************************************
+ * @brief Remove all services auto update targetting this service_id
+ * @param service_id
+ * @return None
+ ******************************************************************************/
 void Service_RmAutoUpdateTarget(uint16_t service_id)
 {
-    for (uint16_t i = 0; i < service_ctx.number; i++)
+    for (uint16_t i = 0; i < MAX_AUTO_REFRESH_NUMBER; i++)
     {
-        if (service_ctx.list[i].auto_refresh.target == service_id)
+        if (service_ctx.auto_refresh[i].target == service_id)
         {
-            service_ctx.list[i].auto_refresh.target      = 0;
-            service_ctx.list[i].auto_refresh.time_ms     = 0;
-            service_ctx.list[i].auto_refresh.last_update = 0;
+            memset((void *)&service_ctx.auto_refresh[i], 0, sizeof(timed_update_t));
         }
     }
 }
@@ -150,45 +175,44 @@ void Service_RmAutoUpdateTarget(uint16_t service_id)
  ******************************************************************************/
 void Service_AutoUpdateManager(void)
 {
-    // Check all services timed_update_t contexts
-    for (uint16_t i = 0; i < service_ctx.number; i++)
+    // Check if detection is OK
+    if (Node_GetState() != DETECTION_OK)
     {
-        // check if services have an actual ID. If not, we are in detection mode and should reset the auto refresh
-        if (service_ctx.list[i].id == DEFAULTID)
-        {
-            // this service have not been detected or is in detection mode. remove auto_refresh parameters
-            service_ctx.list[i].auto_refresh.target      = 0;
-            service_ctx.list[i].auto_refresh.time_ms     = 0;
-            service_ctx.list[i].auto_refresh.last_update = 0;
-        }
-        else
+        // We have not been detected or we are in detection mode. remove auto_refresh parameters
+        memset((void *)&service_ctx.auto_refresh, 0, sizeof(timed_update_t) * MAX_AUTO_REFRESH_NUMBER);
+    }
+    else
+    {
+        // Check all timed_update_t
+        for (uint16_t i = 0; i < MAX_AUTO_REFRESH_NUMBER; i++)
         {
             // check if there is a timed update setted and if it's time to update it.
-            if (service_ctx.list[i].auto_refresh.time_ms)
+            if (service_ctx.auto_refresh[i].time_ms)
             {
-                if ((LuosHAL_GetSystick() - service_ctx.list[i].auto_refresh.last_update) >= service_ctx.list[i].auto_refresh.time_ms)
+                if ((LuosHAL_GetSystick() - service_ctx.auto_refresh[i].last_update) >= service_ctx.auto_refresh[i].time_ms)
                 {
                     // This service need to send an update
                     // Create a fake message for it from the service asking for update
                     msg_t updt_msg;
+                    LUOS_ASSERT(service_ctx.auto_refresh[i].service);
                     updt_msg.header.config      = BASE_PROTOCOL;
-                    updt_msg.header.target      = service_ctx.list[i].id;
-                    updt_msg.header.source      = service_ctx.list[i].auto_refresh.target;
+                    updt_msg.header.target      = service_ctx.auto_refresh[i].service->id;
+                    updt_msg.header.source      = service_ctx.auto_refresh[i].target;
                     updt_msg.header.target_mode = SERVICEIDACK;
                     updt_msg.header.cmd         = GET_CMD;
                     updt_msg.header.size        = 0;
-                    if ((service_ctx.list[i].service_cb != 0))
+                    if ((service_ctx.auto_refresh[i].service->service_cb != 0))
                     {
-                        service_ctx.list[i].service_cb(&service_ctx.list[i], &updt_msg);
+                        service_ctx.auto_refresh[i].service->service_cb(service_ctx.auto_refresh[i].service, &updt_msg);
                     }
                     else
                     {
                         if (Node_GetState() == DETECTION_OK)
                         {
-                            Luos_SendMsg(&service_ctx.list[i], &updt_msg);
+                            Luos_SendMsg(service_ctx.auto_refresh[i].service, &updt_msg);
                         }
                     }
-                    service_ctx.list[i].auto_refresh.last_update = LuosHAL_GetSystick();
+                    service_ctx.auto_refresh[i].last_update = LuosHAL_GetSystick();
                 }
             }
         }
@@ -252,8 +276,10 @@ error_return_t Service_Deliver(phy_job_t *job)
     // This means that this job already contain a service filter.
     // We just have to loop in the service list, filter it, call the callback and remove it from the service filter.
     error_return_t error = SUCCEED;
+    MSGALLOC_MUTEX_LOCK
     LUOS_ASSERT(job);
     service_filter_t *service_filter = (service_filter_t *)job->phy_data;
+    MSGALLOC_MUTEX_UNLOCK
     for (int i = 0; i < service_ctx.number; i++)
     {
         if (((*service_filter) >> i) & 0x01)

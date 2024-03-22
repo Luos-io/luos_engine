@@ -247,7 +247,7 @@ void unittest_Luos_ReadFromService(void)
         END_TRY;
         TRY
         {
-            NEW_STEP("Try to miss-specify the service pointer");
+            NEW_STEP("Try to miss-specify the msg pointer");
             revision_t revision = {.major = 1, .minor = 0, .build = 0};
             service_t *service  = Luos_CreateService(0, STATE_TYPE, "mycustom_service", revision);
             Luos_ReadFromService(service, 1, NULL);
@@ -299,6 +299,72 @@ void unittest_Luos_ReadFromService(void)
 
             NEW_STEP("Try receive but no message available");
             TEST_ASSERT_EQUAL(FAILED, Luos_ReadFromService(service, 3, &rx_msg));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+}
+
+void unittest_Luos_ReadFromCmd(void)
+{
+
+    NEW_TEST_CASE("Test Luos_ReadFromCmd assert conditions");
+    {
+        TRY
+        {
+            NEW_STEP("Try to missspecify the service pointer");
+            msg_t msg;
+            Luos_ReadFromCmd(NULL, 1, &msg);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+        TRY
+        {
+            NEW_STEP("Try to miss-specify the msg pointer");
+            revision_t revision = {.major = 1, .minor = 0, .build = 0};
+            service_t *service  = Luos_CreateService(0, STATE_TYPE, "mycustom_service", revision);
+            Luos_ReadFromCmd(service, 1, NULL);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+    }
+    NEW_TEST_CASE("Test Luos_ReadFromCmd normal conditions");
+    {
+        TRY
+        {
+            //  Init default scenario context
+            Init_Context();
+            revision_t revision = {.major = 1, .minor = 0, .build = 0};
+            service_t *service  = Luos_CreateService(0, STATE_TYPE, "mycustom_service", revision);
+            Luos_Detect(default_sc.App_1.app);
+            do
+            {
+                Luos_Loop();
+            } while (!Luos_IsDetected());
+
+            NEW_STEP("Check end detection reception");
+            msg_t rx_msg;
+            TEST_ASSERT_EQUAL(FAILED, Luos_ReadFromCmd(service, REVISION, &rx_msg));
+            TEST_ASSERT_EQUAL(SUCCEED, Luos_ReadFromCmd(service, END_DETECTION, &rx_msg));
+
+            NEW_STEP("Check normal reception");
+            msg_t msg;
+            msg.header.target      = service->id;
+            msg.header.target_mode = SERVICEIDACK;
+            msg.header.cmd         = LUOS_LAST_RESERVED_CMD + 1;
+            msg.header.size        = 0;
+            TEST_ASSERT_EQUAL(SUCCEED, Luos_SendMsg(default_sc.App_3.app, &msg));
+            Luos_Loop();
+            TEST_ASSERT_EQUAL(FAILED, Luos_ReadFromCmd(service, REVISION, &rx_msg));
+            TEST_ASSERT_EQUAL(SUCCEED, Luos_ReadFromCmd(service, LUOS_LAST_RESERVED_CMD + 1, &rx_msg));
+            TEST_ASSERT_EQUAL(msg.header.source, rx_msg.header.source);
+            TEST_ASSERT_EQUAL(rx_msg.header.config, msg.header.config);
+
+            NEW_STEP("Try receive but no message available");
+            TEST_ASSERT_EQUAL(FAILED, Luos_ReadFromCmd(service, LUOS_LAST_RESERVED_CMD + 1, &rx_msg));
         }
         CATCH
         {
@@ -579,6 +645,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_Luos_SendTimestampMsg);
     UNIT_TEST_RUN(unittest_Luos_ReadMsg);
     UNIT_TEST_RUN(unittest_Luos_ReadFromService);
+    UNIT_TEST_RUN(unittest_Luos_ReadFromCmd);
     UNIT_TEST_RUN(unittest_Luos_Send_ReceiveData);
     UNIT_TEST_RUN(unittest_Luos_NbrAvailableMsg);
 

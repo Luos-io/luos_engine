@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "licence": "MIT",
     "dependencies": {
-	"luos_engine": "^3.0.0",
+	"luos_engine": "^3.1.0",
         "adafruit/Adafruit Fingerprint Sensor Library": "*"
     }
 }

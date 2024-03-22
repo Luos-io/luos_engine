@@ -89,6 +89,8 @@ void RobusHAL_Loop(void)
  ******************************************************************************/
 void RobusHAL_ComInit(uint32_t Baudrate)
 {
+    HAL_NVIC_DisableIRQ(ROBUS_COM_IRQ);
+    HAL_NVIC_ClearPendingIRQ(ROBUS_COM_IRQ);
     ROBUS_COM_CLOCK_ENABLE();
 
     LL_USART_InitTypeDef USART_InitStruct;
@@ -468,6 +470,9 @@ static void RobusHAL_GPIOInit(void)
     RobusHAL_RegisterPTP();
     for (uint8_t i = 0; i < NBR_PORT; i++) /*Configure GPIO pins : PTP_Pin */
     {
+        // Disable IT for PTP
+        HAL_NVIC_DisableIRQ(PTP[i].IRQ);
+        HAL_NVIC_ClearPendingIRQ(PTP[i].IRQ);
         GPIO_InitStruct.Pin   = PTP[i].Pin;
         GPIO_InitStruct.Mode  = GPIO_MODE_IT_FALLING;
         GPIO_InitStruct.Pull  = GPIO_PULLDOWN;

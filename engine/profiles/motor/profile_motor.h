@@ -62,5 +62,6 @@ typedef struct
  ******************************************************************************/
 void ProfileMotor_link(uint8_t, profile_motor_t *);
 service_t *ProfileMotor_CreateService(profile_motor_t *, SERVICE_CB, const char *, revision_t);
+profile_motor_t *ProfileMotor_GetFromService(service_t *);
 
 #endif /* PROFILE_MOTOR_H_ */

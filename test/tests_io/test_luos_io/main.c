@@ -723,12 +723,13 @@ void unittest_luosIO_ConsumeMsg()
             Luos_handled_job  = NULL;
             Robus_handled_job = NULL;
 
-            Node_Get()->node_id                          = 1;
-            service_ctx.number                           = 2;
-            service_ctx.list[0].id                       = 1;
-            service_ctx.list[0].auto_refresh.target      = 0;
-            service_ctx.list[0].auto_refresh.time_ms     = 0;
-            service_ctx.list[0].auto_refresh.last_update = 0;
+            Node_Get()->node_id                     = 1;
+            service_ctx.number                      = 2;
+            service_ctx.list[0].id                  = 1;
+            service_ctx.auto_refresh[0].service     = &service_ctx.list[0];
+            service_ctx.auto_refresh[0].target      = 0;
+            service_ctx.auto_refresh[0].time_ms     = 0;
+            service_ctx.auto_refresh[0].last_update = 0;
             // Generate the filters
             Service_GenerateId(1);
 
@@ -742,8 +743,8 @@ void unittest_luosIO_ConsumeMsg()
 
             // Check received message content
             TEST_ASSERT_EQUAL(SUCCEED, ret_val);
-            TEST_ASSERT_EQUAL(1, service_ctx.list[0].auto_refresh.target);
-            TEST_ASSERT_EQUAL((uint16_t)TimeOD_TimeTo_ms(time), service_ctx.list[0].auto_refresh.time_ms);
+            TEST_ASSERT_EQUAL(1, service_ctx.auto_refresh[0].target);
+            TEST_ASSERT_EQUAL((uint16_t)TimeOD_TimeTo_ms(time), service_ctx.auto_refresh[0].time_ms);
         }
         CATCH
         {

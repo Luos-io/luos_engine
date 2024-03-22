@@ -3,21 +3,22 @@
 ![](https://github.com/Luos-io/luos_engine/actions/workflows/build.yml/badge.svg)
 [![](https://img.shields.io/github/license/Luos-io/luos_engine)](https://github.com/Luos-io/luos_engine/blob/master/LICENSE)
 [![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://www.luos.io/docs)
-[![](http://certified.luos.io)](https://www.luos.io)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/luos/library/luos_engine.svg)](https://registry.platformio.org/libraries/luos/luos_engine)
 
 [![](https://img.shields.io/discord/902486791658041364?label=Discord&logo=discord&style=social)](http://bit.ly/JoinLuosDiscord)
-[![](https://img.shields.io/reddit/subreddit-subscribers/Luos?style=social)](https://www.reddit.com/r/Luos)
 
 Version: 2.7.0
 
 # Hardware specification
+
 ## Board​
+
 - Arduino zero board to drive the motor
 - Simple FOC arduino shield
 - BLDC motor with magnetic sensor (SPI interface)
 
 ## Luos network on arduino board​
+
 - PTPA: PIN19
 - PTPB: PIN7
 - RX_EN: 2
@@ -29,8 +30,6 @@ Version: 2.7.0
 
 ![Wiring BLDC](https://raw.githubusercontent.com/Luos-io/Documentation/main/static/assets/images/simplefoc_schematic.drawio.png)
 
-
 ## Join Luos Community
 
-* → Join the [Luos Discord server](http://discord.gg/luos)
-* → Join the [Luos subreddit](https://www.reddit.com/r/Luos)
+- → Join the [Luos Discord server](http://discord.gg/luos)

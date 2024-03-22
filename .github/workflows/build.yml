@@ -6,7 +6,7 @@ on:
       - review_requested
   push:
 
-concurrency: 
+concurrency:
   group: dev-build-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
@@ -46,9 +46,9 @@ jobs:
 
       - if: matrix.os == 'ubuntu-latest'
         run: |
-            sudo apt-get install -y lcov
-            lcov -d .pio/build/native/ -c -o lcov.info
-            lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' '*/network/*' -o lcov.info
+          sudo apt-get install -y lcov
+          lcov -d .pio/build/native/ -c -o lcov.info
+          lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' '*/network/*' -o lcov.info
 
       - if: matrix.os == 'ubuntu-latest'
         name: Coveralls
@@ -59,8 +59,7 @@ jobs:
     needs: tests-run
     runs-on: ubuntu-latest
     steps:
-    - run: echo "Tests succeed!"
-
+      - run: echo "Tests succeed!"
 
   code-format:
     name: Code format
@@ -77,7 +76,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: "14"
 
       - name: Install dependencies
         run: npm install -g clang-format@1.5.0
@@ -90,20 +89,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        project_folders: [examples/projects/l0,
-                          examples/projects/Arduino,
-                          examples/projects/NUCLEO-L432KC,
-                          examples/projects/STM32F4-discovery,
-                          examples/projects/NUCLEO-F401RE,
-                          examples/projects/NUCLEO-F410RB,
-                          examples/projects/NUCLEO-G431KB,
-                          examples/projects/NUCLEO-G474RE,
-                          examples/projects/NUCLEO-F072RB,
-                          examples/projects/NUCLEO-L073RZ,
-                          examples/projects/STM32L4S5_discovery,
-                          # examples/projects/ESP32,
-                          examples/projects/native
-                          ]
+        project_folders:
+          [
+            examples/projects/l0,
+            examples/projects/Arduino,
+            examples/projects/NUCLEO-L432KC,
+            examples/projects/NUCLEO-L476RG,
+            examples/projects/STM32F4-discovery,
+            examples/projects/NUCLEO-F401RE,
+            examples/projects/NUCLEO-F410RB,
+            examples/projects/NUCLEO-G431KB,
+            examples/projects/NUCLEO-G474RE,
+            examples/projects/NUCLEO-F072RB,
+            examples/projects/NUCLEO-L073RZ,
+            examples/projects/STM32L4S5_discovery,
+            examples/projects/ESP32,
+            examples/projects/native,
+          ]
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
@@ -152,4 +154,4 @@ jobs:
     needs: examples-build
     runs-on: ubuntu-latest
     steps:
-    - run: echo "Build succeed!"
+      - run: echo "Build succeed!"
