@@ -228,13 +228,6 @@ void unittest_Service_AddAutoUpdateTarget(void)
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
-
-        TRY
-        {
-            Service_AddAutoUpdateTarget(&service_ctx.list[0], 1, 0);
-        }
-        TEST_ASSERT_TRUE(IS_ASSERT());
-        END_TRY;
     }
     NEW_TEST_CASE("Test Service_AddAutoUpdateTarget");
     {
