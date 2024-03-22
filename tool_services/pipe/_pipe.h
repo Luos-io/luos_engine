@@ -10,7 +10,7 @@
  * Definitions
  ******************************************************************************/
 #ifndef PIPE_SERIAL_BAUDRATE
-    #define PIPE_SERIAL_BAUDRATE 1000000
+    #define PIPE_SERIAL_BAUDRATE 3000000
 #endif
 #ifndef PIPE_TX_BUFFER_SIZE
     #define PIPE_TX_BUFFER_SIZE 1024
