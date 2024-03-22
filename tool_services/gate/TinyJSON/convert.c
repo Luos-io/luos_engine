@@ -132,7 +132,7 @@ void Convert_DataToMsg(service_t *service, char *data)
         return;
     }
 
-    json_t const *services = json_getProperty(root, "services");
+    json_t const *services = json_getProperty(root, "s");
     // Get services
     if (services != 0)
     {
@@ -731,8 +731,8 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
 // This function start a Json structure and return the string size.
 uint16_t Convert_StartData(char *data)
 {
-    memcpy(data, "{\"services\":{", sizeof("{\"services\":{"));
-    return (sizeof("{\"services\":{") - 1);
+    memcpy(data, "{\"s\":{", sizeof("{\"s\":{"));
+    return (sizeof("{\"s\":{") - 1);
 }
 // This function start a Service into a Json structure and return the string size.
 uint16_t Convert_StartServiceData(char *data, char *alias)
