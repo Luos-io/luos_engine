@@ -26,6 +26,7 @@
 #include "luos_engine.h"
 #include "serial_network.h"
 #include "galvo.h"
+#include "laser.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,6 +91,7 @@ int main(void)
     Luos_Init();
     Serial_Init();
     Galvo_Init();
+    Laser_Init();
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -102,6 +104,7 @@ int main(void)
         Luos_Loop();
         Serial_Loop();
         Galvo_Loop();
+        Laser_Loop();
     }
     /* USER CODE END 3 */
 }

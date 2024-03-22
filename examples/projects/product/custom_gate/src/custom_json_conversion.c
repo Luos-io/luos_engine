@@ -14,6 +14,10 @@ const char *Convert_CustomStringFromType(luos_type_t type)
     {
         return "point_2D";
     }
+    if (type == POWER_TYPE)
+    {
+        return "power";
+    }
     return NULL;
 }
 
