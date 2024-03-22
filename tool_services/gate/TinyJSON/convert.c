@@ -543,12 +543,7 @@ void Convert_JsonToMsg(service_t *service, uint16_t id, luos_type_t type, char *
     {
         if (type != GATE_TYPE)
         {
-            // remove any current updates
-            time = TimeOD_TimeFrom_s(0);
-            TimeOD_TimeToMsg(&time, &msg);
-            msg.header.cmd = UPDATE_PUB;
-            Luos_SendMsg(service, &msg);
-            // configure the new update value
+            // Configure the new update value
             time = TimeOD_TimeFrom_s((float)json_getReal(jobj));
             TimeOD_TimeToMsg(&time, &msg);
             msg.header.cmd = UPDATE_PUB;

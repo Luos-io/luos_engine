@@ -49,12 +49,6 @@ void DataManager_collect(service_t *service)
     #endif
 #else
             // This service is a sensor so create a msg to enable auto update
-            // First remove any auto update
-            time_luos_t reset_time   = {.raw = 0};
-            update_msg.header.target = result.result_table[i]->id;
-            TimeOD_TimeToMsg(&reset_time, &update_msg);
-            update_msg.header.cmd = UPDATE_PUB;
-            Luos_SendMsg(service, &update_msg);
 
             TimeOD_TimeToMsg(&update_time, &update_msg);
             update_msg.header.cmd = UPDATE_PUB;
