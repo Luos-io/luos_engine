@@ -206,11 +206,13 @@ void SerialHAL_Init(uint8_t *rx_buffer, uint32_t buffer_size)
     Sleep(2);
 #else
     serial_port = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if (serial_port < 0)
+    while (serial_port < 0)
     {
         printf("Error opening serial port\n");
         printf("Error code: %d\n", errno);
-        LUOS_ASSERT(0);
+        printf("Please connect serial device\n");
+        sleep(1);
+        serial_port = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
     }
     struct termios tty;
     memset(&tty, 0, sizeof(tty));
