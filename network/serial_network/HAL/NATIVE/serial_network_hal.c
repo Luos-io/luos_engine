@@ -346,12 +346,16 @@ void SerialHAL_Send(uint8_t *data, uint16_t size)
         // Wait for the buffer to be empty
         usleep(1000);
         ioctl(serial_port, TIOCOUTQ, &bytes_in_buffer);
-        bytesWritten = write(serial_port, &data[bytesWritten], size - bytesWritten);
+        bytesWritten = write(serial_port, &data[totalBytesWritten], size - totalBytesWritten);
         if (bytesWritten < 0)
         {
             printf("Error writing to serial port\n");
             close(serial_port);
-            LUOS_ASSERT(0);
+            bytesWritten      = 0;
+            size              = 0;
+            totalBytesWritten = 0;
+            ioctl(serial_port, TIOCOUTQ, &bytes_in_buffer);
+            break;
         }
         else
         {
