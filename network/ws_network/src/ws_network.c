@@ -92,7 +92,7 @@ volatile wait_ack_t ping_status = INACTIVE; // This flag indicate the status of 
  * @param None
  * @return None
  ******************************************************************************/
-void Ws_Init(void)
+PUBLIC void Ws_Init(void)
 {
     // Instantiate the phy struct
     phy_ws = Phy_Create(Ws_JobHandler, Ws_RunTopology, Ws_Reset);
@@ -117,7 +117,7 @@ void Ws_Reset(luos_phy_t *phy_ptr)
  * @param None
  * @return None
  ******************************************************************************/
-void Ws_Loop(void)
+PUBLIC void Ws_Loop(void)
 {
     WsHAL_Loop();
 }

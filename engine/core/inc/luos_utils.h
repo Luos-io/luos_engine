@@ -22,6 +22,10 @@
     #define LUOS_ASSERT(expr)
 #endif
 
+#ifndef PUBLIC
+    #define PUBLIC
+#endif
+
 /* This structure is used to manage node assertion informations
  */
 typedef struct __attribute__((__packed__))
