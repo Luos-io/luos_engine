@@ -1,11 +1,9 @@
 #ifndef __MPU_SETUP_H__
 #define __MPU_SETUP_H__
 
-#include "luos_engine.h"
-#include "robus_network.h"
-#include <eMPL_outputs.h>
 #include <inv_mpu_dmp_motion_driver.h>
 #include <inv_mpu.h>
+#include "luos_engine.h"
 
 #define SEND_ACCEL          (0x01)
 #define SEND_GYRO           (0x02)
@@ -28,8 +26,8 @@
 /* Starting sampling rate. (default 20) */
 #define DEFAULT_MPU_HZ (200)
 
-//#define FLASH_SIZE      (512)
-//#define FLASH_MEM_START ((void*)0x1800)
+// #define FLASH_SIZE      (512)
+// #define FLASH_MEM_START ((void*)0x1800)
 
 #define PEDO_READ_MS    (1000)
 #define TEMP_READ_MS    (500)
@@ -77,7 +75,6 @@ struct hal_s
     unsigned long next_compass_ms;
     imu_report_t report;
     unsigned short source_id;
-    unsigned char update_request;
     unsigned short dmp_features;
     struct rx_s rx;
 };

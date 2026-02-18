@@ -93,30 +93,12 @@ void Error_Handler(void);
 #define INVEN_INT_EXTI_IRQn EXTI0_1_IRQn
 #define CS_Pin GPIO_PIN_1
 #define CS_GPIO_Port GPIOA
-#define POWER_SENSOR_Pin GPIO_PIN_2
-#define POWER_SENSOR_GPIO_Port GPIOA
 #define LED_Pin GPIO_PIN_3
 #define LED_GPIO_Port GPIOA
-#define COM_LVL_DOWN_Pin GPIO_PIN_5
-#define COM_LVL_DOWN_GPIO_Port GPIOA
-#define COM_LVL_UP_Pin GPIO_PIN_6
-#define COM_LVL_UP_GPIO_Port GPIOA
 #define SCL_Pin GPIO_PIN_10
 #define SCL_GPIO_Port GPIOB
 #define SDA_Pin GPIO_PIN_11
 #define SDA_GPIO_Port GPIOB
-#define PTPB_Pin GPIO_PIN_13
-#define PTPB_GPIO_Port GPIOB
-#define RX_EN_Pin GPIO_PIN_14
-#define RX_EN_GPIO_Port GPIOB
-#define TX_EN_Pin GPIO_PIN_15
-#define TX_EN_GPIO_Port GPIOB
-#define PTPA_Pin GPIO_PIN_8
-#define PTPA_GPIO_Port GPIOA
-#define COM_TX_Pin GPIO_PIN_9
-#define COM_TX_GPIO_Port GPIOA
-#define COM_RX_Pin GPIO_PIN_10
-#define COM_RX_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 #define FIRM_REV "0.5.1"
     void gyro_data_ready_cb(void);

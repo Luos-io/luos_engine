@@ -120,3 +120,22 @@ service_t *ProfileMotor_CreateService(profile_motor_t *profile_motor, SERVICE_CB
     // Start service with the linked profile
     return ProfileCore_StartService(callback, alias, revision);
 }
+
+/******************************************************************************
+ * @brief Get the profile data from a service pointer
+ * @param service : service pointer
+ * @return profile_motor_t pointer
+ ******************************************************************************/
+profile_motor_t *ProfileMotor_GetFromService(service_t *service)
+{
+    profile_core_t *profile = ProfileCore_GetFromService(service);
+    if (profile == 0)
+    {
+        return 0;
+    }
+    if (profile->type != MOTOR_TYPE)
+    {
+        return 0;
+    }
+    return (profile_motor_t *)profile->profile_data;
+}

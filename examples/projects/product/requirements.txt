@@ -1,0 +1,4 @@
+pyluos
+svg.path
+xml.dom
+pygame

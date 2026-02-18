@@ -6,7 +6,7 @@ on:
       - review_requested
   push:
 
-concurrency: 
+concurrency:
   group: dev-build-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-22.04]
     steps:
       - name: Check out Luos repository
         uses: actions/checkout@v3
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10.5"
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -44,27 +44,26 @@ jobs:
           # Run Unit tests
           platformio test -vvv
 
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-22.04'
         run: |
-            sudo apt-get install -y lcov
-            lcov -d .pio/build/native/ -c -o lcov.info
-            lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' '*/network/*' -o lcov.info
+          sudo apt-get install -y lcov
+          lcov -d .pio/build/native/ -c -o lcov.info
+          lcov --remove lcov.info '*/usr/*' '*/Platforms/*' '*/bootloader/*' '*/.pio/*' '*/HAL/*' '*/test/*' '*/network/*' -o lcov.info --ignore-errors empty
 
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-22.04'
         name: Coveralls
         uses: coverallsapp/github-action@v2
 
   unit-tests:
     name: Unit tests
     needs: tests-run
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-    - run: echo "Tests succeed!"
-
+      - run: echo "Tests succeed!"
 
   code-format:
     name: Code format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out Luos repository
         uses: actions/checkout@v3
@@ -72,12 +71,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10.5"
+          python-version: "3.10"
 
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: "14"
 
       - name: Install dependencies
         run: npm install -g clang-format@1.5.0
@@ -90,21 +89,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        project_folders: [examples/projects/l0,
-                          examples/projects/Arduino,
-                          examples/projects/NUCLEO-L432KC,
-                          examples/projects/STM32F4-discovery,
-                          examples/projects/NUCLEO-F401RE,
-                          examples/projects/NUCLEO-F410RB,
-                          examples/projects/NUCLEO-G431KB,
-                          examples/projects/NUCLEO-G474RE,
-                          examples/projects/NUCLEO-F072RB,
-                          examples/projects/NUCLEO-L073RZ,
-                          examples/projects/STM32L4S5_discovery,
-                          # examples/projects/ESP32,
-                          examples/projects/native
-                          ]
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        project_folders: [
+            examples/projects/l0,
+            examples/projects/Arduino,
+            examples/projects/NUCLEO-L432KC,
+            examples/projects/NUCLEO-L476RG,
+            examples/projects/STM32F4-discovery,
+            examples/projects/NUCLEO-F401RE,
+            examples/projects/NUCLEO-F410RB,
+            examples/projects/NUCLEO-G431KB,
+            examples/projects/NUCLEO-G474RE,
+            examples/projects/NUCLEO-F072RB,
+            examples/projects/NUCLEO-L073RZ,
+            examples/projects/STM32L4S5_discovery,
+            # examples/projects/ESP32,
+            examples/projects/native,
+          ]
+        os: [macos-latest, windows-latest, ubuntu-22.04]
 
     steps:
       - name: Check out Luos repository
@@ -113,7 +114,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10.5"
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -150,6 +151,6 @@ jobs:
   build-success:
     name: Build success
     needs: examples-build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-    - run: echo "Build succeed!"
+      - run: echo "Build succeed!"

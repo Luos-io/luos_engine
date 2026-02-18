@@ -55,10 +55,12 @@ void LedStrip_Loop(void)
  ******************************************************************************/
 static void LedStrip_MsgHandler(service_t *service, const msg_t *msg)
 {
+
+    static bool img_complete = true;
     if (msg->header.cmd == COLOR)
     {
         // change led target color
-        if (msg->header.size == 3)
+        if (msg->header.size == 3 && img_complete)
         {
             // there is only one color copy it in the entire matrix
             for (int i = 0; i < imgsize; i++)
@@ -69,7 +71,7 @@ static void LedStrip_MsgHandler(service_t *service, const msg_t *msg)
         else
         {
             // image management
-            Luos_ReceiveData(service, msg, (void *)matrix);
+            img_complete = Luos_ReceiveData(service, msg, (void *)matrix) != 0;
         }
         return;
     }

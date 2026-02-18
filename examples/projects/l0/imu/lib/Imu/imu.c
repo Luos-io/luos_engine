@@ -6,7 +6,8 @@
  ******************************************************************************/
 #include "main.h"
 #include "imu.h"
-#include <mpu_configuration.h>
+#include "mpu_configuration.h"
+#include "data_builder.h"
 
 /*******************************************************************************
  * Definitions
@@ -17,10 +18,6 @@
  ******************************************************************************/
 volatile uint32_t hal_timestamp = 0;
 unsigned char *mpl_key          = (unsigned char *)"eMPL 5.1";
-
-service_t *service_pointer;
-volatile msg_t pub_msg;
-volatile int pub = LUOS_LAST_STD_CMD;
 
 /*******************************************************************************
  * Function
@@ -36,6 +33,7 @@ void Imu_Init(void)
 {
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     mpu_setup();
+    HAL_GPIO_WritePin(GPIOA, LED_Pin, GPIO_PIN_RESET);
     hal.report.quat = 1;
     Luos_CreateService(Imu_MsgHandler, IMU_TYPE, "Imu", revision);
 }
@@ -46,11 +44,15 @@ void Imu_Init(void)
  ******************************************************************************/
 void Imu_Loop(void)
 {
+    if (!Luos_IsDetected())
+    {
+        return;
+    }
+
     // *********************IMU management*******************************
     unsigned long sensor_timestamp;
-    unsigned long timestamp;
+    unsigned long timestamp       = Luos_GetSystick();
     int new_data                  = 0;
-    timestamp                     = HAL_GetTick();
     static unsigned char new_temp = 0;
 #ifdef COMPASS_ENABLED
     static unsigned char new_compass = 0;
@@ -226,11 +228,6 @@ void Imu_Loop(void)
          * rate requested by the host.
          */
     }
-    if (hal.update_request == 1)
-    {
-        read_from_mpl(service_pointer);
-        hal.update_request = 0;
-    }
 }
 /******************************************************************************
  * @brief Msg Handler call back when a msg receive for this service
@@ -242,19 +239,15 @@ static void Imu_MsgHandler(service_t *service, const msg_t *msg)
 {
     if (msg->header.cmd == GET_CMD)
     {
-        // fill the message infos
-        hal.update_request = 1;
-        service_pointer    = service;
-        hal.source_id      = msg->header.source;
-        pub                = LUOS_LAST_STD_CMD;
+        // Fill the message infos
+        hal.source_id = msg->header.source;
+        read_from_mpl(service);
         return;
     }
     if (msg->header.cmd == PARAMETERS)
     {
-        service_pointer = service;
-        // fill the message infos
+        // Get the message infos
         memcpy(&hal.report, msg->data, sizeof(short));
-        pub = LUOS_LAST_STD_CMD;
         return;
     }
 }
@@ -265,13 +258,4 @@ static void Imu_MsgHandler(service_t *service, const msg_t *msg)
 void gyro_data_ready_cb(void)
 {
     hal.new_gyro = 1;
-}
-
-void HAL_SYSTICK_Callback(void)
-{
-    if (pub != LUOS_LAST_STD_CMD)
-    {
-        Luos_SendMsg(service_pointer, (msg_t *)&pub_msg);
-        pub = LUOS_LAST_STD_CMD;
-    }
 }

@@ -58,6 +58,8 @@ void Luos_JumpToBootloader(void)
  ******************************************************************************/
 _CRITICAL void Luos_assert(char *file, uint32_t line)
 {
+    // Reset phy to avoid locking the phys
+    Phy_Reset();
     // prepare a message as a node.
     // To do that we have to reset the service ID and clear PTP states to unlock others.
 

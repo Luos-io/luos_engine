@@ -660,9 +660,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
         case UPDATE_PUB:
             // This service need to be auto updated
             TimeOD_TimeFromMsg(&time, input);
-            service->auto_refresh.target      = input->header.source;
-            service->auto_refresh.time_ms     = (uint16_t)TimeOD_TimeTo_ms(time);
-            service->auto_refresh.last_update = LuosHAL_GetSystick();
+            Service_AddAutoUpdateTarget(service, input->header.source, (uint16_t)TimeOD_TimeTo_ms(time));
             return SUCCEED;
             break;
             //**************************************** bootloader section ****************************************

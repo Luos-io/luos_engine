@@ -397,13 +397,24 @@ static void RobusHAL_TimeoutInit(void)
  ******************************************************************************/
 _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
-    NVIC_ClearPendingIRQ(ROBUS_TIMER_IRQ); // clear IT pending
-    ROBUS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;
-    ROBUS_TIMER->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+    uint32_t diff;
+    // We use the end of the timer as trigger.
+    diff = (0xFFFF - ROBUS_TIMER->COUNT16.COUNT.reg) / timoutclockcnt; // Compute remaining time before timeout
+
+    if (diff < DEFAULT_TIMEOUT)
+    {
+        ROBUS_TIMER->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;                                 // Disable timer
+        NVIC_ClearPendingIRQ(ROBUS_TIMER_IRQ);                                              // Clear IT pending
+        ROBUS_TIMER->COUNT16.INTFLAG.bit.OVF = 1;                                           // Clear IT flag
+        ROBUS_TIMER->COUNT16.COUNT.reg       = 0xFFFF - (timoutclockcnt * DEFAULT_TIMEOUT); // Load the timer with it's default value
+    }
+    if (nbrbit != 0 && nbrbit != DEFAULT_TIMEOUT)
+    {
+        ROBUS_TIMER->COUNT16.COUNT.reg = 0xFFFF - (timoutclockcnt * nbrbit); // Load the timer
+    }
     if (nbrbit != 0)
     {
-        ROBUS_TIMER->COUNT16.COUNT.reg = 0xFFFF - (timoutclockcnt * nbrbit);
-        ROBUS_TIMER->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
+        ROBUS_TIMER->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE; // Enable timer
     }
 }
 /******************************************************************************

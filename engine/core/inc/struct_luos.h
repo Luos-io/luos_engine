@@ -134,17 +134,6 @@ typedef struct __attribute__((__packed__))
 } msg_t;
 
 /******************************************************************************
- * This structure is used to manage services timed auto update
- * please refer to the documentation
- ******************************************************************************/
-typedef struct timed_update_t
-{
-    uint32_t last_update;
-    uint16_t time_ms;
-    uint16_t target;
-} timed_update_t;
-
-/******************************************************************************
  * This structure is used to manage dead target message
  * Service_id or node_id can be set to 0 to ignore it.
  * Only 1 of those 2 can have a value indicating if the dead target is a service or a node.
@@ -217,10 +206,21 @@ typedef struct service_t
     // Private Variables
     uint16_t last_topic_position;                /*!< Position pointer of the last topic added. */
     uint16_t topic_list[MAX_LOCAL_TOPIC_NUMBER]; /*!< multicast target bank. */
-    timed_update_t auto_refresh;                 /*!< service auto refresh context. */
     void *profile_context;                       /*!< Pointer to the profile context. */
 
 } service_t;
+
+/******************************************************************************
+ * This structure is used to manage services timed auto update
+ * please refer to the documentation
+ ******************************************************************************/
+typedef struct timed_update_t
+{
+    service_t *service;
+    uint32_t last_update;
+    uint16_t time_ms;
+    uint16_t target;
+} timed_update_t;
 
 typedef void (*SERVICE_CB)(service_t *service, const msg_t *msg);
 

@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
+#include "robus_hal_config.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -57,6 +58,22 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin   = PTPA_PIN;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(PTPA_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin   = PTPB_PIN;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(PTPB_PORT, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(PTPA_PORT, PTPA_PIN, RESET);
+    HAL_GPIO_WritePin(PTPB_PORT, PTPB_PIN, RESET);
 }
 
 /* USER CODE BEGIN 2 */

@@ -107,7 +107,7 @@
  *    INIT_TIME                 |              150           | Wait init time before first detection
  ******************************************************************************/
 #define GATE_BUFF_SIZE      1024
-#define PIPE_TX_BUFFER_SIZE 1024
+#define PIPE_TX_BUFFER_SIZE 2048
 #define PIPE_RX_BUFFER_SIZE 2048
 
 /*******************************************************************************

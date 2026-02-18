@@ -50,6 +50,7 @@
 #define MAX_LOCAL_SERVICE_NUMBER 2
 #define MAX_LOCAL_PROFILE_NUMBER 1
 #define MAX_MSG_NB               200
+#define MSG_BUFFER_SIZE          2048
 
 /*******************************************************************************
  * LUOS HAL LIBRARY DEFINITION
@@ -112,4 +113,5 @@
 #define SERIAL_RX_BUFFER_SIZE 65000
 #define INIT_TIME             150
 #define GATE_REFRESH_TIME_S   0.05f
+#define SERIAL_PORT           "/dev/cu.usbserial-D308N897"
 #endif /* _NODE_CONFIG_H_ */

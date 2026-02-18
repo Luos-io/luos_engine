@@ -50,7 +50,7 @@ typedef enum
     TEMPERATURE, // temperature_t (°C)
     TIME,        // time Second (float)
     FORCE,       // force_t (Newton N)
-    MOMENT,      // moment_t (Newton meter N.m)
+    TORQUE,      // torque_t (Newton meter N.m)
     CONTROL,     // control_mode (control_mode_t)
     TEXT,        // ASCII string
     PRESSURE,    // pressure_t (Pa)
@@ -87,7 +87,7 @@ typedef enum
     CURRENT_LIMIT,          // float(A)
     ANGULAR_SPEED_LIMIT,    // min angular_speed_t (deg/s), max angular_speed_t (deg/s)
     LINEAR_SPEED_LIMIT,     // min linear_speed_t (m/s), max linear_speed_t (m/s)
-    TORQUE_LIMIT,           // max moment_t (Nm)
+    TORQUE_LIMIT,           // max torque_t (Nm)
     TEMPERATURE_LIMIT,      // Max temperature_t (°C)
 
     // Specific register

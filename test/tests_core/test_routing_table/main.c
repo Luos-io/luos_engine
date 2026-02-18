@@ -197,6 +197,20 @@ void unittest_RoutingTB_AddNumToAlias(void)
         }
         TEST_ASSERT_TRUE(IS_ASSERT());
         END_TRY;
+        TRY
+        {
+            char alias[MAX_ALIAS_SIZE] = "Dummy_App";
+            RoutingTB_AddNumToAlias(alias, 100);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+        TRY
+        {
+            char alias[MAX_ALIAS_SIZE] = "Dummy_App";
+            RoutingTB_AddNumToAlias(alias, 101);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
     }
 
     NEW_TEST_CASE("check RoutingTB_AddNumToAlias return value");

@@ -50,7 +50,11 @@ static inline void SerialProtocol_Init(void)
 static inline void SerialProtocol_CreateTxMsg(void)
 {
     // Evaluate size
-    uint16_t size = (Streaming_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t));
+    // We want to evaluate the size of the last message only. To do that we create a fake StreamChannel with the same properties as the serialTx_StreamChannel but with the sample_ptr pointing to the begining of our message.
+    streaming_channel_t fake_StreamChannel = *serialTx_StreamChannel;
+    memcpy(&fake_StreamChannel, serialTx_StreamChannel, sizeof(streaming_channel_t));
+    fake_StreamChannel.sample_ptr = size_to_update;                                          // We make it point to the size
+    uint16_t size                 = Streaming_GetAvailableSampleNB(&fake_StreamChannel) - 2; // We remove the size bytes from the calculated size.
     // Update size
     if ((size_to_update + 2) > (uint8_t *)((int)serialTx_StreamChannel->end_ring_buffer))
     {
@@ -65,7 +69,6 @@ static inline void SerialProtocol_CreateTxMsg(void)
         size_to_update[0] = size & 0xFF;
         size_to_update[1] = size >> 8;
     }
-
     // Write footer and  header + size of the next message into the buffer
     SerialProtocol_t SerialProtocol = {
         SERIAL_FOOTER,
@@ -91,13 +94,17 @@ static inline void SerialProtocol_CreateTxMsg(void)
 
 static inline uint16_t SerialProtocol_GetSizeToSend(void)
 {
-    if ((Streaming_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t)) > Streaming_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel))
+    // We want to evaluate the size of the last message only. To do that we create a fake StreamChannel with the same properties as the serialTx_StreamChannel but with the sample_ptr pointing to the begining of our message.
+    streaming_channel_t fake_StreamChannel = *serialTx_StreamChannel;
+    memcpy(&fake_StreamChannel, serialTx_StreamChannel, sizeof(streaming_channel_t));
+    fake_StreamChannel.data_ptr = size_to_update; // We the end of the data point to the size
+    if ((Streaming_GetAvailableSampleNB(&fake_StreamChannel) - 1) > Streaming_GetAvailableSampleNBUntilEndBuffer(&fake_StreamChannel))
     {
-        return Streaming_GetAvailableSampleNBUntilEndBuffer(serialTx_StreamChannel);
+        return Streaming_GetAvailableSampleNBUntilEndBuffer(&fake_StreamChannel);
     }
     else
     {
-        return Streaming_GetAvailableSampleNB(serialTx_StreamChannel) - sizeof(SerialHeader_t);
+        return Streaming_GetAvailableSampleNB(&fake_StreamChannel) - 1;
     }
 }
 

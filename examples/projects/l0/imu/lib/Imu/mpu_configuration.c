@@ -1,10 +1,9 @@
 #include <mpu_configuration.h>
-#include "luos_engine.h"
-#include "robus_network.h"
 #include "invensense.h"
 #include "invensense_adv.h"
 #include "mpu.h"
 #include "main.h"
+#include <eMPL_outputs.h>
 
 /* The sensors can be mounted onto the board in any orientation. The mounting
  * matrix seen below tells the MPL how to rotate the raw data from the
@@ -34,6 +33,8 @@ void read_from_mpl(service_t *service)
     unsigned long timestamp;
     float float_data[3] = {0};
     msg_t msg;
+    msg.header.target_mode = SERVICEIDACK;
+    msg.header.target      = hal.source_id;
 
     if (inv_get_sensor_type_quat(data, &accuracy, (inv_time_t *)&timestamp))
     {
@@ -43,14 +44,9 @@ void read_from_mpl(service_t *service)
          */
         if (hal.report.quat)
         {
-            msg.header.cmd         = QUATERNION;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 4 * sizeof(float);
-            float quat[4]          = {(float)data[0] / (1 << 30),
-                             (float)data[1] / (1 << 30),
-                             (float)data[2] / (1 << 30),
-                             (float)data[3] / (1 << 30)};
+            msg.header.cmd  = QUATERNION;
+            msg.header.size = 4 * sizeof(float);
+            float quat[4]   = {(float)data[0] / (1 << 30), (float)data[1] / (1 << 30), (float)data[2] / (1 << 30), (float)data[3] / (1 << 30)};
             memcpy(msg.data, quat, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -60,13 +56,9 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_accel(data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = ACCEL_3D;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 3 * sizeof(float);
-            float accell[3]        = {(float)data[0] / (1 << 16),
-                               (float)data[1] / (1 << 16),
-                               (float)data[2] / (1 << 16)};
+            msg.header.cmd  = ACCEL_3D;
+            msg.header.size = 3 * sizeof(float);
+            float accell[3] = {(float)data[0] / (1 << 16), (float)data[1] / (1 << 16), (float)data[2] / (1 << 16)};
             memcpy(msg.data, accell, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -75,13 +67,9 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_gyro(data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = GYRO_3D;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 3 * sizeof(float);
-            float gyro[3]          = {(float)data[0] / (1 << 16),
-                             (float)data[1] / (1 << 16),
-                             (float)data[2] / (1 << 16)};
+            msg.header.cmd  = GYRO_3D;
+            msg.header.size = 3 * sizeof(float);
+            float gyro[3]   = {(float)data[0] / (1 << 16), (float)data[1] / (1 << 16), (float)data[2] / (1 << 16)};
             memcpy(msg.data, gyro, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -91,13 +79,9 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_compass(data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = COMPASS_3D;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 3 * sizeof(float);
-            float compass[3]       = {(float)data[0] / (1 << 16),
-                                (float)data[1] / (1 << 16),
-                                (float)data[2] / (1 << 16)};
+            msg.header.cmd   = COMPASS_3D;
+            msg.header.size  = 3 * sizeof(float);
+            float compass[3] = {(float)data[0] / (1 << 16), (float)data[1] / (1 << 16), (float)data[2] / (1 << 16)};
             memcpy(msg.data, compass, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -107,13 +91,9 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_euler(data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = EULER_3D;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 3 * sizeof(float);
-            float euler[3]         = {(float)data[0] / (1 << 16),
-                              (float)data[1] / (1 << 16),
-                              (float)data[2] / (1 << 16)};
+            msg.header.cmd  = EULER_3D;
+            msg.header.size = 3 * sizeof(float);
+            float euler[3]  = {(float)data[0] / (1 << 16), (float)data[1] / (1 << 16), (float)data[2] / (1 << 16)};
             memcpy(msg.data, euler, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -122,19 +102,9 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_rot_mat(data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = ROT_MAT;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 9 * sizeof(float);
-            short tmp[9]           = {(float)data[0] / (1 << 14),
-                            (float)data[1] / (1 << 14),
-                            (float)data[2] / (1 << 14),
-                            (float)data[3] / (1 << 14),
-                            (float)data[4] / (1 << 14),
-                            (float)data[5] / (1 << 14),
-                            (float)data[6] / (1 << 14),
-                            (float)data[7] / (1 << 14),
-                            (float)data[8] / (1 << 14)};
+            msg.header.cmd  = ROT_MAT;
+            msg.header.size = 9 * sizeof(float);
+            short tmp[9]    = {(float)data[0] / (1 << 14), (float)data[1] / (1 << 14), (float)data[2] / (1 << 14), (float)data[3] / (1 << 14), (float)data[4] / (1 << 14), (float)data[5] / (1 << 14), (float)data[6] / (1 << 14), (float)data[7] / (1 << 14), (float)data[8] / (1 << 14)};
             memcpy(msg.data, tmp, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -143,11 +113,9 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_heading(data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = HEADING;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = sizeof(float);
-            float heading          = (float)data[0] / (1 << 16);
+            msg.header.cmd  = HEADING;
+            msg.header.size = sizeof(float);
+            float heading   = (float)data[0] / (1 << 16);
             memcpy(msg.data, &heading, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -156,10 +124,8 @@ void read_from_mpl(service_t *service)
     {
         if (inv_get_sensor_type_linear_acceleration(float_data, &accuracy, (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = LINEAR_ACCEL;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 3 * sizeof(float);
+            msg.header.cmd  = LINEAR_ACCEL;
+            msg.header.size = 3 * sizeof(float);
             memcpy(msg.data, float_data, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -169,10 +135,8 @@ void read_from_mpl(service_t *service)
         if (inv_get_sensor_type_gravity(float_data, &accuracy,
                                         (inv_time_t *)&timestamp))
         {
-            msg.header.cmd         = GRAVITY_VECTOR;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 3 * sizeof(float);
+            msg.header.cmd  = GRAVITY_VECTOR;
+            msg.header.size = 3 * sizeof(float);
             memcpy(msg.data, float_data, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -180,18 +144,16 @@ void read_from_mpl(service_t *service)
     if (hal.report.pedo)
     {
         unsigned long timestamp;
-        timestamp = HAL_GetTick();
+        timestamp = Luos_GetSystick();
         if (timestamp > hal.next_pedo_ms)
         {
             hal.next_pedo_ms = timestamp + PEDO_READ_MS;
             unsigned long step_count, walk_time;
             dmp_get_pedometer_step_count(&step_count);
             dmp_get_pedometer_walk_time(&walk_time);
-            unsigned long pedo[2]  = {step_count, walk_time};
-            msg.header.cmd         = PEDOMETER;
-            msg.header.target_mode = SERVICEID;
-            msg.header.target      = hal.source_id;
-            msg.header.size        = 2 * sizeof(long);
+            unsigned long pedo[2] = {step_count, walk_time};
+            msg.header.cmd        = PEDOMETER;
+            msg.header.size       = 2 * sizeof(long);
             memcpy(msg.data, pedo, msg.header.size);
             Luos_SendMsg(service, &msg);
         }
@@ -210,40 +172,6 @@ void send_status_compass()
     MPL_LOGI("Accuracy= %d\r\n", accuracy);
 }
 #endif
-
-/* Handle sensor on/off combinations. */
-static void setup_gyro(void)
-{
-    unsigned char mask = 0, lp_accel_was_on = 0;
-    if (hal.sensors & ACCEL_ON)
-        mask |= INV_XYZ_ACCEL;
-    if (hal.sensors & GYRO_ON)
-    {
-        mask |= INV_XYZ_GYRO;
-        lp_accel_was_on |= hal.lp_accel_mode;
-    }
-#ifdef COMPASS_ENABLED
-    if (hal.sensors & COMPASS_ON)
-    {
-        mask |= INV_XYZ_COMPASS;
-        lp_accel_was_on |= hal.lp_accel_mode;
-    }
-#endif
-    /* If you need a power transition, this function should be called with a
-     * mask of the sensors still enabled. The driver turns off any sensors
-     * excluded from this mask.
-     */
-    mpu_set_sensors(mask);
-    mpu_configure_fifo(mask);
-    if (lp_accel_was_on)
-    {
-        unsigned short rate;
-        hal.lp_accel_mode = 0;
-        /* Switching out of LP accel, notify MPL of new accel sampling rate. */
-        mpu_get_sample_rate(&rate);
-        inv_set_accel_sample_rate(1000000L / rate);
-    }
-}
 
 static void tap_cb(unsigned char direction, unsigned char count)
 {
@@ -321,13 +249,13 @@ static void android_orient_cb(unsigned char orientation)
 
 static inline void run_self_test(void)
 {
-    int result;
     long gyro[3], accel[3];
 
 #if defined(MPU6500) || defined(MPU9250)
-    result = mpu_run_6500_self_test(gyro, accel, 0);
+
+    mpu_run_6500_self_test(gyro, accel, 0);
 #elif defined(MPU6050) || defined(MPU9150)
-    result = mpu_run_self_test(gyro, accel);
+    mpu_run_self_test(gyro, accel);
 #endif
     /* Test passed. We can trust the gyro data here, so now we need to update calibrated data*/
 
@@ -388,8 +316,7 @@ void mpu_setup(void)
     if (result)
     {
         // Could not initialize gyro.
-        while (1)
-            ;
+        LUOS_ASSERT(0);
     }
 
     /* If you're not using an MPU9150 AND you're not using DMP features, this
@@ -401,8 +328,7 @@ void mpu_setup(void)
     if (result)
     {
         // Could not initialize MPL.
-        while (1)
-            ;
+        LUOS_ASSERT(0);
     }
 
     /* Compute 6-axis and 9-axis quaternions. */

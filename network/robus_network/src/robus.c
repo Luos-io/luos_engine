@@ -40,6 +40,9 @@ robus_encaps_t encaps[MAX_MSG_NB]; // Store all the CRC for each msg to transmit
  ******************************************************************************/
 void Robus_Init(void)
 {
+    // Init Reception
+    Recep_Init();
+
     // Init hal
     RobusHAL_Init();
 
@@ -48,9 +51,6 @@ void Robus_Init(void)
 
     // Init transmission
     Transmit_Init();
-
-    // Init Receiption
-    Recep_Init();
 
     // Instantiate the phy struct
     phy_robus = Phy_Create(Robus_JobHandler, Robus_RunTopology, Robus_Reset);

@@ -62,8 +62,8 @@ uint32_t Streaming_PutSample(streaming_channel_t *stream, const void *data, uint
     if (((size * stream->data_size) + (uintptr_t)stream->data_ptr) >= (uintptr_t)stream->end_ring_buffer)
     {
         // our data exceeds ring buffer end, cut it and copy.
-        uint32_t chunk1 = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->data_ptr;
-        uint32_t chunk2 = (size * stream->data_size) - chunk1;
+        size_t chunk1 = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->data_ptr;
+        size_t chunk2 = (size * stream->data_size) - chunk1;
         // Everything good copy datas.
         memcpy(stream->data_ptr, data, chunk1);
         memcpy(stream->ring_buffer, (char *)data + chunk1, chunk2);
@@ -94,11 +94,11 @@ uint32_t Streaming_GetSample(streaming_channel_t *stream, void *data, uint32_t s
     if (nb_available_samples >= size)
     {
         // check if we need to loop in ring buffer
-        if ((stream->sample_ptr + (size * stream->data_size)) > stream->end_ring_buffer)
+        if ((stream->sample_ptr + (size * stream->data_size)) >= stream->end_ring_buffer)
         {
             // requested data exceeds ring buffer end, cut it and copy.
-            int chunk1 = stream->end_ring_buffer - stream->sample_ptr;
-            int chunk2 = (size * stream->data_size) - chunk1;
+            size_t chunk1 = stream->end_ring_buffer - stream->sample_ptr;
+            size_t chunk2 = (size * stream->data_size) - chunk1;
             memcpy(data, stream->sample_ptr, chunk1);
             memcpy((char *)data + chunk1, stream->ring_buffer, chunk2);
             // Set the new sample pointer
@@ -170,8 +170,8 @@ uint32_t Streaming_AddAvailableSampleNB(streaming_channel_t *stream, uint32_t si
     LUOS_ASSERT((int32_t)(total_sample_capacity - Streaming_GetAvailableSampleNB(stream) - size) > 0);
     if (((size * stream->data_size) + stream->data_ptr) >= stream->end_ring_buffer)
     {
-        uint32_t chunk1  = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->data_ptr;
-        uint32_t chunk2  = (size * stream->data_size) - chunk1;
+        size_t chunk1    = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->data_ptr;
+        size_t chunk2    = (size * stream->data_size) - chunk1;
         stream->data_ptr = (void *)((uintptr_t)stream->ring_buffer + chunk2);
     }
     else
@@ -192,11 +192,11 @@ uint32_t Streaming_RmvAvailableSampleNB(streaming_channel_t *stream, uint32_t si
     LUOS_ASSERT(stream != NULL);
     LUOS_ASSERT(Streaming_GetAvailableSampleNB(stream) >= size);
     // Check if we exceed ring buffer capacity
-    if (((size * stream->data_size) + stream->sample_ptr) > stream->end_ring_buffer)
+    if (((size * stream->data_size) + stream->sample_ptr) >= stream->end_ring_buffer)
     {
         // We exceed ring buffer end.
-        uint32_t chunk1    = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->sample_ptr;
-        uint32_t chunk2    = (size * stream->data_size) - chunk1;
+        size_t chunk1      = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->sample_ptr;
+        size_t chunk2      = (size * stream->data_size) - chunk1;
         stream->sample_ptr = (void *)((uintptr_t)stream->ring_buffer + chunk2);
     }
     else
@@ -236,13 +236,13 @@ void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t 
 {
     LUOS_ASSERT((service != NULL) && (msg != NULL) && (stream != NULL));
     // Compute number of message needed to send available datas on ring buffer
-    int msg_number = 1;
-    int data_size  = Streaming_GetAvailableSampleNB(stream);
+    uint32_t msg_number = 1;
+    size_t data_size    = Streaming_GetAvailableSampleNB(stream);
     if (data_size > max_size)
     {
         data_size = max_size;
     }
-    const int max_data_msg_size = (MAX_DATA_MSG_SIZE / stream->data_size);
+    const size_t max_data_msg_size = (MAX_DATA_MSG_SIZE / stream->data_size);
     if (data_size > max_data_msg_size)
     {
         msg_number = (data_size / max_data_msg_size);

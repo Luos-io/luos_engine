@@ -902,9 +902,11 @@ static void Phy_Dispatch(void)
                 phy_job.phy_data  = NULL;
 
                 // Write the job in the phy queue and get back the pointer to it
+                MSGALLOC_MUTEX_LOCK
                 phy_job_t *job_ptr = Phy_AddJob(&phy_ctx.phy[y], &phy_job);
                 // Notify this phy that a job is available and give it the concerned job on his queue
                 phy_ctx.phy[y].job_cb(&phy_ctx.phy[y], job_ptr);
+                MSGALLOC_MUTEX_UNLOCK
             }
         }
         Phy_SetIrqState(false);
@@ -1253,8 +1255,8 @@ inline void Phy_IndexRm(uint8_t *index, uint16_t id)
 inline void Phy_ServiceIndexRm(uint16_t id)
 {
     LUOS_ASSERT((id <= 0x0FFF) && (id != 0));
-    // for all phy
-    for (int i = 0; i < phy_ctx.phy_nb; i++)
+    // Remove services only for external phys, we consider our local services as trusted.
+    for (int i = 1; i < phy_ctx.phy_nb; i++)
     {
         Phy_IndexRm(phy_ctx.phy[i].services, id);
     }
@@ -1268,8 +1270,8 @@ inline void Phy_ServiceIndexRm(uint16_t id)
 inline void Phy_NodeIndexRm(uint16_t id)
 {
     LUOS_ASSERT((id <= 0x0FFF) && (id != 0));
-    // for all phy
-    for (int i = 0; i < phy_ctx.phy_nb; i++)
+    // Remove node only for external phys, we consider our local node as trusted.
+    for (int i = 1; i < phy_ctx.phy_nb; i++)
     {
         Phy_IndexRm(phy_ctx.phy[i].nodes, id);
     }

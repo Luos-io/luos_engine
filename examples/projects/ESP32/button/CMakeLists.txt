@@ -2,7 +2,7 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.5)
 
-list(APPEND EXTRA_COMPONENT_DIRS "../../../../network/robus/HAL/ESP32")
+list(APPEND EXTRA_COMPONENT_DIRS "../../../../network/robus_network/HAL/ESP32")
 list(APPEND EXTRA_COMPONENT_DIRS "lib/button")
 list(APPEND EXTRA_COMPONENT_DIRS "src")
 

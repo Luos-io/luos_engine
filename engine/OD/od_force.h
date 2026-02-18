@@ -14,7 +14,7 @@
 typedef struct
 {
     float raw;
-} moment_t;
+} torque_t;
 
 typedef struct
 {
@@ -28,124 +28,124 @@ typedef struct
  * Function
  ******************************************************************************/
 
-// moment are stored in Newton meter (Nm)
+// torque are stored in Newton meter (Nm)
 //******** Conversions ***********
 
 // N.mm
-static inline float ForceOD_MomentTo_N_mm(moment_t self)
+static inline float ForceOD_TorqueTo_N_mm(torque_t self)
 {
     return self.raw * 1000.0f;
 }
 
-static inline moment_t ForceOD_MomentFrom_N_mm(float n_mm)
+static inline torque_t ForceOD_TorqueFrom_N_mm(float n_mm)
 {
-    moment_t self;
+    torque_t self;
     self.raw = n_mm / 1000.0f;
     return self;
 }
 
 // N.cm
-static inline float ForceOD_MomentTo_N_cm(moment_t self)
+static inline float ForceOD_TorqueTo_N_cm(torque_t self)
 {
     return self.raw * 100.0f;
 }
 
-static inline moment_t ForceOD_MomentFrom_N_cm(float n_cm)
+static inline torque_t ForceOD_TorqueFrom_N_cm(float n_cm)
 {
-    moment_t self;
+    torque_t self;
     self.raw = n_cm / 100.0f;
     return self;
 }
 
 // N.m
-static inline float ForceOD_MomentTo_N_m(moment_t self)
+static inline float ForceOD_TorqueTo_N_m(torque_t self)
 {
     return self.raw;
 }
 
-static inline moment_t ForceOD_MomentFrom_N_m(float n_m)
+static inline torque_t ForceOD_TorqueFrom_N_m(float n_m)
 {
-    moment_t self;
+    torque_t self;
     self.raw = n_m;
     return self;
 }
 
 // kgf.mm
-static inline float ForceOD_MomentTo_kgf_mm(moment_t self)
+static inline float ForceOD_TorqueTo_kgf_mm(torque_t self)
 {
     return self.raw * 101.97f;
 }
 
-static inline moment_t ForceOD_MomentFrom_kgf_mm(float kgf_mm)
+static inline torque_t ForceOD_TorqueFrom_kgf_mm(float kgf_mm)
 {
-    moment_t self;
+    torque_t self;
     self.raw = kgf_mm / 101.97f;
     return self;
 }
 
 // kgf.cm
-static inline float ForceOD_MomentTo_kgf_cm(moment_t self)
+static inline float ForceOD_TorqueTo_kgf_cm(torque_t self)
 {
     return self.raw * 10.2f;
 }
 
-static inline moment_t ForceOD_MomentFrom_kgf_cm(float kgf_cm)
+static inline torque_t ForceOD_TorqueFrom_kgf_cm(float kgf_cm)
 {
-    moment_t self;
+    torque_t self;
     self.raw = kgf_cm / 10.2f;
     return self;
 }
 
 // kgf.m
-static inline float ForceOD_MomentTo_kgf_m(moment_t self)
+static inline float ForceOD_TorqueTo_kgf_m(torque_t self)
 {
     return self.raw * 0.102f;
 }
 
-static inline moment_t ForceOD_MomentFrom_kgf_m(float kgf_m)
+static inline torque_t ForceOD_TorqueFrom_kgf_m(float kgf_m)
 {
-    moment_t self;
+    torque_t self;
     self.raw = kgf_m / 0.102f;
     return self;
 }
 
 // ozf.in
-static inline float ForceOD_MomentTo_ozf_in(moment_t self)
+static inline float ForceOD_TorqueTo_ozf_in(torque_t self)
 {
     return self.raw * 141.612f;
 }
 
-static inline moment_t ForceOD_MomentFrom_ozf_in(float ozf_in)
+static inline torque_t ForceOD_TorqueFrom_ozf_in(float ozf_in)
 {
-    moment_t self;
+    torque_t self;
     self.raw = ozf_in / 141.612f;
     return self;
 }
 
 // lbf.in
-static inline float ForceOD_MomentTo_lbf_in(moment_t self)
+static inline float ForceOD_TorqueTo_lbf_in(torque_t self)
 {
     return self.raw * 8.851f;
 }
 
-static inline moment_t ForceOD_MomentFrom_lbf_in(float lbf_in)
+static inline torque_t ForceOD_TorqueFrom_lbf_in(float lbf_in)
 {
-    moment_t self;
+    torque_t self;
     self.raw = lbf_in / 8.851f;
     return self;
 }
 
 //******** Messages management ***********
-static inline void ForceOD_MomentToMsg(const moment_t *const self, msg_t *const msg)
+static inline void ForceOD_TorqueToMsg(const torque_t *const self, msg_t *const msg)
 {
     LUOS_ASSERT(self);
     LUOS_ASSERT(msg);
-    msg->header.cmd = MOMENT;
-    memcpy(msg->data, self, sizeof(moment_t));
-    msg->header.size = sizeof(moment_t);
+    msg->header.cmd = TORQUE;
+    memcpy(msg->data, self, sizeof(torque_t));
+    msg->header.size = sizeof(torque_t);
 }
 
-static inline void ForceOD_MomentFromMsg(moment_t *const self, const msg_t *const msg)
+static inline void ForceOD_TorqueFromMsg(torque_t *const self, const msg_t *const msg)
 {
     LUOS_ASSERT(self);
     LUOS_ASSERT(msg);

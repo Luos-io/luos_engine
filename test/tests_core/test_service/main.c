@@ -211,20 +211,73 @@ void unittest_Service_GetIndex(void)
     }
 }
 
+void unittest_Service_AddAutoUpdateTarget(void)
+{
+    NEW_TEST_CASE("Test Service_AddAutoUpdateTarget assert conditions");
+    {
+        TRY
+        {
+            Service_AddAutoUpdateTarget(NULL, 1, 10);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+
+        TRY
+        {
+            Service_AddAutoUpdateTarget(&service_ctx.list[0], 0, 10);
+        }
+        TEST_ASSERT_TRUE(IS_ASSERT());
+        END_TRY;
+    }
+    NEW_TEST_CASE("Test Service_AddAutoUpdateTarget");
+    {
+        TRY
+        {
+            Service_AddAutoUpdateTarget(&service_ctx.list[0], 2, 20);
+            TEST_ASSERT_EQUAL(2, service_ctx.auto_refresh[0].target);
+            TEST_ASSERT_EQUAL(20, service_ctx.auto_refresh[0].time_ms);
+            TEST_ASSERT_EQUAL(&service_ctx.list[0], service_ctx.auto_refresh[0].service);
+            Service_AddAutoUpdateTarget(&service_ctx.list[0], 3, 10);
+            TEST_ASSERT_EQUAL(2, service_ctx.auto_refresh[0].target);
+            TEST_ASSERT_EQUAL(20, service_ctx.auto_refresh[0].time_ms);
+            TEST_ASSERT_EQUAL(&service_ctx.list[0], service_ctx.auto_refresh[0].service);
+            TEST_ASSERT_EQUAL(3, service_ctx.auto_refresh[1].target);
+            TEST_ASSERT_EQUAL(10, service_ctx.auto_refresh[1].time_ms);
+            TEST_ASSERT_EQUAL(&service_ctx.list[0], service_ctx.auto_refresh[1].service);
+            Service_AddAutoUpdateTarget(&service_ctx.list[1], 1, 5);
+            TEST_ASSERT_EQUAL(2, service_ctx.auto_refresh[0].target);
+            TEST_ASSERT_EQUAL(20, service_ctx.auto_refresh[0].time_ms);
+            TEST_ASSERT_EQUAL(&service_ctx.list[0], service_ctx.auto_refresh[0].service);
+            TEST_ASSERT_EQUAL(3, service_ctx.auto_refresh[1].target);
+            TEST_ASSERT_EQUAL(10, service_ctx.auto_refresh[1].time_ms);
+            TEST_ASSERT_EQUAL(&service_ctx.list[0], service_ctx.auto_refresh[1].service);
+            TEST_ASSERT_EQUAL(1, service_ctx.auto_refresh[2].target);
+            TEST_ASSERT_EQUAL(5, service_ctx.auto_refresh[2].time_ms);
+            TEST_ASSERT_EQUAL(&service_ctx.list[1], service_ctx.auto_refresh[2].service);
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+        END_TRY;
+    }
+}
+
 void unittest_Service_RmAutoUpdateTarget(void)
 {
     NEW_TEST_CASE("Test Service_RmAutoUpdateTarget");
     {
         TRY
         {
-            service_ctx.number                           = 10;
-            service_ctx.list[2].auto_refresh.target      = 2;
-            service_ctx.list[2].auto_refresh.time_ms     = 20;
-            service_ctx.list[2].auto_refresh.last_update = 30;
+            service_ctx.number                      = 10;
+            service_ctx.auto_refresh[0].service     = &service_ctx.list[0];
+            service_ctx.auto_refresh[0].target      = 2;
+            service_ctx.auto_refresh[0].time_ms     = 20;
+            service_ctx.auto_refresh[0].last_update = 30;
             Service_RmAutoUpdateTarget(2);
-            TEST_ASSERT_EQUAL(0, service_ctx.list[2].auto_refresh.target);
-            TEST_ASSERT_EQUAL(0, service_ctx.list[2].auto_refresh.time_ms);
-            TEST_ASSERT_EQUAL(0, service_ctx.list[2].auto_refresh.last_update);
+            TEST_ASSERT_EQUAL(0, service_ctx.auto_refresh[0].target);
+            TEST_ASSERT_EQUAL(0, service_ctx.auto_refresh[0].time_ms);
+            TEST_ASSERT_EQUAL(0, service_ctx.auto_refresh[0].last_update);
         }
         CATCH
         {
@@ -243,11 +296,12 @@ void unittest_Service_AutoUpdateManager(void)
             //  Init default scenario context
             Init_Context();
             Luos_Loop();
-            service_ctx.list[2].auto_refresh.target      = 1;
-            service_ctx.list[2].auto_refresh.time_ms     = 10;
-            service_ctx.list[2].auto_refresh.last_update = 30;
+            service_ctx.auto_refresh[0].service     = default_sc.App_3.app;
+            service_ctx.auto_refresh[0].target      = 1;
+            service_ctx.auto_refresh[0].time_ms     = 10;
+            service_ctx.auto_refresh[0].last_update = 30;
             Service_AutoUpdateManager();
-            TEST_ASSERT_NOT_EQUAL(30, service_ctx.list[2].auto_refresh.last_update);
+            TEST_ASSERT_NOT_EQUAL(30, service_ctx.auto_refresh[0].last_update);
             TEST_ASSERT_EQUAL(GET_CMD, default_sc.App_3.last_rx_msg.header.cmd);
             TEST_ASSERT_EQUAL(1, default_sc.App_3.last_rx_msg.header.source);
             TEST_ASSERT_EQUAL(3, default_sc.App_3.last_rx_msg.header.target);
@@ -534,6 +588,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_Service_GenerateId);
     UNIT_TEST_RUN(unittest_Service_ClearId);
     UNIT_TEST_RUN(unittest_Service_GetIndex);
+    UNIT_TEST_RUN(unittest_Service_AddAutoUpdateTarget);
     UNIT_TEST_RUN(unittest_Service_RmAutoUpdateTarget);
     UNIT_TEST_RUN(unittest_Service_AutoUpdateManager);
     UNIT_TEST_RUN(unittest_Service_GetConcerned);

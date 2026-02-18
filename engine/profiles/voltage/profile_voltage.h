@@ -35,5 +35,6 @@ typedef struct
  ******************************************************************************/
 void ProfileVoltage_link(uint8_t, profile_voltage_t *);
 service_t *ProfileVoltage_CreateService(profile_voltage_t *, SERVICE_CB, const char *, revision_t);
+profile_voltage_t *ProfileVoltage_GetFromService(service_t *);
 
 #endif /* PROFILE_VOLTAGE_H_ */

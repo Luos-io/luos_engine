@@ -54,6 +54,7 @@ typedef struct
     servo_motor_mode_t mode;
     angular_position_t target_angular_position;
     angular_speed_t target_angular_speed;
+    torque_t target_torque;
 
     // limits
     angular_position_t limit_angular_position[2];
@@ -87,5 +88,6 @@ typedef struct
  ******************************************************************************/
 void ProfileServo_link(uint8_t, profile_servo_motor_t *);
 service_t *ProfileServo_CreateService(profile_servo_motor_t *, SERVICE_CB, const char *, revision_t);
+profile_servo_motor_t *ProfileServo_GetFromService(service_t *service);
 
 #endif /* PROFILE_SERVO_MOTOR_H_ */

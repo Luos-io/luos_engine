@@ -83,3 +83,22 @@ service_t *ProfileState_CreateService(profile_state_t *profile_state, SERVICE_CB
     // Start profile
     return ProfileCore_StartService(callback, alias, revision);
 }
+
+/******************************************************************************
+ * @brief Get the profile data from a service pointer
+ * @param service : Service pointer
+ * @return profile_state_t pointer
+ ******************************************************************************/
+profile_state_t *ProfileState_GetFromService(service_t *service)
+{
+    profile_core_t *profile = ProfileCore_GetFromService(service);
+    if (profile == 0)
+    {
+        return 0;
+    }
+    if (profile->type != STATE_TYPE)
+    {
+        return 0;
+    }
+    return (profile_state_t *)profile->profile_data;
+}

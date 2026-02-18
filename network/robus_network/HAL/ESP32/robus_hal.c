@@ -412,15 +412,32 @@ static void RobusHAL_TimeoutInit(void)
  ******************************************************************************/
 _CRITICAL void RobusHAL_ResetTimeout(uint16_t nbrbit)
 {
-    // disable Counter
-    timer_hal_set_counter_value(&timeout_hal_context, 0);
-    timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
-    timer_hal_clear_intr_status(&timeout_hal_context);
-    timer_hal_intr_disable(&timeout_hal_context);
+    uint64_t arr_val, diff, cnt_val;
+    timer_get_alarm_value(ROBUS_TIMER_GROUP, ROBUS_TIMER, &arr_val);   // Get actual timeout value
+    timer_get_counter_value(ROBUS_TIMER_GROUP, ROBUS_TIMER, &cnt_val); // Get counter value
+    diff = arr_val - cnt_val;                                          // Compute remaining time before timeout
 
-    // Reset counter
+    if (diff < DEFAULT_TIMEOUT)
+    {
+        // disable Counter
+        timer_hal_set_counter_enable(&timeout_hal_context, TIMER_PAUSE);
+        timer_hal_clear_intr_status(&timeout_hal_context);
+        timer_hal_intr_disable(&timeout_hal_context);
+
+        timer_hal_set_alarm_value(&timeout_hal_context, DEFAULT_TIMEOUT);
+        timer_hal_set_counter_value(&timeout_hal_context, 0);
+    }
+
+    if (nbrbit != 0 && nbrbit != DEFAULT_TIMEOUT)
+    {
+        // Reset counter
+        timer_hal_set_alarm_value(&timeout_hal_context, nbrbit);
+        timer_hal_set_counter_value(&timeout_hal_context, 0);
+    }
+
     if (nbrbit != 0)
     {
+        // Start counter
         timer_hal_intr_enable(&timeout_hal_context);
         timer_hal_set_counter_enable(&timeout_hal_context, TIMER_START);
     }
