@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "SPI": "^1.0",
-        "luos_engine": "^3.0.0",
+        "luos_engine": "^3.1.0",
         "WiFi101": "^0.16.1",
         "arduino-libraries/ArduinoHttpClient": "^0.5.0"
     },
