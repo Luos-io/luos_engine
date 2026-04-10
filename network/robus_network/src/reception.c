@@ -49,6 +49,13 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifdef LUOS_DEBUG_PRINT
+    #include <stdio.h>
+    #define ROBUS_DBG(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+    #define ROBUS_DBG(fmt, ...) ((void)0)
+#endif
+
 #ifdef DEBUG
     #include <stdio.h>
 #endif
@@ -64,6 +71,8 @@
  ******************************************************************************/
 uint8_t data_rx[sizeof(msg_t)] = {0}; // Buffer to store the received data
 uint16_t crc_val               = 0;   // CRC value
+static uint8_t collision_data_count = 0;
+static uint16_t recep_crc           = 0;
 
 /*******************************************************************************
  * Function
@@ -132,6 +141,12 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
             printf("cmd : 0x%04x\n", phy_robus->rx_msg->header.cmd);                 /*!< msg definition. */
             printf("size : 0x%04x\n", phy_robus->rx_msg->header.size);               /*!< Size of the data field. */
 #endif
+            ROBUS_DBG("[RX] Header: target=%d, src=%d, cmd=%d, size=%d, mode=%d\n",
+                      phy_robus->rx_msg->header.target,
+                      phy_robus->rx_msg->header.source,
+                      phy_robus->rx_msg->header.cmd,
+                      phy_robus->rx_msg->header.size,
+                      phy_robus->rx_msg->header.target_mode);
 
             // Switch state machine to data reception
             ctx.rx.callback = Recep_GetData;
@@ -156,7 +171,6 @@ _CRITICAL void Recep_GetHeader(luos_phy_t *phy_robus, volatile uint8_t *data)
  ******************************************************************************/
 _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
-    static uint16_t crc;
     if (phy_robus->rx_keep == false)
     {
         ctx.rx.callback = Recep_Drop;
@@ -171,8 +185,9 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
     }
     else if (phy_robus->received_data > phy_robus->rx_size)
     {
-        crc = crc | ((uint16_t)(*data) << 8);
-        if (crc == crc_val)
+        recep_crc = recep_crc | ((uint16_t)(*data) << 8);
+        ROBUS_DBG("[RX] Data complete, CRC %s\n", (recep_crc == crc_val) ? "PASS" : "FAIL");
+        if (recep_crc == crc_val)
         {
             // Message is OK
             // Check if we need to send an ack
@@ -202,7 +217,7 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
     else
     {
         // This is the first byte of the CRC, store it
-        crc = (uint16_t)(*data);
+        recep_crc = (uint16_t)(*data);
     }
     phy_robus->received_data++;
 }
@@ -214,34 +229,33 @@ _CRITICAL void Recep_GetData(luos_phy_t *phy_robus, volatile uint8_t *data)
  ******************************************************************************/
 _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
 {
-    static uint8_t data_count = 0;
     // Check data integrity
-    if ((ctx.tx.data[data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
+    if ((ctx.tx.data[collision_data_count++] != *data) || (!ctx.tx.lock) || (ctx.rx.status.rx_framing_error == true))
     {
         // Data dont match, or we don't start to send the message, there is a collision
         ctx.tx.collision = true;
         // Stop TX trying to save input datas
         RobusHAL_SetTxState(false);
         // Save the received data into the allocator to be able to continue the reception
-        for (uint8_t i = 0; i < data_count - 1; i++)
+        for (uint8_t i = 0; i < collision_data_count - 1; i++)
         {
             Recep_GetHeader(phy_robus, (volatile uint8_t *)&ctx.tx.data[i]);
         }
         Recep_GetHeader(phy_robus, data);
         // Switch to get header.
         ctx.rx.callback = Recep_GetHeader;
-        ctx.tx.status   = TX_NOK;
-        data_count      = 0;
+        ctx.tx.status           = TX_NOK;
+        collision_data_count    = 0;
     }
     else
     {
-        if (data_count == COLLISION_DETECTION_NUMBER)
+        if (collision_data_count == COLLISION_DETECTION_NUMBER)
         {
 #ifdef SELFTEST
             selftest_SetRxFlag();
 #endif
             // Collision detection end
-            data_count = 0;
+            collision_data_count = 0;
             RobusHAL_SetRxState(false);
             RobusHAL_ResetTimeout(0);
             if (ctx.tx.status == TX_NOK)
@@ -275,6 +289,7 @@ _CRITICAL void Recep_Drop(luos_phy_t *phy_robus, volatile uint8_t *data)
  ******************************************************************************/
 _CRITICAL void Recep_Timeout(void)
 {
+    ROBUS_DBG("[RX] Timeout\n");
     if ((ctx.rx.callback != Recep_GetHeader) && (ctx.rx.callback != Recep_Drop))
     {
         ctx.rx.status.rx_timeout = true;
@@ -293,6 +308,8 @@ _CRITICAL void Recep_Reset(void)
     luos_phy_t *phy_robus = Robus_GetPhy();
     Phy_ResetMsg(phy_robus);
     crc_val                        = 0xFFFF;
+    collision_data_count           = 0;
+    recep_crc                      = 0;
     ctx.rx.status.rx_framing_error = false;
     ctx.rx.status.rx_error         = false;
     ctx.rx.callback                = Recep_GetHeader;

@@ -40,6 +40,13 @@
 #include "robus_hal.h"
 #include "luos_hal.h"
 
+#ifdef LUOS_DEBUG_PRINT
+    #include <stdio.h>
+    #define ROBUS_DBG(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+    #define ROBUS_DBG(fmt, ...) ((void)0)
+#endif
+
 #ifndef PTP_PUSH_DELAY_MS
     #define PTP_PUSH_DELAY_MS 2
 #endif
@@ -91,6 +98,7 @@ _CRITICAL void PortMng_Init(void)
  ******************************************************************************/
 _CRITICAL void PortMng_PtpHandler(uint8_t PortNbr)
 {
+    ROBUS_DBG("[PTP] Handler port=%d\n", PortNbr);
     if (Port_ExpectedState == RELEASE)
     {
         Port_ExpectedState = POKE;
@@ -171,6 +179,7 @@ error_return_t PortMng_PokeNextPort(uint8_t *portId)
         if (!(port_detected & (1 << port)))
         {
             // This port have not been poked
+            ROBUS_DBG("[PTP] Poking port %d\n", port);
             if (PortMng_PokePort(port))
             {
                 // Poke succeed, we have a node here, return the port id
