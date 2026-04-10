@@ -24,6 +24,7 @@ static int LuosIO_StartTopologyDetection(service_t *service);
 static int LuosIO_DetectNextNodes(service_t *service);
 static error_return_t LuosIO_ConsumeMsg(const msg_t *input);
 static void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
+static void LuosIO_SetDetectAckMode(uint8_t mode);
 
 // Phy_callbacks
 static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job);
@@ -37,8 +38,9 @@ connection_t *connection_table_ptr = NULL;
 luos_phy_t *luos_phy;
 service_filter_t service_filter[MAX_MSG_NB]; // Service filter table. Each of these filter will be linked with jobs.
 uint8_t service_filter_index = 0;            // Index of the next service filter to use.
-service_t *detection_service = NULL;
-bool Flag_DetectServices     = false;
+service_t *detection_service  = NULL;
+bool Flag_DetectServices      = false;
+static uint8_t detect_ack_mode = NODEIDACK;
 
 /*******************************************************************************
  * Functions
@@ -59,6 +61,17 @@ void LuosIO_Reset(luos_phy_t *phy_ptr)
     Service_ClearId();
     // Reset the data reception context
     Luos_ReceiveData(NULL, NULL, NULL);
+    detect_ack_mode = NODEIDACK;
+}
+
+static void LuosIO_SetDetectAckMode(uint8_t mode)
+{
+    detect_ack_mode = mode;
+}
+
+uint8_t LuosIO_GetDetectAckMode(void)
+{
+    return detect_ack_mode;
 }
 
 /******************************************************************************
@@ -437,6 +450,9 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 // Reinit Phy
                 Phy_Reset();
             }
+            // Store the ACK mode used by the detecting master so we mirror it in our responses
+            // Must be after LuosIO_Reset which calls Node_Init and would overwrite this value
+            LuosIO_SetDetectAckMode(input->header.target_mode);
             // Save our new node id
             // We have to do it this way because Node_Get()->node_id is a bitfield and input->data is not well aligned.
             uint16_t node_id;
@@ -456,7 +472,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             port_t *input_port  = Phy_GetTopologysource();
             input_port->node_id = Node_Get()->node_id;
 
-            output_msg.header.target_mode = NODEIDACK;
+            output_msg.header.target_mode = LuosIO_GetDetectAckMode();
             output_msg.header.target      = 1;
             output_msg.header.cmd         = PORT_DATA;
             output_msg.header.size        = sizeof(port_t);
@@ -483,7 +499,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 case 0:
                     // Send back a local routing table
                     output_msg.header.cmd         = RTB;
-                    output_msg.header.target_mode = NODEIDACK;
+                    output_msg.header.target_mode = LuosIO_GetDetectAckMode();
                     output_msg.header.target      = input->header.source;
                     LuosIO_TransmitLocalRoutingTable(0, &output_msg);
                     break;
@@ -666,9 +682,13 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             //**************************************** bootloader section ****************************************
 
         case BOOTLOADER_RESET:
+#ifdef WITH_BOOTLOADER
             LuosHAL_SetMode((uint8_t)BOOT_MODE);
             LuosHAL_Reboot();
             return SUCCEED;
+#else
+            return FAILED;
+#endif
             break;
 
 #ifdef WITH_BOOTLOADER

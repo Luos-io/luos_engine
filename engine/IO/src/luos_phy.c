@@ -53,6 +53,7 @@
 #include "luos_io.h"
 #include "service.h"
 #include "filter.h"
+#include "node.h"
 
 /*******************************************************************************
  * Definitions
@@ -366,7 +367,7 @@ error_return_t Phy_FindNextNode(void)
                 // We find a new node on this specific output_port
                 // Send the output_port information to master as a partial CONNECTION_DATA and ask it to generate and send a new node_id.
                 msg_t msg;
-                msg.header.target_mode = NODEIDACK;
+                msg.header.target_mode = LuosIO_GetDetectAckMode();
                 msg.header.target      = 1;
                 msg.header.cmd         = CONNECTION_DATA;
                 msg.header.size        = sizeof(port_t);
@@ -398,7 +399,7 @@ error_return_t Phy_FindNextNode(void)
             // We find a new node on this specific output_port
             // Send the output_port information to master as a partial CONNECTION_DATA and ask it to generate and send a new node_id.
             msg_t msg;
-            msg.header.target_mode = NODEIDACK;
+            msg.header.target_mode = LuosIO_GetDetectAckMode();
             msg.header.target      = 1;
             msg.header.cmd         = CONNECTION_DATA;
             msg.header.size        = sizeof(port_t);
