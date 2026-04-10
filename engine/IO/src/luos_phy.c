@@ -57,6 +57,9 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifndef DETECTION_TIMEOUT_MS
+    #define DETECTION_TIMEOUT_MS 10000
+#endif
 
 typedef struct __attribute__((__packed__))
 {
@@ -77,8 +80,8 @@ typedef struct
     port_t topology_source;  // The source port. Where we receive the topological detection signal from.
     uint32_t topology_done;  // We put this bits to 1 when a phy ended the topology detection.
     bool topology_running;   // We put this bits to 1 when a phy is running the topology detection.
-    bool find_next_node_job; // We put this bits to 1 to indicate that we will need to find another node.
-    bool resetAllNeed;       // We put this bits to 1 to indicate that we will need to reset all the nodes. We need it to avoid to reset all phy at reset message reception, allowing the phy's to send their reset message.
+    volatile bool find_next_node_job; // We put this bits to 1 to indicate that we will need to find another node.
+    volatile bool resetAllNeed;       // We put this bits to 1 to indicate that we will need to reset all the nodes. We need it to avoid to reset all phy at reset message reception, allowing the phy's to send their reset message.
     bool PhyExeptSourceDone; // We put this bit to 1 when all the phys except the source one are done with their detection.
 
     // ******************** Job management ********************
@@ -192,8 +195,15 @@ bool Phy_Busy(void)
  ******************************************************************************/
 void Phy_Loop(void)
 {
+
+#ifdef NORT
+    Phy_SetIrqState(false);
+#endif
     if (phy_ctx.resetAllNeed == true)
     {
+#ifdef NORT
+        Phy_SetIrqState(true);
+#endif
         if (Phy_TxAllComplete() == SUCCEED)
         {
             Phy_ResetAll();
@@ -205,6 +215,12 @@ void Phy_Loop(void)
             return;
         }
     }
+#ifdef NORT
+    else
+    {
+        Phy_SetIrqState(true);
+    }
+#endif
     // Manage received data allocation
     if (phy_ctx.phy[1].rx_alloc_job)
     {
@@ -215,14 +231,38 @@ void Phy_Loop(void)
     // Manage complete message received dispatching
     Phy_Dispatch();
     // Check if we need to find the next node
+#ifdef NORT
+    Phy_SetIrqState(false);
+#endif
     if (phy_ctx.find_next_node_job == true)
     {
         phy_ctx.find_next_node_job = false;
+#ifdef NORT
+        Phy_SetIrqState(true);
+#endif
         // Wait for the node to send all its messages.
+        uint32_t tx_wait_start = LuosHAL_GetSystick();
         while (Phy_TxAllComplete() == FAILED)
-            ;
+        {
+            if (LuosHAL_GetSystick() - tx_wait_start > DETECTION_TIMEOUT_MS)
+            {
+                break;
+            }
+        }
+#ifdef NORT
+        // On Linux, PTP falling edge may be detected before PORT_DATA is
+        // consumed (both arrive in the same RX thread iteration). Dispatch
+        // any pending messages before proceeding with the next detection step.
+        Phy_Dispatch();
+#endif
         Phy_FindNextNode();
     }
+#ifdef NORT
+    else
+    {
+        Phy_SetIrqState(true);
+    }
+#endif
     // Compute phy job statistics
     /*
     uint8_t stat = (uint8_t)((job nbr * 100) / (MAX_MSG_NB));
@@ -504,7 +544,11 @@ _CRITICAL void Phy_ComputeHeader(luos_phy_t *phy_ptr)
         // Someone need to receive this message
         phy_ptr->rx_keep      = true;
         phy_ptr->rx_alloc_job = true;
-        phy_ptr->rx_ack       = ((((header_t *)phy_ptr->rx_buffer_base)->target_mode == SERVICEIDACK) || (((header_t *)phy_ptr->rx_buffer_base)->target_mode == NODEIDACK));
+#ifdef NORT
+        phy_ptr->rx_ack = false;
+#else
+        phy_ptr->rx_ack = ((((header_t *)phy_ptr->rx_buffer_base)->target_mode == SERVICEIDACK) || (((header_t *)phy_ptr->rx_buffer_base)->target_mode == NODEIDACK));
+#endif
     }
     else
     {
@@ -542,12 +586,16 @@ bool Phy_Need(luos_phy_t *phy_ptr, header_t *header)
             // This concerns Luos phy and all external phy
             return true;
             break;
+#ifndef NORT
         case SERVICEIDACK:
+#endif
         case SERVICEID:
             // If the target is not the phy_ptr, and the source service is known, we need to keep this message
             return (!Phy_IndexFilter(phy_ptr->services, header->target)) && (Phy_IndexFilter(phy_ptr->services, header->source));
             break;
+#ifndef NORT
         case NODEIDACK:
+#endif
         case NODEID:
             if (header->target == 0)
             {
@@ -587,7 +635,9 @@ inline phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header)
 
     switch (header->target_mode)
     {
+#ifndef NORT
         case SERVICEIDACK:
+#endif
         case SERVICEID:
             // Check all phy service id
             for (int i = 0; i < phy_ctx.phy_nb; i++)
@@ -599,7 +649,9 @@ inline phy_target_t Phy_ComputeTargets(luos_phy_t *phy_ptr, header_t *header)
                 }
             }
             break;
+#ifndef NORT
         case NODEIDACK:
+#endif
         case NODEID:
             // If the target is our node and our node have a node_id or if we don't have a node_id and we are waiting for one.
             if (((header->target == Node_Get()->node_id) && (header->target != 0))
@@ -865,10 +917,21 @@ static void Phy_Dispatch(void)
 {
     static bool running = false;
     int i               = 0;
+#ifdef NORT
+    Phy_SetIrqState(false);
+    if ((running) || (phy_ctx.io_job_nb == 0))
+    {
+        Phy_SetIrqState(true);
+        return;
+    }
+    running = true;
+    Phy_SetIrqState(true);
+#else
     if ((running) || (phy_ctx.io_job_nb == 0))
     {
         return;
     }
+#endif
     // Interpreat received messages and create tasks for it.
     Phy_SetIrqState(false);
     while (i < phy_ctx.io_job_nb)
@@ -897,7 +960,11 @@ static void Phy_Dispatch(void)
                 phy_job_t phy_job;
                 phy_job.msg_pt    = job->alloc_msg;
                 phy_job.size      = job->size;
-                phy_job.ack       = ((job->alloc_msg->header.target_mode == NODEIDACK) || (job->alloc_msg->header.target_mode == SERVICEIDACK));
+#ifdef NORT
+                phy_job.ack = false;
+#else
+                phy_job.ack = ((job->alloc_msg->header.target_mode == NODEIDACK) || (job->alloc_msg->header.target_mode == SERVICEIDACK));
+#endif
                 phy_job.timestamp = Luos_IsMsgTimstamped(job->alloc_msg);
                 phy_job.phy_data  = NULL;
 
