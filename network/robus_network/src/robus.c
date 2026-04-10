@@ -67,6 +67,9 @@ void Robus_Init(void)
  ******************************************************************************/
 void Robus_Loop(void)
 {
+#ifdef NORT
+    PortMng_WatchdogCheck();
+#endif
     RobusHAL_Loop();
 }
 

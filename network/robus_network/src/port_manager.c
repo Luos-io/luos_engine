@@ -40,6 +40,18 @@
 #include "robus_hal.h"
 #include "luos_hal.h"
 
+#ifndef PTP_PUSH_DELAY_MS
+    #define PTP_PUSH_DELAY_MS 2
+#endif
+#ifndef PTP_READ_DELAY_MS
+    #define PTP_READ_DELAY_MS 3
+#endif
+#ifdef NORT
+    #ifndef PTP_RELEASE_TIMEOUT_MS
+        #define PTP_RELEASE_TIMEOUT_MS 500
+    #endif
+#endif
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -52,8 +64,11 @@ typedef enum
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-PortState_t Port_ExpectedState = POKE;
+volatile PortState_t Port_ExpectedState = POKE;
 uint32_t port_detected         = 0;
+#ifdef NORT
+static uint32_t ptp_release_enter_tick = 0;
+#endif
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -119,18 +134,21 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     RobusHAL_PushPTP(PortNbr);
     // Wait a little just to be sure everyone can read it
     uint32_t start_tick = LuosHAL_GetSystick();
-    while (LuosHAL_GetSystick() - start_tick < 2)
+    while (LuosHAL_GetSystick() - start_tick < PTP_PUSH_DELAY_MS)
         ;
     // Release the ptp line
     RobusHAL_SetPTPDefaultState(PortNbr);
-    while (LuosHAL_GetSystick() - start_tick < 3)
+    while (LuosHAL_GetSystick() - start_tick < PTP_READ_DELAY_MS)
         ;
     // Read the line state
     if (RobusHAL_GetPTPState(PortNbr))
     {
         // Someone reply, reverse the detection to wake up on release condition
         RobusHAL_SetPTPReverseState(PortNbr);
-        Port_ExpectedState = RELEASE;
+        Port_ExpectedState     = RELEASE;
+#ifdef NORT
+        ptp_release_enter_tick = LuosHAL_GetSystick();
+#endif
         // Port poked by node
         ctx.port.activ    = PortNbr;
         ctx.port.keepLine = true;
@@ -169,6 +187,25 @@ error_return_t PortMng_PokeNextPort(uint8_t *portId)
     PortMng_Reset();
     return FAILED;
 }
+#ifdef NORT
+/******************************************************************************
+ * @brief Check for stuck PTP detection and recover
+ * @param None
+ * @return None
+ ******************************************************************************/
+void PortMng_WatchdogCheck(void)
+{
+    if (Port_ExpectedState == RELEASE
+        && (LuosHAL_GetSystick() - ptp_release_enter_tick > PTP_RELEASE_TIMEOUT_MS))
+    {
+        Port_ExpectedState = POKE;
+        ctx.port.keepLine  = false;
+        Phy_TopologyDone(Robus_GetPhy());
+        PortMng_Reset();
+        Phy_TopologyNext();
+    }
+}
+#endif
 /******************************************************************************
  * @brief reinit the detection state machine
  * @param None
