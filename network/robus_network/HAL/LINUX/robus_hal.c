@@ -578,6 +578,17 @@ static void *RobusHAL_RxThread(void *arg)
                     count++;
                     if (rx_enabled)
                     {
+                        // If the previous byte closed a valid frame, reset state
+                        // so this byte starts a new frame. Robus normally relies
+                        // on the DEFAULT_TIMEOUT inter-frame gap to trigger
+                        // Recep_Timeout → Recep_Reset, but on RS485 without
+                        // arbitration two nodes can TX back-to-back with a gap
+                        // much shorter than the timeout, leaving the state in
+                        // Recep_Drop and silently discarding the next frame.
+                        if (ctx.rx.callback == Recep_Drop)
+                        {
+                            Recep_Reset();
+                        }
                         ROBUS_DBG("[HAL_RX] 0x%02X\n", byte);
                         RobusHAL_ResetTimeout(DEFAULT_TIMEOUT);
                         Recep_data(&byte);
