@@ -22,6 +22,7 @@
 #include <sys/timerfd.h>
 #include <gpiod.h>
 #include <errno.h>
+#include <time.h>
 
 /*******************************************************************************
  * Definitions
@@ -201,6 +202,8 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
 
     uint16_t remaining = size;
     uint8_t *ptr       = data;
+    struct timespec tx_start;
+    clock_gettime(CLOCK_MONOTONIC, &tx_start);
     while (remaining > 0)
     {
         ssize_t written = write(serial_fd, ptr, remaining);
@@ -215,7 +218,23 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         }
     }
 
-    tcdrain(serial_fd);
+    // Wait until bytes have actually cleared the UART, then drop DE.
+    // tcdrain() is unusable on BCM-family PL011: it polls FR.BUSY which is
+    // sticky on this hardware and blocks ~7.9 ms per call regardless of
+    // frame size. TIOCOUTQ confirms the kernel TX buffer is drained well
+    // before tcdrain returns. Sleep for the computed wire time (10 bits
+    // per byte at the configured baudrate) plus a CPU-scheduling margin.
+    #define TX_WIRE_MARGIN_NS 50000ULL  // 50 µs for CFS wakeup jitter
+    uint64_t wire_ns = (uint64_t)size * 10ULL * timeout_ns_per_bit + TX_WIRE_MARGIN_NS;
+    uint64_t deadline_ns = (uint64_t)tx_start.tv_sec * 1000000000ULL
+                         + (uint64_t)tx_start.tv_nsec + wire_ns;
+    struct timespec deadline = {
+        .tv_sec  = deadline_ns / 1000000000ULL,
+        .tv_nsec = deadline_ns % 1000000000ULL,
+    };
+    while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL) == EINTR)
+    {
+    }
 
     // Switch RS485 transceiver back to RX mode
     RobusHAL_SetTxState(false);
