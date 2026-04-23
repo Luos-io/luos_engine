@@ -72,7 +72,7 @@ typedef enum
  * Variables
  ******************************************************************************/
 volatile PortState_t Port_ExpectedState = POKE;
-uint32_t port_detected         = 0;
+uint32_t port_detected                  = 0;
 #ifdef NORT
 static uint32_t ptp_release_enter_tick = 0;
 #endif
@@ -153,7 +153,7 @@ uint8_t PortMng_PokePort(uint8_t PortNbr)
     {
         // Someone reply, reverse the detection to wake up on release condition
         RobusHAL_SetPTPReverseState(PortNbr);
-        Port_ExpectedState     = RELEASE;
+        Port_ExpectedState = RELEASE;
 #ifdef NORT
         ptp_release_enter_tick = LuosHAL_GetSystick();
 #endif

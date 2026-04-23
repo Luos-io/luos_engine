@@ -40,9 +40,9 @@ volatile uint16_t last_node        = 0;
 connection_t *connection_table_ptr = NULL;
 luos_phy_t *luos_phy;
 service_filter_t service_filter[MAX_MSG_NB]; // Service filter table. Each of these filter will be linked with jobs.
-uint8_t service_filter_index = 0;            // Index of the next service filter to use.
-service_t *detection_service  = NULL;
-bool Flag_DetectServices      = false;
+uint8_t service_filter_index   = 0;          // Index of the next service filter to use.
+service_t *detection_service   = NULL;
+bool Flag_DetectServices       = false;
 static uint8_t detect_ack_mode = NODEIDACK;
 
 /*******************************************************************************

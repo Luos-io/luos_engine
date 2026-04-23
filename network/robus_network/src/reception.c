@@ -69,8 +69,8 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-uint8_t data_rx[sizeof(msg_t)] = {0}; // Buffer to store the received data
-uint16_t crc_val               = 0;   // CRC value
+uint8_t data_rx[sizeof(msg_t)]      = {0}; // Buffer to store the received data
+uint16_t crc_val                    = 0;   // CRC value
 static uint8_t collision_data_count = 0;
 static uint16_t recep_crc           = 0;
 
@@ -243,9 +243,9 @@ _CRITICAL void Recep_GetCollision(luos_phy_t *phy_robus, volatile uint8_t *data)
         }
         Recep_GetHeader(phy_robus, data);
         // Switch to get header.
-        ctx.rx.callback = Recep_GetHeader;
-        ctx.tx.status           = TX_NOK;
-        collision_data_count    = 0;
+        ctx.rx.callback      = Recep_GetHeader;
+        ctx.tx.status        = TX_NOK;
+        collision_data_count = 0;
     }
     else
     {

@@ -78,12 +78,12 @@ typedef struct
     IRQ_STATE phy_irq_states[LOCAL_PHY_NB + 1]; // Store the irq state functions of phys aving one.
 
     // ******************** Topology management ********************
-    port_t topology_source;  // The source port. Where we receive the topological detection signal from.
-    uint32_t topology_done;  // We put this bits to 1 when a phy ended the topology detection.
-    bool topology_running;   // We put this bits to 1 when a phy is running the topology detection.
+    port_t topology_source;           // The source port. Where we receive the topological detection signal from.
+    uint32_t topology_done;           // We put this bits to 1 when a phy ended the topology detection.
+    bool topology_running;            // We put this bits to 1 when a phy is running the topology detection.
     volatile bool find_next_node_job; // We put this bits to 1 to indicate that we will need to find another node.
     volatile bool resetAllNeed;       // We put this bits to 1 to indicate that we will need to reset all the nodes. We need it to avoid to reset all phy at reset message reception, allowing the phy's to send their reset message.
-    bool PhyExeptSourceDone; // We put this bit to 1 when all the phys except the source one are done with their detection.
+    bool PhyExeptSourceDone;          // We put this bit to 1 when all the phys except the source one are done with their detection.
 
     // ******************** Job management ********************
     // io_jobs are stores from the newest to the oldest.
@@ -959,8 +959,8 @@ static void Phy_Dispatch(void)
                 // Phy[y] is concerned by this message.
                 // Generate the job and put it in the phy queue
                 phy_job_t phy_job;
-                phy_job.msg_pt    = job->alloc_msg;
-                phy_job.size      = job->size;
+                phy_job.msg_pt = job->alloc_msg;
+                phy_job.size   = job->size;
 #ifdef NORT
                 phy_job.ack = false;
 #else

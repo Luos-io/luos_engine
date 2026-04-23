@@ -32,17 +32,17 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static int serial_fd                = -1;
-static int timer_fd                 = -1;
+static int serial_fd = -1;
+static int timer_fd  = -1;
 static pthread_t rx_thread;
 static volatile bool running        = false;
-static volatile bool rx_enabled      = true;
-static volatile bool tx_in_progress  = false;
-static uint64_t timeout_ns_per_bit   = 0;
+static volatile bool rx_enabled     = true;
+static volatile bool tx_in_progress = false;
+static uint64_t timeout_ns_per_bit  = 0;
 
 // GPIO via libgpiod v2
-static struct gpiod_chip *gpio_chip            = NULL;
-static struct gpiod_line_request *tx_en_req    = NULL;
+static struct gpiod_chip *gpio_chip         = NULL;
+static struct gpiod_line_request *tx_en_req = NULL;
 static struct gpiod_line_request *ptp_reqs[NBR_PORT];
 static unsigned int ptp_gpio_offsets[NBR_PORT];
 static volatile uint8_t ptp_last_value[NBR_PORT];
@@ -218,16 +218,16 @@ void RobusHAL_ComTransmit(uint8_t *data, uint16_t size)
         }
     }
 
-    // Wait until bytes have actually cleared the UART, then drop DE.
-    // tcdrain() is unusable on BCM-family PL011: it polls FR.BUSY which is
-    // sticky on this hardware and blocks ~7.9 ms per call regardless of
-    // frame size. TIOCOUTQ confirms the kernel TX buffer is drained well
-    // before tcdrain returns. Sleep for the computed wire time (10 bits
-    // per byte at the configured baudrate) plus a CPU-scheduling margin.
-    #define TX_WIRE_MARGIN_NS 50000ULL  // 50 µs for CFS wakeup jitter
-    uint64_t wire_ns = (uint64_t)size * 10ULL * timeout_ns_per_bit + TX_WIRE_MARGIN_NS;
+// Wait until bytes have actually cleared the UART, then drop DE.
+// tcdrain() is unusable on BCM-family PL011: it polls FR.BUSY which is
+// sticky on this hardware and blocks ~7.9 ms per call regardless of
+// frame size. TIOCOUTQ confirms the kernel TX buffer is drained well
+// before tcdrain returns. Sleep for the computed wire time (10 bits
+// per byte at the configured baudrate) plus a CPU-scheduling margin.
+#define TX_WIRE_MARGIN_NS 50000ULL // 50 µs for CFS wakeup jitter
+    uint64_t wire_ns     = (uint64_t)size * 10ULL * timeout_ns_per_bit + TX_WIRE_MARGIN_NS;
     uint64_t deadline_ns = (uint64_t)tx_start.tv_sec * 1000000000ULL
-                         + (uint64_t)tx_start.tv_nsec + wire_ns;
+                           + (uint64_t)tx_start.tv_nsec + wire_ns;
     struct timespec deadline = {
         .tv_sec  = deadline_ns / 1000000000ULL,
         .tv_nsec = deadline_ns % 1000000000ULL,
@@ -314,8 +314,8 @@ void RobusHAL_ResetTimeout(uint16_t nbrbit)
         ROBUS_DBG("[HAL_TMR] DISARMED (fd=%d)\n", timer_fd);
         return;
     }
-    uint64_t timeout_ns     = (uint64_t)nbrbit * timeout_ns_per_bit;
-    struct itimerspec its    = {
+    uint64_t timeout_ns   = (uint64_t)nbrbit * timeout_ns_per_bit;
+    struct itimerspec its = {
         .it_value.tv_sec  = timeout_ns / 1000000000,
         .it_value.tv_nsec = timeout_ns % 1000000000,
         .it_interval      = {0, 0},
@@ -476,7 +476,7 @@ void RobusHAL_ComputeCRC(uint8_t *data, uint8_t *crc)
     *(uint16_t *)crc ^= dbyte << 8;
     for (uint8_t j = 0; j < 8; ++j)
     {
-        uint16_t mix = *(uint16_t *)crc & 0x8000;
+        uint16_t mix     = *(uint16_t *)crc & 0x8000;
         *(uint16_t *)crc = (*(uint16_t *)crc << 1);
         if (mix)
             *(uint16_t *)crc = *(uint16_t *)crc ^ 0x0007;
@@ -521,7 +521,7 @@ static void RobusHAL_GPIOInit(void)
 
     for (uint8_t i = 0; i < NBR_PORT; i++)
     {
-        ptp_reqs[i]          = NULL;
+        ptp_reqs[i]           = NULL;
         ptp_last_value[i]     = 0;
         ptp_edge_detected[i]  = false;
         ptp_edge_direction[i] = 1; // Rising edge by default
@@ -625,7 +625,7 @@ static void *RobusHAL_RxThread(void *arg)
             uint8_t current           = (val == GPIOD_LINE_VALUE_ACTIVE) ? 1 : 0;
             if (current != ptp_last_value[i])
             {
-                int8_t direction = (int8_t)current - (int8_t)ptp_last_value[i]; // +1=rising, -1=falling
+                int8_t direction  = (int8_t)current - (int8_t)ptp_last_value[i]; // +1=rising, -1=falling
                 ptp_last_value[i] = current;
                 // Only fire if direction matches what was requested
                 if (ptp_edge_direction[i] == 0 || ptp_edge_direction[i] == direction)

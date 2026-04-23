@@ -80,7 +80,11 @@
 // Conditional debug macro
 #ifdef LUOS_DEBUG_PRINT
     #include <stdio.h>
-    #define ROBUS_DBG(fmt, ...) do { fprintf(stderr, fmt, ##__VA_ARGS__); } while(0)
+    #define ROBUS_DBG(fmt, ...)                  \
+        do                                       \
+        {                                        \
+            fprintf(stderr, fmt, ##__VA_ARGS__); \
+        } while (0)
 #else
     #define ROBUS_DBG(fmt, ...) ((void)0)
 #endif
