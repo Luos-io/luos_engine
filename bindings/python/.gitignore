@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.so
+*.dylib
+_luos_cffi.*
+_enum_values.py
+build/
+dist/
+*.egg-info/
+.venv*/
