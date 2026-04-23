@@ -11,6 +11,3 @@ dependencies = ["cffi>=1.15"]
 
 [tool.setuptools]
 packages = ["luos_engine"]
-
-[tool.setuptools.package-data]
-luos_engine = ["*.py"]
