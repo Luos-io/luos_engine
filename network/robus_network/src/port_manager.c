@@ -34,10 +34,10 @@
  ***************************************************/
 
 #include <stdbool.h>
+#include "robus_hal.h"
 #include "port_manager.h"
 #include "transmission.h"
 #include "context.h"
-#include "robus_hal.h"
 #include "luos_hal.h"
 
 #ifdef LUOS_DEBUG_PRINT

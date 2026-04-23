@@ -7,11 +7,11 @@
 #include <string.h>
 #include <stdbool.h>
 #include "robus_network.h"
+#include "robus_hal.h"
 #include "transmission.h"
 #include "reception.h"
 #include "port_manager.h"
 #include "context.h"
-#include "robus_hal.h"
 #include "robus_config.h"
 /*******************************************************************************
  * Definitions
