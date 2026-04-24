@@ -8,6 +8,7 @@ from ._luos_cffi import ffi, lib
 from ._header import pack_header
 from ._message import Message
 from . import _registry
+from . import _routing
 
 
 class LuosError(RuntimeError):
@@ -102,6 +103,14 @@ class Service:
 
     def detect(self) -> None:
         lib.Luos_Detect(self._handle)
+
+    def find_peer(self, *, alias: str | None = None,
+                  type: int | None = None,
+                  timeout: float = 5.0):
+        """Blocking: kicks detection if needed, then returns the matching peer."""
+        if not lib.Luos_IsDetected():
+            self.detect()
+        return _routing.wait_for_peer(alias=alias, type=type, timeout=timeout)
 
 
 def create_service(*, type: int, alias: str,
