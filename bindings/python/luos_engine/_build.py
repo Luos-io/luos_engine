@@ -2,6 +2,12 @@ import sys
 from pathlib import Path
 from cffi import FFI
 
+# Regenerate _enum_values.py from C headers on every build.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tools.gen_enums import main as _gen_enums
+_gen_enums()
+sys.path.pop(0)
+
 ffibuilder = FFI()
 
 ffibuilder.cdef("""
