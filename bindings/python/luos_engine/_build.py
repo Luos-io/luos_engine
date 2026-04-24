@@ -11,15 +11,12 @@ float cmult(int int_param, float float_param);
 #define MAX_ALIAS_SIZE 16
 #define BROADCAST_VAL 0x0FFF
 
-// Opaque byte-blob views — named differently to avoid conflicting with
-// the engine's real header_t/msg_t structs included in set_source.
-typedef struct {
-    uint8_t unmap[7];
-} luos_header_t;
-
-typedef struct {
-    uint8_t stream[7 + 128];  // header + data
-} luos_msg_t;
+// Opaque structs — cffi uses the `...` body to defer layout to the real
+// types pulled in by luos_engine.h, so sizeof() matches the engine's
+// compiler. We pass pointers to these around; fields are read/written
+// either via peek helpers (below) or raw byte access.
+typedef struct { ...; } header_t;
+typedef struct { ...; } msg_t;
 
 // Small peek helpers compiled into set_source below.
 // They exercise the REAL bitfield accessors of the engine's compiler.
@@ -53,10 +50,6 @@ ffibuilder.set_source(
     """
     #include <string.h>
     #include "luos_engine.h"
-
-    // Opaque byte-blob aliases matching the cdef names.
-    typedef header_t luos_header_t;
-    typedef msg_t    luos_msg_t;
 
     // Peek helpers: take 7 raw bytes, interpret them as the real
     // engine's header_t, and return individual fields. Used by
