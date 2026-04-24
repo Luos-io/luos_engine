@@ -4,9 +4,31 @@ from cffi import FFI
 
 ffibuilder = FFI()
 
-# Minimal cdef — will expand as tasks land.
 ffibuilder.cdef("""
 float cmult(int int_param, float float_param);
+
+#define MAX_DATA_MSG_SIZE 128
+#define MAX_ALIAS_SIZE 16
+#define BROADCAST_VAL 0x0FFF
+
+// Opaque byte-blob views — named differently to avoid conflicting with
+// the engine's real header_t/msg_t structs included in set_source.
+typedef struct {
+    uint8_t unmap[7];
+} luos_header_t;
+
+typedef struct {
+    uint8_t stream[7 + 128];  // header + data
+} luos_msg_t;
+
+// Small peek helpers compiled into set_source below.
+// They exercise the REAL bitfield accessors of the engine's compiler.
+uint16_t peek_target(const void *header_bytes);
+uint16_t peek_source(const void *header_bytes);
+uint8_t  peek_cmd(const void *header_bytes);
+uint16_t peek_size(const void *header_bytes);
+uint8_t  peek_target_mode(const void *header_bytes);
+uint8_t  peek_config(const void *header_bytes);
 """)
 
 # Discover repo root and engine include dirs at build time.
@@ -29,7 +51,35 @@ elif sys.platform.startswith("linux"):
 ffibuilder.set_source(
     "luos_engine._luos_cffi",
     """
+    #include <string.h>
     #include "luos_engine.h"
+
+    // Opaque byte-blob aliases matching the cdef names.
+    typedef header_t luos_header_t;
+    typedef msg_t    luos_msg_t;
+
+    // Peek helpers: take 7 raw bytes, interpret them as the real
+    // engine's header_t, and return individual fields. Used by
+    // test_header_layout to verify Python-side packing matches the
+    // compiler's bitfield layout.
+    uint16_t peek_target(const void *header_bytes) {
+        header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.target;
+    }
+    uint16_t peek_source(const void *header_bytes) {
+        header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.source;
+    }
+    uint8_t peek_cmd(const void *header_bytes) {
+        header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.cmd;
+    }
+    uint16_t peek_size(const void *header_bytes) {
+        header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.size;
+    }
+    uint8_t peek_target_mode(const void *header_bytes) {
+        header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.target_mode;
+    }
+    uint8_t peek_config(const void *header_bytes) {
+        header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.config;
+    }
     """,
     include_dirs=_INCLUDE_DIRS,
     extra_link_args=_extra_link_args,
