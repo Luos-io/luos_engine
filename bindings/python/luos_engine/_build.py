@@ -56,6 +56,41 @@ uint8_t  peek_cmd(const void *header_bytes);
 uint16_t peek_size(const void *header_bytes);
 uint8_t  peek_target_mode(const void *header_bytes);
 uint8_t  peek_config(const void *header_bytes);
+
+typedef enum {
+    SERVICEID,
+    SERVICEIDACK,
+    TYPE,
+    BROADCAST,
+    TOPIC,
+    NODEID,
+    NODEIDACK
+} target_mode_t;
+
+typedef enum { CLEAR, SERVICE, NODE } entry_mode_t;
+
+typedef int luos_type_t;
+
+typedef struct { ...; } routing_table_t;
+
+typedef struct {
+    uint16_t result_nbr;
+    routing_table_t *result_table[...];
+} search_result_t;
+
+error_return_t RTFilter_InitCheck(search_result_t *result);
+search_result_t *RTFilter_Reset(search_result_t *result);
+search_result_t *RTFilter_ID(search_result_t *result, uint16_t id);
+search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type);
+search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id);
+search_result_t *RTFilter_Alias(search_result_t *result, char *alias);
+search_result_t *RTFilter_Service(search_result_t *result, service_t *service);
+
+// Helpers to read opaque routing_table_t entries.
+uint8_t  rtb_mode(const routing_table_t *e);
+uint16_t rtb_service_id(const routing_table_t *e);
+uint16_t rtb_service_type(const routing_table_t *e);
+void     rtb_service_alias(const routing_table_t *e, char *out16);
 """)
 
 # Discover repo root and engine include dirs at build time.
@@ -105,6 +140,12 @@ ffibuilder.set_source(
     }
     uint16_t service_id(service_t *s) { return s->id; }
     uint16_t service_type(service_t *s) { return s->type; }
+    uint8_t rtb_mode(const routing_table_t *e) { return e->mode; }
+    uint16_t rtb_service_id(const routing_table_t *e) { return e->id; }
+    uint16_t rtb_service_type(const routing_table_t *e) { return e->type; }
+    void rtb_service_alias(const routing_table_t *e, char *out16) {
+        memcpy(out16, e->alias, MAX_ALIAS_SIZE);
+    }
     """,
     include_dirs=_INCLUDE_DIRS,
     extra_link_args=_extra_link_args,
