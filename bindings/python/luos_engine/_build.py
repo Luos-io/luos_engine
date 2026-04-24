@@ -20,6 +20,9 @@ typedef enum {
 typedef struct { ...; } header_t;
 typedef struct { ...; } msg_t;
 
+// revision_t: matches the named-field half of the engine's packed
+// union (struct_luos.h). Size is 3; the sibling unmap[3] is not
+// exposed because Python doesn't need the raw-byte view.
 typedef struct {
     uint8_t major;
     uint8_t minor;
