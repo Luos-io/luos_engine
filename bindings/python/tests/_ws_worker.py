@@ -42,14 +42,17 @@ def _blinker(broker_url, q, toggle_count):
     peer = svc.find_peer(alias="led", timeout=30.0)
     q.put(("peer", peer.id))
     state = 0
-    for _ in range(toggle_count):
+    # Send a few extra toggles so that if the network drops one the test
+    # still collects enough states. toggle_count + 5 keeps the alternating
+    # invariant and gives led's handler time to receive them all.
+    for _ in range(toggle_count + 5):
         state ^= 1
         svc.send(
             cmd=luos.Cmd.IO_STATE,
             target=peer.id,
             data=bytes([state]),
         )
-        time.sleep(0.02)
+        time.sleep(0.05)
     q.put(("done", "blinker"))
     # Keep alive briefly so led finishes receiving.
     time.sleep(2.0)

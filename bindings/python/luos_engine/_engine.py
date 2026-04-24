@@ -89,6 +89,10 @@ def load_phy(descriptor, **kwargs) -> None:
     descriptor.configure, then calls the phy's init symbol (once per
     process — subsequent calls skip init but still register the phy
     for the loop thread to tick).
+
+    Luos_Init (via init()) must run before any phy init symbol so that
+    LuosIO_Init → Phy_Init reserves slot 0 for the internal luos_phy
+    before external phys claim it via Phy_Create.
     """
     with _LIFECYCLE_LOCK:
         if _registry.RUNNING.is_set():
@@ -105,6 +109,9 @@ def load_phy(descriptor, **kwargs) -> None:
                 f"got {sorted(kwargs)}"
             )
         if descriptor.name not in _INITIALIZED_PHYS:
+            # Ensure Luos_Init has run so that Phy_Init places the internal
+            # luos_phy at slot 0 before the external phy claims a slot.
+            init()
             getattr(lib, descriptor.init_symbol)()
             _INITIALIZED_PHYS.add(descriptor.name)
         loop_callable = getattr(lib, descriptor.loop_symbol)

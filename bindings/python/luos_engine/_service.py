@@ -1,3 +1,4 @@
+import time
 import traceback
 import sys
 from typing import Callable, Optional
@@ -107,10 +108,24 @@ class Service:
     def find_peer(self, *, alias: str | None = None,
                   type: int | None = None,
                   timeout: float = 5.0):
-        """Blocking: kicks detection if needed, then returns the matching peer."""
-        if not lib.Luos_IsDetected():
+        """Blocking: retries detection until the peer appears or timeout."""
+        deadline = time.monotonic() + timeout
+        while True:
             self.detect()
-        return _routing.wait_for_peer(alias=alias, type=type, timeout=timeout)
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            try:
+                return _routing.wait_for_peer(
+                    alias=alias, type=type,
+                    timeout=min(1.0, remaining),
+                )
+            except _routing.PeerNotFound:
+                if time.monotonic() >= deadline:
+                    break
+        raise _routing.PeerNotFound(
+            f"no peer matching alias={alias!r} type={type!r} within {timeout}s"
+        )
 
 
 def create_service(*, type: int, alias: str,
