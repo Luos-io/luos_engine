@@ -15,7 +15,6 @@ float cmult(int int_param, float float_param);
 
 #define MAX_DATA_MSG_SIZE 128
 #define MAX_ALIAS_SIZE 16
-#define BROADCAST_VAL 0x0FFF
 
 typedef enum {
     SUCCEED = 0,
@@ -84,13 +83,9 @@ typedef struct {
     routing_table_t *result_table[...];
 } search_result_t;
 
-error_return_t RTFilter_InitCheck(search_result_t *result);
 search_result_t *RTFilter_Reset(search_result_t *result);
-search_result_t *RTFilter_ID(search_result_t *result, uint16_t id);
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type);
-search_result_t *RTFilter_Node(search_result_t *result, uint16_t node_id);
 search_result_t *RTFilter_Alias(search_result_t *result, char *alias);
-search_result_t *RTFilter_Service(search_result_t *result, service_t *service);
 
 // Helpers to read opaque routing_table_t entries.
 uint8_t  rtb_mode(const routing_table_t *e);

@@ -1,3 +1,4 @@
+import atexit
 import signal
 import threading
 import time
@@ -67,3 +68,6 @@ def run() -> None:
 
 def is_detected() -> bool:
     return bool(lib.Luos_IsDetected())
+
+
+atexit.register(stop)

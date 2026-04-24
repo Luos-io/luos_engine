@@ -18,11 +18,6 @@ def register(service_ptr: int, service) -> None:
         SERVICES[service_ptr] = service
 
 
-def get(service_ptr: int):
-    with LOCK:
-        return SERVICES.get(service_ptr)
-
-
 def clear() -> None:
     with LOCK:
         SERVICES.clear()

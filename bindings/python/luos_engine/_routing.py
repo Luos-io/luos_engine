@@ -11,7 +11,6 @@ class RemoteService:
     id: int
     type: int
     alias: str
-    node_id: int = 0   # node_id not plumbed via rtb_* helpers; 0 for now
 
 
 class PeerNotFound(RuntimeError):

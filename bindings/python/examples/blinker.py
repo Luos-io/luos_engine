@@ -2,14 +2,12 @@
 and `blinker` (sends IO_STATE every second)."""
 import os
 import signal
-import sys
 import threading
 import time
 
 import luos_engine as luos
 
 LED_ON, LED_OFF = 1, 0
-_FIRST_USER_CMD = 43  # Luos reserves 0-42 for internal protocol
 
 LED_ON_ART = """                                   \\ | /
          ___________________________.-.________________
@@ -45,7 +43,7 @@ def _clear():
 
 
 def on_led_message(msg):
-    if msg.cmd < _FIRST_USER_CMD:
+    if msg.cmd < luos.FIRST_USER_CMD:
         return  # skip internal detection / routing messages
     if msg.cmd != luos.Cmd.IO_STATE:
         return

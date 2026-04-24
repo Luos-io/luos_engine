@@ -16,6 +16,11 @@ STATE_TYPE = Type.STATE
 BROADCAST = TargetMode.BROADCAST
 SERVICEID = TargetMode.SERVICEID
 
+# First user-definable command value. Luos reserves cmd 0-42 for internal
+# protocol messages (detection, routing, bootloader). Handlers should
+# usually skip cmd < FIRST_USER_CMD.
+FIRST_USER_CMD = 43
+
 __all__ = [
     "ffi", "lib",
     "init", "start", "stop", "run", "is_detected",
@@ -25,4 +30,5 @@ __all__ = [
     "LuosError", "SendError", "LuosEngineNotFoundError",
     "Cmd", "Type", "TargetMode",
     "IO_STATE", "STATE_TYPE", "BROADCAST", "SERVICEID",
+    "FIRST_USER_CMD",
 ]

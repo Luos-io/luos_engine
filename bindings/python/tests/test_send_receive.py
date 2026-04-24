@@ -2,18 +2,13 @@ import time
 import threading
 import luos_engine as luos
 
-# Luos reserves cmd 0-42 for internal protocol messages (detection, routing,
-# bootloader, etc.).  User-defined commands start at 43.  Handlers that care
-# only about application traffic should ignore reserved commands.
-_FIRST_USER_CMD = 43
-
 
 def test_two_services_exchange_one_message():
     received = []
     event = threading.Event()
 
     def on_msg(msg):
-        if msg.cmd < _FIRST_USER_CMD:
+        if msg.cmd < luos.FIRST_USER_CMD:
             return  # skip internal detection / routing messages
         received.append((msg.cmd, msg.target, msg.source, msg.bytes()))
         event.set()
@@ -39,7 +34,7 @@ def test_ten_messages_roundtrip():
     received = []
 
     def on_msg(m):
-        if m.cmd < _FIRST_USER_CMD:
+        if m.cmd < luos.FIRST_USER_CMD:
             return  # skip internal detection / routing messages
         received.append(m.bytes())
 

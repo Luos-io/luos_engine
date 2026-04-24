@@ -1,14 +1,12 @@
 import time
 import luos_engine as luos
 
-_FIRST_USER_CMD = 43
-
 
 def test_blinker_alternates_at_handler_level():
     states = []
 
     def on_led(m):
-        if m.cmd < _FIRST_USER_CMD:
+        if m.cmd < luos.FIRST_USER_CMD:
             return
         states.append(m.data[0])
 
