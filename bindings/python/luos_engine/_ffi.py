@@ -48,3 +48,17 @@ def resolve_lib_path() -> Path:
         "`~/.platformio/penv/bin/pio run -e native_lib` or set "
         "LUOS_ENGINE_LIB / LUOS_ENGINE_LIB_DIR."
     )
+
+
+import ctypes
+
+_LIB_HANDLE = None
+
+
+def load_dylib():
+    """Pre-load libluos_engine so the cffi extension's unresolved symbols bind to it."""
+    global _LIB_HANDLE
+    if _LIB_HANDLE is None:
+        path = resolve_lib_path()
+        _LIB_HANDLE = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
+    return _LIB_HANDLE
