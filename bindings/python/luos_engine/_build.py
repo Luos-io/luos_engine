@@ -13,8 +13,8 @@ float cmult(int int_param, float float_param);
 
 // Opaque structs — cffi uses the `...` body to defer layout to the real
 // types pulled in by luos_engine.h, so sizeof() matches the engine's
-// compiler. We pass pointers to these around; fields are read/written
-// either via peek helpers (below) or raw byte access.
+// compiler. We pass pointers to these around; fields are read via the
+// peek helpers below or by casting to uint8_t* from Python.
 typedef struct { ...; } header_t;
 typedef struct { ...; } msg_t;
 
