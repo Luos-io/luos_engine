@@ -45,7 +45,7 @@ class Service:
         self._handle = lib.Luos_CreateService(
             self._trampoline, self._type, alias.encode("ascii"), rev[0]
         )
-        _registry.register(int(ffi.cast("uintptr_t", handle)), self)
+        _registry.register(int(ffi.cast("uintptr_t", self._handle)), self)
 
     @property
     def id(self) -> int:
