@@ -1,4 +1,6 @@
 import threading
+from dataclasses import dataclass
+from typing import Any, Callable
 
 # Pin live Service instances so their cffi trampolines aren't GC'd
 # while the C engine holds pointers to them. Keyed by the C
@@ -13,6 +15,19 @@ SHUTDOWN = threading.Event()
 RUNNING = threading.Event()
 
 
+@dataclass
+class LoadedPhy:
+    descriptor: Any
+    handle: Any
+    loop: Callable[[], None]
+
+
+# Phys loaded via luos.load_phy. Snapshotted at start() and iterated
+# by the loop thread. Cleared by stop() so Python-side refs drop, but
+# the dylib stays in-process (no unload path — see design spec §Risks).
+PHYS: list[LoadedPhy] = []
+
+
 def register(service_ptr: int, service) -> None:
     with LOCK:
         SERVICES[service_ptr] = service
@@ -21,3 +36,4 @@ def register(service_ptr: int, service) -> None:
 def clear() -> None:
     with LOCK:
         SERVICES.clear()
+        PHYS.clear()
