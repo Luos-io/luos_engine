@@ -28,10 +28,15 @@ def test_every_field_position_individually():
         ("target_mode", 0xF, lib.peek_target_mode),
         ("config", 0xF, lib.peek_config),
     ]
+    zero_kwargs = {k: 0 for k in ("config", "target", "target_mode",
+                                   "source", "cmd", "size")}
     for field, value, peek in cases:
-        kwargs = dict(config=0, target=0, target_mode=0,
-                      source=0, cmd=0, size=0)
-        kwargs[field] = value
+        kwargs = {**zero_kwargs, field: value}
         raw = pack_header(**kwargs)
         buf = ffi.from_buffer("uint8_t[7]", raw)
-        assert peek(buf) == value, f"{field} roundtrip failed"
+        for other_field, _, other_peek in cases:
+            expected = value if other_field == field else 0
+            assert other_peek(buf) == expected, (
+                f"{field}={value:#x}: {other_field}_peek expected "
+                f"{expected:#x}, got {other_peek(buf):#x}"
+            )
