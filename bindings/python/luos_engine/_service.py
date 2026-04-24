@@ -42,15 +42,9 @@ class Service:
         rev = ffi.new("revision_t *", {
             "major": revision[0], "minor": revision[1], "build": revision[2]
         })
-        handle = lib.Luos_CreateService(
+        self._handle = lib.Luos_CreateService(
             self._trampoline, self._type, alias.encode("ascii"), rev[0]
         )
-        if handle == ffi.NULL:
-            raise LuosError(
-                f"Luos_CreateService returned NULL for alias={alias!r}. "
-                "Engine not initialized, or service table full."
-            )
-        self._handle = handle
         _registry.register(int(ffi.cast("uintptr_t", handle)), self)
 
     @property
