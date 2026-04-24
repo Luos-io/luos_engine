@@ -9,5 +9,8 @@ description = "Python binding for the Luos engine"
 requires-python = ">=3.10"
 dependencies = ["cffi>=1.15"]
 
+[project.optional-dependencies]
+test = ["pytest", "websockets>=12"]
+
 [tool.setuptools]
 packages = ["luos_engine"]
