@@ -11,15 +11,42 @@ float cmult(int int_param, float float_param);
 #define MAX_ALIAS_SIZE 16
 #define BROADCAST_VAL 0x0FFF
 
-// Opaque structs — cffi uses the `...` body to defer layout to the real
-// types pulled in by luos_engine.h, so sizeof() matches the engine's
-// compiler. We pass pointers to these around; fields are read via the
-// peek helpers below or by casting to uint8_t* from Python.
+typedef enum {
+    SUCCEED = 0,
+    PROHIBITED = 1,
+    FAILED = 0xFF
+} error_return_t;
+
 typedef struct { ...; } header_t;
 typedef struct { ...; } msg_t;
 
-// Small peek helpers compiled into set_source below.
-// They exercise the REAL bitfield accessors of the engine's compiler.
+typedef struct {
+    uint8_t major;
+    uint8_t minor;
+    uint8_t build;
+} revision_t;
+
+// service_t is opaque; we only pass pointers.
+typedef struct service_t service_t;
+
+typedef void (*SERVICE_CB)(service_t *, const msg_t *);
+
+void Luos_Init(void);
+void Luos_Loop(void);
+service_t *Luos_CreateService(SERVICE_CB cb, uint8_t type,
+                              const char *alias, revision_t revision);
+void Luos_ServicesClear(void);
+error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
+uint32_t Luos_GetSystick(void);
+bool Luos_IsDetected(void);
+void Luos_Detect(service_t *service);
+uint16_t Luos_NbrAvailableMsg(void);
+
+// Accessors for service_t's opaque fields (defined in set_source).
+uint16_t service_id(service_t *s);
+uint16_t service_type(service_t *s);
+
+// Peek helpers from Task 5 — keep these.
 uint16_t peek_target(const void *header_bytes);
 uint16_t peek_source(const void *header_bytes);
 uint8_t  peek_cmd(const void *header_bytes);
@@ -73,6 +100,8 @@ ffibuilder.set_source(
     uint8_t peek_config(const void *header_bytes) {
         header_t h; memcpy(&h, header_bytes, sizeof(h)); return h.config;
     }
+    uint16_t service_id(service_t *s) { return s->id; }
+    uint16_t service_type(service_t *s) { return s->type; }
     """,
     include_dirs=_INCLUDE_DIRS,
     extra_link_args=_extra_link_args,
