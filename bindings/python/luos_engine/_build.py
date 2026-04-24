@@ -92,6 +92,12 @@ uint8_t  rtb_mode(const routing_table_t *e);
 uint16_t rtb_service_id(const routing_table_t *e);
 uint16_t rtb_service_type(const routing_table_t *e);
 void     rtb_service_alias(const routing_table_t *e, char *out16);
+
+// ws_network phy — declared unconditionally; the dylib must be pre-loaded
+// with RTLD_GLOBAL via luos.load_phy before these are safe to call.
+void Ws_Init(void);
+void Ws_Loop(void);
+void Ws_SetBroker(const char *url);
 """)
 
 # Discover repo root and engine include dirs at build time.
@@ -116,6 +122,13 @@ ffibuilder.set_source(
     """
     #include <string.h>
     #include "luos_engine.h"
+
+    // ws_network phy symbols — forward-declared to avoid the HAL transitive
+    // include chain that ws_network.h pulls in.  The dylib must be pre-loaded
+    // with RTLD_GLOBAL (via luos.load_phy) before any call is made.
+    void Ws_Init(void);
+    void Ws_Loop(void);
+    void Ws_SetBroker(const char *url);
 
     // Peek helpers: take 7 raw bytes, interpret them as the real
     // engine's header_t, and return individual fields. Used by
