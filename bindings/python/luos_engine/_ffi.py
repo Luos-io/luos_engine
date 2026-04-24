@@ -1,4 +1,6 @@
+import ctypes
 import os
+import threading
 from pathlib import Path
 
 _LIB_NAMES = ("libluos_engine.dylib", "libluos_engine.so", "libluos_engine.dll")
@@ -50,15 +52,17 @@ def resolve_lib_path() -> Path:
     )
 
 
-import ctypes
-
 _LIB_HANDLE = None
+_LIB_LOCK = threading.Lock()
 
 
 def load_dylib():
-    """Pre-load libluos_engine so the cffi extension's unresolved symbols bind to it."""
+    """Pre-load libluos_engine with RTLD_GLOBAL so the cffi extension's
+    unresolved symbols bind to its exports."""
     global _LIB_HANDLE
     if _LIB_HANDLE is None:
-        path = resolve_lib_path()
-        _LIB_HANDLE = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
+        with _LIB_LOCK:
+            if _LIB_HANDLE is None:
+                path = resolve_lib_path()
+                _LIB_HANDLE = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
     return _LIB_HANDLE
