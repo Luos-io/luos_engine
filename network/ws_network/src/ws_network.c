@@ -77,6 +77,9 @@ static void Ws_JobHandler(luos_phy_t *phy_ptr, phy_job_t *job);
 static error_return_t Ws_RunTopology(luos_phy_t *phy_ptr, uint8_t *portId);
 static void Ws_Reset(luos_phy_t *phy_ptr);
 
+// Implemented in HAL/NATIVE/ws_hal.c (and HAL equivalents).
+extern void ws_hal_set_broker(const char *url);
+
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -86,6 +89,16 @@ volatile wait_ack_t ping_status = INACTIVE; // This flag indicate the status of 
 /*******************************************************************************
  * Function
  ******************************************************************************/
+
+/******************************************************************************
+ * @brief Override the broker URL set at compile time. Must be called before Ws_Init.
+ * @param url NUL-terminated ws://host:port string, max 127 chars (bytes beyond are truncated).
+ * @return None
+ ******************************************************************************/
+void Ws_SetBroker(const char *url)
+{
+    ws_hal_set_broker(url);
+}
 
 /******************************************************************************
  * @brief Initialisation of the WebSocket communication
