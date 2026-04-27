@@ -6,6 +6,9 @@
  ******************************************************************************/
 
 #include <string.h>
+#ifdef LUOS_DEBUG_PRINT
+    #include <stdio.h>
+#endif
 #include "luos_io.h"
 #include "msg_alloc.h"
 #include "service.h"
@@ -24,6 +27,7 @@ static int LuosIO_StartTopologyDetection(service_t *service);
 static int LuosIO_DetectNextNodes(service_t *service);
 static error_return_t LuosIO_ConsumeMsg(const msg_t *input);
 static void LuosIO_TransmitLocalRoutingTable(service_t *service, msg_t *routeTB_msg);
+static void LuosIO_SetDetectAckMode(uint8_t mode);
 
 // Phy_callbacks
 static void LuosIO_MsgHandler(luos_phy_t *phy_ptr, phy_job_t *job);
@@ -36,9 +40,10 @@ volatile uint16_t last_node        = 0;
 connection_t *connection_table_ptr = NULL;
 luos_phy_t *luos_phy;
 service_filter_t service_filter[MAX_MSG_NB]; // Service filter table. Each of these filter will be linked with jobs.
-uint8_t service_filter_index = 0;            // Index of the next service filter to use.
-service_t *detection_service = NULL;
-bool Flag_DetectServices     = false;
+uint8_t service_filter_index   = 0;          // Index of the next service filter to use.
+service_t *detection_service   = NULL;
+bool Flag_DetectServices       = false;
+static uint8_t detect_ack_mode = NODEIDACK;
 
 /*******************************************************************************
  * Functions
@@ -59,6 +64,17 @@ void LuosIO_Reset(luos_phy_t *phy_ptr)
     Service_ClearId();
     // Reset the data reception context
     Luos_ReceiveData(NULL, NULL, NULL);
+    detect_ack_mode = NODEIDACK;
+}
+
+static void LuosIO_SetDetectAckMode(uint8_t mode)
+{
+    detect_ack_mode = mode;
+}
+
+uint8_t LuosIO_GetDetectAckMode(void)
+{
+    return detect_ack_mode;
 }
 
 /******************************************************************************
@@ -382,6 +398,10 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
         //**************************************** detection section ****************************************
         // Only the master node should receive this message
         case CONNECTION_DATA:
+#ifdef LUOS_DEBUG_PRINT
+            printf("[DETECT] Received CONNECTION_DATA: source=%d, size=%d\n",
+                   input->header.source, input->header.size);
+#endif
             LUOS_ASSERT(connection_table_ptr != NULL);
             if (input->header.size == sizeof(port_t))
             {
@@ -394,6 +414,10 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 output_msg.header.target      = 0; // We target the node_id 0 because the node receiving this message don't have a node_id yet. This node need to be the only one to receive it.
                 output_msg.header.target_mode = NODEIDACK;
                 memcpy(output_msg.data, (void *)&last_node, sizeof(uint16_t));
+#ifdef LUOS_DEBUG_PRINT
+                printf("[DETECT] Sending NODE_ID=%d (target_mode=%d), waiting for PORT_DATA...\n",
+                       last_node, output_msg.header.target_mode);
+#endif
                 Luos_SendMsg(service, &output_msg);
             }
             else
@@ -412,6 +436,14 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
 
         // Only the master node should receive this message
         case PORT_DATA:
+#ifdef LUOS_DEBUG_PRINT
+        {
+            port_t *port_info = (port_t *)input->data;
+            printf("[DETECT] Received PORT_DATA: source=%d, size=%d, port node_id=%d, phy_id=%d\n",
+                   input->header.source, input->header.size,
+                   port_info->node_id, port_info->phy_id);
+        }
+#endif
             LUOS_ASSERT(connection_table_ptr != NULL);
             // This is the last part (input port) of a connection_ data
             // Check that we receive a full port information
@@ -437,6 +469,9 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 // Reinit Phy
                 Phy_Reset();
             }
+            // Store the ACK mode used by the detecting master so we mirror it in our responses
+            // Must be after LuosIO_Reset which calls Node_Init and would overwrite this value
+            LuosIO_SetDetectAckMode(input->header.target_mode);
             // Save our new node id
             // We have to do it this way because Node_Get()->node_id is a bitfield and input->data is not well aligned.
             uint16_t node_id;
@@ -456,7 +491,7 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             port_t *input_port  = Phy_GetTopologysource();
             input_port->node_id = Node_Get()->node_id;
 
-            output_msg.header.target_mode = NODEIDACK;
+            output_msg.header.target_mode = LuosIO_GetDetectAckMode();
             output_msg.header.target      = 1;
             output_msg.header.cmd         = PORT_DATA;
             output_msg.header.size        = sizeof(port_t);
@@ -470,6 +505,10 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             break;
 
         case LOCAL_RTB:
+#ifdef LUOS_DEBUG_PRINT
+            printf("[DETECT] Received LOCAL_RTB: source=%d, size=%d\n",
+                   input->header.source, input->header.size);
+#endif
             // Depending on the size of this message we have to make different operations
             // If size is 0 someone ask to get local_route table back
             // If size is 2 someone ask us to generate a local route table based on the given service ID then send local route table back.
@@ -483,8 +522,12 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
                 case 0:
                     // Send back a local routing table
                     output_msg.header.cmd         = RTB;
-                    output_msg.header.target_mode = NODEIDACK;
+                    output_msg.header.target_mode = LuosIO_GetDetectAckMode();
                     output_msg.header.target      = input->header.source;
+#ifdef LUOS_DEBUG_PRINT
+                    printf("[DETECT] Sending RTB response: target=%d, target_mode=%d\n",
+                           output_msg.header.target, output_msg.header.target_mode);
+#endif
                     LuosIO_TransmitLocalRoutingTable(0, &output_msg);
                     break;
                 default:
@@ -666,9 +709,13 @@ error_return_t LuosIO_ConsumeMsg(const msg_t *input)
             //**************************************** bootloader section ****************************************
 
         case BOOTLOADER_RESET:
+#ifdef WITH_BOOTLOADER
             LuosHAL_SetMode((uint8_t)BOOT_MODE);
             LuosHAL_Reboot();
             return SUCCEED;
+#else
+            return FAILED;
+#endif
             break;
 
 #ifdef WITH_BOOTLOADER

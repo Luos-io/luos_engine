@@ -95,6 +95,11 @@ typedef enum
     IDACK = SERVICEIDACK /*!< This define is deprecated, please use SERVICEIDACK instead. */
 } target_mode_t;
 
+#ifdef NORT
+    #define SERVICEIDACK SERVICEID
+    #define NODEIDACK    NODEID
+#endif
+
 /******************************************************************************
  * @struct header_t
  * @brief This structure is used specify data and destination of datas.
