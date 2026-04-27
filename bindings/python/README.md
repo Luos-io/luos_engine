@@ -36,17 +36,19 @@ luos.stop()
 peer-to-peer. A broker must be running before any node calls
 `luos.load_phy(luos.phy.ws_network)`. The broker isn't a naive relay —
 it must respond to each node's PING control frame with OK/NOK and track
-which nodes have finished topology detection. The bundled
-[tests/_broker.py](tests/_broker.py) is a minimal reference implementation
-(~100 lines).
+which nodes have finished topology detection. Use the canonical
+[Pyluos](https://pypi.org/project/pyluos/) broker (`pip install pyluos`)
+or any compatible WebSocket broker that implements the Luos topology
+protocol.
 
 Two-process example — run each block in its own terminal:
 
 ### Terminal 1: broker
 
 ```bash
-python bindings/python/tests/_broker.py
-# prints: LISTEN 127.0.0.1:<port>
+pip install pyluos
+python -m pyluos.tools.ws_broker --ip 127.0.0.1 --port 8000
+# prints: Luos_engine WebSocket network broker opened on 127.0.0.1:8000
 ```
 
 ### Terminal 2: LED service (`examples/led_ws.py`)

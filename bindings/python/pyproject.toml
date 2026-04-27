@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = ["cffi>=1.15"]
 
 [project.optional-dependencies]
-test = ["pytest", "websockets>=12"]
+test = ["pytest", "pyluos>=3.1"]
 
 [tool.setuptools]
 packages = ["luos_engine"]
