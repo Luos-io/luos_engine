@@ -42,6 +42,17 @@ def resolve_lib_path() -> Path:
             )
         return p
 
+    # An explicitly-set LUOS_ENGINE_LIB_DIR must contain the engine; fail
+    # loudly rather than silently falling back to a .pio walk-up build.
+    env_dir = os.environ.get("LUOS_ENGINE_LIB_DIR")
+    if env_dir:
+        found = _find_in_dir(Path(env_dir))
+        if found:
+            return found
+        raise LuosEngineNotFoundError(
+            f"No libluos_engine.* in LUOS_ENGINE_LIB_DIR={env_dir}"
+        )
+
     for d in local_lib_dirs():
         found = _find_in_dir(d)
         if found:
@@ -56,6 +67,7 @@ def resolve_lib_path() -> Path:
 
 _LIB_HANDLE = None
 _LIB_LOCK = threading.Lock()
+_PHY_LOCK = threading.Lock()
 _PHY_HANDLES: dict[str, ctypes.CDLL] = {}
 
 
@@ -76,8 +88,11 @@ def get_phy_handle(basename: str) -> ctypes.CDLL:
     and loading (and downloading if necessary) on first use."""
     handle = _PHY_HANDLES.get(basename)
     if handle is None:
-        from ._phy_loader import ensure_phy_dylib
-        path = ensure_phy_dylib(basename)
-        handle = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
-        _PHY_HANDLES[basename] = handle
+        with _PHY_LOCK:
+            handle = _PHY_HANDLES.get(basename)
+            if handle is None:
+                from ._phy_loader import ensure_phy_dylib
+                path = ensure_phy_dylib(basename)
+                handle = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
+                _PHY_HANDLES[basename] = handle
     return handle

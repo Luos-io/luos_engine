@@ -190,7 +190,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-latest]
+        # Windows is not yet supported by the binding (no win32 linker
+        # branch in _build.py; luos.run() uses POSIX signal.pause()).
+        os: [ubuntu-22.04, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -200,7 +202,7 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          pip install platformio cibuildwheel==2.* build
+          pip install platformio build
       - name: Build native engine + phy dylibs
         run: pio run -e native_lib
       - name: Stage core engine into the package and pin version
@@ -223,7 +225,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-latest]
+        # Windows is not yet supported by the binding (no win32 linker
+        # branch in _build.py; luos.run() uses POSIX signal.pause()).
+        os: [ubuntu-22.04, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -252,7 +256,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-latest]
+        # Windows is not yet supported by the binding (no win32 linker
+        # branch in _build.py; luos.run() uses POSIX signal.pause()).
+        os: [ubuntu-22.04, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

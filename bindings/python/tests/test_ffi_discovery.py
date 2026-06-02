@@ -25,3 +25,14 @@ def test_missing_raises(monkeypatch, tmp_path):
     from luos_engine._ffi import resolve_lib_path, LuosEngineNotFoundError
     with pytest.raises(LuosEngineNotFoundError):
         resolve_lib_path()
+
+
+def test_explicit_lib_dir_miss_raises_specific(monkeypatch, tmp_path):
+    """An explicitly-set LUOS_ENGINE_LIB_DIR that lacks the engine must
+    fail loudly, not silently fall back to a .pio walk-up build."""
+    monkeypatch.delenv("LUOS_ENGINE_LIB", raising=False)
+    monkeypatch.setenv("LUOS_ENGINE_LIB_DIR", str(tmp_path))
+    from luos_engine._ffi import resolve_lib_path, LuosEngineNotFoundError
+    with pytest.raises(LuosEngineNotFoundError) as exc:
+        resolve_lib_path()
+    assert "LUOS_ENGINE_LIB_DIR" in str(exc.value)

@@ -84,8 +84,8 @@ def is_detected() -> bool:
 def load_phy(descriptor, **kwargs) -> None:
     """Load and initialise a network phy. Must be called before start().
 
-    The phy dylib is pre-loaded at package import time (see
-    _ffi.load_dylib). This function validates kwargs via
+    The phy dylib is resolved and loaded lazily on first use via
+    get_phy_handle. This function validates kwargs via
     descriptor.configure, then calls the phy's init symbol (once per
     process — subsequent calls skip init but still register the phy
     for the loop thread to tick).

@@ -59,7 +59,11 @@ def _download(asset_name: str, dest: Path) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_name(dest.name + ".tmp")
     tmp.write_bytes(data)
-    os.replace(tmp, dest)  # atomic
+    try:
+        os.replace(tmp, dest)  # atomic
+    except OSError:
+        tmp.unlink(missing_ok=True)
+        raise
     return dest
 
 
@@ -84,6 +88,13 @@ def ensure_phy_dylib(basename: str) -> Path:
             f"(LUOS_ENGINE_NO_DOWNLOAD set). Build it with "
             f"`~/.platformio/penv/bin/pio run -e native_lib` or unset the "
             f"variable to download from the {ENGINE_VERSION} release."
+        )
+
+    if ENGINE_VERSION.endswith("+dev"):
+        raise PhyDownloadError(
+            f"{filename} not found locally and this is a dev build "
+            f"(ENGINE_VERSION={ENGINE_VERSION!r}, no matching release). "
+            f"Build it with `~/.platformio/penv/bin/pio run -e native_lib`."
         )
 
     asset_name = f"{basename}-{platform_key()}{ext}"

@@ -8,10 +8,13 @@ from luos_engine._ffi import LuosEngineNotFoundError
 @pytest.fixture(autouse=True)
 def _isolate_cache(tmp_path, monkeypatch):
     """Force the cache into tmp and disable any local-build discovery so
-    tests exercise the cache/download paths deterministically."""
+    tests exercise the cache/download paths deterministically. Pin a
+    non-dev engine version so the +dev download guard doesn't fire (the
+    dev-build guard is covered by its own test)."""
     monkeypatch.setenv("LUOS_ENGINE_CACHE_DIR", str(tmp_path / "cache"))
     monkeypatch.delenv("LUOS_ENGINE_LIB_DIR", raising=False)
     monkeypatch.delenv("LUOS_ENGINE_NO_DOWNLOAD", raising=False)
+    monkeypatch.setattr(_phy_loader, "ENGINE_VERSION", "9.9.9")
     # No local build dirs.
     monkeypatch.setattr(_phy_loader, "local_lib_dirs", lambda: iter(()))
 
@@ -77,3 +80,17 @@ def test_no_download_env_raises_when_missing(monkeypatch):
     monkeypatch.setenv("LUOS_ENGINE_NO_DOWNLOAD", "1")
     with pytest.raises(LuosEngineNotFoundError):
         _phy_loader.ensure_phy_dylib("libws_network")
+
+
+def test_dev_build_refuses_download(monkeypatch):
+    """A +dev build has no matching release; fail with a clear message
+    instead of 404-ing on a non-existent release asset."""
+    monkeypatch.setattr(_phy_loader, "ENGINE_VERSION", "0.0.0+dev")
+
+    def _boom(*a, **k):
+        raise AssertionError("must not attempt a download for a dev build")
+
+    monkeypatch.setattr(_phy_loader, "_fetch_json", _boom)
+    with pytest.raises(_phy_loader.PhyDownloadError) as exc:
+        _phy_loader.ensure_phy_dylib("libws_network")
+    assert "dev build" in str(exc.value)
