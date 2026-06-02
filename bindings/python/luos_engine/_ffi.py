@@ -5,12 +5,6 @@ from pathlib import Path
 
 _LIB_NAMES = ("libluos_engine.dylib", "libluos_engine.so", "libluos_engine.dll")
 
-# Phy dylibs that must be pre-loaded so the cffi extension's unresolved
-# Ws_* symbols resolve at dlopen on macOS (flat namespace, eager binding).
-# Listed by basename; probed against platform extensions at load time.
-_PHY_DYLIB_BASENAMES: tuple[str, ...] = ("libws_network",)
-_PHY_DYLIB_EXTENSIONS: tuple[str, ...] = (".dylib", ".so")
-
 
 class LuosEngineNotFoundError(RuntimeError):
     pass
@@ -66,40 +60,24 @@ _PHY_HANDLES: dict[str, ctypes.CDLL] = {}
 
 
 def load_dylib():
-    """Pre-load libluos_engine and any co-located phy dylibs with
-    RTLD_GLOBAL. The phy preload is required because cffi's extension
-    declares phy symbols unconditionally in its cdef, and macOS resolves
-    them eagerly at dlopen — deferring the preload to luos.load_phy would
-    fail at import time. Phy activation (Ws_Init etc.) still runs only
-    when the user calls luos.load_phy."""
+    """Load libluos_engine with RTLD_GLOBAL so the cffi extension's engine
+    symbols resolve. Phys are loaded lazily by get_phy_handle, not here."""
     global _LIB_HANDLE
     if _LIB_HANDLE is None:
         with _LIB_LOCK:
             if _LIB_HANDLE is None:
                 path = resolve_lib_path()
                 _LIB_HANDLE = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
-                lib_dir = path.parent
-                for basename in _PHY_DYLIB_BASENAMES:
-                    for ext in _PHY_DYLIB_EXTENSIONS:
-                        phy_path = lib_dir / (basename + ext)
-                        if phy_path.is_file():
-                            _PHY_HANDLES[basename] = ctypes.CDLL(
-                                str(phy_path), mode=ctypes.RTLD_GLOBAL
-                            )
-                            break
     return _LIB_HANDLE
 
 
 def get_phy_handle(basename: str) -> ctypes.CDLL:
-    """Return the cached CDLL for a preloaded phy dylib. Raises
-    LuosEngineNotFoundError if the phy was not co-located with the
-    engine dylib at import time (i.e., the phy dylib didn't exist
-    or couldn't be loaded)."""
+    """Return a cached RTLD_GLOBAL CDLL for the phy `basename`, resolving
+    and loading (and downloading if necessary) on first use."""
     handle = _PHY_HANDLES.get(basename)
     if handle is None:
-        raise LuosEngineNotFoundError(
-            f"{basename}.{{dylib,so}} was not preloaded. Build it with "
-            "`~/.platformio/penv/bin/pio run -e native_lib` and ensure "
-            "it lives beside libluos_engine."
-        )
+        from ._phy_loader import ensure_phy_dylib
+        path = ensure_phy_dylib(basename)
+        handle = ctypes.CDLL(str(path), mode=ctypes.RTLD_GLOBAL)
+        _PHY_HANDLES[basename] = handle
     return handle
