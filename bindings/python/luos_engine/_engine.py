@@ -102,7 +102,7 @@ def load_phy(descriptor, **kwargs) -> None:
                 return  # idempotent within a stop/start cycle
         handle = get_phy_handle(descriptor.dylib_basename)
         if descriptor.configure is not None:
-            descriptor.configure(lib, dict(kwargs))
+            descriptor.configure(handle, dict(kwargs))
         elif kwargs:
             raise TypeError(
                 f"load_phy({descriptor.name}): descriptor takes no kwargs, "
@@ -112,9 +112,9 @@ def load_phy(descriptor, **kwargs) -> None:
             # Ensure Luos_Init has run so that Phy_Init places the internal
             # luos_phy at slot 0 before the external phy claims a slot.
             init()
-            getattr(lib, descriptor.init_symbol)()
+            getattr(handle, descriptor.init_symbol)()
             _INITIALIZED_PHYS.add(descriptor.name)
-        loop_callable = getattr(lib, descriptor.loop_symbol)
+        loop_callable = getattr(handle, descriptor.loop_symbol)
         _registry.PHYS.append(LoadedPhy(
             descriptor=descriptor,
             handle=handle,

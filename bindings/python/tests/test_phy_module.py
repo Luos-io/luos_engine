@@ -1,6 +1,11 @@
 import pytest
 from luos_engine import phy
-from luos_engine._luos_cffi import lib
+from luos_engine._ffi import get_phy_handle
+
+
+@pytest.fixture
+def ws_handle():
+    return get_phy_handle("libws_network")
 
 
 def test_ws_network_descriptor_fields():
@@ -12,17 +17,16 @@ def test_ws_network_descriptor_fields():
     assert d.configure is not None
 
 
-def test_configure_ws_rejects_unknown_kwargs():
+def test_configure_ws_rejects_unknown_kwargs(ws_handle):
     with pytest.raises(TypeError) as exc:
-        phy._configure_ws(lib, {"brokre": "ws://x"})
+        phy._configure_ws(ws_handle, {"brokre": "ws://x"})
     assert "brokre" in str(exc.value)
 
 
-def test_configure_ws_accepts_no_kwargs():
-    # No broker kwarg = no-op, must not touch the lib.
-    phy._configure_ws(lib, {})
+def test_configure_ws_accepts_no_kwargs(ws_handle):
+    phy._configure_ws(ws_handle, {})
 
 
-def test_configure_ws_rejects_overlong_url():
+def test_configure_ws_rejects_overlong_url(ws_handle):
     with pytest.raises(ValueError):
-        phy._configure_ws(lib, {"broker": "ws://" + "x" * 128})
+        phy._configure_ws(ws_handle, {"broker": "ws://" + "x" * 128})

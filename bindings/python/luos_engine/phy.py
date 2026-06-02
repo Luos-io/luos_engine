@@ -5,6 +5,7 @@ name, dylib basename, init/loop symbol names, and an optional configure
 hook that runs after the dylib is preloaded but before the init symbol
 is called.
 """
+import ctypes
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -18,7 +19,7 @@ class Phy:
     configure: Callable[[Any, dict], None] | None = None
 
 
-def _configure_ws(lib: Any, kwargs: dict) -> None:
+def _configure_ws(handle: Any, kwargs: dict) -> None:
     broker = kwargs.pop("broker", None)
     if kwargs:
         raise TypeError(
@@ -34,7 +35,10 @@ def _configure_ws(lib: Any, kwargs: dict) -> None:
         raise ValueError(f"broker url must be ASCII: {e}") from None
     if len(encoded) >= 128:
         raise ValueError("broker url must be < 128 bytes")
-    lib.Ws_SetBroker(encoded)
+    fn = handle.Ws_SetBroker
+    fn.argtypes = [ctypes.c_char_p]
+    fn.restype = None
+    fn(encoded)
 
 
 ws_network = Phy(
