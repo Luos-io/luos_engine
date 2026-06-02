@@ -24,6 +24,20 @@ def _find_in_dir(d: Path):
     return None
 
 
+def local_lib_dirs():
+    """Yield directories that may hold locally-built luos binaries
+    (engine + phys), in priority order. Shared by resolve_lib_path and
+    the phy loader so both honour the same dev/build locations."""
+    env_dir = os.environ.get("LUOS_ENGINE_LIB_DIR")
+    if env_dir:
+        yield Path(env_dir)
+    here = Path(__file__).resolve().parent
+    for ancestor in (here, *here.parents):
+        candidate = ancestor / ".pio" / "build" / "native_lib"
+        if candidate.is_dir():
+            yield candidate
+
+
 def resolve_lib_path() -> Path:
     env_lib = os.environ.get("LUOS_ENGINE_LIB")
     if env_lib:
@@ -34,22 +48,10 @@ def resolve_lib_path() -> Path:
             )
         return p
 
-    env_dir = os.environ.get("LUOS_ENGINE_LIB_DIR")
-    if env_dir:
-        found = _find_in_dir(Path(env_dir))
+    for d in local_lib_dirs():
+        found = _find_in_dir(d)
         if found:
             return found
-        raise LuosEngineNotFoundError(
-            f"No libluos_engine.* in LUOS_ENGINE_LIB_DIR={env_dir}"
-        )
-
-    here = Path(__file__).resolve().parent
-    for ancestor in (here, *here.parents):
-        candidate = ancestor / ".pio" / "build" / "native_lib"
-        if candidate.is_dir():
-            found = _find_in_dir(candidate)
-            if found:
-                return found
 
     raise LuosEngineNotFoundError(
         "libluos_engine not found. Build it with "

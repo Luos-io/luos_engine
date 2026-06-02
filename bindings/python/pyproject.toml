@@ -7,7 +7,7 @@ name = "luos_engine"
 version = "0.1.0"
 description = "Python binding for the Luos engine"
 requires-python = ">=3.10"
-dependencies = ["cffi>=1.15"]
+dependencies = ["cffi>=1.15", "platformdirs>=3"]
 
 [project.optional-dependencies]
 test = ["pytest", "pyluos>=3.1"]
