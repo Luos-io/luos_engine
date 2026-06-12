@@ -563,7 +563,7 @@ static void *RobusHAL_RxThread(void *arg)
         int ret = poll(fds, nfds, 1);
 
         ROBUS_DBG("[HAL_LOCK] acquiring mutex...\n");
-        LUOS_MUTEX_LOCK
+        pthread_mutex_lock(&luos_recursive_mutex);
         ROBUS_DBG("[HAL_LOCK] acquired\n");
 
         if (ret > 0)
@@ -636,7 +636,7 @@ static void *RobusHAL_RxThread(void *arg)
             }
         }
 
-        LUOS_MUTEX_UNLOCK
+        pthread_mutex_unlock(&luos_recursive_mutex);
         ROBUS_DBG("[HAL_LOCK] released\n");
     }
     return NULL;
