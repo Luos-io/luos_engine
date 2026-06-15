@@ -28,6 +28,8 @@ void LuosIO_Loop(void);
 int LuosIO_TopologyDetection(service_t *service, connection_t *connection_table);
 error_return_t LuosIO_Send(service_t *service, msg_t *msg);
 
+uint8_t LuosIO_GetDetectAckMode(void);
+
 // Job management
 error_return_t LuosIO_GetNextJob(phy_job_t **job);
 void LuosIO_RmJob(phy_job_t *job);

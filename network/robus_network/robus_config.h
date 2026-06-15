@@ -30,4 +30,7 @@
 
 #define CRC_SIZE 2
 
+// Uncomment for non-real-time platforms (disables ACK modes, enables PTP watchdog)
+// #define NORT
+
 #endif /* _ROBUS_CONFIG_H_ */
