@@ -60,10 +60,16 @@ _CRITICAL void Luos_assert(char *file, uint32_t line)
 {
     // Reset phy to avoid locking the phys
     Phy_Reset();
-    // prepare a message as a node.
-    // To do that we have to reset the service ID and clear PTP states to unlock others.
-
-    Luos_Init();
+    // Do NOT call Luos_Init() here. It reaches Phy_Init(), which sets
+    // phy_nb = 1 and so deregisters every external phy: those take their slots
+    // from index 1 through Phy_Create(), and only the application registers them
+    // (Robus_Init() and friends), which nothing calls again from here. The
+    // broadcast below is then dispatched to the engine's own phy alone and never
+    // reaches the wire, so an asserting node goes silent instead of telling the
+    // network why it died -- the opposite of the point of this function.
+    // Luos_Init() also re-ran LuosHAL_Init() from a fault path and left the node
+    // in NO_DETECTION. Phy_Reset() above already dropped the pending jobs, which
+    // is what this needed.
     // completely reinit the allocator
     MsgAlloc_Init(NULL);
     Phy_FiltersInit(); // Mask filter for service ID
