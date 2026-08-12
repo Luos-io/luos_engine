@@ -14,6 +14,16 @@
  ******************************************************************************/
 
 /******************************************************************************
+ * @brief Number of samples a streaming channel can hold.
+ * @param stream : Streaming channel pointer
+ * @return Capacity in samples
+ ******************************************************************************/
+static inline uint32_t Streaming_GetSampleCapacity(streaming_channel_t *stream)
+{
+    return ((uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->ring_buffer) / stream->data_size;
+}
+
+/******************************************************************************
  * @brief Initialisation of a streaming channel.
  * @param ring_buffer : Pointer to a data table
  * @param ring_buffer_size : Size of the buffer in number of values.
@@ -57,8 +67,8 @@ void Streaming_ResetChannel(streaming_channel_t *stream)
 uint32_t Streaming_PutSample(streaming_channel_t *stream, const void *data, uint32_t size)
 {
     LUOS_ASSERT((stream != NULL) && (data != NULL) && (size > 0));
-    // check if we exceed ring buffer capacity
-    LUOS_ASSERT((Streaming_GetAvailableSampleNB(stream) + size) <= ((uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->ring_buffer));
+    // check if we exceed ring buffer capacity, in samples on both sides
+    LUOS_ASSERT((Streaming_GetAvailableSampleNB(stream) + size) <= Streaming_GetSampleCapacity(stream));
     if (((size * stream->data_size) + (uintptr_t)stream->data_ptr) >= (uintptr_t)stream->end_ring_buffer)
     {
         // our data exceeds ring buffer end, cut it and copy.
@@ -166,8 +176,7 @@ uint32_t Streaming_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *strea
 uint32_t Streaming_AddAvailableSampleNB(streaming_channel_t *stream, uint32_t size)
 {
     LUOS_ASSERT(stream != NULL);
-    uint32_t total_sample_capacity = ((uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->ring_buffer) / stream->data_size;
-    LUOS_ASSERT((int32_t)(total_sample_capacity - Streaming_GetAvailableSampleNB(stream) - size) > 0);
+    LUOS_ASSERT((int32_t)(Streaming_GetSampleCapacity(stream) - Streaming_GetAvailableSampleNB(stream) - size) > 0);
     if (((size * stream->data_size) + stream->data_ptr) >= stream->end_ring_buffer)
     {
         size_t chunk1    = (uintptr_t)stream->end_ring_buffer - (uintptr_t)stream->data_ptr;
@@ -305,8 +314,16 @@ error_return_t Luos_ReceiveStreaming(service_t *service, const msg_t *msg, strea
     else
         chunk_size = msg->header.size;
 
+    // This size comes from the network, it is not ours to trust. Drop a chunk
+    // the channel cannot hold rather than assert on a remote node's message.
+    uint32_t sample_nb = chunk_size / stream->data_size;
+    if ((sample_nb == 0) || (sample_nb > (Streaming_GetSampleCapacity(stream) - Streaming_GetAvailableSampleNB(stream))))
+    {
+        return FAILED;
+    }
+
     // Copy data into buffer
-    Streaming_PutSample(stream, msg->data, (chunk_size / stream->data_size));
+    Streaming_PutSample(stream, msg->data, sample_nb);
 
     // Check end of data
     if ((msg->header.size <= MAX_DATA_MSG_SIZE))
