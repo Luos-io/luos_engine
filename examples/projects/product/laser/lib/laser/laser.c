@@ -179,7 +179,7 @@ void Laser_Init(void)
     // Init the Luos service
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Laser_MsgHandler, POWER_TYPE, "laser", revision);
-    stream             = Streaming_CreateChannel(stream_buf, sizeof(stream_buf), sizeof(ratio_t));
+    stream             = Streaming_CreateChannel(stream_buf, sizeof(stream_buf) / sizeof(stream_buf[0]), sizeof(stream_buf[0]));
     period             = TimeOD_TimeFrom_s(1.0 / DEFAULT_SAMPLE_FREQUENCY); // Configure the trajectory samplerate at 100Hz
     laser_control.flux = STOP;
 }

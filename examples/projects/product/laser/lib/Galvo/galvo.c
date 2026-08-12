@@ -37,7 +37,7 @@ void Galvo_Init(void)
 
     revision_t revision = {.major = 1, .minor = 0, .build = 0};
     Luos_CreateService(Galvo_MsgHandler, POINT_2D, "galvo", revision);
-    stream       = Streaming_CreateChannel(stream_buf, sizeof(stream_buf), 2 * sizeof(uint16_t));
+    stream       = Streaming_CreateChannel(stream_buf, sizeof(stream_buf) / sizeof(stream_buf[0]), sizeof(stream_buf[0]));
     period       = TimeOD_TimeFrom_s(1.0 / DEFAULT_SAMPLE_FREQUENCY); // Configure the trajectory samplerate at 100Hz
     control.flux = STOP;
 }
