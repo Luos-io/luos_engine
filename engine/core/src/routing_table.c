@@ -26,6 +26,15 @@ volatile uint16_t last_routing_table_entry = 0;
 /*******************************************************************************
  * Function
  ******************************************************************************/
+/* "No phy here" has two spellings, and both reach the index builders below.
+ * connection_table is memset to 0xFF, so any connection slot the detection did
+ * not fill reports phy_id == 0xFF; the builders separately use -1 as their own
+ * "nothing indexed yet" marker. A guard that only tests -1 lets 0xFF through to
+ * RoutingTB_Send*Indexes, whose first statement is
+ * LUOS_ASSERT(phy_index != 0xFF). Test for both.
+ */
+#define PHY_INDEX_UNSET(phy) (((phy) == -1) || ((phy) == 0xFF))
+
 static void RoutingTB_AddNumToAlias(char *alias, uint8_t num);
 uint16_t RoutingTB_IDFromAlias(char *alias);
 char *RoutingTB_AliasFromId(uint16_t id);
@@ -437,7 +446,13 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
             uint8_t bit_index = node_idx;
             nodes_indexes[bit_index / 8] |= 1 << (bit_index % 8);
         }
-        RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
+        // This is the one call site that never checked node_phy at all: it is
+        // read straight out of the connection table, so an unfilled parent slot
+        // hands 0xFF to a function that asserts on exactly that.
+        if (!PHY_INDEX_UNSET(node_phy))
+        {
+            RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
+        }
         return;
     }
 
@@ -454,7 +469,7 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
             if (node_phy != connection_table[node_idx].parent.phy_id)
             {
                 // The parent phy_id is different than the one we were working on, we can consider that we completed the previous phy indexing, we can send it and start a new one for the phy described by the node connection informations.
-                if (node_phy != -1)
+                if (!PHY_INDEX_UNSET(node_phy))
                 {
                     // We have to send the indexes we completed.
                     RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
@@ -474,7 +489,7 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
     // Check if the node index is the root of the routing table. If it is we just have to send the indexes and we are done.
     if (node_index == 0)
     {
-        if (node_phy != -1)
+        if (!PHY_INDEX_UNSET(node_phy))
         {
             // We have to send the indexes we completed.
             RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
@@ -484,7 +499,7 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
     // Compare the current node_phy to the current node index connection informations.
     if (node_phy != connection_table[node_index].child.phy_id)
     {
-        if (node_phy != -1)
+        if (!PHY_INDEX_UNSET(node_phy))
         {
             // We were indexing another phy, we can consider it as done and send it. Then we have to start a new for connection_table[node_index].child.phy_id.
             RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
@@ -502,7 +517,7 @@ void RoutingTB_ComputeNodeIndexes(service_t *service, uint16_t node_index, uint1
         nodes_indexes[bit_index / 8] |= 1 << (bit_index % 8);
     }
 
-    if (node_phy != -1)
+    if (!PHY_INDEX_UNSET(node_phy))
     {
         // Send the last phy indexes.
         RoutingTB_SendNodeIndexes(service, node_index + 1, node_phy, nodes_indexes);
@@ -585,7 +600,7 @@ void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t rtb_index)
                     // If the phy of the new branch is the same, we have to add them to the same index.
                     if (node_phy != routing_table[rtb_idx].connection.parent.phy_id)
                     {
-                        if (node_phy != -1)
+                        if (!PHY_INDEX_UNSET(node_phy))
                         {
                             // We have to send the indexes we completed.
                             RoutingTB_SendServiceIndexes(service, routing_table[rtb_index].node_id, node_phy, services_indexes);
@@ -609,7 +624,7 @@ void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t rtb_index)
                 // This is a service slot.
                 // if a node phy is set, this service is accessible trough this phy, we have to add it to the services_indexes table.
                 // else this service is a local one (already referenced by Luos_engine phy), we don't care.
-                if (node_phy != -1)
+                if (!PHY_INDEX_UNSET(node_phy))
                 {
                     // Add the service index to the services_indexes table.
                     uint8_t bit_index = routing_table[rtb_idx].id - 1; // Because 1 represent bit index 0.
@@ -627,7 +642,7 @@ void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t rtb_index)
     // Check if the node index is the root of the routing table. If it is we just have to send the indexes and we are done.
     if (rtb_index == 0)
     {
-        if (node_phy != -1)
+        if (!PHY_INDEX_UNSET(node_phy))
         {
             // We have to send the indexes we completed.
             RoutingTB_SendServiceIndexes(service, routing_table[rtb_index].node_id, node_phy, services_indexes);
@@ -637,7 +652,7 @@ void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t rtb_index)
     // Compare the current node_phy to the current node index connection informations.
     if (node_phy != routing_table[rtb_index].connection.child.phy_id)
     {
-        if (node_phy != -1)
+        if (!PHY_INDEX_UNSET(node_phy))
         {
             // We were indexing another phy, we can consider it as done and send it. Then we have to start a new one for routing_table[node_index].connection.child.phy_id.
             RoutingTB_SendServiceIndexes(service, routing_table[rtb_index].node_id, node_phy, services_indexes);
@@ -658,7 +673,7 @@ void RoutingTB_ComputeServiceIndexes(service_t *service, uint16_t rtb_index)
         }
     }
 
-    if (node_phy != -1)
+    if (!PHY_INDEX_UNSET(node_phy))
     {
         // Send the last phy indexes.
         RoutingTB_SendServiceIndexes(service, routing_table[rtb_index].node_id, node_phy, services_indexes);
