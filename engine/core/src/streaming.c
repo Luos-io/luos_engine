@@ -274,7 +274,8 @@ void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t 
 
         // Copy data into message
         Streaming_GetSample(stream, msg->data, chunk_size);
-        msg->header.size = data_size;
+        // header.size is a byte count on the wire, data_size counts samples.
+        msg->header.size = data_size * stream->data_size;
 
         // Send message
         uint32_t tickstart = Luos_GetSystick();
