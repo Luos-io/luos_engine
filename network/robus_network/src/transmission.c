@@ -61,6 +61,7 @@ volatile uint8_t nbrRetry = 0;
  * Function
  ******************************************************************************/
 _CRITICAL static uint8_t Transmit_GetLockStatus(void);
+_CRITICAL static bool Transmit_SnapJob(phy_job_t *job, phy_job_t *snapshot);
 /******************************************************************************
  * @brief Transmit_Init
  * @param None
@@ -130,10 +131,20 @@ _CRITICAL void Transmit_Process()
     phy_job_t *job          = Phy_GetJob(robus_phy);
     static uint8_t tx_data[sizeof(msg_t) + sizeof(robus_encaps_t)];
     // Get the message encapsulation
-    if ((job != NULL) && (Transmit_GetLockStatus() == false) && (job->phy_data != NULL))
+    if ((job != NULL) && (Transmit_GetLockStatus() == false))
     {
-        LUOS_ASSERT((job->phy_data != NULL) && (job->size != 0) && (job->size <= sizeof(msg_t)));
-        robus_encaps_t *jobEncaps = (robus_encaps_t *)job->phy_data;
+        // Work from a snapshot, never from *job. Phy_RmJob memsets a job to 0 and
+        // reaches us from the USART and timeout interrupts through Transmit_End,
+        // so a job can be torn down between two reads of the same field.
+        phy_job_t tx_job;
+        if (Transmit_SnapJob(job, &tx_job) == false)
+        {
+            // The job was removed while we were reaching for it. That is a normal
+            // race, not a broken invariant, so there is nothing to send and
+            // nothing to assert about.
+            return;
+        }
+        robus_encaps_t *jobEncaps = (robus_encaps_t *)tx_job.phy_data;
         // We have something to send
         // Check if we already try to send it multiple times and save it on stats if it is
         if (nbrRetry >= NBR_RETRY)
@@ -149,10 +160,18 @@ _CRITICAL void Transmit_Process()
                 // Nothing to transmit anymore, just exit.
                 return;
             }
+            // Snapshot the new job too: it carries its own data, size and
+            // encapsulation. Keeping the failed job's encapsulation here sent the
+            // new message out under the old message's CRC.
+            if (Transmit_SnapJob(job, &tx_job) == false)
+            {
+                return;
+            }
+            jobEncaps = (robus_encaps_t *)tx_job.phy_data;
         }
         // Check if we will need an ACK for this message and compute the transmit status we will need to manage
         transmitStatus_t initial_transmit_status = TX_OK;
-        if (job->ack == true)
+        if (tx_job.ack == true)
         {
             // We will need to validate the good reception with a ack.
             // Switch the tx status as TX_NOK allowing to detect a default at the next Timeout if no ACK have been received.
@@ -175,33 +194,38 @@ _CRITICAL void Transmit_Process()
             {
                 // This is the first time we try to send this message, we need to backup the original crc value and the job data to the TX_data buffer
                 crc_val = jobEncaps->crc;
-                memcpy(tx_data, job->data_pt, job->size);
+                // tx_data holds one message plus one encapsulation and no more.
+                // State that bound here instead of trusting the encapsulation: it
+                // is the only thing standing between a bad size and the rest of
+                // the .bss section.
+                LUOS_ASSERT((tx_job.size + jobEncaps->size) <= sizeof(tx_data));
+                memcpy(tx_data, tx_job.data_pt, tx_job.size);
                 // Add the end of the message in the end of the buffer
-                memcpy(&tx_data[job->size], jobEncaps->unmaped, jobEncaps->size);
+                memcpy(&tx_data[tx_job.size], jobEncaps->unmaped, jobEncaps->size);
             }
 
             // Put timestamping on data here
-            if (job->timestamp)
+            if (tx_job.timestamp)
             {
 
                 // Convert date to a sendable timestamp and put it on the encapsulation
-                jobEncaps->timestamp = Phy_ComputeMsgTimestamp(robus_phy, job);
+                jobEncaps->timestamp = Phy_ComputeMsgTimestamp(robus_phy, &tx_job);
 
                 jobEncaps->timestamped_crc = ll_crc_compute(jobEncaps->unmaped, sizeof(time_luos_t), crc_val);
                 jobEncaps->size            = sizeof(time_luos_t) + CRC_SIZE;
                 // Add the end of the message in the end of the buffer
-                memcpy(&tx_data[job->size], jobEncaps->unmaped, jobEncaps->size);
+                memcpy(&tx_data[tx_job.size], jobEncaps->unmaped, jobEncaps->size);
             }
 
             // Transmit data
             if (Phy_GetJob(robus_phy) == job)
             {
-                LUOS_ASSERT((job->size + jobEncaps->size) >= 9);
+                LUOS_ASSERT((tx_job.size + jobEncaps->size) >= 9);
                 Phy_SetIrqState(false);
                 // We will prepare to transmit something enable tx status with precomputed value of the initial_transmit_status
                 ctx.tx.status = initial_transmit_status;
                 // We still have something to send, no reset occured
-                RobusHAL_ComTransmit(tx_data, (job->size + jobEncaps->size));
+                RobusHAL_ComTransmit(tx_data, (tx_job.size + jobEncaps->size));
                 Phy_SetIrqState(true);
             }
             else
@@ -210,6 +234,43 @@ _CRITICAL void Transmit_Process()
             }
         }
     }
+}
+
+/******************************************************************************
+ * @brief Copy a job out of the phy queue so a transmission can rely on it
+ * @param job the job to copy, as returned by Phy_GetJob
+ * @param snapshot where to store the copy
+ * @return true if the copy describes a job we can still transmit
+ * _CRITICAL function call in IRQ
+ *
+ * struct_phy.h guarantees that a job never *moves* while a phy is sending it, so
+ * that phys may hold the pointer. It does not guarantee that the job still holds
+ * anything: Phy_RmJob memsets it to 0, and it is reached from the USART and
+ * timeout interrupts through Transmit_End. A transmission that reads job->size or
+ * job->phy_data more than once can therefore see a valid value and then a zeroed
+ * one, having already decided the first was good.
+ *
+ * That is not theoretical. Checking job->phy_data and then re-reading it one line
+ * later was enough to hand the transmission a NULL encapsulation, whose ->size
+ * read at NULL + 10 does not even fault on targets that alias address 0 to flash:
+ * it returns whatever the vector table holds there. On an STM32G4 that is 0x0801,
+ * so Transmit_Process copied 2049 bytes over a 147 byte buffer and flattened
+ * 1.9 kB of .bss -- taking uwTick and the whole phy context with it, which then
+ * crashed somewhere else entirely, through a function pointer that had been
+ * overwritten with flash contents.
+ *
+ * So take one atomic copy, validate that, and never look at *job again.
+ ******************************************************************************/
+_CRITICAL static bool Transmit_SnapJob(phy_job_t *job, phy_job_t *snapshot)
+{
+    LUOS_ASSERT((job != NULL) && (snapshot != NULL));
+    Phy_SetIrqState(false);
+    *snapshot = *job;
+    Phy_SetIrqState(true);
+    return (snapshot->phy_data != NULL)
+           && (snapshot->data_pt != NULL)
+           && (snapshot->size != 0)
+           && (snapshot->size <= sizeof(msg_t));
 }
 
 /******************************************************************************
