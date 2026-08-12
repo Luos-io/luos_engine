@@ -116,7 +116,7 @@ uint32_t Streaming_GetSample(streaming_channel_t *stream, void *data, uint32_t s
         }
         else
         {
-            data = memcpy(data, stream->sample_ptr, (size * stream->data_size));
+            memcpy(data, stream->sample_ptr, (size * stream->data_size));
             // Set the new sample pointer
             stream->sample_ptr = stream->sample_ptr + (size * stream->data_size);
         }
@@ -157,7 +157,10 @@ uint32_t Streaming_GetAvailableSampleNB(streaming_channel_t *stream)
 uint32_t Streaming_GetAvailableSampleNBUntilEndBuffer(streaming_channel_t *stream)
 {
     LUOS_ASSERT(stream != NULL);
-    int32_t nb_available_sample = ((uintptr_t)stream->data_ptr - (uintptr_t)stream->sample_ptr) / stream->data_size;
+    // Narrow the pointer difference to a signed value before dividing, the same
+    // way Streaming_GetAvailableSampleNB does. Dividing the unsigned difference
+    // first loses the sign, and the loop below is never taken.
+    int32_t nb_available_sample = ((int32_t)((uintptr_t)stream->data_ptr - (uintptr_t)stream->sample_ptr)) / stream->data_size;
     if (nb_available_sample < 0)
     {
         // The buffer have looped
@@ -210,12 +213,9 @@ uint32_t Streaming_RmvAvailableSampleNB(streaming_channel_t *stream, uint32_t si
     }
     else
     {
+        // Landing exactly on the end of the ring buffer is handled by the branch
+        // above, which takes over as soon as the new pointer reaches it.
         stream->sample_ptr = (void *)((uintptr_t)stream->sample_ptr + (size * stream->data_size));
-        if (stream->sample_ptr == stream->end_ring_buffer)
-        {
-            // If we are exactly at the end of the ring buffer, we need to loop
-            stream->sample_ptr = stream->ring_buffer;
-        }
     }
     return Streaming_GetAvailableSampleNB(stream);
 }

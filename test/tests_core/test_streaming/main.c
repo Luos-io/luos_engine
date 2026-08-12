@@ -526,6 +526,28 @@ void unittest_Streaming_GetAvailableSampleNBUntilEndBuffer(void)
             TEST_ASSERT_TRUE(false);
         }
     }
+    NEW_TEST_CASE("Test Streaming_GetAvailableSampleNBUntilEndBuffer buffer loop case on a 3 byte data size");
+    {
+        // 10 samples of 3 bytes. A data size that is not a power of two makes the
+        // sign of the pointer difference matter: dividing it before narrowing it
+        // to int32_t turns the negative difference into a large positive number,
+        // so the loop branch below is never taken.
+        uint8_t buffer3[30];
+        streaming_channel_t channel3 = {0};
+        TRY
+        {
+            channel3 = Streaming_CreateChannel(buffer3, 10, 3);
+            // data_ptr one sample behind sample_ptr, so the buffer has looped
+            channel3.sample_ptr = (void *)((uintptr_t)channel3.ring_buffer + 27);
+            channel3.data_ptr   = (void *)((uintptr_t)channel3.ring_buffer + 24);
+            TEST_ASSERT_EQUAL(9, Streaming_GetAvailableSampleNB(&channel3));
+            TEST_ASSERT_EQUAL(1, Streaming_GetAvailableSampleNBUntilEndBuffer(&channel3));
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+    }
 }
 
 void unittest_Streaming_AddAvailableSampleNB(void)
