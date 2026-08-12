@@ -842,6 +842,54 @@ void unittest_Luos_ReceiveStreaming_oversized(void)
     }
 }
 
+void unittest_Luos_Streaming_roundtrip_4byte_samples(void)
+{
+    // header.size is a byte count on the wire. Send a data_size > 1 channel
+    // through it and check nothing is lost. 40 float samples are 160 bytes, more
+    // than one MAX_DATA_MSG_SIZE message holds, so the multi chunk path is
+    // covered as well.
+    static float txring[64];
+    static float rxring[64];
+    streaming_channel_t tx = {0};
+    Init_Context();
+
+    NEW_TEST_CASE("Test streaming round trip on a 4 byte data size");
+    {
+        revision_t revision = {.major = 1, .minor = 0, .build = 0};
+        service_t *service  = Luos_CreateService(MessageHandler, VOID_TYPE, "Float_App", revision);
+        Luos_Detect(service);
+        do
+        {
+            Luos_Loop();
+        } while (!Luos_IsDetected());
+        msg_t msg;
+        msg.header.target      = service->id;
+        msg.header.target_mode = SERVICEIDACK;
+        msg.header.cmd         = IO_STATE;
+        TRY
+        {
+            tx        = Streaming_CreateChannel(txring, 64, sizeof(float));
+            rxchannel = Streaming_CreateChannel(rxring, 64, sizeof(float));
+            for (uint32_t i = 0; i < 40; i++)
+            {
+                txring[i] = (float)(100 + i);
+            }
+            TEST_ASSERT_EQUAL(40, Streaming_AddAvailableSampleNB(&tx, 40));
+            Luos_SendStreamingSize(service, &msg, &tx, 40);
+            Luos_Loop();
+            TEST_ASSERT_EQUAL(40, Streaming_GetAvailableSampleNB(&rxchannel));
+            for (uint32_t i = 0; i < 40; i++)
+            {
+                TEST_ASSERT_EQUAL_FLOAT((float)(100 + i), rxring[i]);
+            }
+        }
+        CATCH
+        {
+            TEST_ASSERT_TRUE(false);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
@@ -857,6 +905,7 @@ int main(int argc, char **argv)
     UNIT_TEST_RUN(unittest_Streaming_RmvAvailableSampleNB);
     UNIT_TEST_RUN(unittest_Luos_Send_and_receive_Streaming);
     UNIT_TEST_RUN(unittest_Luos_ReceiveStreaming_oversized);
+    UNIT_TEST_RUN(unittest_Luos_Streaming_roundtrip_4byte_samples);
 
     UNITY_END();
 }
