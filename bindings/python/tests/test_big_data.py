@@ -15,8 +15,9 @@ def _pair(on_msg):
     return sender, receiver, peer
 
 
+@pytest.mark.parametrize("interval", [0.0, 0.003])
 @pytest.mark.parametrize("size", [129, 512, 1000])
-def test_a_big_payload_arrives_whole(size):
+def test_a_big_payload_arrives_whole(size, interval):
     payload = bytes(i % 251 for i in range(size))
     buffer = bytearray(size)
     frames = []
@@ -31,12 +32,17 @@ def test_a_big_payload_arrives_whole(size):
             done.set()
 
     sender, _receiver, peer = _pair(on_msg)
-    sender.send_data(cmd=44, target=peer.id, data=payload)
+    t0 = time.monotonic()
+    sender.send_data(cmd=44, target=peer.id, data=payload, interval_s=interval)
+    took = time.monotonic() - t0
     assert done.wait(timeout=2.0), "the transfer never completed"
     luos.stop()
     assert bytes(buffer) == payload
+    if interval:
+        assert took >= interval * (len(frames) - 1), "the paced frames were not spaced"
     # The size field of each frame is what was still to come, as the C
-    # engine counts it: the whole size first, one frame's worth on the last.
+    # engine counts it: the whole size first, one frame's worth on the last
+    # -- the paced path speaks the same protocol.
     expected = []
     left = size
     while left > 0:

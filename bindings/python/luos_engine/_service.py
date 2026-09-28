@@ -90,16 +90,18 @@ class Service:
 
     @staticmethod
     def _new_msg(*, cmd: int, target: int, target_mode: int,
-                 payload: bytes = b""):
+                 payload: bytes = b"", size: int | None = None):
         """A msg_t with its header filled and `payload` (at most one frame)
-        copied in. The engine fills `source` with our id when sending."""
+        copied in. The engine fills `source` with our id when sending. `size`
+        overrides the header's size field: a big-data frame carries the
+        bytes still to come there, not its own length."""
         header = pack_header(
             config=0,
             target=target,
             target_mode=target_mode,
             source=0,
             cmd=cmd,
-            size=len(payload),
+            size=len(payload) if size is None else size,
         )
         msg = ffi.new("msg_t *")
         ffi.memmove(msg, header, 7)
@@ -127,18 +129,45 @@ class Service:
 
     def send_data(self, *, cmd: int, target: int,
                   data: bytes | bytearray | memoryview,
-                  target_mode: int = 0) -> None:
+                  target_mode: int = 0, interval_s: float = 0.0) -> None:
         """Luos_SendData: a payload of any size (up to 65535 bytes). The
         engine splits it into MAX_DATA_MSG_SIZE frames whose `size` field
         counts what is still to come, so the receiver reassembles it with
         receive_data. Blocks until every frame is queued; the loop must be
-        running (luos.start()) or the engine's 500 ms timeout asserts."""
+        running (luos.start()) or the engine's 500 ms timeout asserts.
+
+        `interval_s` > 0 sends the same frames one at a time, that far
+        apart, instead of the engine's back-to-back burst. A receiver whose
+        message buffer holds fewer frames than the transfer (MSG_BUFFER_SIZE
+        is 3 messages by default) cannot allocate a burst that lands while
+        its loop is busy, and the engine asserts rather than drop a frame
+        from the bus; with no acknowledgements on the link (a NORT master)
+        nothing else paces the sender. Seen on a Tartine board: a 4-frame
+        table crashed it at luos_phy.c's rx allocation."""
         payload = bytes(data)
         if not 0 < len(payload) <= 0xFFFF:
             raise ValueError(f"send_data takes 1..65535 bytes, got {len(payload)}")
-        msg = self._new_msg(cmd=cmd, target=target, target_mode=target_mode)
-        buf = ffi.from_buffer(payload)
-        lib.Luos_SendData(self._handle, msg, buf, len(payload))
+        if interval_s <= 0.0:
+            msg = self._new_msg(cmd=cmd, target=target, target_mode=target_mode)
+            buf = ffi.from_buffer(payload)
+            lib.Luos_SendData(self._handle, msg, buf, len(payload))
+            return
+        left = len(payload)
+        while left > 0:
+            n = min(_MAX_DATA, left)
+            start = len(payload) - left
+            msg = self._new_msg(cmd=cmd, target=target, target_mode=target_mode,
+                                payload=payload[start:start + n], size=left)
+            deadline = time.monotonic() + 0.5       # the engine's own patience
+            while (rc := lib.Luos_SendMsg(self._handle, msg)) == lib.FAILED:
+                if time.monotonic() >= deadline:
+                    raise SendError("send_data: no message slot freed in 500 ms")
+                time.sleep(0.001)
+            if rc != lib.SUCCEED:
+                raise SendError(f"Luos_SendMsg(cmd={cmd}, target={target}) returned {rc}")
+            left -= n
+            if left > 0:
+                time.sleep(interval_s)
 
     def receive_data(self, msg: Message, buffer: bytearray) -> int:
         """Luos_ReceiveData: feed one frame of a send_data transfer into
