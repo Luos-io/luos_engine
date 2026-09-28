@@ -41,14 +41,59 @@ typedef void (*SERVICE_CB)(service_t *, const msg_t *);
 
 void Luos_Init(void);
 void Luos_Loop(void);
+void Luos_ResetStatistic(void);
+const revision_t *Luos_GetVersion(void);
+void Luos_SetIrqState(bool state);
 service_t *Luos_CreateService(SERVICE_CB cb, uint8_t type,
                               const char *alias, revision_t revision);
+error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size);
 void Luos_ServicesClear(void);
 error_return_t Luos_SendMsg(service_t *service, msg_t *msg);
+error_return_t Luos_TxComplete(void);
 uint32_t Luos_GetSystick(void);
 bool Luos_IsDetected(void);
 void Luos_Detect(service_t *service);
 uint16_t Luos_NbrAvailableMsg(void);
+
+// Polling reception: services created without a callback keep their
+// messages in the engine until one of these copies them out.
+error_return_t Luos_ReadMsg(service_t *service, msg_t *msg_to_write);
+error_return_t Luos_ReadFromService(service_t *service, uint16_t id, msg_t *msg_to_write);
+error_return_t Luos_ReadFromCmd(service_t *service, uint8_t cmd, msg_t *msg_to_write);
+
+// Big data: a payload of any size, split into MAX_DATA_MSG_SIZE frames whose
+// size field counts what is left, and reassembled on the other side.
+void Luos_SendData(service_t *service, msg_t *msg, void *bin_data, uint16_t size);
+int Luos_ReceiveData(service_t *service, const msg_t *msg, void *bin_data);
+
+// Pub/sub
+error_return_t Luos_Subscribe(service_t *service, uint16_t topic);
+error_return_t Luos_Unsubscribe(service_t *service, uint16_t topic);
+
+// Timestamps: seconds, as a double.
+typedef struct { double raw; } time_luos_t;
+time_luos_t Luos_Timestamp(void);
+bool Luos_IsMsgTimstamped(const msg_t *msg);
+time_luos_t Luos_GetMsgTimestamp(const msg_t *msg);
+error_return_t Luos_SendTimestampMsg(service_t *service, msg_t *msg, time_luos_t timestamp);
+
+// Streaming: a ring buffer of fixed-size samples the engine drains into
+// messages, or fills from them.
+typedef struct {
+    void *ring_buffer;
+    void *end_ring_buffer;
+    void *sample_ptr;
+    void *data_ptr;
+    uint8_t data_size;
+} streaming_channel_t;
+streaming_channel_t Streaming_CreateChannel(const void *ring_buffer, uint32_t ring_buffer_size, uint8_t data_size);
+void Streaming_ResetChannel(streaming_channel_t *stream);
+uint32_t Streaming_PutSample(streaming_channel_t *stream, const void *data, uint32_t size);
+uint32_t Streaming_GetSample(streaming_channel_t *stream, void *data, uint32_t size);
+uint32_t Streaming_GetAvailableSampleNB(streaming_channel_t *stream);
+void Luos_SendStreaming(service_t *service, msg_t *msg, streaming_channel_t *stream);
+void Luos_SendStreamingSize(service_t *service, msg_t *msg, streaming_channel_t *stream, uint32_t max_size);
+error_return_t Luos_ReceiveStreaming(service_t *service, const msg_t *msg, streaming_channel_t *stream);
 
 // Accessors for service_t's opaque fields (defined in set_source).
 uint16_t service_id(service_t *s);
@@ -83,6 +128,9 @@ typedef struct {
     routing_table_t *result_table[...];
 } search_result_t;
 
+// Exported by routing_table.c (not in its header): stop() erases the table
+// so a later start() cannot find last session's peers.
+void RoutingTB_Erase(void);
 search_result_t *RTFilter_Reset(search_result_t *result);
 search_result_t *RTFilter_Type(search_result_t *result, luos_type_t type);
 search_result_t *RTFilter_Alias(search_result_t *result, char *alias);
@@ -116,6 +164,10 @@ ffibuilder.set_source(
     """
     #include <string.h>
     #include "luos_engine.h"
+
+    // Defined in routing_table.c and exported by the shared library, but
+    // not declared by routing_table.h.
+    void RoutingTB_Erase(void);
 
     // Peek helpers: take 7 raw bytes, interpret them as the real
     // engine's header_t, and return individual fields. Used by

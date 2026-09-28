@@ -22,6 +22,13 @@ _LIFECYCLE_LOCK = threading.Lock()
 # §Risks for the load-once-per-process rationale.
 _INITIALIZED_PHYS: set[str] = set()
 
+# Packages, as Luos_AddPackage / Luos_Run know them: (init, loop) pairs. Like
+# the phys, a package's init runs once per process, at the first start()
+# after it was added; its loop is ticked by the loop thread after every
+# Luos_Loop, which is what Luos_Run does.
+_PACKAGES: list[tuple] = []
+_INITIALIZED_PACKAGES: set[int] = set()
+
 
 def init() -> None:
     if _INIT_DONE.is_set():
@@ -30,11 +37,13 @@ def init() -> None:
     _INIT_DONE.set()
 
 
-def _loop(phy_ticks: tuple) -> None:
+def _loop(phy_ticks: tuple, package_loops: tuple) -> None:
     while not _registry.SHUTDOWN.is_set():
         lib.Luos_Loop()
         for tick in phy_ticks:
             tick()
+        for loop in package_loops:
+            loop()
         time.sleep(_TICK_S)
 
 
@@ -44,13 +53,29 @@ def start() -> None:
         if _registry.RUNNING.is_set():
             return
         init()
+        for index, (package_init, _loop_fn) in enumerate(_PACKAGES):
+            if index not in _INITIALIZED_PACKAGES:
+                package_init()
+                _INITIALIZED_PACKAGES.add(index)
         _registry.SHUTDOWN.clear()
         phy_ticks = tuple(p.loop for p in _registry.PHYS)
+        package_loops = tuple(loop_fn for _init, loop_fn in _PACKAGES)
         _LOOP_THREAD = threading.Thread(
-            target=_loop, name="luos-loop", daemon=True, args=(phy_ticks,),
+            target=_loop, name="luos-loop", daemon=True,
+            args=(phy_ticks, package_loops),
         )
         _LOOP_THREAD.start()
         _registry.RUNNING.set()
+
+
+def add_package(init_fn, loop_fn) -> None:
+    """Luos_AddPackage: `init_fn` runs at the next start(), once; `loop_fn`
+    runs on the loop thread after every Luos_Loop, as under Luos_Run.
+    Must be called before start()."""
+    with _LIFECYCLE_LOCK:
+        if _registry.RUNNING.is_set():
+            raise LuosError("add_package must be called before start()")
+        _PACKAGES.append((init_fn, loop_fn))
 
 
 def stop() -> None:
@@ -62,6 +87,10 @@ def stop() -> None:
                 _LOOP_THREAD.join(timeout=2.0)
                 _LOOP_THREAD = None
             lib.Luos_ServicesClear()
+            # The routing table outlives the services: without this, the
+            # next session's find_peer answers with last session's ids
+            # before its own detection has run.
+            lib.RoutingTB_Erase()
             _registry.RUNNING.clear()
             _INIT_DONE.clear()
         _registry.clear()
@@ -79,6 +108,38 @@ def run() -> None:
 
 def is_detected() -> bool:
     return bool(lib.Luos_IsDetected())
+
+
+def tx_complete() -> bool:
+    """Luos_TxComplete: True once nothing is left to transmit."""
+    return lib.Luos_TxComplete() == lib.SUCCEED
+
+
+def nbr_available_msg() -> int:
+    """Luos_NbrAvailableMsg: messages waiting in the engine."""
+    return lib.Luos_NbrAvailableMsg()
+
+
+def engine_version() -> tuple[int, int, int]:
+    """Luos_GetVersion: the engine's (major, minor, build)."""
+    rev = lib.Luos_GetVersion()
+    return (rev.major, rev.minor, rev.build)
+
+
+def reset_statistic() -> None:
+    lib.Luos_ResetStatistic()
+
+
+def set_irq_state(enabled: bool) -> None:
+    """Luos_SetIrqState: gate the phys' interrupts (a no-op on a HAL that
+    has none, like the native and Linux ones)."""
+    lib.Luos_SetIrqState(bool(enabled))
+
+
+def timestamp() -> float:
+    """Luos_Timestamp: this node's clock, in seconds, the reference that
+    Service.send_timestamped and Message.timestamp share."""
+    return lib.Luos_Timestamp().raw
 
 
 def load_phy(descriptor, **kwargs) -> None:

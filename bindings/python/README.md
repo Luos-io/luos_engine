@@ -95,6 +95,38 @@ Pass `LUOS_WS_BROKER=ws://host:port` to point at a different broker.
 | `Luos_SendMsg(svc, &m)`                                   | `svc.send(cmd=..., target=..., data=b"...")`                                          |
 | `Luos_Detect(svc)` + poll routing table                   | `svc.find_peer(alias="led", timeout=5.0)`                                             |
 | `while(1) { Luos_Loop(); }`                               | `luos.start()` / `luos.stop()` (background loop thread)                               |
+| `Luos_SendData(svc, &m, buf, 512)`                        | `svc.send_data(cmd=..., target=..., data=buf)` (any size; the engine splits it)        |
+| `Luos_ReceiveData(svc, msg, buf)`                         | `svc.receive_data(msg, buf)` (0 until the last frame, then the total size)            |
+| `Luos_CreateService(0, ...)` + `Luos_ReadMsg(svc, &m)`     | `luos.create_service(..., polling=True)` + `svc.read_msg()` / `read_from_cmd(c)`      |
+| `Luos_Subscribe(svc, topic)`                              | `svc.subscribe(topic)`; send with `target=topic, target_mode=luos.TargetMode.TOPIC`   |
+| `Luos_SendTimestampMsg(svc, &m, Luos_Timestamp())`         | `svc.send_timestamped(..., timestamp=luos.timestamp())`; read back as `msg.timestamp` |
+| `Streaming_CreateChannel` + `Luos_SendStreaming`          | `luos.StreamingChannel(capacity=, sample_size=)` + `svc.send_streaming(..., stream=)` |
+| `LUOS_ADD_PACKAGE(name)` + `LUOS_RUN()`                   | `luos.add_package(init, loop)` before `luos.start()`                                  |
+| `Luos_TxComplete()`, `Luos_GetVersion()`                  | `luos.tx_complete()`, `luos.engine_version()`                                         |
+
+## Big data
+
+A payload larger than one frame (128 bytes) goes through `send_data`: the
+engine splits it into frames whose `size` field counts what is still to
+come, and the receiver feeds each frame to `receive_data` with a buffer of
+the whole size (the first frame's `msg.size`):
+
+```python
+buf = bytearray(512)
+
+@rx.on_message
+def on_msg(msg):
+    if msg.cmd == 44:
+        n = msg.service.receive_data(msg, buf)   # 0, 0, 0, then 512
+        if n:
+            handle(bytes(buf))
+
+tx.send_data(cmd=44, target=peer.id, data=table_bytes)
+```
+
+`send_data` blocks until every frame is queued, so the loop must be running.
+On a frame of such a transfer `msg.size` is the remaining count, and
+`msg.data` is that frame's bytes (at most 128).
 
 ## Environment variables
 
@@ -105,7 +137,7 @@ Pass `LUOS_WS_BROKER=ws://host:port` to point at a different broker.
 ## Running
 
 ```bash
-pytest bindings/python/tests/              # 17 tests green
+pytest bindings/python/tests/              # 67 tests green
 python bindings/python/examples/blinker.py # ASCII LED toggles every second
 ```
 
@@ -124,7 +156,8 @@ python bindings/python/examples/blinker.py # ASCII LED toggles every second
   path; Mongoose's poll thread has no documented teardown.
 - The broker address is fixed at `load_phy` time via the `broker=`
   kwarg and cannot be changed mid-process.
-- No streaming, big-data, pub/sub, or timestamped-send wrappers yet. The raw C symbols are reachable via `luos.lib.*` for power users.
+- Streaming across several messages only counts right with 1-byte samples: the engine's sender puts the remaining *sample* count in the size field and its receiver reads it as *bytes* (`streaming.c`).
+- `Luos_Flush` is declared by `luos_engine.h` but defined nowhere, so it is not wrapped. Every other public call is (`luos.lib.*` still gives raw access).
 - Tested on macOS (Darwin/arm64). Linux is expected to work via `-Wl,--unresolved-symbols=ignore-in-object-files` but not yet validated in CI. Windows is out of scope (`signal.pause()` in `luos.run()` is POSIX-only).
 
 ## Design

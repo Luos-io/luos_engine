@@ -60,7 +60,9 @@ def wait_for_peer(*, alias: str | None = None, type: int | None = None,
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         hits = find_services(alias=alias, type=type)
-        if len(hits) == 1:
+        # A hit is only usable once the detection that produced it has
+        # ended: until then a send is refused (PROHIBITED) or lost.
+        if len(hits) == 1 and lib.Luos_IsDetected():
             return hits[0]
         if len(hits) > 1:
             raise ValueError(
