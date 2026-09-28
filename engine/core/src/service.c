@@ -239,7 +239,9 @@ service_t *Service_GetConcerned(const header_t *header)
     // Find if we are concerned by this message.
     switch (header->target_mode)
     {
+#ifndef NORT
         case SERVICEIDACK:
+#endif
         case SERVICEID:
             // Check all service id
             for (i = 0; i < service_ctx.number; i++)
@@ -261,7 +263,9 @@ service_t *Service_GetConcerned(const header_t *header)
             }
             break;
         case BROADCAST:
+#ifndef NORT
         case NODEIDACK:
+#endif
         case NODEID:
             return &service_ctx.list[0];
             break;
@@ -326,7 +330,9 @@ service_filter_t Service_GetFilter(const msg_t *msg)
     // Find if we are concerned by this message.
     switch (msg->header.target_mode)
     {
+#ifndef NORT
         case SERVICEIDACK:
+#endif
         case SERVICEID:
             // Check all service id
             for (i = 0; i < service_ctx.number; i++)
@@ -363,7 +369,9 @@ service_filter_t Service_GetFilter(const msg_t *msg)
                 }
             }
             break;
+#ifndef NORT
         case NODEIDACK:
+#endif
         case NODEID:
             LUOS_ASSERT(msg->header.target != DEFAULTID);
             // check if the message is for the node

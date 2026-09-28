@@ -23,6 +23,17 @@ routing_table_t routing_table[MAX_RTB_ENTRY];
 volatile uint16_t last_service             = 0;
 volatile uint16_t last_routing_table_entry = 0;
 
+// Per-node introduction (LOCAL_RTB) retry. On a non-realtime master (Linux)
+// the request or its reply can be dropped without ACK retransmission, so we
+// re-ask a node a few times before declaring it unreachable. Harmless on MCU
+// (the reply always arrives on the first try, well under the timeout).
+#ifndef RTB_INTRO_TIMEOUT_MS
+    #define RTB_INTRO_TIMEOUT_MS 300
+#endif
+#ifndef RTB_INTRO_MAX_RETRY
+    #define RTB_INTRO_MAX_RETRY 8
+#endif
+
 /*******************************************************************************
  * Function
  ******************************************************************************/
@@ -218,6 +229,7 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
     static uint8_t detect_state_machine = 0;
     static uint16_t entry_bkp;
     static uint32_t timestamp;
+    static uint8_t rtb_intro_retry = 0;
 
     switch (detect_state_machine)
     {
@@ -246,12 +258,20 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
             timestamp = LuosHAL_GetSystick();
             detect_state_machine++;
         case 1:
-            if ((LuosHAL_GetSystick() - timestamp) >= 2000)
+            if ((LuosHAL_GetSystick() - timestamp) >= RTB_INTRO_TIMEOUT_MS)
             {
-                // Time out is reached
-                // We don't get the answer
-                nb_node = last_node_id;
-                // Go directly to Alias duplication check
+                // No introduction reply in time. Without ACK retransmission the
+                // request or its reply may have been dropped: re-ask the same node
+                // (last_node_id unchanged) a few times before giving up on it.
+                if (rtb_intro_retry < RTB_INTRO_MAX_RETRY)
+                {
+                    rtb_intro_retry++;
+                    detect_state_machine = 0;
+                    return 0;
+                }
+                // Genuinely unreachable after retries.
+                nb_node              = last_node_id;
+                rtb_intro_retry      = 0;
                 detect_state_machine = 2;
                 return 0;
             }
@@ -261,6 +281,8 @@ static int RoutingTB_Generate(service_t *service, uint16_t nb_node, connection_t
                 // We don't get the answer yet
                 return 0;
             }
+            // Got the answer.
+            rtb_intro_retry = 0;
             // We get the answer
             // The node answer don't include connection because the node don't know it yet
             // Add this information to the routing table

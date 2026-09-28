@@ -15,6 +15,7 @@
 .pio/
 **/.pio/*
 **/.gitignore
+.venv*/
 *.out
 *.log
 *.info

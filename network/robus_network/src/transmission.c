@@ -51,6 +51,12 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#ifdef LUOS_DEBUG_PRINT
+    #include <stdio.h>
+    #define ROBUS_DBG(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+    #define ROBUS_DBG(fmt, ...) ((void)0)
+#endif
 
 /*******************************************************************************
  * Variables
@@ -165,20 +171,18 @@ _CRITICAL void Transmit_Process()
             // Lock the bus
             ctx.tx.lock = true;
             RobusHAL_SetRxDetecPin(false);
-            // Switch reception in collision detection mode
+            // Fill tx_data BEFORE switching the callback, while IRQs are disabled.
+            // On Linux, the RX thread could otherwise read stale tx_data.
             Phy_SetIrqState(false);
-            ctx.rx.callback = Recep_GetCollision;
-            Phy_SetIrqState(true);
-            ctx.tx.data = tx_data;
-
             if (!nbrRetry)
             {
-                // This is the first time we try to send this message, we need to backup the original crc value and the job data to the TX_data buffer
                 crc_val = jobEncaps->crc;
                 memcpy(tx_data, job->data_pt, job->size);
-                // Add the end of the message in the end of the buffer
                 memcpy(&tx_data[job->size], jobEncaps->unmaped, jobEncaps->size);
             }
+            ctx.tx.data     = tx_data;
+            ctx.rx.callback = Recep_GetCollision;
+            Phy_SetIrqState(true);
 
             // Put timestamping on data here
             if (job->timestamp)
@@ -201,6 +205,7 @@ _CRITICAL void Transmit_Process()
                 // We will prepare to transmit something enable tx status with precomputed value of the initial_transmit_status
                 ctx.tx.status = initial_transmit_status;
                 // We still have something to send, no reset occured
+                ROBUS_DBG("[TX] Start, size=%d\n", (int)(job->size + jobEncaps->size));
                 RobusHAL_ComTransmit(tx_data, (job->size + jobEncaps->size));
                 Phy_SetIrqState(true);
             }
@@ -235,6 +240,7 @@ _CRITICAL static uint8_t Transmit_GetLockStatus(void)
  ******************************************************************************/
 _CRITICAL void Transmit_End(void)
 {
+    ROBUS_DBG("[TX] End: status=%d, collision=%d\n", ctx.tx.status, ctx.tx.collision);
     if (ctx.tx.status == TX_OK)
     {
         // A job have been sucessfully transmitted

@@ -29,6 +29,14 @@ static error_return_t Luos_Send(service_t *service, msg_t *msg);
 static inline void Luos_PackageInit(void);
 static inline void Luos_PackageLoop(void);
 
+__attribute__((visibility("default"))) float cmult(int int_param, float float_param)
+{
+    float return_value = int_param * float_param;
+    printf("    In cmult : int: %d float %.1f returning  %.1f\n", int_param,
+           float_param, return_value);
+    return return_value;
+}
+
 /******************************************************************************
  * @brief Luos init must be call in project init
  * @param None

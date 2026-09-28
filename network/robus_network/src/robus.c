@@ -7,11 +7,11 @@
 #include <string.h>
 #include <stdbool.h>
 #include "robus_network.h"
+#include "robus_hal.h"
 #include "transmission.h"
 #include "reception.h"
 #include "port_manager.h"
 #include "context.h"
-#include "robus_hal.h"
 #include "robus_config.h"
 /*******************************************************************************
  * Definitions
@@ -67,6 +67,9 @@ void Robus_Init(void)
  ******************************************************************************/
 void Robus_Loop(void)
 {
+#ifdef NORT
+    PortMng_WatchdogCheck();
+#endif
     RobusHAL_Loop();
 }
 

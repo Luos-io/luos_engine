@@ -30,5 +30,8 @@ void PortMng_PtpHandler(uint8_t PortNbr);
 error_return_t PortMng_PokeNextPort(uint8_t *portId);
 uint8_t PortMng_PortPokedStatus(void);
 bool PortMng_Busy(void);
+#ifdef NORT
+void PortMng_WatchdogCheck(void);
+#endif
 
 #endif /* _PORTMANAGER_H_ */

@@ -33,7 +33,14 @@ volatile uint8_t *tx_data = 0;
 // Mongoose connection information
 struct mg_mgr ws_mgr;    // Event manager
 struct mg_connection *c; // Client connection
-static const char *s_url   = WS_NETWORK_BROKER_ADDR;
+static char s_url_buf[128] = WS_NETWORK_BROKER_ADDR;
+static const char *s_url   = s_url_buf;
+
+void ws_hal_set_broker(const char *url)
+{
+    strncpy(s_url_buf, url, sizeof(s_url_buf) - 1);
+    s_url_buf[sizeof(s_url_buf) - 1] = '\0';
+}
 volatile bool ws_connected = false;
 /*******************************************************************************
  * Function
