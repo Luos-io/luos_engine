@@ -126,7 +126,11 @@ tx.send_data(cmd=44, target=peer.id, data=table_bytes)
 
 `send_data` blocks until every frame is queued, so the loop must be running.
 On a frame of such a transfer `msg.size` is the remaining count, and
-`msg.data` is that frame's bytes (at most 128).
+`msg.data` is that frame's bytes (at most 128). `interval_s=0.01` sends the
+frames that far apart instead of as one burst: a receiver whose message
+buffer holds 3 messages (the default `MSG_BUFFER_SIZE`) asserts on a burst
+it cannot allocate while its loop is busy, and without acknowledgements on
+the link nothing else paces the sender.
 
 ## Environment variables
 
